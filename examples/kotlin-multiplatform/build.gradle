@@ -27,7 +27,6 @@ kotlin {
                 tasks.getByName(compileKotlinTaskName).kotlinOptions {
                     sourceMap = true
                     moduleKind = "umd"
-                    metaInfo = true
                 }
             }
         }

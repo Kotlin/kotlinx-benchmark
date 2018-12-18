@@ -131,6 +131,11 @@ open class JsSourceGeneratorTask
                     )
                 }
             }
+            
+            addFunction(FunSpec.builder("main").apply {
+                addStatement("println(%P)", "Benchmarking!!!")
+
+            }.build())
         }.build()
 
         file.writeTo(outputSourcesDir)
