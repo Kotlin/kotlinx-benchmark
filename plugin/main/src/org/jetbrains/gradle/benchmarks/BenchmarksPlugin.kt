@@ -9,6 +9,7 @@ import org.gradle.api.tasks.compile.*
 import org.gradle.util.*
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
 
 @Suppress("unused")
@@ -30,7 +31,7 @@ class BenchmarksPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         // DO NOT introduce a variable, extension values should be only read in a task or afterEvaluate
         // Otherwise it will not contain relevant data
-        project.extensions.create(BENCHMARK_EXTENSION_NAME, BenchmarksExtension::class.java, project)
+        val extension = project.extensions.create(BENCHMARK_EXTENSION_NAME, BenchmarksExtension::class.java, project)
 
         // Create empty task to serve as a root for all benchmarks in a project
         project.task<DefaultTask>("benchmark") {
@@ -38,11 +39,8 @@ class BenchmarksPlugin : Plugin<Project> {
             description = "Runs all benchmarks in a project"
         }
 
-        project.afterEvaluate {
-            val extension = project.extensions.getByType(BenchmarksExtension::class.java)
-            extension.configurations.all { config ->
-                project.processConfiguration(extension, config)
-            }
+        extension.configurations.all {
+            project.processConfiguration(extension, it)
         }
     }
 
@@ -72,7 +70,7 @@ class BenchmarksPlugin : Plugin<Project> {
         )
 
         // Create a task that will process output bytecode and generate benchmark Java source code
-        createBenchmarkGenerateSourceTask(
+        createJvmBenchmarkGenerateSourceTask(
             extension,
             config,
             jmhRuntimeConfiguration,
@@ -81,10 +79,10 @@ class BenchmarksPlugin : Plugin<Project> {
         )
 
         // Create a task that will compile generated Java source code into class files
-        createBenchmarkCompileTask(extension, config, sourceSet.runtimeClasspath)
+        createJvmBenchmarkCompileTask(extension, config, sourceSet.runtimeClasspath)
 
         // Create a task that will execute benchmark code
-        createBenchmarkExecTask(extension, config, sourceSet.runtimeClasspath)
+        createJvmBenchmarkExecTask(extension, config, sourceSet.runtimeClasspath)
     }
 
     private fun Project.configureKotlinMultiplatform(
@@ -94,14 +92,100 @@ class BenchmarksPlugin : Plugin<Project> {
     ) {
         project.logger.info("Configuring benchmarks for '${config.name}' using Multiplatform Kotlin")
 
-        val compilations = mpp.targets.flatMap { it.compilations.filterIsInstance<KotlinJvmCompilation>() }
+        val compilations = mpp.targets.flatMap { it.compilations }
+
         // TODO: update mpp plugin API to remove this hack (have something like compilation base name)
         val compilation = compilations.singleOrNull { it.apiConfigurationName.removeSuffix("Api") == config.name }
         if (compilation == null) {
-            logger.error("Problem: Cannot find a JVM benchmark compilation '${config.name}'")
+            logger.error("Problem: Cannot find a benchmark compilation '${config.name}'")
             return // ignore
         }
-        configureMppSourceSet(this, config, compilation)
+
+        when (compilation) {
+            is KotlinJvmCompilation -> {
+                processJvmCompilation(extension, config, compilation)
+            }
+            is KotlinJsCompilation -> {
+                processJsCompilation(extension, config, compilation)
+            }
+        }
+
+    }
+
+    private fun Project.processJsCompilation(
+        extension: BenchmarksExtension,
+        config: BenchmarkConfiguration,
+        compilation: KotlinJsCompilation
+    ) {
+        configureMultiplatformJsCompilation(this, config, compilation)
+        createJsBenchmarkGenerateSourceTask(
+            extension,
+            config,
+            compilation.compileAllTaskName,
+            compilation.output.allOutputs
+        )
+        
+        createJsBenchmarkCompileTask(extension, config, compilation)
+
+    }
+
+    private fun Project.createJsBenchmarkCompileTask(
+        extension: BenchmarksExtension,
+        config: BenchmarkConfiguration,
+        compilation: KotlinJsCompilation
+    ) {
+
+        val benchmarkBuildDir = benchmarkBuildDir(extension, config)
+        val benchmarkCompilation = compilation.target.compilations.create("benchmark")
+        val compileTask = tasks.getByName(benchmarkCompilation.compileKotlinTaskName) as Kotlin2JsCompile
+        benchmarkCompilation.apply {
+            val sourceSet = kotlinSourceSets.single()
+            sourceSet.kotlin.srcDir(file("$benchmarkBuildDir/sources"))
+            sourceSet.dependencies { 
+                implementation(compilation.compileDependencyFiles)
+                implementation(compilation.output.allOutputs)
+            }
+            compileTask.apply {
+                group = BENCHMARKS_TASK_GROUP
+                description = "Compile JS benchmark source files for '${config.name}'"
+                destinationDir = file("$benchmarkBuildDir/classes")
+                dependsOn("${config.name}$BENCHMARK_GENERATE_SUFFIX")
+            }
+        }
+    }
+
+
+    private fun Project.createJsBenchmarkGenerateSourceTask(
+        extension: BenchmarksExtension,
+        config: BenchmarkConfiguration,
+        compilationTask: String,
+        compilationOutput: FileCollection
+    ) {
+        val benchmarkBuildDir = benchmarkBuildDir(extension, config)
+        task<JsSourceGeneratorTask>("${config.name}$BENCHMARK_GENERATE_SUFFIX") {
+            group = BENCHMARKS_TASK_GROUP
+            description = "Generate JS source files for '${config.name}'"
+            // dependsOn(compilationTask) // next line should do it implicitly
+            inputClassesDirs = compilationOutput
+            outputResourcesDir = file("$benchmarkBuildDir/resources")
+            outputSourcesDir = file("$benchmarkBuildDir/sources")
+        }
+    }
+
+    private fun configureMultiplatformJsCompilation(
+        project: Project,
+        config: BenchmarkConfiguration,
+        compilation: KotlinJsCompilation
+    ) {
+        // TODO: add dependency to multiplatform benchmark runtime lib
+    }
+
+    private fun Project.processJvmCompilation(
+        extension: BenchmarksExtension,
+        config: BenchmarkConfiguration,
+        compilation: KotlinJvmCompilation
+    ) {
+        configureMultiplatformJvmCompilation(this, config, compilation)
 
         val jmhRuntimeConfiguration = createJmhGenerationRuntimeConfiguration(
             this,
@@ -109,7 +193,7 @@ class BenchmarksPlugin : Plugin<Project> {
             compilation.runtimeDependencyFiles
         )
 
-        createBenchmarkGenerateSourceTask(
+        createJvmBenchmarkGenerateSourceTask(
             extension,
             config,
             jmhRuntimeConfiguration,
@@ -117,11 +201,11 @@ class BenchmarksPlugin : Plugin<Project> {
             compilation.output.allOutputs
         )
         val runtimeClasspath = compilation.output.allOutputs + compilation.runtimeDependencyFiles
-        createBenchmarkCompileTask(extension, config, runtimeClasspath)
-        createBenchmarkExecTask(extension, config, runtimeClasspath)
+        createJvmBenchmarkCompileTask(extension, config, runtimeClasspath)
+        createJvmBenchmarkExecTask(extension, config, runtimeClasspath)
     }
 
-    private fun configureMppSourceSet(
+    private fun configureMultiplatformJvmCompilation(
         project: Project,
         config: BenchmarkConfiguration,
         compilation: KotlinJvmCompilation
@@ -132,7 +216,7 @@ class BenchmarksPlugin : Plugin<Project> {
             implementation(jmhCore)
         }
     }
-
+    
     private fun configureJavaSourceSet(project: Project, config: BenchmarkConfiguration): SourceSet {
         val dependencies = project.dependencies
         val javaConvention = project.convention.getPlugin(JavaPluginConvention::class.java)
@@ -165,7 +249,7 @@ class BenchmarksPlugin : Plugin<Project> {
         }
     }
 
-    private fun Project.createBenchmarkGenerateSourceTask(
+    private fun Project.createJvmBenchmarkGenerateSourceTask(
         extension: BenchmarksExtension,
         config: BenchmarkConfiguration,
         classpath: Configuration,
@@ -184,7 +268,7 @@ class BenchmarksPlugin : Plugin<Project> {
         }
     }
 
-    private fun Project.createBenchmarkCompileTask(
+    private fun Project.createJvmBenchmarkCompileTask(
         extension: BenchmarksExtension,
         config: BenchmarkConfiguration,
         compileClasspath: FileCollection
@@ -200,7 +284,7 @@ class BenchmarksPlugin : Plugin<Project> {
         }
     }
 
-    private fun Project.createBenchmarkExecTask(
+    private fun Project.createJvmBenchmarkExecTask(
         extension: BenchmarksExtension,
         config: BenchmarkConfiguration,
         runtimeClasspath: FileCollection

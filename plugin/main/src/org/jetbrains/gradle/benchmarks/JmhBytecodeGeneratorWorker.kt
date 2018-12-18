@@ -100,16 +100,4 @@ class JmhBytecodeGeneratorWorker
             currentThread.contextClassLoader = ocl
         }
     }
-
-    private fun cleanup(file: File) {
-        if (file.exists()) {
-            val listing = file.listFiles()
-            if (listing != null) {
-                for (sub in listing) {
-                    cleanup(sub)
-                }
-            }
-            file.delete()
-        }
-    }
 }
