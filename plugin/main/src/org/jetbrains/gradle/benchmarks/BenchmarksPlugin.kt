@@ -7,6 +7,8 @@ import org.gradle.api.plugins.*
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.compile.*
 import org.gradle.util.*
+import org.jetbrains.kotlin.gradle.dsl.*
+import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import java.io.*
 
 @Suppress("unused")
@@ -35,39 +37,99 @@ class BenchmarksPlugin : Plugin<Project> {
             group = BENCHMARKS_TASK_GROUP
             description = "Runs all benchmarks in a project"
         }
-        
+
         project.afterEvaluate {
             val extension = project.extensions.getByType(BenchmarksExtension::class.java)
-            extension.configurations.all { 
-                project.processConfiguration(extension, it) 
+            extension.configurations.all { config ->
+                project.processConfiguration(extension, config)
             }
         }
     }
 
     private fun Project.processConfiguration(extension: BenchmarksExtension, config: BenchmarkConfiguration) {
+        val mpp = project.extensions.findByType(KotlinMultiplatformExtension::class.java)
+        if (mpp != null) {
+            configureKotlinMultiplatform(config, mpp, extension)
+            return // TODO: test with Java plugin
+        }
+
         plugins.withType(JavaPlugin::class.java) {
-            logger.info("Creating JMH benchmark tasks for '${config.name}'")
+            configureJavaPlugin(config, extension)
+        }
+    }
 
-            // get configure source set and add JMH core dependency to it
-            val sourceSet = configureJavaSourceSet(this, config)
+    private fun Project.configureJavaPlugin(config: BenchmarkConfiguration, extension: BenchmarksExtension) {
+        project.logger.info("Configuring benchmarks for '${config.name}' using Java")
 
-            // we need JMH generator runtime configuration for each BenchmarkConfiguration since version can be different
-            val jmhRuntimeConfiguration = createJmhGenerationRuntimeConfiguration(this, config)
+        // get configure source set and add JMH core dependency to it
+        val sourceSet = configureJavaSourceSet(this, config)
 
-            // Create a task that will process output bytecode and generate benchmark Java source code
-            createBenchmarkGenerateSourceTask(
-                extension,
-                config,
-                jmhRuntimeConfiguration,
-                sourceSet.classesTaskName,
-                sourceSet.output 
-            )
+        // we need JMH generator runtime configuration for each BenchmarkConfiguration since version can be different
+        val jmhRuntimeConfiguration = createJmhGenerationRuntimeConfiguration(
+            this,
+            config,
+            sourceSet.runtimeClasspath
+        )
 
-            // Create a task that will compile generated Java source code into class files
-            createBenchmarkCompileTask(extension, config, sourceSet)
+        // Create a task that will process output bytecode and generate benchmark Java source code
+        createBenchmarkGenerateSourceTask(
+            extension,
+            config,
+            jmhRuntimeConfiguration,
+            sourceSet.classesTaskName,
+            sourceSet.output
+        )
 
-            // Create a task that will execute benchmark code
-            createBenchmarkExecTask(extension, config, sourceSet)
+        // Create a task that will compile generated Java source code into class files
+        createBenchmarkCompileTask(extension, config, sourceSet.runtimeClasspath)
+
+        // Create a task that will execute benchmark code
+        createBenchmarkExecTask(extension, config, sourceSet.runtimeClasspath)
+    }
+
+    private fun Project.configureKotlinMultiplatform(
+        config: BenchmarkConfiguration,
+        mpp: KotlinMultiplatformExtension,
+        extension: BenchmarksExtension
+    ) {
+        project.logger.info("Configuring benchmarks for '${config.name}' using Multiplatform Kotlin")
+
+        val compilations = mpp.targets.flatMap { it.compilations.filterIsInstance<KotlinJvmCompilation>() }
+        // TODO: update mpp plugin API to remove this hack (have something like compilation base name)
+        val compilation = compilations.singleOrNull { it.apiConfigurationName.removeSuffix("Api") == config.name }
+        if (compilation == null) {
+            logger.error("Problem: Cannot find a JVM benchmark compilation '${config.name}'")
+            return // ignore
+        }
+        configureMppSourceSet(this, config, compilation)
+
+        val jmhRuntimeConfiguration = createJmhGenerationRuntimeConfiguration(
+            this,
+            config,
+            compilation.runtimeDependencyFiles
+        )
+
+        createBenchmarkGenerateSourceTask(
+            extension,
+            config,
+            jmhRuntimeConfiguration,
+            compilation.compileAllTaskName,
+            compilation.output.allOutputs
+        )
+        val runtimeClasspath = compilation.output.allOutputs + compilation.runtimeDependencyFiles
+        createBenchmarkCompileTask(extension, config, runtimeClasspath)
+        createBenchmarkExecTask(extension, config, runtimeClasspath)
+    }
+
+    private fun configureMppSourceSet(
+        project: Project,
+        config: BenchmarkConfiguration,
+        compilation: KotlinJvmCompilation
+    ) {
+        val dependencies = project.dependencies
+        val jmhCore = dependencies.create("$JMH_CORE_DEPENDENCY${config.jmhVersion}")
+        compilation.dependencies {
+            implementation(jmhCore)
         }
     }
 
@@ -76,19 +138,20 @@ class BenchmarksPlugin : Plugin<Project> {
         val javaConvention = project.convention.getPlugin(JavaPluginConvention::class.java)
 
         // Add dependency to JMH core library to the source set designated by config.name
-        val sourceSet = javaConvention.sourceSets.getByName(config.name)
         val jmhCore = dependencies.create("$JMH_CORE_DEPENDENCY${config.jmhVersion}")
         val configurationRoot = if (GRADLE_NEW) "implementation" else "compile"
-        val dependencyConfiguration = if (config.name == "main") configurationRoot else "${config.name}${configurationRoot.capitalize()}"
+        val dependencyConfiguration =
+            if (config.name == "main") configurationRoot else "${config.name}${configurationRoot.capitalize()}"
         dependencies.add(dependencyConfiguration, jmhCore)
-        return sourceSet
+        return javaConvention.sourceSets.getByName(config.name)
     }
 
-    private fun createJmhGenerationRuntimeConfiguration(project: Project, config: BenchmarkConfiguration): Configuration {
+    private fun createJmhGenerationRuntimeConfiguration(
+        project: Project,
+        config: BenchmarkConfiguration,
+        classPath: FileCollection
+    ): Configuration {
         // This configuration defines classpath for JMH generator, it should have everything available via reflection
-        
-        val javaConvention = project.convention.getPlugin(JavaPluginConvention::class.java)
-        val sourceSet = javaConvention.sourceSets.getByName(config.name)
         return project.configurations.create("${config.name}$BENCHMARK_GENERATE_SUFFIX").apply {
             isVisible = false
             description = "JMH Generator Runtime Configuration for '${config.name}'"
@@ -97,7 +160,7 @@ class BenchmarksPlugin : Plugin<Project> {
             defaultDependencies {
                 it.add(project.dependencies.create("$JMH_GENERATOR_DEPENDENCY${config.jmhVersion}"))
                 // TODO: runtimeClasspath or compileClasspath? how to avoid premature resolve()?
-                it.add(project.dependencies.create(sourceSet.runtimeClasspath))
+                it.add(project.dependencies.create(classPath))
             }
         }
     }
@@ -112,7 +175,7 @@ class BenchmarksPlugin : Plugin<Project> {
         val benchmarkBuildDir = benchmarkBuildDir(extension, config)
         task<JmhBytecodeGeneratorTask>("${config.name}$BENCHMARK_GENERATE_SUFFIX") {
             group = BENCHMARKS_TASK_GROUP
-            description = "Generate JMH source files for ${config.name}"
+            description = "Generate JMH source files for '${config.name}'"
             dependsOn(compilationTask)
             runtimeClasspath = classpath.resolve()
             inputClassesDirs = compilationOutput
@@ -124,14 +187,14 @@ class BenchmarksPlugin : Plugin<Project> {
     private fun Project.createBenchmarkCompileTask(
         extension: BenchmarksExtension,
         config: BenchmarkConfiguration,
-        sourceSet: SourceSet
+        compileClasspath: FileCollection
     ) {
         val benchmarkBuildDir = benchmarkBuildDir(extension, config)
         task<JavaCompile>("${config.name}$BENCHMARK_COMPILE_SUFFIX") {
             group = BENCHMARKS_TASK_GROUP
-            description = "Compile JMH source files for $sourceSet"
+            description = "Compile JMH source files for '${config.name}'"
             dependsOn("${config.name}$BENCHMARK_GENERATE_SUFFIX")
-            classpath = sourceSet.runtimeClasspath
+            classpath = compileClasspath
             setSource(file("$benchmarkBuildDir/sources")) // TODO: try using FileTree since 4.0
             destinationDir = file("$benchmarkBuildDir/classes")
         }
@@ -140,12 +203,18 @@ class BenchmarksPlugin : Plugin<Project> {
     private fun Project.createBenchmarkExecTask(
         extension: BenchmarksExtension,
         config: BenchmarkConfiguration,
-        sourceSet: SourceSet
+        runtimeClasspath: FileCollection
     ) {
         val benchmarkBuildDir = benchmarkBuildDir(extension, config)
-        task<JavaExec>("${config.name}$BENCHMARK_EXEC_SUFFIX") {
-            main = "org.openjdk.jmh.Main" 
-            classpath(file("$benchmarkBuildDir/classes"), file("$benchmarkBuildDir/resources"), sourceSet.runtimeClasspath)
+        task<JavaExec>("${config.name}$BENCHMARK_EXEC_SUFFIX", depends = "benchmark") {
+            group = BENCHMARKS_TASK_GROUP
+            description = "Execute benchmark for '${config.name}'"
+            main = "org.openjdk.jmh.Main"
+            classpath(
+                file("$benchmarkBuildDir/classes"),
+                file("$benchmarkBuildDir/resources"),
+                runtimeClasspath
+            )
             dependsOn("${config.name}$BENCHMARK_COMPILE_SUFFIX")
             tasks.getByName("benchmark").dependsOn(this)
         }
@@ -155,14 +224,24 @@ class BenchmarksPlugin : Plugin<Project> {
         return file("$buildDir/${extension.buildDir}/${config.name}")
     }
 
-    private inline fun <reified T : Task> Project.task(name: String, noinline configuration: T.() -> Unit) {
+    private inline fun <reified T : Task> Project.task(
+        name: String,
+        depends: String? = null,
+        noinline configuration: T.() -> Unit
+    ) {
         when {
             GRADLE_NEW -> {
                 @Suppress("UnstableApiUsage")
-                tasks.register(name, T::class.java, Action(configuration))
+                val task = tasks.register(name, T::class.java, Action(configuration))
+                if (depends != null) {
+                    tasks.getByName(depends).dependsOn(task)
+                }
             }
             else -> {
-                tasks.create(name, T::class.java, Action(configuration))
+                val task = tasks.create(name, T::class.java, Action(configuration))
+                if (depends != null) {
+                    tasks.getByName(depends).dependsOn(task)
+                }
             }
         }
     }
