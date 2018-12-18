@@ -1,0 +1,4 @@
+/*
+task('build').dependsOn gradle.includedBuild('plugin').task(':build')
+task('clean').dependsOn gradle.includedBuild('plugin').task(':clean')
+*/

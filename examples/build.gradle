@@ -1,0 +1,6 @@
+group 'org.jetbrains.gradle.examples'
+version '0.1-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}

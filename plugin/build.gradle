@@ -1,0 +1,42 @@
+plugins {
+    id 'java-gradle-plugin'
+    id 'org.jetbrains.kotlin.jvm' version "1.3.11"
+}
+
+group 'org.jetbrains.gradle'
+version '0.1-SNAPSHOT'
+
+gradlePlugin {
+    plugins {
+        benchmarkPlugin {
+            id = "org.jetbrains.gradle.benchmarks"
+            implementationClass = "org.jetbrains.gradle.benchmarks.BenchmarksPlugin"
+        }
+    }
+}
+
+sourceSets {
+    main {
+        kotlin.srcDirs = ['main/src']
+        java.srcDirs = ['main/src']
+        resources.srcDirs = ['main/resources']
+    }
+    test {
+        kotlin.srcDirs = ['test/src']
+        java.srcDirs = ['test/src']
+        resources.srcDirs = ['test/resources']
+    }
+}
+
+dependencies {
+    compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: kotlin_version
+    compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk7', version: kotlin_version
+    compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlin_version
+
+    compile "org.openjdk.jmh:jmh-core:$jmhVersion"
+    compileOnly "org.openjdk.jmh:jmh-generator-bytecode:$jmhVersion"
+}
+
+repositories {
+    jcenter()
+}
