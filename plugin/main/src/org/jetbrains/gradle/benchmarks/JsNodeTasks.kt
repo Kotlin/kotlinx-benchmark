@@ -3,8 +3,10 @@ package org.jetbrains.gradle.benchmarks
 import com.moowork.gradle.node.*
 import com.moowork.gradle.node.npm.*
 import com.moowork.gradle.node.task.*
+import groovy.lang.*
 import org.gradle.api.*
 import org.gradle.api.tasks.*
+import org.gradle.process.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
@@ -14,7 +16,7 @@ fun Project.createJsBenchmarkInstallTask() {
     task<NpmTask>("npmInstallBenchmarkJs") {
         group = "node"
         description = "Install benchmark.js to local node_modules"
-        setArgs(listOf("install", "benchmark"))
+        setArgs(listOf("install", "--prefer-offline", "benchmark", "-s"))
         setWorkingDir(node.nodeModulesDir) // For some reason configured node_modules dir is not picked up
     }
 }
@@ -27,16 +29,25 @@ fun Project.createJsBenchmarkExecTask(
 ) {
     val node = project.extensions.getByType(NodeExtension::class.java)
     val nodeModulesDir = node.nodeModulesDir.resolve("node_modules")
-    task<NodeTask>("${config.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}") {
+    val reportsDir = buildDir.resolve(extension.buildDir).resolve("reports")
+    val reportFile = reportsDir.resolve("${config.name}.json")
+    task<NodeTask>("${config.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}", depends = "benchmark") {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Executes benchmark for '${config.name}'"
         //setScript(file("$nodeModulesDir/${compilation.output}"))
         val jsTask = tasks.getByName(compilation.compileKotlinTaskName) as Kotlin2JsCompile
         setScript(nodeModulesDir.resolve(jsTask.outputFile.name))
         setWorkingDir(nodeModulesDir)
-        //args = [testCompilationTask.outputFile, '--require', 'source-map-support/register']
+        setExecOverrides(closureOf<ExecSpec> {
+            // TODO: add line-protocol for saving report. 
+            // Create a filtering output stream, that would pass lines to output, unless special line ####BEGIN_REPORT#### comes
+            // then stop piping and start saving to file, then switch back on ####END_REPORT####
+            standardOutput = FileOutputStream(reportFile)
+        })
         dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_DEPENDENCIES_SUFFIX}")
-        tasks.getByName("benchmark").dependsOn(this)
+        doFirst {
+            reportsDir.mkdirs()
+        }
     }
 }
 

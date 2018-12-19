@@ -5,7 +5,6 @@ import org.gradle.api.artifacts.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.compile.*
-import java.io.*
 
 fun Project.createJvmBenchmarkCompileTask(
     extension: BenchmarksExtension,
@@ -67,6 +66,8 @@ fun Project.createJvmBenchmarkExecTask(
     runtimeClasspath: FileCollection
 ) {
     val benchmarkBuildDir = benchmarkBuildDir(extension, config)
+    val reportsDir = buildDir.resolve(extension.buildDir).resolve("reports")
+    val reportFile = reportsDir.resolve("${config.name}.json")
     task<JavaExec>("${config.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}", depends = "benchmark") {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Execute benchmark for '${config.name}'"
@@ -76,8 +77,11 @@ fun Project.createJvmBenchmarkExecTask(
             file("$benchmarkBuildDir/resources"),
             runtimeClasspath
         )
+        args = "-w 5 -r 5 -wi 1 -i 1 -f 1 -rf json -rff $reportFile".split(" ") // TODO: configure!
         dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}")
-        tasks.getByName("benchmark").dependsOn(this)
+        doFirst {
+            reportsDir.mkdirs()
+        }
     }
 }
 

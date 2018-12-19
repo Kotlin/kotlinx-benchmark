@@ -7,7 +7,7 @@ import java.util.concurrent.*
 @Fork(1)
 @Warmup(iterations = 0)
 @Measurement(iterations = 1, time = 1, timeUnit = TimeUnit.SECONDS)
-class MppTestBenchmark {
+class JvmTestBenchmark {
     private var data = 0.0
 
     @Setup
@@ -26,7 +26,3 @@ class MppTestBenchmark {
     }
 }
 
-actual typealias Scope = org.openjdk.jmh.annotations.Scope
-actual typealias State = org.openjdk.jmh.annotations.State
-actual typealias Setup = org.openjdk.jmh.annotations.Setup
-actual typealias Benchmark = org.openjdk.jmh.annotations.Benchmark

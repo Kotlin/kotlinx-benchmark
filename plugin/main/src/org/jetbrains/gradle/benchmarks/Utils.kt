@@ -1,5 +1,6 @@
 package org.jetbrains.gradle.benchmarks
 
+import groovy.lang.*
 import org.gradle.api.*
 import org.gradle.util.*
 import java.io.*
@@ -40,6 +41,19 @@ inline fun <reified T : Task> Project.task(
     }
 }
 
-fun Project.benchmarkBuildDir(extension: BenchmarksExtension, config: BenchmarkConfiguration): File? {
+fun Project.benchmarkBuildDir(extension: BenchmarksExtension, config: BenchmarkConfiguration): File {
     return file(buildDir.resolve(extension.buildDir).resolve(config.name))
 }
+
+class KotlinClosure1<in T : Any?, V : Any>(
+    val function: T.() -> V?,
+    owner: Any? = null,
+    thisObject: Any? = null
+) : Closure<V?>(owner, thisObject) {
+
+    @Suppress("unused") // to be called dynamically by Groovy
+    fun doCall(it: T): V? = it.function()
+}
+
+fun <T> Any.closureOf(action: T.() -> Unit): Closure<Any?> =
+    KotlinClosure1(action, this, this)

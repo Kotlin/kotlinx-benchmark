@@ -1,5 +1,6 @@
 package test
 
+import org.jetbrains.gradle.benchmarks.*
 import kotlin.math.*
 
 @State(Scope.Benchmark)
@@ -22,10 +23,4 @@ class JsTestBenchmark {
     }
 }
 
-actual public enum class Scope {
-    Benchmark
-}
 
-actual annotation class State(actual val value: Scope)
-actual annotation class Setup
-actual annotation class Benchmark

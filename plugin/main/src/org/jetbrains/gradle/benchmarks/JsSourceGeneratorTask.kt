@@ -74,7 +74,7 @@ open class JsSourceGeneratorTask
                 val benchmarks = mutableListOf<ClassName>()
                 benchmarks.processPackage(module, module.getPackage(FqName.ROOT))
 
-                val file = FileSpec.builder("", "BenchmarkSuite").apply {
+                val file = FileSpec.builder("org.jetbrains.gradle.benchmarks.generated", "BenchmarkSuite").apply {
                     addFunction(FunSpec.builder("require").apply {
                         addModifiers(KModifier.EXTERNAL)
                         addParameter("module", String::class)
@@ -86,13 +86,40 @@ open class JsSourceGeneratorTask
                         for (benchmark in benchmarks) {
                             addStatement("%T().addBenchmarkToSuite(suite)", benchmark)
                         }
-                        addStatement("suite.on(\"cycle\") { event-> println(event.target.toString()) }")
-                        addStatement("println(%S)", "Running benchmarks…")
+                        //addStatement("suite.on(\"cycle\") { event-> println(event.target.toString()) }")
+                        //addStatement("println(%P)", "Running \${suite.length} benchmarks…")
                         addStatement("suite.run()")
-                        addStatement("println(%S)", "Complete!")
+                        //addStatement("println(%S)", "Summary:")
+/*
+                        beginControlFlow("for(index in 0 until suite.length)")
+                        addStatement("println(suite[index].toString())")
+                        endControlFlow()
+*/
+                        addStatement("println(suiteJson(suite))")
                     }.build())
+                    
                 }.build()
                 file.writeTo(outputSourcesDir)
+                outputSourcesDir.resolve("SuiteJson.kt").writeText("""
+package org.jetbrains.gradle.benchmarks.generated
+                    
+fun suiteJson(suite: dynamic): String {
+    val list = mutableListOf<BenchmarkResult>()
+    for (index in 0 until suite.length) {
+        val benchmark = suite[index]
+        list.add(BenchmarkResult(benchmark.name, BenchmarkMetric(benchmark.hz)))
+    }
+    return JSON.stringify(list)
+}
+
+fun benchmarkJson(benchmark: dynamic): String {
+    val result = BenchmarkResult(benchmark.name, BenchmarkMetric(benchmark.hz))
+    return JSON.stringify(result)
+}
+
+data class BenchmarkResult(val benchmark: String, val primaryMetric: BenchmarkMetric)
+data class BenchmarkMetric(val score: Double)
+                """.trimIndent())
             }
         }
 
@@ -109,7 +136,7 @@ open class JsSourceGeneratorTask
         for (packageFragment in packageView.fragments.filter { it.module == module }) {
             DescriptorUtils.getAllDescriptors(packageFragment.getMemberScope())
                 .filterIsInstance<ClassDescriptor>()
-                .filter { it.annotations.any { it.fqName.toString() == "test.State" } }
+                .filter { it.annotations.any { it.fqName.toString() == "org.jetbrains.gradle.benchmarks.State" } }
                 .forEach {
                     generateBenchmark(it)
                 }
@@ -129,7 +156,7 @@ open class JsSourceGeneratorTask
 
         val benchmarks = DescriptorUtils.getAllDescriptors(original.unsubstitutedMemberScope)
             .filterIsInstance<FunctionDescriptor>()
-            .filter { it.annotations.any { it.fqName.toString() == "test.Benchmark" } }
+            .filter { it.annotations.any { it.fqName.toString() == "org.jetbrains.gradle.benchmarks.Benchmark" } }
 
         val file = FileSpec.builder(packageName, benchmarkName).apply {
             val clazz = declareClass(benchmarkClass) {
@@ -156,7 +183,7 @@ open class JsSourceGeneratorTask
                     addParameter("suite", Dynamic)
                     for (benchmark in benchmarks) {
                         val functionName = benchmark.name.toString()
-                        addStatement("suite.add(%P) { %N() }", "${originalClass.simpleName}.$functionName", functionName)
+                        addStatement("suite.add(%P) { %N() }", "${originalClass.canonicalName}.$functionName", functionName)
                     }
                 }.build())
 

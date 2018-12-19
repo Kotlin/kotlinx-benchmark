@@ -1,5 +1,6 @@
 package test
 
+import org.jetbrains.gradle.benchmarks.*
 import kotlin.math.*
 
 @State(Scope.Benchmark)
@@ -16,17 +17,4 @@ class CommonBenchmark {
         return log(sqrt(data) * cos(data), 2.0)
     }
 
-}
-
-@Target(AnnotationTarget.FUNCTION)
-expect annotation class Setup()
-
-@Target(AnnotationTarget.FUNCTION)
-expect annotation class Benchmark()
-
-@Target(AnnotationTarget.CLASS)
-expect annotation class State(val value: Scope)
-
-expect public enum class Scope {
-    Benchmark
 }

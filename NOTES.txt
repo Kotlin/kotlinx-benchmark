@@ -1,0 +1,48 @@
+
+General
+=======
+
+common benchmarks-runtime for annotations
+
+JVM
+====
+
+JMH doesn't work with root package, error out if benchmarks are in empty package?
+(for common simple benchmarks we will need to implement JMH Source, introspect output and run JMH via our own shim)
+
+Setup JMH params
+
+
+JS
+===
+(??now works) JS clean run doesn't install benchmark.js, check deps
+bench:
+.aborted
+.compiled
+.count
+.cycles
+.error
+.fn
+.hz (ops/s)
+.running
+.setup
+.teardown
+.abort
+.clone
+.compare
+.emit
+.listeners
+.off
+.on
+.reset
+.run
+.toString
+
+bench.stats
+.deviation
+.mean
+.moe
+.rme
+.sample // array of times
+.sem
+.variance
