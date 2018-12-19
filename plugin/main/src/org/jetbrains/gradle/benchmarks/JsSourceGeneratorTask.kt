@@ -71,7 +71,28 @@ open class JsSourceGeneratorTask
                 )
                 module.setDependencies(listOf(module, JsPlatform.builtIns.builtInsModule))
                 module.initialize(provider)
-                processPackage(module, module.getPackage(FqName.ROOT))
+                val benchmarks = mutableListOf<ClassName>()
+                benchmarks.processPackage(module, module.getPackage(FqName.ROOT))
+
+                val file = FileSpec.builder("", "BenchmarkSuite").apply {
+                    addFunction(FunSpec.builder("require").apply {
+                        addModifiers(KModifier.EXTERNAL)
+                        addParameter("module", String::class)
+                        returns(Dynamic)
+                    }.build())
+                    addFunction(FunSpec.builder("main").apply {
+                        addStatement("val benchmarkjs = require(\"benchmark\")")
+                        addStatement("val suite = benchmarkjs.Suite()")
+                        for (benchmark in benchmarks) {
+                            addStatement("%T().addBenchmarkToSuite(suite)", benchmark)
+                        }
+                        addStatement("suite.on(\"cycle\") { event-> println(event.target.toString()) }")
+                        addStatement("println(%S)", "Running benchmarks…")
+                        addStatement("suite.run()")
+                        addStatement("println(%S)", "Complete!")
+                    }.build())
+                }.build()
+                file.writeTo(outputSourcesDir)
             }
         }
 
@@ -84,11 +105,11 @@ open class JsSourceGeneratorTask
 */
     }
 
-    fun processPackage(module: ModuleDescriptor, packageView: PackageViewDescriptor) {
+    fun MutableList<ClassName>.processPackage(module: ModuleDescriptor, packageView: PackageViewDescriptor) {
         for (packageFragment in packageView.fragments.filter { it.module == module }) {
             DescriptorUtils.getAllDescriptors(packageFragment.getMemberScope())
                 .filterIsInstance<ClassDescriptor>()
-                .filter { it.annotations.any { it.fqName.toString() == "test.Benchmark" } }
+                .filter { it.annotations.any { it.fqName.toString() == "test.State" } }
                 .forEach {
                     generateBenchmark(it)
                 }
@@ -99,7 +120,7 @@ open class JsSourceGeneratorTask
         }
     }
 
-    fun generateBenchmark(original: ClassDescriptor) {
+    fun MutableList<ClassName>.generateBenchmark(original: ClassDescriptor) {
         val originalClass =
             ClassName(original.fqNameSafe.parent().toString(), original.fqNameSafe.shortName().toString())
         val packageName = original.fqNameSafe.parent().child(Name.identifier("generated")).toString()
@@ -111,31 +132,36 @@ open class JsSourceGeneratorTask
             .filter { it.annotations.any { it.fqName.toString() == "test.Benchmark" } }
 
         val file = FileSpec.builder(packageName, benchmarkName).apply {
-            declareClass(benchmarkClass) {
+            val clazz = declareClass(benchmarkClass) {
                 property("_instance", originalClass) {
                     addModifiers(KModifier.PRIVATE)
                     initializer(codeBlock {
                         addStatement("%T()", originalClass)
                     })
                 }
-                
+
                 for (benchmark in benchmarks) {
                     val functionName = benchmark.name.toString()
                     addFunction(
                         FunSpec.builder(functionName)
-                            .addStatement("println(%P)", "Benchmarking $functionName…")
-                            .beginControlFlow("repeat(1000)")
+    //                        .addStatement("println(%P)", "Benchmarking $functionName…")
+//                            .beginControlFlow("repeat(1000)")
                             .addStatement("_instance.%N()", functionName)
-                            .endControlFlow()
+  //                          .endControlFlow()
                             .build()
                     )
                 }
-            }
-            
-            addFunction(FunSpec.builder("main").apply {
-                addStatement("println(%P)", "Benchmarking!!!")
 
-            }.build())
+                addFunction(FunSpec.builder("addBenchmarkToSuite").apply {
+                    addParameter("suite", Dynamic)
+                    for (benchmark in benchmarks) {
+                        val functionName = benchmark.name.toString()
+                        addStatement("suite.add(%P) { %N() }", "${originalClass.simpleName}.$functionName", functionName)
+                    }
+                }.build())
+
+            }
+            add(benchmarkClass)
         }.build()
 
         file.writeTo(outputSourcesDir)

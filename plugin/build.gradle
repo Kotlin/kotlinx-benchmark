@@ -1,10 +1,18 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+        maven { url "https://dl.bintray.com/jetbrains/kotlin-native-dependencies" }
+    }
+    dependencies {
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:$bintray_plugin_version"
+    }
+}
+
 plugins {
     id 'java-gradle-plugin'
     id 'org.jetbrains.kotlin.jvm' version "1.3.11"
 }
-
-group 'org.jetbrains.gradle'
-version '0.1-SNAPSHOT'
 
 gradlePlugin {
     plugins {
@@ -29,13 +37,15 @@ sourceSets {
 }
 
 dependencies {
+    // TODO: This group of dependencies should be runtime with some checks about existing at runtime
     compile group: 'org.jetbrains.kotlin.multiplatform', name: 'org.jetbrains.kotlin.multiplatform.gradle.plugin', version: kotlin_version
+    compile group: 'org.jetbrains.kotlin', name: 'kotlin-native-gradle-plugin', version: kotlin_version
+    compile group: 'com.moowork.node', name: 'com.moowork.node.gradle.plugin', version: '1.2.0'
 
     compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: kotlin_version
     compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk7', version: kotlin_version
     compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlin_version
 
-    compile group: 'org.jetbrains.kotlin', name: 'kotlin-native-gradle-plugin', version: kotlin_version
     compile 'com.squareup:kotlinpoet:1.0.0'
     
     compile "org.openjdk.jmh:jmh-core:$jmhVersion"
@@ -43,6 +53,9 @@ dependencies {
 }
 
 repositories {
+    mavenCentral()
     jcenter()
     gradlePluginPortal()
 }
+
+apply from: rootProject.file("gradle/publish.gradle")

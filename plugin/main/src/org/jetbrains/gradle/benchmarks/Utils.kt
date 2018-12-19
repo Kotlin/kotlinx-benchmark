@@ -39,3 +39,7 @@ inline fun <reified T : Task> Project.task(
         }
     }
 }
+
+fun Project.benchmarkBuildDir(extension: BenchmarksExtension, config: BenchmarkConfiguration): File? {
+    return file("$buildDir/${extension.buildDir}/${config.name}")
+}

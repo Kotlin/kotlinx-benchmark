@@ -3,6 +3,7 @@ package org.jetbrains.gradle.benchmarks
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
+import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.tasks.*
 
@@ -11,6 +12,7 @@ fun Project.processJsCompilation(
     config: BenchmarkConfiguration,
     compilation: KotlinJsCompilation
 ) {
+    createJsBenchmarkInstallTask()
     configureMultiplatformJsCompilation(this, config, compilation)
     createJsBenchmarkGenerateSourceTask(
         extension,
@@ -19,15 +21,16 @@ fun Project.processJsCompilation(
         compilation.output.allOutputs
     )
 
-    createJsBenchmarkCompileTask(extension, config, compilation)
-
+    val benchmarkCompilation = createJsBenchmarkCompileTask(extension, config, compilation)
+    createJsBenchmarkDependenciesTask(extension, config, benchmarkCompilation)
+    createJsBenchmarkExecTask(extension, config, benchmarkCompilation)
 }
 
 private fun Project.createJsBenchmarkCompileTask(
     extension: BenchmarksExtension,
     config: BenchmarkConfiguration,
     compilation: KotlinJsCompilation
-) {
+): KotlinJsCompilation {
 
     val benchmarkBuildDir = benchmarkBuildDir(extension, config)
     val benchmarkCompilation = compilation.target.compilations.create("benchmark")
@@ -51,7 +54,9 @@ private fun Project.createJsBenchmarkCompileTask(
             dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}")
         }
     }
+    return benchmarkCompilation as KotlinJsCompilation
 }
+
 
 private fun Project.createJsBenchmarkExecTask(
     extension: BenchmarksExtension,

@@ -81,7 +81,4 @@ fun Project.createJvmBenchmarkExecTask(
     }
 }
 
-fun Project.benchmarkBuildDir(extension: BenchmarksExtension, config: BenchmarkConfiguration): File? {
-    return file("$buildDir/${extension.buildDir}/${config.name}")
-}
 

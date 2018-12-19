@@ -2,7 +2,7 @@ package test
 
 import kotlin.math.*
 
-@Benchmark
+@State(Scope.Benchmark)
 class JsTestBenchmark {
     private var data = 0.0
 
@@ -22,6 +22,10 @@ class JsTestBenchmark {
     }
 }
 
-annotation class Setup
+actual public enum class Scope {
+    Benchmark
+}
 
-annotation class Benchmark
+actual annotation class State(actual val value: Scope)
+actual annotation class Setup
+actual annotation class Benchmark
