@@ -39,7 +39,7 @@ sourceSets {
 dependencies {
     // TODO: This group of dependencies should be runtime with some checks about existing at runtime
     compile group: 'org.jetbrains.kotlin.multiplatform', name: 'org.jetbrains.kotlin.multiplatform.gradle.plugin', version: kotlin_version
-    compile group: 'org.jetbrains.kotlin', name: 'kotlin-native-gradle-plugin', version: kotlin_version
+    compile group: 'org.jetbrains.kotlin', name: 'kotlin-native-library-reader', version: kotlin_version
     compile group: 'com.moowork.node', name: 'com.moowork.node.gradle.plugin', version: '1.2.0'
 
     compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: kotlin_version
@@ -56,6 +56,7 @@ repositories {
     mavenCentral()
     jcenter()
     gradlePluginPortal()
+    maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
 }
 
 apply from: rootProject.file("gradle/publish.gradle")
