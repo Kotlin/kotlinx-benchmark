@@ -39,15 +39,16 @@ open class JsSourceGeneratorTask
         cleanup(outputSourcesDir)
         cleanup(outputResourcesDir)
 
-        inputClassesDirs.files.forEach {
-            val libs = KotlinJavascriptMetadataUtils.loadMetadata(it)
+        inputClassesDirs.files.forEach { lib ->
+            val libs = KotlinJavascriptMetadataUtils.loadMetadata(lib)
             libs.forEach { metadata ->
                 val configuration = CompilerConfiguration()
 
                 val storageManager = LockBasedStorageManager()
                 val languageVersionSettings = configuration.languageVersionSettings
 
-                assert(metadata.version.isCompatible() || languageVersionSettings.getFlag(AnalysisFlag.skipMetadataVersionCheck)) {
+                val skipCheck = languageVersionSettings.getFlag(AnalysisFlags.skipMetadataVersionCheck)
+                assert(metadata.version.isCompatible() || skipCheck) {
                     "Expected JS metadata version " + JsMetadataVersion.INSTANCE + ", but actual metadata version is " + metadata.version
                 }
 
@@ -72,7 +73,9 @@ open class JsSourceGeneratorTask
                 module.setDependencies(listOf(module, JsPlatform.builtIns.builtInsModule))
                 module.initialize(provider)
                 val benchmarks = mutableListOf<ClassName>()
-                benchmarks.processPackage(module, module.getPackage(FqName.ROOT))
+                processPackage(module, module.getPackage(FqName.ROOT)) {
+                    benchmarks.generateBenchmark(it)
+                }
 
                 val file = FileSpec.builder("org.jetbrains.gradle.benchmarks.generated", "BenchmarkSuite").apply {
                     addFunction(FunSpec.builder("require").apply {
@@ -123,30 +126,8 @@ data class BenchmarkMetric(val score: Double)
             }
         }
 
-
-/*
-        workerExecutor.submit(JmhBytecodeGeneratorWorker::class.java) { config ->
-            config.isolationMode = IsolationMode.PROCESS
-            config.params(inputClassesDirs.files, outputSourcesDir, outputResourcesDir)
-        }
-*/
     }
-
-    fun MutableList<ClassName>.processPackage(module: ModuleDescriptor, packageView: PackageViewDescriptor) {
-        for (packageFragment in packageView.fragments.filter { it.module == module }) {
-            DescriptorUtils.getAllDescriptors(packageFragment.getMemberScope())
-                .filterIsInstance<ClassDescriptor>()
-                .filter { it.annotations.any { it.fqName.toString() == "org.jetbrains.gradle.benchmarks.State" } }
-                .forEach {
-                    generateBenchmark(it)
-                }
-        }
-
-        for (subpackageName in module.getSubPackagesOf(packageView.fqName, MemberScope.ALL_NAME_FILTER)) {
-            processPackage(module, module.getPackage(subpackageName))
-        }
-    }
-
+    
     fun MutableList<ClassName>.generateBenchmark(original: ClassDescriptor) {
         val originalClass =
             ClassName(original.fqNameSafe.parent().toString(), original.fqNameSafe.shortName().toString())
@@ -159,7 +140,7 @@ data class BenchmarkMetric(val score: Double)
             .filter { it.annotations.any { it.fqName.toString() == "org.jetbrains.gradle.benchmarks.Benchmark" } }
 
         val file = FileSpec.builder(packageName, benchmarkName).apply {
-            val clazz = declareClass(benchmarkClass) {
+            declareClass(benchmarkClass) {
                 property("_instance", originalClass) {
                     addModifiers(KModifier.PRIVATE)
                     initializer(codeBlock {
