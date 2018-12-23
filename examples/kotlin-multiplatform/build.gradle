@@ -1,3 +1,4 @@
+
 plugins {
     id 'org.jetbrains.kotlin.multiplatform' version "1.3.11"
     id 'org.jetbrains.kotlin.plugin.allopen' version "1.3.11"
@@ -18,7 +19,8 @@ allOpen {
 }
 
 repositories {
-    mavenCentral()    
+    mavenCentral()
+    maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
 }
 
 kotlin {
@@ -38,6 +40,10 @@ kotlin {
                 }
             }
         }
+        // For ARM, preset should be changed to presets.iosArm32 or presets.iosArm64
+        // For Linux, preset should be changed to e.g. presets.linuxX64
+        // For MacOS, preset should be changed to e.g. presets.macosX64
+        fromPreset(presets.macosX64, 'native')
     }
 
     sourceSets {
@@ -89,8 +95,8 @@ benchmark {
         jvm {
             jmhVersion = "1.21"
         }
-        js {
-            
-        }
+        js
+        register("native")
+        
     }
 }
