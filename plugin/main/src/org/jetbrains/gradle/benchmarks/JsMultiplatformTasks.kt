@@ -2,8 +2,6 @@ package org.jetbrains.gradle.benchmarks
 
 import org.gradle.api.*
 import org.gradle.api.file.*
-import org.gradle.api.tasks.*
-import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.tasks.*
 
@@ -33,8 +31,9 @@ private fun Project.createJsBenchmarkCompileTask(
 ): KotlinJsCompilation {
 
     val benchmarkBuildDir = benchmarkBuildDir(extension, config)
-    val benchmarkCompilation = compilation.target.compilations.create("benchmark")
+    val benchmarkCompilation = compilation.target.compilations.create("benchmark") as KotlinJsCompilation
     val compileTask = tasks.getByName(benchmarkCompilation.compileKotlinTaskName) as Kotlin2JsCompile
+
     compileTask.kotlinOptions.apply {
         sourceMap = true
         moduleKind = "umd"
@@ -42,7 +41,8 @@ private fun Project.createJsBenchmarkCompileTask(
 
     benchmarkCompilation.apply {
         val sourceSet = kotlinSourceSets.single()
-        sourceSet.kotlin.srcDir(file("$benchmarkBuildDir/sources"))
+        sourceSet.kotlin.setSrcDirs(files("$benchmarkBuildDir/sources"))
+        sourceSet.resources.setSrcDirs(files())
         sourceSet.dependencies {
             implementation(compilation.compileDependencyFiles)
             implementation(compilation.output.allOutputs)
@@ -54,7 +54,7 @@ private fun Project.createJsBenchmarkCompileTask(
             dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}")
         }
     }
-    return benchmarkCompilation as KotlinJsCompilation
+    return benchmarkCompilation
 }
 
 private fun Project.createJsBenchmarkGenerateSourceTask(

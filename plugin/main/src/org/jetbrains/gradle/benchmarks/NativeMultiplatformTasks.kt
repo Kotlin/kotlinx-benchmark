@@ -62,10 +62,11 @@ private fun Project.createNativeBenchmarkCompileTask(
     val benchmarkBuildDir = benchmarkBuildDir(extension, config)
     val benchmarkCompilation = compilation.target.compilations.create("benchmark") as KotlinNativeCompilation
     val compileTask = tasks.getByName(benchmarkCompilation.compileKotlinTaskName) as KotlinNativeCompile
-
+    
     benchmarkCompilation.apply {
         val sourceSet = kotlinSourceSets.single()
-        sourceSet.kotlin.srcDir(file("$benchmarkBuildDir/sources"))
+        sourceSet.resources.setSrcDirs(files())
+        sourceSet.kotlin.setSrcDirs(files("$benchmarkBuildDir/sources"))
         sourceSet.dependencies {
             implementation(compilation.compileDependencyFiles)
             implementation(compilation.output.allOutputs)
