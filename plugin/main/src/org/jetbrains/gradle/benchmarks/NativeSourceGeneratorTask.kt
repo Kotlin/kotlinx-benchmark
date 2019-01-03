@@ -12,7 +12,6 @@ import org.jetbrains.kotlin.konan.util.KonanFactories.DefaultDeserializedDescrip
 import org.jetbrains.kotlin.storage.*
 import java.io.*
 import java.nio.file.*
-import java.util.stream.*
 import javax.inject.*
 
 @Suppress("UnstableApiUsage")
@@ -20,8 +19,12 @@ import javax.inject.*
 open class NativeSourceGeneratorTask
 @Inject constructor(private val workerExecutor: WorkerExecutor) : DefaultTask() {
     @InputFiles
-    @PathSensitive(PathSensitivity.RELATIVE)
+    @PathSensitive(PathSensitivity.ABSOLUTE)
     lateinit var inputClassesDirs: FileCollection
+
+    @InputFiles
+    @PathSensitive(PathSensitivity.ABSOLUTE)
+    lateinit var inputDependencies: FileCollection
 
     @OutputDirectory
     lateinit var outputResourcesDir: File
@@ -36,12 +39,12 @@ open class NativeSourceGeneratorTask
     fun generate() {
         cleanup(outputSourcesDir)
         cleanup(outputResourcesDir)
+
         val konanTarget = PredefinedKonanTargets.getByName(target)!!
-        val konanHome = Paths.get(System.getenv("HOME"), ".konan", "kotlin-native-macos-1.0.3")
         val versionSpec = LanguageVersionSettingsImpl(LanguageVersion.LATEST_STABLE, ApiVersion.LATEST_STABLE)
         val ABI_VERSION = 1
 
-        val pathResolver = MySearchPathResolverWithTarget(konanHome, konanTarget)
+        val pathResolver = ProvidedPathResolver(inputDependencies.files, konanTarget)
         val libraryResolver = pathResolver.libraryResolver(ABI_VERSION)
 
         val factory = DefaultDeserializedDescriptorFactory
@@ -74,50 +77,33 @@ open class NativeSourceGeneratorTask
 
 }
 
-class MySearchPathResolverWithTarget(
-    private val konanHome: Path,
+class ProvidedPathResolver(
+    private val dependencies: MutableSet<File>,
     override val target: KonanTarget
 ) : SearchPathResolverWithTarget {
 
-    val commonRoot = org.jetbrains.kotlin.konan.file.File(konanHome.resolve("klib").resolve("common"))
-    val platformPath = konanHome.resolve("klib").resolve("platform").resolve(target.name)
-    val platformRoot = org.jetbrains.kotlin.konan.file.File(platformPath)
+    override val searchRoots: List<org.jetbrains.kotlin.konan.file.File> get() = emptyList()
 
-    override val searchRoots: List<org.jetbrains.kotlin.konan.file.File> get() = listOf(commonRoot, platformRoot)
+    private val shortMap = dependencies
+        .map { org.jetbrains.kotlin.konan.file.File(it.absolutePath) }
+        .associateBy { it.name.removeSuffix(KLIB_FILE_EXTENSION_WITH_DOT) }
 
     override fun resolve(givenPath: String): org.jetbrains.kotlin.konan.file.File {
         val path = Paths.get(givenPath)
         return when {
             path.isAbsolute -> org.jetbrains.kotlin.konan.file.File(path)
             else -> {
-                val commonLib = commonRoot.child(givenPath)
-                if (commonLib.exists) {
-                    return commonLib
-                }
+                val file = shortMap[givenPath]
+                if (file != null) 
+                    return file
 
-                val platformLib = platformRoot.child(givenPath)
-                if (platformLib.exists)
-                    return platformLib
-
-                throw Exception("Cannot resolve library with $commonRoot and $platformRoot: $givenPath")
+                println("Cannot resolve library $givenPath with the following dependencies:")
+                println(dependencies.joinToString(prefix = "  ", separator = "\n  "))
+                throw Exception("Cannot resolve library '$givenPath' with $shortMap")
             }
         }
     }
 
-    override fun defaultLinks(noStdLib: Boolean, noDefaultLibs: Boolean): List<org.jetbrains.kotlin.konan.file.File> {
-        val list = mutableListOf<org.jetbrains.kotlin.konan.file.File>()
-
-        if (!noStdLib) {
-            list += commonRoot.child("stdlib")
-        }
-
-        if (!noDefaultLibs) {
-            Files
-                .list(platformPath)
-                .map { org.jetbrains.kotlin.konan.file.File(it) }
-                .collect(Collectors.toCollection { list })
-        }
-
-        return list
-    }
+    override fun defaultLinks(noStdLib: Boolean, noDefaultLibs: Boolean): List<org.jetbrains.kotlin.konan.file.File> =
+        emptyList()
 }
