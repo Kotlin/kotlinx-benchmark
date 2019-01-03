@@ -60,7 +60,7 @@ private fun Project.createNativeBenchmarkCompileTask(
 ): KotlinNativeCompilation {
 
     val benchmarkBuildDir = benchmarkBuildDir(extension, config)
-    val benchmarkCompilation = compilation.target.compilations.create("benchmark")
+    val benchmarkCompilation = compilation.target.compilations.create("benchmark") as KotlinNativeCompilation
     val compileTask = tasks.getByName(benchmarkCompilation.compileKotlinTaskName) as KotlinNativeCompile
 
     benchmarkCompilation.apply {
@@ -75,11 +75,13 @@ private fun Project.createNativeBenchmarkCompileTask(
             description = "Compile Native benchmark source files for '${config.name}'"
             destinationDir = file("$benchmarkBuildDir/classes")
             outputKind = CompilerOutputKind.PROGRAM
+            optimized = true
+            debuggable = false
             entryPoint("org.jetbrains.gradle.benchmarks.generated.main") 
             dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}")
         }
     }
-    return benchmarkCompilation as KotlinNativeCompilation
+    return benchmarkCompilation
 }
 
 fun Project.createNativeBenchmarkExecTask(
@@ -99,8 +101,10 @@ fun Project.createNativeBenchmarkExecTask(
         // Create a filtering output stream, that would pass lines to output, unless special line ####BEGIN_REPORT#### comes
         // then stop piping and start saving to file, then switch back on ####END_REPORT####
         standardOutput = FileOutputStream(reportFile)
+        dependsOn(nativeTask)
         doFirst {
             reportsDir.mkdirs()
+            println("Running benchmarks for ${config.name}")
         }
     }
 }

@@ -47,6 +47,7 @@ fun Project.createJsBenchmarkExecTask(
         dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_DEPENDENCIES_SUFFIX}")
         doFirst {
             reportsDir.mkdirs()
+            println("Running benchmarks for ${config.name}")
         }
     }
 }

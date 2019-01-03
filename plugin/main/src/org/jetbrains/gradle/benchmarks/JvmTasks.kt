@@ -79,6 +79,7 @@ fun Project.createJvmBenchmarkExecTask(
         dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}")
         doFirst {
             reportsDir.mkdirs()
+            println("Running benchmarks for ${config.name}")
         }
     }
 }

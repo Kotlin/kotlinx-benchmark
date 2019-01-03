@@ -50,9 +50,6 @@ open class NativeSourceGeneratorTask
 
             val library = createKonanLibrary(konanFile, ABI_VERSION, konanTarget, false)
             val unresolvedDependencies = library.unresolvedDependencies
-
-            println("Library: ${library.libraryName}, ${library.targetList}, $unresolvedDependencies")
-
             val storageManager = LockBasedStorageManager()
 
             val module = factory.createDescriptorAndNewBuiltIns(library, versionSpec, storageManager)
