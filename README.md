@@ -1,6 +1,6 @@
 # Setting up
 
-In `settings.gradle` to enable my bintray repository for plugin lookup
+Add repository in `settings.gradle` to enable my bintray repository for plugin lookup
 
 ```groovy
 pluginManagement {
