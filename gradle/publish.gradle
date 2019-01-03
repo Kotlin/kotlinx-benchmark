@@ -1,0 +1,101 @@
+import java.nio.file.Files
+import java.nio.file.Paths
+
+// Configures publishing of Maven artifacts to Bintray
+
+apply plugin: 'maven'
+apply plugin: 'maven-publish'
+apply plugin: 'com.jfrog.bintray'
+
+apply from: project.rootProject.file('gradle/pom.gradle')
+
+// Load `local.properties` file, if it exists. You can put your bintrayUser and bintrayApiKey values there, that file is ignored by git
+if (Files.exists(Paths.get("$project.rootDir/local.properties"))) {
+    def localProperties = new Properties()
+    localProperties.load(new FileInputStream("$project.rootDir/local.properties"))
+    localProperties.each { prop -> project.ext.set(prop.key, prop.value) }
+} 
+
+// Create empty jar for sources classifier to satisfy maven requirements
+task stubSources(type: Jar) {
+    classifier = 'sources'
+}
+
+// Create empty jar for javadoc classifier to satisfy maven requirements
+task stubJavadoc(type: Jar) {
+    classifier = 'javadoc'
+}
+
+// Configure publishing
+publishing {
+    repositories {
+        maven {
+            url = "https://${project.bintrayOrg}.bintray.com/${project.bintrayRepository}"
+        }
+    }
+
+    // Process each publication we have in this project
+    publications.all { publication ->
+        // apply changes to pom.xml files, see pom.gradle
+        pom.withXml(configureMavenCentralMetadata)
+
+        if (publication.name == 'kotlinMultiplatform') {
+            // for our root metadata publication, set artifactId with a package and project name
+            publication.artifactId = "$bintrayPackage-$project.name"
+        } else {
+            // for targets, set artifactId with a package, project name and target name (e.g. iosX64)
+            publication.artifactId = "$bintrayPackage-$project.name-$publication.name"
+        }
+    }
+
+    // Patch publications with fake javadoc 
+    kotlin.targets.all { target ->
+        def targetPublication = publications.findByName(target.name)
+        if (targetPublication != null) {
+            targetPublication.artifact stubJavadoc
+        }
+    }
+
+    // Remove gradle metadata publishing from all targets which are not native
+    kotlin.targets.all { target ->
+        if (target.platformType.name != 'native') {
+            def publication = publishing.publications[targetName]
+            publication.setModuleDescriptorGenerator(null)
+            tasks.matching { it.name == "generateMetadataFileFor${name.capitalize()}Publication" }.all {
+                onlyIf { false }
+            }
+        }
+    }
+}
+
+bintray {
+    user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
+    key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
+    publications = ['pluginPublication']
+
+    pkg {
+        userOrg = project.bintrayOrg
+        repo = project.bintrayRepository
+        name = project.bintrayPackage
+        licenses = ['Apache-2.0']
+        vcsUrl = vcs
+        version {
+            name = project.version
+            vcsTag = project.version
+            released = new Date()
+        }
+    }
+}
+
+// kludge for correct pom data
+bintrayUpload.dependsOn publishToMavenLocal
+
+// This is for easier debugging of bintray uploading problems
+bintrayUpload.doFirst {
+    publications = project.publishing.publications.findAll {
+        !it.name.contains('-test') && it.name != 'kotlinMultiplatform'
+    }.collect {
+        println("Uploading artifact '$it.groupId:$it.artifactId:$it.version' from publication '$it.name'")
+        it.name
+    }
+}
