@@ -42,7 +42,8 @@ fun createJmhGenerationRuntimeConfiguration(
 fun Project.createJvmBenchmarkGenerateSourceTask(
     extension: BenchmarksExtension,
     config: BenchmarkConfiguration,
-    classpath: Configuration,
+    workerClasspath: FileCollection,
+    compileClasspath: FileCollection,
     compilationTask: String,
     compilationOutput: FileCollection
 ) {
@@ -51,7 +52,8 @@ fun Project.createJvmBenchmarkGenerateSourceTask(
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Generate JMH source files for '${config.name}'"
         dependsOn(compilationTask)
-        runtimeClasspath = classpath
+        runtimeClasspath = workerClasspath
+        inputCompileClasspath = compileClasspath
         inputClassesDirs = compilationOutput
         outputResourcesDir = file("$benchmarkBuildDir/resources")
         outputSourcesDir = file("$benchmarkBuildDir/sources")

@@ -15,6 +15,10 @@ open class JmhBytecodeGeneratorTask
     @PathSensitive(PathSensitivity.ABSOLUTE)
     lateinit var inputClassesDirs: FileCollection
 
+    @InputFiles
+    @PathSensitive(PathSensitivity.ABSOLUTE)
+    lateinit var inputCompileClasspath: FileCollection
+
     @OutputDirectory
     lateinit var outputResourcesDir: File
 
@@ -27,11 +31,15 @@ open class JmhBytecodeGeneratorTask
     
     @TaskAction
     fun generate() {
-        println("Worker classpath: ${runtimeClasspath.files}")
         workerExecutor.submit(JmhBytecodeGeneratorWorker::class.java) { config ->
-            config.isolationMode = IsolationMode.CLASSLOADER
+            config.isolationMode = IsolationMode.PROCESS
             config.classpath = runtimeClasspath
-            config.params(inputClassesDirs.files, outputSourcesDir, outputResourcesDir)
+/*
+            config.forkMode = ForkMode.ALWAYS
+            config.forkOptions.jvmArgs = listOf("-verbose:class")
+*/
+            config.params(inputClassesDirs.files, inputCompileClasspath.files, outputSourcesDir, outputResourcesDir)
         }
+        workerExecutor.await()
     }
 }

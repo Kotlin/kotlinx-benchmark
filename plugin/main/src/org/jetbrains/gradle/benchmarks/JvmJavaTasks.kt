@@ -14,7 +14,7 @@ fun Project.configureJavaPlugin(
     val sourceSet = configureJavaSourceSet(this, config)
 
     // we need JMH generator runtime configuration for each BenchmarkConfiguration since version can be different
-    val jmhRuntimeConfiguration = createJmhGenerationRuntimeConfiguration(
+    val workerClasspath = createJmhGenerationRuntimeConfiguration(
         this,
         config
     )
@@ -23,7 +23,8 @@ fun Project.configureJavaPlugin(
     createJvmBenchmarkGenerateSourceTask(
         extension,
         config,
-        jmhRuntimeConfiguration,
+        workerClasspath,
+        sourceSet.compileClasspath,
         sourceSet.classesTaskName,
         sourceSet.output
     )

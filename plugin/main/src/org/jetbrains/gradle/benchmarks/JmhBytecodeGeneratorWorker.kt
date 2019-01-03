@@ -15,6 +15,7 @@
  */
 package org.jetbrains.gradle.benchmarks
 
+import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.generators.core.*
 import org.openjdk.jmh.generators.reflection.*
 import org.openjdk.jmh.util.*
@@ -25,7 +26,8 @@ import javax.inject.*
 
 class JmhBytecodeGeneratorWorker
 @Inject constructor(
-    private val compiledBytecodeDirectories: Set<File>,
+    private val inputClasses: Set<File>,
+    private val inputClasspath: Set<File>,
     private val outputSourceDirectory: File,
     private val outputResourceDirectory: File
 ) : Runnable {
@@ -38,56 +40,73 @@ class JmhBytecodeGeneratorWorker
         cleanup(outputSourceDirectory)
         cleanup(outputResourceDirectory)
 
-        val urls = compiledBytecodeDirectories.map { it.toURI().toURL() }.toTypedArray()
+        val urls = (inputClasses + inputClasspath).map { it.toURI().toURL() }.toTypedArray()
 
         // Include compiled bytecode on classpath, in case we need to
         // resolve the cross-class dependencies
-        val introspectionClassLoader = URLClassLoader(urls, javaClass.classLoader)
+        val benchmarkAnnotation = Benchmark::class.java
 
         val currentThread = Thread.currentThread()
         val originalClassLoader = currentThread.contextClassLoader
+        
+        // TODO: This is some magic I don't understand yet
+        // Somehow Benchmark class is loaded into a Launcher/App class loader and not current context class loader
+        // Hence, if parent classloader is set to originalClassLoader then Benchmark annotation check doesn't work 
+        // inside JMH bytecode gen. This hack seem to work, but we need to understand
+        val introspectionClassLoader = URLClassLoader(urls, benchmarkAnnotation.classLoader)
+        
+/*
+        println("Original_Parent_ParentCL: ${originalClassLoader.parent.parent}")
+        println("Original_ParentCL: ${originalClassLoader.parent}")
+        println("OriginalCL: $originalClassLoader")
+        println("IntrospectCL: $introspectionClassLoader")
+        println("BenchmarkCL: ${benchmarkAnnotation.classLoader}")
+*/
+
         try {
             currentThread.contextClassLoader = introspectionClassLoader
-
-            val destination = FileSystemDestination(outputResourceDirectory, outputSourceDirectory)
-
-            val allFiles = HashMap<File, Collection<File>>(urls.size)
-            for (directory in compiledBytecodeDirectories) {
-                val classes = FileUtils.getClasses(directory)
-                allFiles[directory] = classes
-            }
-            println("Writing out Java source to $outputSourceDirectory and resources to $outputResourceDirectory")
-
-            for ((directory, files) in allFiles) {
-                println("Processing " + files.size + " classes from " + directory)
-                val source = RFGeneratorSource()
-                val directoryPath = directory.absolutePath
-                for (file in files) {
-                    val resourceName = file.absolutePath.substring(directoryPath.length + 1)
-                    if (resourceName.endsWith(classSuffix)) {
-                        val className = resourceName.replace('\\', '.').replace('/', '.')
-                        val clazz = Class.forName(className.removeSuffix(classSuffix), false, introspectionClassLoader)
-                        source.processClasses(clazz)
-                    }
-                }
-
-                val gen = BenchmarkGenerator()
-                gen.generate(source, destination)
-                gen.complete(source, destination)
-            }
-
-
-            if (destination.hasErrors()) {
-                var errCount = 0
-                val sb = StringBuilder()
-                for (e in destination.errors) {
-                    errCount++
-                    sb.append("  - ").append(e.toString()).append("\n")
-                }
-                throw RuntimeException("Generation of JMH bytecode failed with " + errCount + "errors:\n" + sb)
-            }
+            generateJMH(urls, introspectionClassLoader)
         } finally {
             currentThread.contextClassLoader = originalClassLoader
+        }
+    }
+
+    private fun generateJMH(urls: Array<URL>, introspectionClassLoader: URLClassLoader) {
+        val destination = FileSystemDestination(outputResourceDirectory, outputSourceDirectory)
+
+        val allFiles = HashMap<File, Collection<File>>(urls.size)
+        for (directory in inputClasses) {
+            val classes = FileUtils.getClasses(directory)
+            allFiles[directory] = classes
+        }
+
+        val source = RFGeneratorSource()
+        for ((directory, files) in allFiles) {
+            println("Analyzing ${files.size} files from $directory")
+            val directoryPath = directory.absolutePath
+            for (file in files) {
+                val resourceName = file.absolutePath.substring(directoryPath.length + 1)
+                if (resourceName.endsWith(classSuffix)) {
+                    val className = resourceName.replace('\\', '.').replace('/', '.')
+                    val clazz = Class.forName(className.removeSuffix(classSuffix), false, introspectionClassLoader)
+                    source.processClasses(clazz)
+                }
+            }
+        }
+
+        println("Writing out Java source to $outputSourceDirectory and resources to $outputResourceDirectory")
+        val gen = BenchmarkGenerator()
+        gen.generate(source, destination)
+        gen.complete(source, destination)
+
+        if (destination.hasErrors()) {
+            var errCount = 0
+            val sb = StringBuilder()
+            for (e in destination.errors) {
+                errCount++
+                sb.append("  - ").append(e.toString()).append("\n")
+            }
+            throw RuntimeException("Generation of JMH bytecode failed with " + errCount + "errors:\n" + sb)
         }
     }
 }

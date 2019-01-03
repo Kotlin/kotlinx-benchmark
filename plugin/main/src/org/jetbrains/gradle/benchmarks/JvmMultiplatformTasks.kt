@@ -10,12 +10,13 @@ fun Project.processJvmCompilation(
 ) {
     configureMultiplatformJvmCompilation(this, config, compilation)
 
-    val classpath = createJmhGenerationRuntimeConfiguration(this, config)
+    val workerClasspath = createJmhGenerationRuntimeConfiguration(this, config)
 
     createJvmBenchmarkGenerateSourceTask(
         extension,
         config,
-        classpath,
+        workerClasspath,
+        compilation.compileDependencyFiles,
         compilation.compileAllTaskName,
         compilation.output.allOutputs
     )
