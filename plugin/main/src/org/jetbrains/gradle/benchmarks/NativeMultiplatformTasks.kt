@@ -3,6 +3,8 @@ package org.jetbrains.gradle.benchmarks
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.tasks.*
+import org.jetbrains.kotlin.konan.target.*
 
 fun Project.processNativeCompilation(
     extension: BenchmarksExtension,
@@ -18,8 +20,8 @@ fun Project.processNativeCompilation(
         compilation.output.allOutputs
     )
 
+    val benchmarkCompilation = createNativeBenchmarkCompileTask(extension, config, compilation)
 /*
-    val benchmarkCompilation = createJsBenchmarkCompileTask(extension, config, compilation)
     createJsBenchmarkDependenciesTask(extension, config, benchmarkCompilation)
     createJsBenchmarkExecTask(extension, config, benchmarkCompilation)
 */
@@ -50,4 +52,33 @@ private fun Project.createNativeBenchmarkGenerateSourceTask(
         outputResourcesDir = file("$benchmarkBuildDir/resources")
         outputSourcesDir = file("$benchmarkBuildDir/sources")
     }
+}
+
+private fun Project.createNativeBenchmarkCompileTask(
+    extension: BenchmarksExtension,
+    config: BenchmarkConfiguration,
+    compilation: KotlinNativeCompilation
+): KotlinNativeCompilation {
+
+    val benchmarkBuildDir = benchmarkBuildDir(extension, config)
+    val benchmarkCompilation = compilation.target.compilations.create("benchmark")
+    val compileTask = tasks.getByName(benchmarkCompilation.compileKotlinTaskName) as KotlinNativeCompile
+
+    benchmarkCompilation.apply {
+        val sourceSet = kotlinSourceSets.single()
+        sourceSet.kotlin.srcDir(file("$benchmarkBuildDir/sources"))
+        sourceSet.dependencies {
+            implementation(compilation.compileDependencyFiles)
+            implementation(compilation.output.allOutputs)
+        }
+        compileTask.apply {
+            group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
+            description = "Compile Native benchmark source files for '${config.name}'"
+            destinationDir = file("$benchmarkBuildDir/classes")
+            outputKind = CompilerOutputKind.PROGRAM
+            entryPoint("org.jetbrains.gradle.benchmarks.generated.main") 
+            dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}")
+        }
+    }
+    return benchmarkCompilation as KotlinNativeCompilation
 }

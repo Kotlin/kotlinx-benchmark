@@ -1,19 +1,14 @@
 package org.jetbrains.gradle.benchmarks
 
-import com.squareup.kotlinpoet.*
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.workers.*
 import org.jetbrains.kotlin.config.*
-import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.konan.library.*
 import org.jetbrains.kotlin.konan.target.*
 import org.jetbrains.kotlin.konan.util.*
 import org.jetbrains.kotlin.konan.util.KonanFactories.DefaultDeserializedDescriptorFactory
-import org.jetbrains.kotlin.name.*
-import org.jetbrains.kotlin.resolve.*
-import org.jetbrains.kotlin.resolve.descriptorUtil.*
 import org.jetbrains.kotlin.storage.*
 import java.io.*
 import java.nio.file.*
@@ -74,78 +69,12 @@ open class NativeSourceGeneratorTask
             val forwardDeclarationsModule = dependenciesResolved.forwardDeclarationsModule
 
             module.setDependencies(listOf(module) + dependenciesDescriptors + forwardDeclarationsModule)
-            val benchmarks = mutableListOf<ClassName>()
-            processPackage(module, module.getPackage(FqName.ROOT)) {
-                benchmarks.generateBenchmark(it)
-            }
-
-
-/*
-            val defaultModules = mutableListOf<ModuleDescriptorImpl>()
-            if (!module.isKonanStdlib()) {
-                pathResolver.defaultLinks(false, true)
-                    .mapTo(defaultModules) {
-                        DefaultDeserializedDescriptorFactory.createDescriptor(it, versionSpec, storageManager, module.builtIns)
-                    }
-            }
-            val allModules = defaultModules + module
-            allModules.forEach { it.setDependencies(allModules) }
-*/
-
+            val generator = SuiteSourceGenerator(module, outputSourcesDir, Platform.NATIVE)
+            generator.generate()
         }
     }
 
 
-    fun MutableList<ClassName>.generateBenchmark(original: ClassDescriptor) {
-        println("Native benchmark: $original")
-        val originalClass = ClassName(original.fqNameSafe.parent().toString(), original.fqNameSafe.shortName().toString())
-        val packageName = original.fqNameSafe.parent().child(Name.identifier("generated")).toString()
-        val benchmarkName = original.fqNameSafe.shortName().toString() + "_runner"
-        val benchmarkClass = ClassName(packageName, benchmarkName)
-
-        val benchmarks = DescriptorUtils.getAllDescriptors(original.unsubstitutedMemberScope)
-            .filterIsInstance<FunctionDescriptor>()
-            .filter { it.annotations.any { it.fqName.toString() == "org.jetbrains.gradle.benchmarks.Benchmark" } }
-
-        val file = FileSpec.builder(packageName, benchmarkName).apply {
-            declareClass(benchmarkClass) {
-                property("_instance", originalClass) {
-                    addModifiers(KModifier.PRIVATE)
-                    initializer(codeBlock {
-                        addStatement("%T()", originalClass)
-                    })
-                }
-
-                for (benchmark in benchmarks) {
-                    val functionName = benchmark.name.toString()
-                    addFunction(
-                        FunSpec.builder(functionName)
-                            //                        .addStatement("println(%P)", "Benchmarking $functionName…")
-//                            .beginControlFlow("repeat(1000)")
-                            .addStatement("_instance.%N()", functionName)
-                            //                          .endControlFlow()
-                            .build()
-                    )
-                }
-
-                addFunction(FunSpec.builder("addBenchmarkToSuite").apply {
-                    addParameter("suite", Dynamic)
-                    for (benchmark in benchmarks) {
-                        val functionName = benchmark.name.toString()
-                        addStatement(
-                            "suite.add(%P) { %N() }",
-                            "${originalClass.canonicalName}.$functionName",
-                            functionName
-                        )
-                    }
-                }.build())
-
-            }
-            add(benchmarkClass)
-        }.build()
-
-        file.writeTo(outputSourcesDir)
-    }
 }
 
 class MySearchPathResolverWithTarget(
@@ -168,11 +97,11 @@ class MySearchPathResolverWithTarget(
                 if (commonLib.exists) {
                     return commonLib
                 }
-    
+
                 val platformLib = platformRoot.child(givenPath)
                 if (platformLib.exists)
                     return platformLib
-    
+
                 throw Exception("Cannot resolve library with $commonRoot and $platformRoot: $givenPath")
             }
         }

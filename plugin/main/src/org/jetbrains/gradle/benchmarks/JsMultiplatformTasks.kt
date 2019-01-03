@@ -57,29 +57,6 @@ private fun Project.createJsBenchmarkCompileTask(
     return benchmarkCompilation as KotlinJsCompilation
 }
 
-
-private fun Project.createJsBenchmarkExecTask(
-    extension: BenchmarksExtension,
-    config: BenchmarkConfiguration,
-    runtimeClasspath: FileCollection
-) {
-    val benchmarkBuildDir = benchmarkBuildDir(extension, config)
-    task<Exec>("${config.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}", depends = "benchmark") {
-        group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
-        description = "Execute benchmark for '${config.name}'"
-
-        val compiledOutput = file("$benchmarkBuildDir/classes")
-        val resourcesOutput = file("$benchmarkBuildDir/resources")
-
-        commandLine = "node $compiledOutput".split(' ')
-
-        dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}")
-        tasks.getByName("benchmark").dependsOn(this)
-    }
-}
-
-
-
 private fun Project.createJsBenchmarkGenerateSourceTask(
     extension: BenchmarksExtension,
     config: BenchmarkConfiguration,
