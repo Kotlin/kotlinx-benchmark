@@ -2,9 +2,11 @@ package org.jetbrains.gradle.benchmarks
 
 import org.gradle.api.*
 import org.gradle.api.file.*
+import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.tasks.*
 import org.jetbrains.kotlin.konan.target.*
+import java.io.*
 
 fun Project.processNativeCompilation(
     extension: BenchmarksExtension,
@@ -21,10 +23,7 @@ fun Project.processNativeCompilation(
     )
 
     val benchmarkCompilation = createNativeBenchmarkCompileTask(extension, config, compilation)
-/*
-    createJsBenchmarkDependenciesTask(extension, config, benchmarkCompilation)
-    createJsBenchmarkExecTask(extension, config, benchmarkCompilation)
-*/
+    createNativeBenchmarkExecTask(extension, config, benchmarkCompilation)
 }
 
 private fun configureMultiplatformNativeCompilation(
@@ -81,4 +80,27 @@ private fun Project.createNativeBenchmarkCompileTask(
         }
     }
     return benchmarkCompilation as KotlinNativeCompilation
+}
+
+fun Project.createNativeBenchmarkExecTask(
+    extension: BenchmarksExtension,
+    config: BenchmarkConfiguration,
+    compilation: KotlinNativeCompilation
+) {
+    val reportsDir = buildDir.resolve(extension.buildDir).resolve("reports")
+    val reportFile = reportsDir.resolve("${config.name}.json")
+    task<Exec>("${config.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}", depends = "benchmark") {
+        group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
+        description = "Executes benchmark for '${config.name}'"
+        //setScript(file("$nodeModulesDir/${compilation.output}"))
+        val nativeTask = tasks.getByName(compilation.compileKotlinTaskName) as KotlinNativeCompile
+        executable  = nativeTask.outputFile.get().absolutePath
+        // TODO: add line-protocol for saving report. 
+        // Create a filtering output stream, that would pass lines to output, unless special line ####BEGIN_REPORT#### comes
+        // then stop piping and start saving to file, then switch back on ####END_REPORT####
+        standardOutput = FileOutputStream(reportFile)
+        doFirst {
+            reportsDir.mkdirs()
+        }
+    }
 }
