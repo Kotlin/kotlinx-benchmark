@@ -16,8 +16,7 @@ fun Project.configureJavaPlugin(
     // we need JMH generator runtime configuration for each BenchmarkConfiguration since version can be different
     val jmhRuntimeConfiguration = createJmhGenerationRuntimeConfiguration(
         this,
-        config,
-        sourceSet.runtimeClasspath
+        config
     )
 
     // Create a task that will process output bytecode and generate benchmark Java source code

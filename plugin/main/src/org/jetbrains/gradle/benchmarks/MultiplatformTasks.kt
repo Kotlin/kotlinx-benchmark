@@ -29,5 +29,8 @@ fun Project.configureKotlinMultiplatform(
         is KotlinJsCompilation -> {
             processJsCompilation(extension, config, compilation)
         }
+        is KotlinNativeCompilation -> {
+            processNativeCompilation(extension, config, compilation)
+        }
     }
 }

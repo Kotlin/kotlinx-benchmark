@@ -15,8 +15,6 @@
  */
 package org.jetbrains.gradle.benchmarks
 
-import org.openjdk.jmh.generators.asm.*
-import org.openjdk.jmh.generators.bytecode.*
 import org.openjdk.jmh.generators.core.*
 import org.openjdk.jmh.generators.reflection.*
 import org.openjdk.jmh.util.*
@@ -29,9 +27,12 @@ class JmhBytecodeGeneratorWorker
 @Inject constructor(
     private val compiledBytecodeDirectories: Set<File>,
     private val outputSourceDirectory: File,
-    private val outputResourceDirectory: File,
-    private val generatorType: String
+    private val outputResourceDirectory: File
 ) : Runnable {
+
+    companion object {
+        private const val classSuffix = ".class"
+    }
 
     override fun run() {
         cleanup(outputSourceDirectory)
@@ -41,45 +42,34 @@ class JmhBytecodeGeneratorWorker
 
         // Include compiled bytecode on classpath, in case we need to
         // resolve the cross-class dependencies
-        val amendedCL = URLClassLoader(urls, this.javaClass.classLoader)
+        val introspectionClassLoader = URLClassLoader(urls, javaClass.classLoader)
 
         val currentThread = Thread.currentThread()
-        val ocl = currentThread.contextClassLoader
+        val originalClassLoader = currentThread.contextClassLoader
         try {
-            currentThread.contextClassLoader = amendedCL
+            currentThread.contextClassLoader = introspectionClassLoader
 
             val destination = FileSystemDestination(outputResourceDirectory, outputSourceDirectory)
 
-            val allClasses = HashMap<File, Collection<File>>(urls.size)
-            for (compiledBytecodeDirectory in compiledBytecodeDirectories) {
-                val classes = FileUtils.getClasses(compiledBytecodeDirectory)
-                println("Processing " + classes.size + " classes from " + compiledBytecodeDirectory + " with \"" + generatorType + "\" generator")
-                allClasses[compiledBytecodeDirectory] = classes
+            val allFiles = HashMap<File, Collection<File>>(urls.size)
+            for (directory in compiledBytecodeDirectories) {
+                val classes = FileUtils.getClasses(directory)
+                allFiles[directory] = classes
             }
             println("Writing out Java source to $outputSourceDirectory and resources to $outputResourceDirectory")
 
-            for ((compiledBytecodeDirectory, classes) in allClasses) {
-                val source =
-                    when {
-                        generatorType.equals(JmhBytecodeGenerator.GENERATOR_TYPE_ASM, ignoreCase = true) -> {
-                            ASMGeneratorSource().apply {
-                                processClasses(classes)
-                            }
-                        }
-                        else -> {
-                            val src = RFGeneratorSource()
-                            for (f in classes) {
-                                var name = f.absolutePath.substring(compiledBytecodeDirectory.absolutePath.length + 1)
-                                name = name.replace("\\\\".toRegex(), ".")
-                                name = name.replace("/".toRegex(), ".")
-                                if (name.endsWith(".class")) {
-                                    val clazz = Class.forName(name.substring(0, name.length - 6), false, amendedCL)
-                                    src.processClasses(clazz)
-                                }
-                            }
-                            src
-                        }
+            for ((directory, files) in allFiles) {
+                println("Processing " + files.size + " classes from " + directory)
+                val source = RFGeneratorSource()
+                val directoryPath = directory.absolutePath
+                for (file in files) {
+                    val resourceName = file.absolutePath.substring(directoryPath.length + 1)
+                    if (resourceName.endsWith(classSuffix)) {
+                        val className = resourceName.replace('\\', '.').replace('/', '.')
+                        val clazz = Class.forName(className.removeSuffix(classSuffix), false, introspectionClassLoader)
+                        source.processClasses(clazz)
                     }
+                }
 
                 val gen = BenchmarkGenerator()
                 gen.generate(source, destination)
@@ -97,7 +87,7 @@ class JmhBytecodeGeneratorWorker
                 throw RuntimeException("Generation of JMH bytecode failed with " + errCount + "errors:\n" + sb)
             }
         } finally {
-            currentThread.contextClassLoader = ocl
+            currentThread.contextClassLoader = originalClassLoader
         }
     }
 }

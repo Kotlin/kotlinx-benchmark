@@ -4,7 +4,6 @@ import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.workers.*
-import org.openjdk.jmh.generators.bytecode.*
 import java.io.*
 import javax.inject.*
 
@@ -12,7 +11,8 @@ import javax.inject.*
 @CacheableTask
 open class JmhBytecodeGeneratorTask
 @Inject constructor(private val workerExecutor: WorkerExecutor) : DefaultTask() {
-    @InputFiles @PathSensitive(PathSensitivity.RELATIVE)
+    @InputFiles
+    @PathSensitive(PathSensitivity.ABSOLUTE)
     lateinit var inputClassesDirs: FileCollection
 
     @OutputDirectory
@@ -21,18 +21,17 @@ open class JmhBytecodeGeneratorTask
     @OutputDirectory
     lateinit var outputSourcesDir: File
 
-    @InputFiles @PathSensitive(PathSensitivity.RELATIVE)
-    lateinit var runtimeClasspath: Set<File>
-
-    @Input
-    var generatorType = JmhBytecodeGenerator.GENERATOR_TYPE_DEFAULT
-
+    @InputFiles
+    @PathSensitive(PathSensitivity.ABSOLUTE)
+    lateinit var runtimeClasspath: FileCollection
+    
     @TaskAction
     fun generate() {
+        println("Worker classpath: ${runtimeClasspath.files}")
         workerExecutor.submit(JmhBytecodeGeneratorWorker::class.java) { config ->
-            config.isolationMode = IsolationMode.PROCESS
+            config.isolationMode = IsolationMode.CLASSLOADER
             config.classpath = runtimeClasspath
-            config.params(inputClassesDirs.files, outputSourcesDir, outputResourcesDir, generatorType)
+            config.params(inputClassesDirs.files, outputSourcesDir, outputResourcesDir)
         }
     }
 }

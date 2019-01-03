@@ -24,19 +24,17 @@ fun Project.createJvmBenchmarkCompileTask(
 
 fun createJmhGenerationRuntimeConfiguration(
     project: Project,
-    config: BenchmarkConfiguration,
-    classPath: FileCollection
+    config: BenchmarkConfiguration
 ): Configuration {
     // This configuration defines classpath for JMH generator, it should have everything available via reflection
-    return project.configurations.create("${config.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}").apply {
+    return project.configurations.create("${config.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}CP").apply {
         isVisible = false
         description = "JMH Generator Runtime Configuration for '${config.name}'"
 
+        val dependencies = project.dependencies
         @Suppress("UnstableApiUsage")
         defaultDependencies {
-            it.add(project.dependencies.create("${BenchmarksPlugin.JMH_GENERATOR_DEPENDENCY}${config.jmhVersion}"))
-            // TODO: runtimeClasspath or compileClasspath? how to avoid premature resolve()?
-            it.add(project.dependencies.create(classPath))
+            it.add(dependencies.create("${BenchmarksPlugin.JMH_GENERATOR_DEPENDENCY}${config.jmhVersion}"))
         }
     }
 }
@@ -53,7 +51,7 @@ fun Project.createJvmBenchmarkGenerateSourceTask(
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Generate JMH source files for '${config.name}'"
         dependsOn(compilationTask)
-        runtimeClasspath = classpath.resolve()
+        runtimeClasspath = classpath
         inputClassesDirs = compilationOutput
         outputResourcesDir = file("$benchmarkBuildDir/resources")
         outputSourcesDir = file("$benchmarkBuildDir/sources")

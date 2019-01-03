@@ -47,7 +47,7 @@ open class JsSourceGeneratorTask
                 val storageManager = LockBasedStorageManager()
                 val languageVersionSettings = configuration.languageVersionSettings
 
-                val skipCheck = languageVersionSettings.getFlag(AnalysisFlags.skipMetadataVersionCheck)
+                val skipCheck = true // languageVersionSettings.getFlag(AnalysisFlags.skipMetadataVersionCheck)
                 assert(metadata.version.isCompatible() || skipCheck) {
                     "Expected JS metadata version " + JsMetadataVersion.INSTANCE + ", but actual metadata version is " + metadata.version
                 }
