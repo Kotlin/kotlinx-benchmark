@@ -17,7 +17,7 @@ plugins {
 gradlePlugin {
     plugins {
         benchmarkPlugin {
-            id = "org.jetbrains.gradle.benchmarks"
+            id = "org.jetbrains.gradle.benchmarks.plugin"
             implementationClass = "org.jetbrains.gradle.benchmarks.BenchmarksPlugin"
         }
     }

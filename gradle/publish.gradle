@@ -26,7 +26,9 @@ task stubJavadoc(type: Jar) {
     classifier = 'javadoc'
 }
 
-// Configure publishing
+task emptyJar(type: Jar) {
+}
+
 publishing {
     repositories {
         maven {
@@ -35,34 +37,70 @@ publishing {
     }
 
     // Process each publication we have in this project
-    publications.all { publication ->
+    publications.all { 
         // apply changes to pom.xml files, see pom.gradle
         pom.withXml(configureMavenCentralMetadata)
 
-        if (publication.name == 'kotlinMultiplatform') {
-            // for our root metadata publication, set artifactId with a package and project name
-            publication.artifactId = "$bintrayPackage-$project.name"
-        } else {
-            // for targets, set artifactId with a package, project name and target name (e.g. iosX64)
-            publication.artifactId = "$bintrayPackage-$project.name-$publication.name"
+        def type = it.name
+        switch (type) {
+            case 'kotlinMultiplatform':
+                task sourcesJar(type: Jar) {
+                    classifier 'sources'
+                    from kotlin.sourceSets.commonMain.kotlin
+                }
+
+                it.artifactId = "$project.name-native"
+                it.artifact emptyJar
+                it.artifact stubJavadoc
+                it.artifact sourcesJar
+                break
+            case 'metadata':
+                it.artifactId = "$project.name"
+                break
+            case 'jvm':
+            case 'js':
+            case 'native':
+                it.artifactId = "$project.name-$type"
+                break
+        }
+
+
+        pom.withXml { pom ->
+            def dependenciesNode = asNode().getAt("dependencies")[0]
+            if (dependenciesNode == null) return
+            dependenciesNode.dependency.each {
+                it.artifactId.each { node ->
+                    def artifactId = node.text()
+                    if (!artifactId.startsWith("kotlinx-io") || !artifactId.endsWith("native")) return
+
+                    switch (type) {
+                        case 'metadata':
+                            node.setValue("${artifactId[0..-8]}")
+                            break
+                        case 'jvm':
+                        case 'js':
+                            node.setValue("${artifactId[0..-8]}-$type")
+                            break
+                    }
+                }
+            }
         }
     }
 
-    // Patch publications with fake javadoc 
-    kotlin.targets.all { target ->
-        def targetPublication = publications.findByName(target.name)
-        if (targetPublication != null) {
-            targetPublication.artifact stubJavadoc
-        }
-    }
 
-    // Remove gradle metadata publishing from all targets which are not native
     kotlin.targets.all { target ->
-        if (target.platformType.name != 'native') {
-            def publication = publishing.publications[targetName]
-            publication.setModuleDescriptorGenerator(null)
-            tasks.matching { it.name == "generateMetadataFileFor${name.capitalize()}Publication" }.all {
-                onlyIf { false }
+        def publication = publishing.publications.findByName(target.name)
+
+        if (publication != null) {
+            publication.artifact stubJavadoc
+
+            if (target.platformType.name != 'native') {
+                publication.setModuleDescriptorGenerator(null)
+                tasks.matching { it.name == "generateMetadataFileFor${name.capitalize()}Publication" }.all {
+                    onlyIf { false }
+                }
+            } else {
+                publication.artifact emptyJar
             }
         }
     }
@@ -71,7 +109,6 @@ publishing {
 bintray {
     user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
     key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
-    publications = ['pluginPublication']
 
     pkg {
         userOrg = project.bintrayOrg
@@ -92,9 +129,7 @@ bintrayUpload.dependsOn publishToMavenLocal
 
 // This is for easier debugging of bintray uploading problems
 bintrayUpload.doFirst {
-    publications = project.publishing.publications.findAll {
-        !it.name.contains('-test') && it.name != 'kotlinMultiplatform'
-    }.collect {
+    publications = project.publishing.publications.findAll { !it.name.contains('-test') }.collect {
         println("Uploading artifact '$it.groupId:$it.artifactId:$it.version' from publication '$it.name'")
         it.name
     }

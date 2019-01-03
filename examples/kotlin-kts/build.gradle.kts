@@ -2,14 +2,13 @@
 
 import org.jetbrains.gradle.benchmarks.*
 import org.jetbrains.kotlin.allopen.gradle.*
-import org.jetbrains.kotlin.gradle.model.*
 import org.jetbrains.kotlin.gradle.tasks.*
 
 plugins {
     java
     kotlin("jvm") version "1.3.11"
     kotlin("plugin.allopen") version "1.3.11"
-    id("org.jetbrains.gradle.benchmarks") version "0.1-SNAPSHOT"
+    id("org.jetbrains.gradle.benchmarks.plugin") version "0.1-SNAPSHOT"
 }
 
 repositories {

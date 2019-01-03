@@ -13,7 +13,7 @@ rootProject.name = 'benchmarks'
 
 includeBuild("plugin") {
     dependencySubstitution {
-        substitute module('org.jetbrains.gradle.benchmarks:org.jetbrains.gradle.benchmarks.gradle.plugin') with project(':')
+        substitute module('org.jetbrains.gradle.benchmarks.plugin:org.jetbrains.gradle.benchmarks.plugin.gradle.plugin') with project(':')
     }
 }
 
