@@ -1,30 +1,5 @@
-
 plugins {
     id 'org.jetbrains.kotlin.multiplatform' version "1.3.11"
-    id 'org.jetbrains.kotlin.plugin.allopen' version "1.3.11"
-    id 'org.jetbrains.gradle.benchmarks' version '0.1-SNAPSHOT'
-    id 'com.moowork.node' version '1.2.0'
-}
-
-// Workaround the problem with Node downloading
-repositories.whenObjectAdded {
-    if (it instanceof IvyArtifactRepository) {
-        metadataSources {
-            artifact()
-        }
-    }
-}
-
-node {
-    version = "$node_version"
-    npmVersion = "$npm_version"
-    download = true
-    nodeModulesDir = file(buildDir)
-}
-
-// how to apply plugin to a specific source set?
-allOpen {
-    annotation("org.openjdk.jmh.annotations.State")
 }
 
 repositories {
@@ -59,7 +34,6 @@ kotlin {
         commonMain {
             dependencies {
                 implementation 'org.jetbrains.kotlin:kotlin-stdlib-common'
-                implementation project(":runtime")
             }
         }
         commonTest {
@@ -71,6 +45,7 @@ kotlin {
         jvmMain {
             dependencies {
                 implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+                compileOnly "org.openjdk.jmh:jmh-core:$jmhVersion"
             }
         }
         jvmTest {
@@ -95,18 +70,8 @@ kotlin {
         }
     }
 
-}
-
-// Configure benchmark
-benchmark {
-    // Setup configurations
-    configurations {
-        // This one matches compilation base name, e.g. 'jvm', 'jvmTest', etc
-        jvm {
-            jmhVersion = "1.21"
-        }
-        js
-        register("native")
-        
+    sourceSets.all {
+        kotlin.srcDirs = ["$it.name/src"]
+        resources.srcDirs = ["$it.name/resources"]
     }
 }

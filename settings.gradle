@@ -7,6 +7,8 @@ pluginManagement {
     }
 }
 
+enableFeaturePreview('GRADLE_METADATA')
+
 rootProject.name = 'benchmarks'
 
 includeBuild("plugin") {
@@ -18,3 +20,4 @@ includeBuild("plugin") {
 include "examples/kotlin"
 include "examples/kotlin-multiplatform"
 include "examples/kotlin-kts"
+include "runtime"

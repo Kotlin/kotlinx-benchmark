@@ -29,8 +29,6 @@ fun Project.createJsBenchmarkExecTask(
 ) {
     val node = project.extensions.getByType(NodeExtension::class.java)
     val nodeModulesDir = node.nodeModulesDir.resolve("node_modules")
-    val reportsDir = buildDir.resolve(extension.buildDir).resolve("reports")
-    val reportFile = reportsDir.resolve("${config.name}.json")
     task<NodeTask>("${config.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}", depends = "benchmark") {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Executes benchmark for '${config.name}'"
@@ -42,11 +40,13 @@ fun Project.createJsBenchmarkExecTask(
             // TODO: add line-protocol for saving report. 
             // Create a filtering output stream, that would pass lines to output, unless special line ####BEGIN_REPORT#### comes
             // then stop piping and start saving to file, then switch back on ####END_REPORT####
+            val reportsDir = buildDir.resolve(extension.buildDir).resolve("reports")
+            val reportFile = reportsDir.resolve("${config.name}.json")
+            reportsDir.mkdirs()
             standardOutput = FileOutputStream(reportFile)
         })
         dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_DEPENDENCIES_SUFFIX}")
         doFirst {
-            reportsDir.mkdirs()
             println("Running benchmarks for ${config.name}")
         }
     }

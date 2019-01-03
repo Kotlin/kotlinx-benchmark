@@ -81,8 +81,6 @@ fun Project.createNativeBenchmarkExecTask(
     config: BenchmarkConfiguration,
     compilation: KotlinNativeCompilation
 ) {
-    val reportsDir = buildDir.resolve(extension.buildDir).resolve("reports")
-    val reportFile = reportsDir.resolve("${config.name}.json")
     task<Exec>("${config.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}", depends = "benchmark") {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Executes benchmark for '${config.name}'"
@@ -92,10 +90,14 @@ fun Project.createNativeBenchmarkExecTask(
         // TODO: add line-protocol for saving report. 
         // Create a filtering output stream, that would pass lines to output, unless special line ####BEGIN_REPORT#### comes
         // then stop piping and start saving to file, then switch back on ####END_REPORT####
-        standardOutput = FileOutputStream(reportFile)
         dependsOn(nativeTask)
         doFirst {
+            val reportsDir = buildDir.resolve(extension.buildDir).resolve("reports")
+            val reportFile = reportsDir.resolve("${config.name}.json")
+
             reportsDir.mkdirs()
+            standardOutput = FileOutputStream(reportFile)
+            
             println("Running benchmarks for ${config.name}")
         }
     }
