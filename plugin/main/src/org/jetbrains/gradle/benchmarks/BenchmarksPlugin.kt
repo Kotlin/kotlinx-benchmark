@@ -30,6 +30,16 @@ class BenchmarksPlugin : Plugin<Project> {
             description = "Execute all benchmarks in a project"
         }
 
+        if (GRADLE_NEW) {
+            configureBenchmarks(extension, project)
+        } else {
+            //project.afterEvaluate {
+                configureBenchmarks(extension, project)
+            //}
+        }
+    }
+
+    private fun configureBenchmarks(extension: BenchmarksExtension, project: Project) {
         extension.configurations.all { config ->
             // This lambda is called as soon as configuration is added to a `benchmark` section
             // TODO: could be a problem, if it is configured before `kotlin` mpp section

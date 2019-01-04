@@ -1,7 +1,7 @@
 
 plugins {
-    id 'org.jetbrains.kotlin.multiplatform' version "1.3.11"
-    id 'org.jetbrains.kotlin.plugin.allopen' version "1.3.11"
+    id 'org.jetbrains.kotlin.multiplatform' version "1.3.20-eap-25"
+    id 'org.jetbrains.kotlin.plugin.allopen' version "1.3.20-eap-25"
     id 'org.jetbrains.gradle.benchmarks.plugin' version '0.1-SNAPSHOT'
     id 'com.moowork.node' version '1.2.0'
 }
@@ -19,6 +19,9 @@ node {
     version = "$node_version"
     npmVersion = "$npm_version"
     download = true
+
+    workDir = new File(rootProject.projectDir, ".gradle/nodejs")
+    npmWorkDir = new File(rootProject.projectDir, ".gradle/npm")
     nodeModulesDir = file(buildDir)
 }
 

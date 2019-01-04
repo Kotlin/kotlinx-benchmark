@@ -17,7 +17,7 @@ includeBuild("plugin") {
     }
 }
 
-include "examples/kotlin"
-include "examples/kotlin-multiplatform"
-include "examples/kotlin-kts"
+include "examples:kotlin"
+include "examples:kotlin-multiplatform"
+include "examples:kotlin-kts"
 include "runtime"

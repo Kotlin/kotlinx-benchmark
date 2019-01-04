@@ -53,11 +53,23 @@ For Kotlin/JVM code, add `allopen` plugin to make JMH happy:
 
 ```groovy
 plugins {
-    id 'org.jetbrains.kotlin.plugin.allopen' version "1.3.11"
+    id 'org.jetbrains.kotlin.plugin.allopen' version "1.3.20-eap-25"
 }
 
 allOpen {
     annotation("org.openjdk.jmh.annotations.State")
+}
+```
+
+# Adding multiplatform runtime library
+
+For JVM benchmarks you don't need anything, JMH core is added automatically.
+If you want to author multiplatform (especially common) benchmarks, you need a runtime library with small subset of 
+annotations and code that will wire things up:
+
+```groovy
+repositories {
+    maven { url 'https://dl.bintray.com/orangy/maven' }
 }
 ```
 
