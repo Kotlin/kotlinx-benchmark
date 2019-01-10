@@ -3,8 +3,8 @@ package org.jetbrains.gradle.benchmarks
 import com.moowork.gradle.node.*
 import com.moowork.gradle.node.npm.*
 import com.moowork.gradle.node.task.*
-import groovy.lang.*
 import org.gradle.api.*
+import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.process.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
@@ -29,7 +29,7 @@ fun Project.createJsBenchmarkExecTask(
 ) {
     val node = project.extensions.getByType(NodeExtension::class.java)
     val nodeModulesDir = node.nodeModulesDir.resolve("node_modules")
-    task<NodeTask>("${config.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}", depends = "benchmark") {
+    task<NodeTask>("${config.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}", depends = BenchmarksPlugin.RUN_BENCHMARKS_TASKNAME) {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Executes benchmark for '${config.name}'"
         //setScript(file("$nodeModulesDir/${compilation.output}"))
@@ -40,14 +40,14 @@ fun Project.createJsBenchmarkExecTask(
             // TODO: add line-protocol for saving report. 
             // Create a filtering output stream, that would pass lines to output, unless special line ####BEGIN_REPORT#### comes
             // then stop piping and start saving to file, then switch back on ####END_REPORT####
-            val reportsDir = buildDir.resolve(extension.buildDir).resolve("reports")
+            val reportsDir = buildDir.resolve(extension.buildDir).resolve(extension.reportsDir)
             val reportFile = reportsDir.resolve("${config.name}.json")
             reportsDir.mkdirs()
             standardOutput = FileOutputStream(reportFile)
         })
         dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_DEPENDENCIES_SUFFIX}")
         doFirst {
-            println("Running benchmarks for ${config.name}")
+            logger.lifecycle("Running benchmarks for ${config.name}")
         }
     }
 }

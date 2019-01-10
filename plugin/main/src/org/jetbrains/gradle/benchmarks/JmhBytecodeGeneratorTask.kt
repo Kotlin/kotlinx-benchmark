@@ -12,11 +12,11 @@ import javax.inject.*
 open class JmhBytecodeGeneratorTask
 @Inject constructor(private val workerExecutor: WorkerExecutor) : DefaultTask() {
     @InputFiles
-    @PathSensitive(PathSensitivity.ABSOLUTE)
+    @PathSensitive(PathSensitivity.RELATIVE)
     lateinit var inputClassesDirs: FileCollection
 
     @InputFiles
-    @PathSensitive(PathSensitivity.ABSOLUTE)
+    @PathSensitive(PathSensitivity.RELATIVE)
     lateinit var inputCompileClasspath: FileCollection
 
     @OutputDirectory
@@ -26,7 +26,7 @@ open class JmhBytecodeGeneratorTask
     lateinit var outputSourcesDir: File
 
     @InputFiles
-    @PathSensitive(PathSensitivity.ABSOLUTE)
+    @PathSensitive(PathSensitivity.RELATIVE)
     lateinit var runtimeClasspath: FileCollection
     
     @TaskAction
@@ -34,10 +34,6 @@ open class JmhBytecodeGeneratorTask
         workerExecutor.submit(JmhBytecodeGeneratorWorker::class.java) { config ->
             config.isolationMode = IsolationMode.PROCESS
             config.classpath = runtimeClasspath
-/*
-            config.forkMode = ForkMode.ALWAYS
-            config.forkOptions.jvmArgs = listOf("-verbose:class")
-*/
             config.params(inputClassesDirs.files, inputCompileClasspath.files, outputSourcesDir, outputResourcesDir)
         }
         workerExecutor.await()

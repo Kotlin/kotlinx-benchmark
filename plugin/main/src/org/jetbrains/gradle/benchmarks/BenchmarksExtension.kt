@@ -2,10 +2,10 @@ package org.jetbrains.gradle.benchmarks
 
 import groovy.lang.*
 import org.gradle.api.*
-import org.gradle.api.tasks.*
 
 open class BenchmarksExtension(private val project: Project) {
     var buildDir: String = "benchmarks"
+    var reportsDir: String = "reports"
 
     val configurations: NamedDomainObjectContainer<BenchmarkConfiguration> =
         project.container(BenchmarkConfiguration::class.java) { name ->

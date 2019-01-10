@@ -12,12 +12,15 @@ fun Project.createJvmBenchmarkCompileTask(
     compileClasspath: FileCollection
 ) {
     val benchmarkBuildDir = benchmarkBuildDir(extension, config)
-    task<JavaCompile>("${config.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}") {
+    task<JavaCompile>(
+        "${config.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}",
+        depends = BenchmarksPlugin.ASSEMBLE_BENCHMARKS_TASKNAME
+    ) {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Compile JMH source files for '${config.name}'"
         dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}")
         classpath = compileClasspath
-        setSource(file("$benchmarkBuildDir/sources")) // TODO: try using FileTree since 4.0
+        source = fileTree("$benchmarkBuildDir/sources")
         destinationDir = file("$benchmarkBuildDir/classes")
     }
 }
@@ -65,10 +68,13 @@ fun Project.createJvmBenchmarkExecTask(
     config: BenchmarkConfiguration,
     runtimeClasspath: FileCollection
 ) {
-    val benchmarkBuildDir = benchmarkBuildDir(extension, config)
-    val reportsDir = buildDir.resolve(extension.buildDir).resolve("reports")
-    val reportFile = reportsDir.resolve("${config.name}.json")
-    task<JavaExec>("${config.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}", depends = "benchmark") {
+    task<JavaExec>(
+        "${config.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}",
+        depends = BenchmarksPlugin.RUN_BENCHMARKS_TASKNAME
+    ) {
+        val benchmarkBuildDir = benchmarkBuildDir(extension, config)
+        val reportsDir = buildDir.resolve(extension.buildDir).resolve(extension.reportsDir)
+        val reportFile = reportsDir.resolve("${config.name}.json")
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Execute benchmark for '${config.name}'"
         main = "org.openjdk.jmh.Main"
@@ -81,7 +87,7 @@ fun Project.createJvmBenchmarkExecTask(
         dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}")
         doFirst {
             reportsDir.mkdirs()
-            println("Running benchmarks for ${config.name}")
+            logger.lifecycle("Running benchmarks for ${config.name}")
         }
     }
 }

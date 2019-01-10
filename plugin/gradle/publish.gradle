@@ -70,7 +70,7 @@ bintrayUpload.doFirst {
     publications = project.publishing.publications.findAll {
         !it.name.contains('-test') && it.name != 'kotlinMultiplatform'
     }.collect {
-        println("Uploading artifact '$it.groupId:$it.artifactId:$it.version' from publication '$it.name'")
+        logger.lifecycle("Uploading artifact '$it.groupId:$it.artifactId:$it.version' from publication '$it.name'")
         it.name
     }
 }

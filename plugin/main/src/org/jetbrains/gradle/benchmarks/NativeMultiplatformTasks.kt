@@ -51,7 +51,7 @@ private fun Project.createNativeBenchmarkCompileTask(
 ): KotlinNativeCompilation {
 
     val benchmarkBuildDir = benchmarkBuildDir(extension, config)
-    val benchmarkCompilation = compilation.target.compilations.create("benchmark") as KotlinNativeCompilation
+    val benchmarkCompilation = compilation.target.compilations.create(BenchmarksPlugin.BENCHMARK_COMPILATION_NAME) as KotlinNativeCompilation
     val compileTask = tasks.getByName(benchmarkCompilation.compileKotlinTaskName) as KotlinNativeCompile
 
     benchmarkCompilation.apply {
@@ -81,7 +81,7 @@ fun Project.createNativeBenchmarkExecTask(
     config: BenchmarkConfiguration,
     compilation: KotlinNativeCompilation
 ) {
-    task<Exec>("${config.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}", depends = "benchmark") {
+    task<Exec>("${config.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}", depends = BenchmarksPlugin.RUN_BENCHMARKS_TASKNAME) {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Executes benchmark for '${config.name}'"
         //setScript(file("$nodeModulesDir/${compilation.output}"))
@@ -92,13 +92,13 @@ fun Project.createNativeBenchmarkExecTask(
         // then stop piping and start saving to file, then switch back on ####END_REPORT####
         dependsOn(nativeTask)
         doFirst {
-            val reportsDir = buildDir.resolve(extension.buildDir).resolve("reports")
+            val reportsDir = buildDir.resolve(extension.buildDir).resolve(extension.reportsDir)
             val reportFile = reportsDir.resolve("${config.name}.json")
 
             reportsDir.mkdirs()
             standardOutput = FileOutputStream(reportFile)
-            
-            println("Running benchmarks for ${config.name}")
+
+            logger.lifecycle("Running benchmarks for ${config.name}")
         }
     }
 }

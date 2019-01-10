@@ -31,7 +31,7 @@ private fun Project.createJsBenchmarkCompileTask(
 ): KotlinJsCompilation {
 
     val benchmarkBuildDir = benchmarkBuildDir(extension, config)
-    val benchmarkCompilation = compilation.target.compilations.create("benchmark") as KotlinJsCompilation
+    val benchmarkCompilation = compilation.target.compilations.create(BenchmarksPlugin.BENCHMARK_COMPILATION_NAME) as KotlinJsCompilation
     val compileTask = tasks.getByName(benchmarkCompilation.compileKotlinTaskName) as Kotlin2JsCompile
 
     compileTask.kotlinOptions.apply {

@@ -2,6 +2,7 @@ package org.jetbrains.gradle.benchmarks
 
 import org.gradle.api.*
 import org.gradle.api.file.*
+import org.gradle.api.logging.*
 import org.gradle.api.tasks.*
 import org.gradle.workers.*
 import org.jetbrains.kotlin.config.*
@@ -19,11 +20,11 @@ import javax.inject.*
 open class NativeSourceGeneratorTask
 @Inject constructor(private val workerExecutor: WorkerExecutor) : DefaultTask() {
     @InputFiles
-    @PathSensitive(PathSensitivity.ABSOLUTE)
+    @PathSensitive(PathSensitivity.RELATIVE)
     lateinit var inputClassesDirs: FileCollection
 
     @InputFiles
-    @PathSensitive(PathSensitivity.ABSOLUTE)
+    @PathSensitive(PathSensitivity.RELATIVE)
     lateinit var inputDependencies: FileCollection
 
     @OutputDirectory
@@ -44,7 +45,7 @@ open class NativeSourceGeneratorTask
         val versionSpec = LanguageVersionSettingsImpl(LanguageVersion.LATEST_STABLE, ApiVersion.LATEST_STABLE)
         val ABI_VERSION = 1
 
-        val pathResolver = ProvidedPathResolver(inputDependencies.files, konanTarget)
+        val pathResolver = ProvidedPathResolver(logger, inputDependencies.files, konanTarget)
         val libraryResolver = pathResolver.libraryResolver(ABI_VERSION)
 
         val factory = DefaultDeserializedDescriptorFactory
@@ -78,6 +79,7 @@ open class NativeSourceGeneratorTask
 }
 
 class ProvidedPathResolver(
+    private val logger: Logger,
     private val dependencies: MutableSet<File>,
     override val target: KonanTarget
 ) : SearchPathResolverWithTarget {
@@ -94,11 +96,11 @@ class ProvidedPathResolver(
             path.isAbsolute -> org.jetbrains.kotlin.konan.file.File(path)
             else -> {
                 val file = shortMap[givenPath]
-                if (file != null) 
+                if (file != null)
                     return file
 
-                println("Cannot resolve library $givenPath with the following dependencies:")
-                println(dependencies.joinToString(prefix = "  ", separator = "\n  "))
+                logger.error("Cannot resolve library $givenPath with the following dependencies:")
+                logger.error(dependencies.joinToString(prefix = "  ", separator = "\n  "))
                 throw Exception("Cannot resolve library '$givenPath' with $shortMap")
             }
         }
