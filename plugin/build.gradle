@@ -11,7 +11,7 @@ buildscript {
 
 plugins {
     id 'java-gradle-plugin'
-    id 'org.jetbrains.kotlin.jvm' version "1.3.20-eap-25"
+    id 'org.jetbrains.kotlin.jvm' version "1.3.20-eap-100"
 }
 
 gradlePlugin {
@@ -52,6 +52,14 @@ dependencies {
 
     compile "org.openjdk.jmh:jmh-core:$jmhVersion"
     compileOnly "org.openjdk.jmh:jmh-generator-bytecode:$jmhVersion" // used in worker
+
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+    testImplementation gradleTestKit()
+    testImplementation 'junit:junit:4.12'
+    
+    // This is needed for test to get it on classpath and run
+    runtime "org.jetbrains.kotlin:kotlin-allopen:$kotlin_version"
+    runtime "org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlin_version"
 }
 
 repositories {

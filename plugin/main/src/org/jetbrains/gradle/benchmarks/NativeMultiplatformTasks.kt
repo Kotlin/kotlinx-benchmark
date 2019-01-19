@@ -62,13 +62,16 @@ private fun Project.createNativeBenchmarkCompileTask(
             implementation(compilation.compileDependencyFiles)
             implementation(compilation.output.allOutputs)
         }
+        outputKind(NativeOutputKind.EXECUTABLE)
         compileTask.apply {
             group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
             description = "Compile Native benchmark source files for '${config.name}'"
             destinationDir = file("$benchmarkBuildDir/classes")
+/*
             outputKind = CompilerOutputKind.PROGRAM
             optimized = true
             debuggable = false
+*/
             entryPoint("org.jetbrains.gradle.benchmarks.generated.main")
             dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}")
         }
