@@ -6,4 +6,5 @@ actual enum class Scope {
 
 actual annotation class State(actual val value: Scope)
 actual annotation class Setup
+actual annotation class TearDown
 actual annotation class Benchmark

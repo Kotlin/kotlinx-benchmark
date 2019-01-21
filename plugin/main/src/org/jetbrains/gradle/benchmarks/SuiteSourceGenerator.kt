@@ -1,24 +1,33 @@
 package org.jetbrains.gradle.benchmarks
 
 import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.name.*
 import org.jetbrains.kotlin.resolve.*
 import org.jetbrains.kotlin.resolve.descriptorUtil.*
 import org.jetbrains.kotlin.resolve.scopes.*
 import java.io.*
-import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 
 enum class Platform {
     JS, NATIVE
 }
 
 class SuiteSourceGenerator(val module: ModuleDescriptor, val output: File, val platform: Platform) {
-    val benchmarkAnnotationFQN = "org.jetbrains.gradle.benchmarks.Benchmark"
-    val stateAnnotationFQN = "org.jetbrains.gradle.benchmarks.State"
-    val mainBenchmarkPackage = "org.jetbrains.gradle.benchmarks.generated"
-    val nativeSuite = ClassName.bestGuess("org.jetbrains.gradle.benchmarks.native.Suite")
-    val jsSuite = ClassName.bestGuess("org.jetbrains.gradle.benchmarks.js.Suite")
+    companion object {
+        val setupFunctionName = "setup"
+        val teardownFunctionName = "tearDown"
+        val addFunctionName = "addToSuite"
+
+        val benchmarkAnnotationFQN = "org.jetbrains.gradle.benchmarks.Benchmark"
+        val setupAnnotationFQN = "org.jetbrains.gradle.benchmarks.Setup"
+        val teardownAnnotationFQN = "org.jetbrains.gradle.benchmarks.TearDown"
+        val stateAnnotationFQN = "org.jetbrains.gradle.benchmarks.State"
+        val mainBenchmarkPackage = "org.jetbrains.gradle.benchmarks.generated"
+        val nativeSuite = ClassName.bestGuess("org.jetbrains.gradle.benchmarks.native.Suite")
+        val jsSuite = ClassName.bestGuess("org.jetbrains.gradle.benchmarks.js.Suite")
+    }
+
     val suiteType = when (platform) {
         Platform.JS -> jsSuite
         Platform.NATIVE -> nativeSuite
@@ -28,9 +37,7 @@ class SuiteSourceGenerator(val module: ModuleDescriptor, val output: File, val p
 
 
     fun generate() {
-        processPackage(module, module.getPackage(FqName.ROOT)) {
-            generateBenchmark(it)
-        }
+        processPackage(module, module.getPackage(FqName.ROOT))
         generateRunnerMain()
     }
 
@@ -42,7 +49,7 @@ class SuiteSourceGenerator(val module: ModuleDescriptor, val output: File, val p
                 addParameter("args", arrayOfStrings)
                 addStatement("val suite = %T(args)", suiteType)
                 for (benchmark in benchmarks) {
-                    addStatement("%T().addBenchmarkToSuite(suite)", benchmark)
+                    addStatement("%T().$addFunctionName(suite)", benchmark)
                 }
                 addStatement("suite.run()")
             }
@@ -50,20 +57,18 @@ class SuiteSourceGenerator(val module: ModuleDescriptor, val output: File, val p
         file.writeTo(output)
     }
 
-    private fun processPackage(
-        module: ModuleDescriptor,
-        packageView: PackageViewDescriptor,
-        process: (ClassDescriptor) -> Unit
-    ) {
+    private fun processPackage(module: ModuleDescriptor, packageView: PackageViewDescriptor) {
         for (packageFragment in packageView.fragments.filter { it.module == module }) {
             DescriptorUtils.getAllDescriptors(packageFragment.getMemberScope())
                 .filterIsInstance<ClassDescriptor>()
                 .filter { it.annotations.any { it.fqName.toString() == stateAnnotationFQN } }
-                .forEach(process)
+                .forEach {
+                    generateBenchmark(it)
+                }
         }
 
         for (subpackageName in module.getSubPackagesOf(packageView.fqName, MemberScope.ALL_NAME_FILTER)) {
-            processPackage(module, module.getPackage(subpackageName), process)
+            processPackage(module, module.getPackage(subpackageName))
         }
     }
 
@@ -76,9 +81,19 @@ class SuiteSourceGenerator(val module: ModuleDescriptor, val output: File, val p
         val benchmarkName = originalName.toString() + "_runner"
         val benchmarkClass = ClassName(mainBenchmarkPackage, benchmarkName)
 
-        val markedFunctions = DescriptorUtils.getAllDescriptors(original.unsubstitutedMemberScope)
+        val functions = DescriptorUtils.getAllDescriptors(original.unsubstitutedMemberScope)
             .filterIsInstance<FunctionDescriptor>()
-            .filter { it.annotations.any { it.fqName.toString() == benchmarkAnnotationFQN } }
+
+        val benchmarkFunctions =
+            functions.filter { it.annotations.any { it.fqName.toString() == benchmarkAnnotationFQN } }
+        
+        // TODO: collect setup functions from hierarchy in order
+        val setupFunctions =
+            functions.filter { it.annotations.any { it.fqName.toString() == setupAnnotationFQN } }
+        
+        // TODO: collect teardown functions from hierarchy in reverse order
+        val teardownFunctions =
+            functions.filter { it.annotations.any { it.fqName.toString() == teardownAnnotationFQN } }.reversed()
 
         val file = FileSpec.builder(mainBenchmarkPackage, benchmarkName).apply {
             declareClass(benchmarkClass) {
@@ -88,20 +103,27 @@ class SuiteSourceGenerator(val module: ModuleDescriptor, val output: File, val p
                         addStatement("%T()", originalClass)
                     })
                 }
-
-                for (markedFunction in markedFunctions) {
-                    val functionName = markedFunction.name.toString()
-                    function(functionName) {
+                
+                function(setupFunctionName) {
+                    for (fn in setupFunctions) {
+                        val functionName = fn.name.toString()
                         addStatement("_instance.%N()", functionName)
                     }
                 }
 
-                function("addBenchmarkToSuite") {
+                function(teardownFunctionName) {
+                    for (fn in teardownFunctions) {
+                        val functionName = fn.name.toString()
+                        addStatement("_instance.%N()", functionName)
+                    }
+                }
+
+                function(addFunctionName) {
                     addParameter("suite", suiteType)
-                    for (benchmark in markedFunctions) {
-                        val functionName = benchmark.name.toString()
+                    for (fn in benchmarkFunctions) {
+                        val functionName = fn.name.toString()
                         addStatement(
-                            "suite.add(%P) { %N() }",
+                            "suite.add(%P, _instance::%N, this::$setupFunctionName, this::$teardownFunctionName)",
                             "${originalClass.canonicalName}.$functionName",
                             functionName
                         )

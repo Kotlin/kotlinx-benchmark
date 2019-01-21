@@ -4,6 +4,9 @@ package org.jetbrains.gradle.benchmarks
 expect annotation class Setup()
 
 @Target(AnnotationTarget.FUNCTION)
+expect annotation class TearDown()
+
+@Target(AnnotationTarget.FUNCTION)
 expect annotation class Benchmark()
 
 @Target(AnnotationTarget.CLASS)

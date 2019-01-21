@@ -75,12 +75,12 @@ class JmhOutputFormat(val reportFile: String) : PrintOutputFormat(System.out) {
 
     override fun startBenchmark(benchParams: BenchmarkParams) {
         printMessageLine("")
-        printMessage(benchParams.benchmark)
+        printMessageLine("… ${benchParams.benchmark}")
     }
 
     override fun endBenchmark(result: BenchmarkResult) {
-        val result = result.primaryResult
-        printMessageLine(" ${result.extendedInfo().trim()}")
+        val value = result.primaryResult
+        printMessageLine("  ${value.extendedInfo().trim()}")
     }
 
     override fun iteration(benchParams: BenchmarkParams, params: IterationParams, iteration: Int) {

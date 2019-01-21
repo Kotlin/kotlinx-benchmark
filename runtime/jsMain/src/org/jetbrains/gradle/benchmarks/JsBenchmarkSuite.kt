@@ -13,22 +13,27 @@ class Suite(dummy_args: Array<out String>) {
     private val suite: dynamic = benchmarkJs.Suite()
 
     fun run() {
-        for (index in 0 until suite.length) {
-            val benchmark = suite[index]
-            benchmark.on("complete") { event ->
-                println(event.target)
-            }
+        suite.on("complete") {
+            println()
         }
         suite.run()
-        val results = results()
-        fs.writeFile(reportFile, results.toJson()) { err ->
-            if (err)
-                throw err
-        }
+        fs.writeFile(reportFile, results().toJson()) { err -> if (err) throw err }
     }
 
-    fun add(name: String, function: () -> Unit) {
+    fun add(name: String, function: () -> Any?, setup: () -> Unit, teardown: () -> Unit) {
         suite.add(name, function)
+        val benchmark = suite[suite.length - 1] // take back last added benchmark and subscribe to events
+        benchmark.on("start") { event ->
+            println()
+            println("… ${event.target.name}")
+            setup()
+        }
+        benchmark.on("complete") { event ->
+            val name = event.target.name
+            println("  ${event.target.toString().removePrefix("$name x ")}")
+            teardown()
+        }
+
     }
 
     private fun results(): List<ReportBenchmarkResult> {
