@@ -26,8 +26,8 @@ class BenchmarksPlugin : Plugin<Project> {
     }
 
     override fun apply(project: Project) {
-        if (GradleVersion.current() < GradleVersion.version("4.9")) {
-            project.logger.error("JetBrains Gradle Benchmarks plugin requires Gradle version 4.9 or higher")
+        if (GradleVersion.current() < GradleVersion.version("4.10")) {
+            project.logger.error("JetBrains Gradle Benchmarks plugin requires Gradle version 4.10 or higher")
             return // TODO: Do we need to fail build at this point or just ignore benchmarks?
         }
 
@@ -35,24 +35,23 @@ class BenchmarksPlugin : Plugin<Project> {
         val extension = project.extensions.create(BENCHMARK_EXTENSION_NAME, BenchmarksExtension::class.java, project)
 
         // Create empty task to run all benchmarks in a project
-        project.task<DefaultTask>(RUN_BENCHMARKS_TASKNAME) {
+        val runBenchmarks = project.task<DefaultTask>(RUN_BENCHMARKS_TASKNAME) {
             group = BENCHMARKS_TASK_GROUP
             description = "Execute all benchmarks in a project"
         }
 
         // Create empty task to build all benchmarks in a project
-        project.task<DefaultTask>(ASSEMBLE_BENCHMARKS_TASKNAME) {
+        val assembleBenchmarks = project.task<DefaultTask>(ASSEMBLE_BENCHMARKS_TASKNAME) {
             group = BENCHMARKS_TASK_GROUP
             description = "Generate and build all benchmarks in a project"
         }
 
-        if (GRADLE_NEW) {
-            configureBenchmarks(extension, project)
-        } else {
-            project.afterEvaluate {
-                configureBenchmarks(extension, project)
-            }
-        }
+        // Force all benchmarks runner to first build all benchmarks to ensure it won't spend time
+        // running some benchmarks when other will fail to compile
+        // Individual benchmarks depend on their respective building tasks for fast turnaround
+        runBenchmarks.get().dependsOn(assembleBenchmarks)
+
+        configureBenchmarks(extension, project)
     }
 
     private fun configureBenchmarks(extension: BenchmarksExtension, project: Project) {

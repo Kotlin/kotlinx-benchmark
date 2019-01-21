@@ -32,12 +32,6 @@ private fun Project.createJsBenchmarkCompileTask(
 
     val benchmarkBuildDir = benchmarkBuildDir(extension, config)
     val benchmarkCompilation = compilation.target.compilations.create(BenchmarksPlugin.BENCHMARK_COMPILATION_NAME) as KotlinJsCompilation
-    val compileTask = tasks.getByName(benchmarkCompilation.compileKotlinTaskName) as Kotlin2JsCompile
-
-    compileTask.kotlinOptions.apply {
-        sourceMap = true
-        moduleKind = "umd"
-    }
 
     benchmarkCompilation.apply {
         val sourceSet = kotlinSourceSets.single()
@@ -47,11 +41,16 @@ private fun Project.createJsBenchmarkCompileTask(
             implementation(compilation.compileDependencyFiles)
             implementation(compilation.output.allOutputs)
         }
-        compileTask.apply {
+        compileKotlinTask.apply {
             group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
             description = "Compile JS benchmark source files for '${config.name}'"
             destinationDir = file("$benchmarkBuildDir/classes")
             dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}")
+
+            kotlinOptions.apply {
+                sourceMap = true
+                moduleKind = "umd"
+            }
         }
     }
     return benchmarkCompilation

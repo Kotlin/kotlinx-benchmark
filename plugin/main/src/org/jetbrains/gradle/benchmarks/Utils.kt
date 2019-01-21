@@ -2,7 +2,7 @@ package org.jetbrains.gradle.benchmarks
 
 import groovy.lang.*
 import org.gradle.api.*
-import org.gradle.util.*
+import org.gradle.api.tasks.*
 import java.io.*
 
 fun cleanup(file: File) {
@@ -17,28 +17,17 @@ fun cleanup(file: File) {
     }
 }
 
-val GRADLE_NEW = GradleVersion.current() >= GradleVersion.version("4.9-rc-1")
-
 inline fun <reified T : Task> Project.task(
     name: String,
     depends: String? = null,
     noinline configuration: T.() -> Unit
-) {
-    when {
-        GRADLE_NEW -> {
-            @Suppress("UnstableApiUsage")
-            val task = tasks.register(name, T::class.java, Action(configuration))
-            if (depends != null) {
-                tasks.getByName(depends).dependsOn(task)
-            }
-        }
-        else -> {
-            val task = tasks.create(name, T::class.java, Action(configuration))
-            if (depends != null) {
-                tasks.getByName(depends).dependsOn(task)
-            }
-        }
+): TaskProvider<T> {
+    @Suppress("UnstableApiUsage")
+    val task = tasks.register(name, T::class.java, Action(configuration))
+    if (depends != null) {
+        tasks.getByName(depends).dependsOn(task)
     }
+    return task
 }
 
 fun Project.benchmarkBuildDir(extension: BenchmarksExtension, config: BenchmarkConfiguration): File {

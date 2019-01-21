@@ -4,11 +4,9 @@ import com.moowork.gradle.node.*
 import com.moowork.gradle.node.npm.*
 import com.moowork.gradle.node.task.*
 import org.gradle.api.*
-import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.process.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
-import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
 
 fun Project.createJsBenchmarkInstallTask() {
@@ -29,12 +27,14 @@ fun Project.createJsBenchmarkExecTask(
 ) {
     val node = project.extensions.getByType(NodeExtension::class.java)
     val nodeModulesDir = node.nodeModulesDir.resolve("node_modules")
-    task<NodeTask>("${config.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}", depends = BenchmarksPlugin.RUN_BENCHMARKS_TASKNAME) {
+    task<NodeTask>(
+        "${config.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}",
+        depends = BenchmarksPlugin.RUN_BENCHMARKS_TASKNAME
+    ) {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Executes benchmark for '${config.name}'"
         //setScript(file("$nodeModulesDir/${compilation.output}"))
-        val jsTask = tasks.getByName(compilation.compileKotlinTaskName) as Kotlin2JsCompile
-        setScript(nodeModulesDir.resolve(jsTask.outputFile.name))
+        setScript(nodeModulesDir.resolve(compilation.compileKotlinTask.outputFile.name))
         setWorkingDir(nodeModulesDir)
         setExecOverrides(closureOf<ExecSpec> {
             // TODO: add line-protocol for saving report. 
@@ -59,7 +59,7 @@ fun Project.createJsBenchmarkDependenciesTask(
 ) {
     val node = project.extensions.getByType(NodeExtension::class.java)
     val nodeModulesDir = node.nodeModulesDir.resolve("node_modules")
-    task<Copy>("${config.name}${BenchmarksPlugin.BENCHMARK_DEPENDENCIES_SUFFIX}") {
+    val deployTask = task<Copy>("${config.name}${BenchmarksPlugin.BENCHMARK_DEPENDENCIES_SUFFIX}") {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Copy dependencies of benchmark for '${config.name}'"
         val configuration = compilation.runtimeDependencyFiles
@@ -73,7 +73,7 @@ fun Project.createJsBenchmarkDependenciesTask(
                 files(it)
             }
         }
-        
+
         val dependencyFiles = files(dependencies).builtBy(configuration)
         from(compilation.output)
         from(dependencyFiles)
@@ -81,6 +81,6 @@ fun Project.createJsBenchmarkDependenciesTask(
         dependsOn("npmInstallBenchmarkJs")
         dependsOn(compilation.compileKotlinTaskName)
     }
-
+    tasks.getByName(BenchmarksPlugin.ASSEMBLE_BENCHMARKS_TASKNAME).dependsOn(deployTask)
 }
 
