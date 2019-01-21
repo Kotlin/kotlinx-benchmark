@@ -1,29 +1,43 @@
 package org.jetbrains.gradle.benchmarks.js
 
-external fun require(module: String): dynamic
-private val benchmarkJs : dynamic = require("benchmark")
+import org.jetbrains.gradle.benchmarks.*
 
-class Suite {
-    private val suite : dynamic = benchmarkJs.Suite()
-    
+external fun require(module: String): dynamic
+private val benchmarkJs: dynamic = require("benchmark")
+private val fs = require("fs");
+private val process = require("process");
+
+class Suite(dummy_args: Array<out String>) {
+    private val args = (process["argv"] as Array<String>).drop(2)
+    private val reportFile = args.first()
+    private val suite: dynamic = benchmarkJs.Suite()
+
     fun run() {
+        for (index in 0 until suite.length) {
+            val benchmark = suite[index]
+            benchmark.on("complete") { event ->
+                println(event.target)
+            }
+        }
         suite.run()
-        println(resultsJson())
+        val results = results()
+        fs.writeFile(reportFile, results.toJson()) { err ->
+            if (err)
+                throw err
+        }
     }
 
     fun add(name: String, function: () -> Unit) {
         suite.add(name, function)
     }
 
-    private fun resultsJson(): String {
-        val list = mutableListOf<BenchmarkResult>()
+    private fun results(): List<ReportBenchmarkResult> {
+        val results = mutableListOf<ReportBenchmarkResult>()
         for (index in 0 until suite.length) {
             val benchmark = suite[index]
-            list.add(BenchmarkResult(benchmark.name, BenchmarkMetric(benchmark.hz)))
+            results.add(ReportBenchmarkResult(benchmark.name, benchmark.hz))
         }
-        return JSON.stringify(list)
+        return results
     }
 }
 
-data class BenchmarkResult(val benchmark: String, val primaryMetric: BenchmarkMetric)
-data class BenchmarkMetric(val score: Double)

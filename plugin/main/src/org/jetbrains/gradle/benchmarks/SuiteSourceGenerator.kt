@@ -7,6 +7,7 @@ import org.jetbrains.kotlin.resolve.*
 import org.jetbrains.kotlin.resolve.descriptorUtil.*
 import org.jetbrains.kotlin.resolve.scopes.*
 import java.io.*
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 
 enum class Platform {
     JS, NATIVE
@@ -36,7 +37,10 @@ class SuiteSourceGenerator(val module: ModuleDescriptor, val output: File, val p
     private fun generateRunnerMain() {
         val file = FileSpec.builder(mainBenchmarkPackage, "BenchmarkSuite").apply {
             function("main") {
-                addStatement("val suite = %T()", suiteType)
+                val array = ClassName("kotlin", "Array")
+                val arrayOfStrings = array.parameterizedBy(WildcardTypeName.producerOf(String::class))
+                addParameter("args", arrayOfStrings)
+                addStatement("val suite = %T(args)", suiteType)
                 for (benchmark in benchmarks) {
                     addStatement("%T().addBenchmarkToSuite(suite)", benchmark)
                 }

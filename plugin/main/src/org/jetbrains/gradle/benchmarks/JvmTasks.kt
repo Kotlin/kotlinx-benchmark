@@ -77,13 +77,14 @@ fun Project.createJvmBenchmarkExecTask(
         val reportFile = reportsDir.resolve("${config.name}.json")
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Execute benchmark for '${config.name}'"
-        main = "org.openjdk.jmh.Main"
+        main = "org.jetbrains.gradle.benchmarks.JvmBenchmarkRunnerKt"
         classpath(
             file("$benchmarkBuildDir/classes"),
             file("$benchmarkBuildDir/resources"),
             runtimeClasspath
         )
-        args = "-w 5 -r 5 -wi 1 -i 1 -f 1 -rf json -rff $reportFile".split(" ") // TODO: configure!
+        //args = "-w 5 -r 5 -wi 1 -i 1 -f 1 -rf json -rff $reportFile".split(" ") // TODO: configure!
+        args = listOf(reportFile.toString()) // TODO: configure!
         dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}")
         doFirst {
             reportsDir.mkdirs()

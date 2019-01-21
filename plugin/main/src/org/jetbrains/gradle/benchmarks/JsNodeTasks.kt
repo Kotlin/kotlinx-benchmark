@@ -33,20 +33,16 @@ fun Project.createJsBenchmarkExecTask(
     ) {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Executes benchmark for '${config.name}'"
-        //setScript(file("$nodeModulesDir/${compilation.output}"))
+
+        val reportsDir = buildDir.resolve(extension.buildDir).resolve(extension.reportsDir)
+        val reportFile = reportsDir.resolve("${config.name}.json")
+
         setScript(nodeModulesDir.resolve(compilation.compileKotlinTask.outputFile.name))
+        addArgs(reportFile.toString())
         setWorkingDir(nodeModulesDir)
-        setExecOverrides(closureOf<ExecSpec> {
-            // TODO: add line-protocol for saving report. 
-            // Create a filtering output stream, that would pass lines to output, unless special line ####BEGIN_REPORT#### comes
-            // then stop piping and start saving to file, then switch back on ####END_REPORT####
-            val reportsDir = buildDir.resolve(extension.buildDir).resolve(extension.reportsDir)
-            val reportFile = reportsDir.resolve("${config.name}.json")
-            reportsDir.mkdirs()
-            standardOutput = FileOutputStream(reportFile)
-        })
         dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_DEPENDENCIES_SUFFIX}")
         doFirst {
+            reportsDir.mkdirs()
             logger.lifecycle("Running benchmarks for ${config.name}")
         }
     }

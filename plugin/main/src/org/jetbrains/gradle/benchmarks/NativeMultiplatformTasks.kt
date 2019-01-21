@@ -104,21 +104,18 @@ fun Project.createNativeBenchmarkExecTask(
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Executes benchmark for '${config.name}'"
         //setScript(file("$nodeModulesDir/${compilation.output}"))
-        val binary =
-            benchmarkCompilation.target.binaries.getExecutable(benchmarkCompilation.name, NativeBuildType.RELEASE)
+        val binary = benchmarkCompilation.target.binaries.getExecutable(benchmarkCompilation.name, NativeBuildType.RELEASE)
         val linkTask = binary.linkTask
+
+        val reportsDir = buildDir.resolve(extension.buildDir).resolve(extension.reportsDir)
+        val reportFile = reportsDir.resolve("${config.name}.json")
+
         executable = linkTask.outputFile.get().absolutePath
-        // TODO: add line-protocol for saving report. 
-        // Create a filtering output stream, that would pass lines to output, unless special line ####BEGIN_REPORT#### comes
-        // then stop piping and start saving to file, then switch back on ####END_REPORT####
+        args = listOf(reportFile.toString()) // TODO: configure!
         dependsOn(linkTask)
         doFirst {
-            val reportsDir = buildDir.resolve(extension.buildDir).resolve(extension.reportsDir)
-            val reportFile = reportsDir.resolve("${config.name}.json")
-
             reportsDir.mkdirs()
-            standardOutput = FileOutputStream(reportFile)
-
+            //standardOutput = FileOutputStream(reportFile)
             logger.lifecycle("Running benchmarks for ${config.name}")
         }
     }
