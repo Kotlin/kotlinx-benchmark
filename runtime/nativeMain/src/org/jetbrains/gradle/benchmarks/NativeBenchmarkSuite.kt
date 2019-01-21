@@ -1,5 +1,6 @@
 package org.jetbrains.gradle.benchmarks.native
 
+import kotlinx.cinterop.*
 import org.jetbrains.gradle.benchmarks.*
 import platform.posix.*
 import kotlin.system.*
@@ -15,7 +16,8 @@ class Suite(private val args: Array<out String>) {
     private val benchmarks = mutableListOf<BenchmarkDescriptor>()
     private val reportFile = args.first()
 
-    var iterationTime = 1000 // ms
+    val iterationTime = 1000 // ms
+    val iterationNumber = 10 // times
 
     fun add(name: String, function: () -> Any?, setup: () -> Unit, teardown: () -> Unit) {
         benchmarks.add(BenchmarkDescriptor(name, function, setup, teardown))
@@ -27,15 +29,32 @@ class Suite(private val args: Array<out String>) {
             println("… ${benchmark.name}")
 
             benchmark.setup()
-            val operationsPerSecond = try {
+            val samples = try {
                 // Execute warmup
-                val iterations = warmup(benchmark)
-                measure(benchmark, iterations)
+                val cycles = warmup(benchmark)
+                DoubleArray(iterationNumber) {
+                    measure(benchmark, cycles)
+                }
             } finally {
                 benchmark.teardown()
             }
-            println("  ~ $operationsPerSecond ops/sec")
-            ReportBenchmarkResult(benchmark.name, operationsPerSecond)
+            val statistics = NativeBenchmarksStatistics(samples)
+            val score = statistics.median()
+            val d = (4 - log10(score).toInt()).coerceAtLeast(0) // display 4 significant digits
+
+            println("  ~ ${score.format(d)} ops/sec")
+            val min = statistics.min().format(d)
+            val mean = statistics.mean().format(d)
+            val max = statistics.max().format(d)
+            println("    min: $min, avg: $mean, max: $max, stddev: ${statistics.standardDeviation().format(d)}")
+            
+            // These quantiles are inverted, because we are interested in ops/sec and the higher the better
+            // so we need minimum speed at which 90% of samples run
+            val p90 = statistics.valueAt(0.1).format(d)
+            val p75 = statistics.valueAt(0.25).format(d)
+            val p50 = statistics.valueAt(0.5).format(d)
+            println("    90%: $p90, 75%: $p75, 50%: $p50")
+            ReportBenchmarkResult(benchmark.name, score)
         }
         println()
 
@@ -44,9 +63,15 @@ class Suite(private val args: Array<out String>) {
         fclose(file)
     }
 
-    private fun measure(benchmark: BenchmarkDescriptor, iterations: Int): Double {
+    private fun Double.format(precision: Int): String = memScoped {
+        val bytes = allocArray<ByteVar>(100)
+        sprintf(bytes, "%.${precision}F", this@format)
+        return bytes.toKString()
+    }
+
+    private fun measure(benchmark: BenchmarkDescriptor, cycles: Int): Double {
         val executeFunction = benchmark.function
-        var counter = iterations
+        var counter = cycles
         val startTime = getTimeNanos()
         while (counter-- > 0) {
             @Suppress("UNUSED_VARIABLE")
@@ -54,7 +79,7 @@ class Suite(private val args: Array<out String>) {
         }
         val endTime = getTimeNanos()
         val time = endTime - startTime
-        val nanosecondsPerOperation = time.toDouble() / iterations
+        val nanosecondsPerOperation = time.toDouble() / cycles
         val operationsPerSecond = 1_000_000_000.0 / nanosecondsPerOperation
         return operationsPerSecond
     }
