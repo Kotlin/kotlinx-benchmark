@@ -40,7 +40,10 @@ class Suite(dummy_args: Array<out String>) {
         val results = mutableListOf<ReportBenchmarkResult>()
         for (index in 0 until suite.length) {
             val benchmark = suite[index]
-            results.add(ReportBenchmarkResult(benchmark.name, benchmark.hz))
+            val stats = benchmark.stats
+            val confidence = Pair(1 / (stats.mean + stats.moe) as Double, 1 / (stats.mean - stats.moe) as Double)
+            val values = stats.sample.unsafeCast<DoubleArray>().map { 1 / it }.toDoubleArray()
+            results.add(ReportBenchmarkResult(benchmark.name, benchmark.hz, confidence, values))
         }
         return results
     }

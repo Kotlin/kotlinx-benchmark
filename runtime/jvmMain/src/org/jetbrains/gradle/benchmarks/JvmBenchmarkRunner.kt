@@ -3,20 +3,13 @@ package org.jetbrains.gradle.benchmarks
 import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.*
 import org.openjdk.jmh.results.*
+import org.openjdk.jmh.results.format.*
 import org.openjdk.jmh.runner.*
 import org.openjdk.jmh.runner.format.*
 import org.openjdk.jmh.runner.options.*
 import java.io.*
 import java.util.concurrent.*
 
-val jmhOptions = OptionsBuilder()
-    .mode(Mode.Throughput)
-    .timeUnit(TimeUnit.SECONDS)
-    .warmupIterations(5)
-    .measurementIterations(5)
-    .warmupTime(TimeValue.milliseconds(500))
-    .measurementTime(TimeValue.milliseconds(500))
-    .forks(1)
 
 fun main(args: Array<String>) {
     val reportFile = args.firstOrNull()
@@ -24,6 +17,17 @@ fun main(args: Array<String>) {
         println("Invalid invocation, should provide report file path")
         return
     }
+
+    // TODO: build options from command line
+    val jmhOptions = OptionsBuilder()
+        .mode(Mode.Throughput)
+        .timeUnit(TimeUnit.SECONDS)
+        .warmupIterations(5)
+        .measurementIterations(5)
+        .warmupTime(TimeValue.milliseconds(500))
+        .measurementTime(TimeValue.milliseconds(500))
+        .forks(1)
+
     val options = jmhOptions.apply {
         threads(1)
     }
@@ -66,11 +70,10 @@ class JmhOutputFormat(val reportFile: String) : PrintOutputFormat(System.out) {
 
     override fun endRun(result: Collection<RunResult>) {
         printMessageLine("")
-        val results = result.map { benchmark ->
-            ReportBenchmarkResult(benchmark.params.benchmark, benchmark.primaryResult.getScore())
+        File(reportFile).outputStream().use {
+            val reportFormat = ResultFormatFactory.getInstance(ResultFormatType.JSON, PrintStream(it))
+            reportFormat.writeOut(result)
         }
-
-        File(reportFile).writeText(results.toJson())
     }
 
     override fun startBenchmark(benchParams: BenchmarkParams) {
