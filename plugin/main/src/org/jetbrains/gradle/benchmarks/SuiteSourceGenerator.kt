@@ -17,8 +17,9 @@ class SuiteSourceGenerator(val module: ModuleDescriptor, val output: File, val p
     val stateAnnotationFQN = "org.jetbrains.gradle.benchmarks.State"
     val mainBenchmarkPackage = "org.jetbrains.gradle.benchmarks.generated"
     val nativeSuite = ClassName.bestGuess("org.jetbrains.gradle.benchmarks.native.Suite")
+    val jsSuite = ClassName.bestGuess("org.jetbrains.gradle.benchmarks.js.Suite")
     val suiteType = when (platform) {
-        Platform.JS -> Dynamic
+        Platform.JS -> jsSuite
         Platform.NATIVE -> nativeSuite
     }
 
@@ -29,17 +30,13 @@ class SuiteSourceGenerator(val module: ModuleDescriptor, val output: File, val p
         processPackage(module, module.getPackage(FqName.ROOT)) {
             generateBenchmark(it)
         }
-        when (platform) {
-            Platform.JS -> generateJsRunnerMain()
-            Platform.NATIVE -> generateNativeRunnerMain()
-        }
-
+        generateRunnerMain()
     }
 
-    private fun generateNativeRunnerMain() {
+    private fun generateRunnerMain() {
         val file = FileSpec.builder(mainBenchmarkPackage, "BenchmarkSuite").apply {
             function("main") {
-                addStatement("val suite = %T()", nativeSuite)
+                addStatement("val suite = %T()", suiteType)
                 for (benchmark in benchmarks) {
                     addStatement("%T().addBenchmarkToSuite(suite)", benchmark)
                 }
@@ -47,35 +44,6 @@ class SuiteSourceGenerator(val module: ModuleDescriptor, val output: File, val p
             }
         }.build()
         file.writeTo(output)
-    }
-
-    private fun generateJsRunnerMain() {
-        val file = FileSpec.builder(mainBenchmarkPackage, "BenchmarkSuite").apply {
-            addRequireFunction()
-            addJsMain()
-        }.build()
-        file.writeTo(output)
-    }
-
-    private fun FileSpec.Builder.addJsMain() {
-        addImport("org.jetbrains.gradle.benchmarks.js", "suiteJson")
-        function("main") {
-            addStatement("val benchmarkjs = require(\"benchmark\")")
-            addStatement("val suite = benchmarkjs.Suite()")
-            for (benchmark in benchmarks) {
-                addStatement("%T().addBenchmarkToSuite(suite)", benchmark)
-            }
-            addStatement("suite.run()")
-            addStatement("println(suiteJson(suite))")
-        }
-    }
-
-    private fun FileSpec.Builder.addRequireFunction() {
-        function("require") {
-            addModifiers(KModifier.EXTERNAL)
-            addParameter("module", String::class)
-            returns(Dynamic)
-        }
     }
 
     private fun processPackage(
