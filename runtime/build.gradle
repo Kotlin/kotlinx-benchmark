@@ -20,27 +20,27 @@ repositories {
 }
 
 kotlin {
-    targets {
-        fromPreset(presets.jvm, 'jvm') {
-            configure([compilations.main, compilations.test]) {
-                tasks.getByName(compileKotlinTaskName).kotlinOptions {
-                    jvmTarget = '1.8'
-                }
+    jvm {
+        compilations.all {
+            kotlinOptions {
+                jvmTarget = '1.8'
             }
         }
-        fromPreset(presets.js, 'js') {
-            configure([compilations.main, compilations.test]) {
-                tasks.getByName(compileKotlinTaskName).kotlinOptions {
-                    sourceMap = true
-                    moduleKind = "umd"
-                }
-            }
-        }
-        // For ARM, preset should be changed to presets.iosArm32 or presets.iosArm64
-        // For Linux, preset should be changed to e.g. presets.linuxX64
-        // For MacOS, preset should be changed to e.g. presets.macosX64
-        fromPreset(presets.macosX64, 'native')
     }
+
+    js {
+        compilations.all {
+            kotlinOptions {
+                sourceMap = true
+                moduleKind = "umd"
+            }
+        }
+    }
+
+    // For ARM, preset should be changed to presets.iosArm32 or presets.iosArm64
+    // For Linux, preset should be changed to e.g. presets.linuxX64
+    // For MacOS, preset should be changed to e.g. presets.macosX64
+    macosX64('native')
 
     sourceSets {
         commonMain {
@@ -85,15 +85,8 @@ kotlin {
     sourceSets.all {
         kotlin.srcDirs = ["$it.name/src"]
         resources.srcDirs = ["$it.name/resources"]
+        languageSettings.progressiveMode = true
     }
-}
-
-repositories {
-    mavenCentral()
-    jcenter()
-    gradlePluginPortal()
-    maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
-    maven { url 'https://dl.bintray.com/kotlin/kotlin-dev' }
 }
 
 apply from: rootProject.file("gradle/publish.gradle")
