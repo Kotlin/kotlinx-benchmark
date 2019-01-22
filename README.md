@@ -21,7 +21,7 @@ In `build.gradle` apply plugin:
 
 ```groovy
 plugins {
-    id 'org.jetbrains.gradle.benchmarks.plugin' version '0.1.3'
+    id 'org.jetbrains.gradle.benchmarks.plugin' version '0.1.5'
 }
 ```
 
@@ -71,6 +71,17 @@ annotations and code that will wire things up:
 repositories {
     maven { url 'https://dl.bintray.com/orangy/maven' }
 }
+
+sourceSets {
+    commonMain {
+        dependencies {
+            implementation 'org.jetbrains.kotlin:kotlin-stdlib-common'
+            implementation 'org.jetbrains.gradle.benchmarks:runtime:0.1.5'
+        }
+    }
+    …
+}
+        
 ```
 
 # Configuring benchmark source sets
