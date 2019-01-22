@@ -3,7 +3,9 @@ package org.jetbrains.gradle.benchmarks
 class ReportBenchmarkResult(
     val benchmark: String,
     val score: Double,
+    val error: Double,
     val confidence: Pair<Double, Double>,
+    val percentiles: Map<Double, Double>,
     val values: DoubleArray
 )
 
@@ -18,14 +20,23 @@ fun List<ReportBenchmarkResult>.toJson() = joinToString(",", prefix = "[", postf
     "measurementTime" : "500 ms",
     "primaryMetric" : {
        "score": ${it.score},
-       "scoreError": ${(it.confidence.second - it.confidence.first) / 2},
+       "scoreError": ${it.error},
        "scoreConfidence" : [
           ${it.confidence.first},
           ${it.confidence.second}
        ],
+       "scorePercentiles" : {
+          ${it.percentiles.entries.joinToString(separator = ",\n          ") {
+        "\"${it.key.format(2)}\" : ${it.value}"
+    }}
+       },
        "scoreUnit" : "ops/s",
        "rawData" : [
-           ${it.values.joinToString(prefix = "[\n             ", postfix = "\n           ]", separator = ",\n             ")}
+           ${it.values.joinToString(
+        prefix = "[\n             ",
+        postfix = "\n           ]",
+        separator = ",\n             "
+    )}
        ]
     },
     "secondaryMetrics" : {

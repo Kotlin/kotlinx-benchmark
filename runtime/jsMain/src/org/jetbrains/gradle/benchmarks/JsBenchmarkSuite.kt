@@ -11,13 +11,14 @@ class Suite(dummy_args: Array<out String>) {
     private val args = (process["argv"] as Array<String>).drop(2)
     private val reportFile = args.first()
     private val suite: dynamic = benchmarkJs.Suite()
+    val results = mutableListOf<ReportBenchmarkResult>()
 
     fun run() {
         suite.on("complete") {
             println()
         }
         suite.run()
-        fs.writeFile(reportFile, results().toJson()) { err -> if (err) throw err }
+        fs.writeFile(reportFile, results.toJson()) { err -> if (err) throw err }
     }
 
     fun add(name: String, function: () -> Any?, setup: () -> Unit, teardown: () -> Unit) {
@@ -29,23 +30,11 @@ class Suite(dummy_args: Array<out String>) {
             setup()
         }
         benchmark.on("complete") { event ->
-            val name = event.target.name
-            println("  ${event.target.toString().removePrefix("$name x ")}")
             teardown()
+            val stats = event.target.stats
+            val samples = stats.sample.unsafeCast<DoubleArray>().map { 1 / it }.toDoubleArray()
+            results.add(ReportBenchmarksStatistics.createResult(event.target.name, samples))
         }
-
-    }
-
-    private fun results(): List<ReportBenchmarkResult> {
-        val results = mutableListOf<ReportBenchmarkResult>()
-        for (index in 0 until suite.length) {
-            val benchmark = suite[index]
-            val stats = benchmark.stats
-            val confidence = Pair(1 / (stats.mean + stats.moe) as Double, 1 / (stats.mean - stats.moe) as Double)
-            val values = stats.sample.unsafeCast<DoubleArray>().map { 1 / it }.toDoubleArray()
-            results.add(ReportBenchmarkResult(benchmark.name, benchmark.hz, confidence, values))
-        }
-        return results
     }
 }
 
