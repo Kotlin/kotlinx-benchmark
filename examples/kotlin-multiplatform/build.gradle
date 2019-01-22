@@ -97,3 +97,22 @@ benchmark {
         
     }
 }
+
+// Workaround the problem with Node downloading
+repositories.all {
+    if (it instanceof IvyArtifactRepository) {
+        metadataSources {
+            artifact()
+        }
+    }
+}
+
+node {
+    version = "$node_version"
+    npmVersion = "$npm_version"
+    download = true
+
+    workDir = new File(rootProject.projectDir, ".gradle/nodejs")
+    npmWorkDir = new File(rootProject.projectDir, ".gradle/npm")
+    nodeModulesDir = file(buildDir)
+}
