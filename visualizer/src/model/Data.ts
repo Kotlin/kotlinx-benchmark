@@ -5,12 +5,12 @@ export interface ResultsBundle {
 }
 
 export interface ResultsBenchmark {
-    benchmark: String
+    benchmark: string
     mode: "thrpt"
     warmupIterations: number
-    warmupTime: String
+    warmupTime: string
     measurementIterations: number
-    measurementTime: String
+    measurementTime: string
     primaryMetric: ResultsMetric
 }
 

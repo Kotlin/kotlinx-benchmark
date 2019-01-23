@@ -14,3 +14,5 @@ export const violets = ['#b7337a', '#cc70a1', '#e9c1d7'];
 export const yellows = [yellow, '#ccc970', '#e2e0ad'];
 
 export const reds = ['#7b2c22', red, '#d47063'];
+
+export const colors = ['#63a0d4', '#a1cc70', '#cc9a70', '#cc70a1', '#ccc970', '#d47063'];

@@ -908,6 +908,18 @@
     "@svgr/core" "^2.4.1"
     loader-utils "^1.1.0"
 
+"@types/d3-path@*":
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/@types/d3-path/-/d3-path-1.0.7.tgz#a0736fceed688a695f48265a82ff7a3369414b81"
+  integrity sha512-U8dFRG+8WhkLJr2sxZ9Cw/5WeRgBnNqMxGdA1+Z0+ZG6tK0s75OQ4OXnxeyfKuh6E4wQPY8OAKr1+iNDx01BEQ==
+
+"@types/d3-shape@*":
+  version "1.2.8"
+  resolved "https://registry.yarnpkg.com/@types/d3-shape/-/d3-shape-1.2.8.tgz#7750d34b8f817d543d62eaeb8d38b77886211b5c"
+  integrity sha512-eHAi4Nuw1/69hjBFNXNWYifcNTFhwy360PI969ssMX22Si9henYiNKLeJoBhNfyXFajeFjI1HGsYzyCWKOozdA==
+  dependencies:
+    "@types/d3-path" "*"
+
 "@types/jest@23.3.13":
   version "23.3.13"
   resolved "https://registry.yarnpkg.com/@types/jest/-/jest-23.3.13.tgz#c81484b6f4ca007bb09887ed15ecb3286d58f928"
@@ -949,6 +961,20 @@
   dependencies:
     "@types/prop-types" "*"
     csstype "^2.2.0"
+
+"@types/recharts-scale@*":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@types/recharts-scale/-/recharts-scale-1.0.0.tgz#348c9220d6d9062c44a9d585d686644a97f7e25d"
+  integrity sha512-HR/PrCcxYb2YHviTqH7CMdL1TUhUZLTUKzfrkMhxm1HTa5mg/QtP8XMiuSPz6dZ6wecazAOu8aYZ5DqkNlgHHQ==
+
+"@types/recharts@^1.1.9":
+  version "1.1.9"
+  resolved "https://registry.yarnpkg.com/@types/recharts/-/recharts-1.1.9.tgz#eb20c2730a6018a6d73f4a5d9a7ff96314f3627e"
+  integrity sha512-WDK8hhWd4ilmg8CmK7wMcUhLnDmPtaQdXGZoY9rOwOhYEnJX3PWpsvSRBFk+pNzp+QureBAHO1jkAu4uRXbp8Q==
+  dependencies:
+    "@types/d3-shape" "*"
+    "@types/react" "*"
+    "@types/recharts-scale" "*"
 
 "@types/tapable@1.0.2":
   version "1.0.2"
