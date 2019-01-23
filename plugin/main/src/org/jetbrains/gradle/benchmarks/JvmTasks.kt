@@ -6,12 +6,8 @@ import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.compile.*
 
-fun Project.createJvmBenchmarkCompileTask(
-    extension: BenchmarksExtension,
-    config: BenchmarkConfiguration,
-    compileClasspath: FileCollection
-) {
-    val benchmarkBuildDir = benchmarkBuildDir(extension, config)
+fun Project.createJvmBenchmarkCompileTask(config: BenchmarkConfiguration, compileClasspath: FileCollection) {
+    val benchmarkBuildDir = benchmarkBuildDir(config)
     task<JavaCompile>(
         "${config.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}",
         depends = BenchmarksPlugin.ASSEMBLE_BENCHMARKS_TASKNAME
@@ -25,32 +21,28 @@ fun Project.createJvmBenchmarkCompileTask(
     }
 }
 
-fun createJmhGenerationRuntimeConfiguration(
-    project: Project,
-    config: BenchmarkConfiguration
-): Configuration {
+fun Project.createJmhGenerationRuntimeConfiguration(name: String, jmhVersion: String): Configuration {
     // This configuration defines classpath for JMH generator, it should have everything available via reflection
-    return project.configurations.create("${config.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}CP").apply {
+    return configurations.create("$name${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}CP").apply {
         isVisible = false
-        description = "JMH Generator Runtime Configuration for '${config.name}'"
+        description = "JMH Generator Runtime Configuration for '$name'"
 
-        val dependencies = project.dependencies
+        val dependencies = this@createJmhGenerationRuntimeConfiguration.dependencies
         @Suppress("UnstableApiUsage")
-        defaultDependencies {
-            it.add(dependencies.create("${BenchmarksPlugin.JMH_GENERATOR_DEPENDENCY}${config.jmhVersion}"))
-        }
+        (defaultDependencies {
+            it.add(dependencies.create("${BenchmarksPlugin.JMH_GENERATOR_DEPENDENCY}$jmhVersion"))
+        })
     }
 }
 
 fun Project.createJvmBenchmarkGenerateSourceTask(
-    extension: BenchmarksExtension,
     config: BenchmarkConfiguration,
     workerClasspath: FileCollection,
     compileClasspath: FileCollection,
     compilationTask: String,
     compilationOutput: FileCollection
 ) {
-    val benchmarkBuildDir = benchmarkBuildDir(extension, config)
+    val benchmarkBuildDir = benchmarkBuildDir(config)
     task<JmhBytecodeGeneratorTask>("${config.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}") {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Generate JMH source files for '${config.name}'"
@@ -64,7 +56,6 @@ fun Project.createJvmBenchmarkGenerateSourceTask(
 }
 
 fun Project.createJvmBenchmarkExecTask(
-    extension: BenchmarksExtension,
     config: BenchmarkConfiguration,
     runtimeClasspath: FileCollection
 ) {
@@ -72,8 +63,8 @@ fun Project.createJvmBenchmarkExecTask(
         "${config.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}",
         depends = BenchmarksPlugin.RUN_BENCHMARKS_TASKNAME
     ) {
-        val benchmarkBuildDir = benchmarkBuildDir(extension, config)
-        val reportsDir = buildDir.resolve(extension.buildDir).resolve(extension.reportsDir)
+        val benchmarkBuildDir = benchmarkBuildDir(config)
+        val reportsDir = benchmarkReportsDir(config)
         val reportFile = reportsDir.resolve("${config.name}.json")
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Execute benchmark for '${config.name}'"

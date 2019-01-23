@@ -39,7 +39,7 @@ tasks.withType<KotlinCompile> {
 configure<BenchmarksExtension> {
     configurations {
         register("main") {
-            jmhVersion = "1.21"
+            //jmhVersion = "1.21"
         }
     }
 }

@@ -5,9 +5,7 @@ import com.moowork.gradle.node.npm.*
 import com.moowork.gradle.node.task.*
 import org.gradle.api.*
 import org.gradle.api.tasks.*
-import org.gradle.process.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
-import java.io.*
 
 fun Project.createJsBenchmarkInstallTask() {
     val node = project.extensions.getByType(NodeExtension::class.java)
@@ -21,7 +19,6 @@ fun Project.createJsBenchmarkInstallTask() {
 
 
 fun Project.createJsBenchmarkExecTask(
-    extension: BenchmarksExtension,
     config: BenchmarkConfiguration,
     compilation: KotlinJsCompilation
 ) {
@@ -34,7 +31,7 @@ fun Project.createJsBenchmarkExecTask(
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Executes benchmark for '${config.name}'"
 
-        val reportsDir = buildDir.resolve(extension.buildDir).resolve(extension.reportsDir)
+        val reportsDir = benchmarkReportsDir(config)
         val reportFile = reportsDir.resolve("${config.name}.json")
 
         setScript(nodeModulesDir.resolve(compilation.compileKotlinTask.outputFile.name))
@@ -49,7 +46,6 @@ fun Project.createJsBenchmarkExecTask(
 }
 
 fun Project.createJsBenchmarkDependenciesTask(
-    extension: BenchmarksExtension,
     config: BenchmarkConfiguration,
     compilation: KotlinJsCompilation
 ) {

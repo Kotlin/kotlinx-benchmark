@@ -1,9 +1,7 @@
 package org.jetbrains.gradle.benchmarks
 
 import org.gradle.api.*
-import org.gradle.api.plugins.*
 import org.gradle.util.*
-import org.jetbrains.kotlin.gradle.dsl.*
 
 @Suppress("unused")
 class BenchmarksPlugin : Plugin<Project> {
@@ -31,6 +29,7 @@ class BenchmarksPlugin : Plugin<Project> {
             return // TODO: Do we need to fail build at this point or just ignore benchmarks?
         }
 
+        println("APPLY PLUGIN")
         // DO NOT use properties of an extension immediately, it will not contain any user-specified data
         val extension = project.extensions.create(BENCHMARK_EXTENSION_NAME, BenchmarksExtension::class.java, project)
 
@@ -51,23 +50,18 @@ class BenchmarksPlugin : Plugin<Project> {
         // Individual benchmarks depend on their respective building tasks for fast turnaround
         runBenchmarks.get().dependsOn(assembleBenchmarks)
 
-        configureBenchmarks(extension, project)
+        project.afterEvaluate {
+            project.processConfigurations(extension)
+        }
     }
 
-    private fun configureBenchmarks(extension: BenchmarksExtension, project: Project) {
+    private fun Project.processConfigurations(extension: BenchmarksExtension) {
         extension.configurations.all { config ->
-            // This lambda is called as soon as configuration is added to a `benchmark` section
-            // TODO: could be a problem, if it is configured before `kotlin` mpp section
-            val mpp = project.extensions.findByType(KotlinMultiplatformExtension::class.java)
-            when {
-                mpp != null -> {
-                    project.configureKotlinMultiplatform(extension, config, mpp)
-                }
-                else -> {
-                    project.plugins.withType(JavaPlugin::class.java) {
-                        project.configureJavaPlugin(extension, config)
-                    }
-                }
+            when (config) {
+                is JavaBenchmarkConfiguration -> processJavaSourceSet(config)
+                is JvmBenchmarkConfiguration -> processJvmCompilation(config)
+                is JsBenchmarkConfiguration -> processJsCompilation(config)
+                is NativeBenchmarkConfiguration -> processNativeCompilation(config)
             }
         }
     }

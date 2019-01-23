@@ -3,17 +3,13 @@ package org.jetbrains.gradle.benchmarks
 import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 
-fun Project.processJvmCompilation(
-    extension: BenchmarksExtension,
-    config: BenchmarkConfiguration,
-    compilation: KotlinJvmCompilation
-) {
+fun Project.processJvmCompilation(config: JvmBenchmarkConfiguration) {
+    project.logger.info("Configuring benchmarks for '${config.name}' using Kotlin/JVM")
+    val compilation = config.compilation
     configureMultiplatformJvmCompilation(this, config, compilation)
 
-    val workerClasspath = createJmhGenerationRuntimeConfiguration(this, config)
-
+    val workerClasspath = this.createJmhGenerationRuntimeConfiguration(config.name, config.jmhVersion)
     createJvmBenchmarkGenerateSourceTask(
-        extension,
         config,
         workerClasspath,
         compilation.compileDependencyFiles,
@@ -21,13 +17,13 @@ fun Project.processJvmCompilation(
         compilation.output.allOutputs
     )
     val runtimeClasspath = compilation.output.allOutputs + compilation.runtimeDependencyFiles
-    createJvmBenchmarkCompileTask(extension, config, runtimeClasspath)
-    createJvmBenchmarkExecTask(extension, config, runtimeClasspath)
+    createJvmBenchmarkCompileTask(config, runtimeClasspath)
+    createJvmBenchmarkExecTask(config, runtimeClasspath)
 }
 
 private fun configureMultiplatformJvmCompilation(
     project: Project,
-    config: BenchmarkConfiguration,
+    config: JvmBenchmarkConfiguration,
     compilation: KotlinJvmCompilation
 ) {
     // Add JMH core library as an implementation dependency to the specified compilation
