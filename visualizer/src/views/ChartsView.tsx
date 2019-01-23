@@ -34,12 +34,21 @@ export class ChartsView extends Component<{ results: ResultsBundle }> {
             }
         }
 
+        /**
+         * Remove platform name from benchmark name.
+         * Example: test.NativeTestBenchmark.sqrtBenchmark -> test.TestBenchmark.sqrtBenchmark
+         */
+        function cleanBenchmarkName(platform: string, name: string): string {
+            return name.replace(new RegExp(platform, "ig"), '')
+        }
+
         for (let target in this.props.results) {
             bars.push(<Bar dataKey={target} fill={colors[i++]}/>);
 
             const dataValues: any = {name: target};
             this.props.results[target].forEach(bench => {
-                getBenchValues(bench.benchmark)[target] = bench.primaryMetric.score
+                let benchmarkName = cleanBenchmarkName(target, bench.benchmark);
+                getBenchValues(benchmarkName)[target] = bench.primaryMetric.score
             });
         }
 
