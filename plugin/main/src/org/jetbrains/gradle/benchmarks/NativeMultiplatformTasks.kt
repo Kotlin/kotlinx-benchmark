@@ -91,11 +91,15 @@ fun Project.createNativeBenchmarkExecTask(
         val reportFile = reportsDir.resolve("${config.name}.json")
 
         executable = linkTask.outputFile.get().absolutePath
-        args = listOf(reportFile.toString(), config.iterations, config.iterationTime) // TODO: configure!
+        
+        // TODO: configure!
+        args(listOf(reportFile.toString(), config.iterations(), config.iterationTime())) 
+        
         dependsOn(linkTask)
         doFirst {
             reportsDir.mkdirs()
             logger.lifecycle("Running benchmarks for ${config.name}")
+            logger.info("    I:${config.iterations()} T:${config.iterationTime()}")
         }
     }
 }

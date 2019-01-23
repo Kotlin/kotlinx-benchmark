@@ -2,18 +2,26 @@ package org.jetbrains.gradle.benchmarks
 
 import groovy.lang.*
 import org.gradle.api.*
+import org.gradle.api.internal.*
 import org.gradle.api.plugins.*
+import org.gradle.util.*
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 
 open class BenchmarksExtension(val project: Project) {
     var buildDir: String = "benchmarks"
-    var reportsDir: String = "reports"
+    var reportsDir: String = "reports/benchmarks"
 
+    val defaults = BenchmarkConfigurationDefaults()
+
+    fun defaults(configureClosure: Closure<BenchmarkConfigurationDefaults>) {
+        ConfigureUtil.configureSelf(configureClosure, defaults)
+    }
+    
     fun configurations(configureClosure: Closure<NamedDomainObjectContainer<BenchmarkConfiguration>>): NamedDomainObjectContainer<BenchmarkConfiguration> {
         return configurations.configure(configureClosure)
     }
-    
+
     val configurations: NamedDomainObjectContainer<BenchmarkConfiguration> = run {
         project.container(BenchmarkConfiguration::class.java) { name ->
             val multiplatform = project.extensions.findByType(KotlinMultiplatformExtension::class.java)
@@ -24,7 +32,7 @@ open class BenchmarksExtension(val project: Project) {
             // Materialization includes calling this factory method AND calling user-provided configuration closure
             // We need to know type of the compilation/sourceSet for the given name to provide proper typed object
             // to user configuration script.  
-            
+
             when {
                 multiplatform != null -> {
                     val compilations = multiplatform.targets.flatMap { it.compilations }

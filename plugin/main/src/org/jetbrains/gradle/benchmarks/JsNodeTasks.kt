@@ -35,12 +35,13 @@ fun Project.createJsBenchmarkExecTask(
         val reportFile = reportsDir.resolve("${config.name}.json")
 
         setScript(nodeModulesDir.resolve(compilation.compileKotlinTask.outputFile.name))
-        addArgs(reportFile.toString())
+        addArgs(reportFile.toString(), config.iterations(), config.iterationTime()) // TODO: configure!
         setWorkingDir(nodeModulesDir)
         dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_DEPENDENCIES_SUFFIX}")
         doFirst {
             reportsDir.mkdirs()
             logger.lifecycle("Running benchmarks for ${config.name}")
+            logger.info("    I:${config.iterations()} T:${config.iterationTime()}")
         }
     }
 }

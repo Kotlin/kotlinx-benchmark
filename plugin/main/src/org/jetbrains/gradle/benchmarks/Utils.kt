@@ -30,12 +30,11 @@ inline fun <reified T : Task> Project.task(
     return task
 }
 
-fun Project.benchmarkBuildDir(config: BenchmarkConfiguration): File {
-    return file(buildDir.resolve(config.extension.buildDir).resolve(config.name))
-}
+fun Project.benchmarkBuildDir(config: BenchmarkConfiguration): File =
+    file(buildDir.resolve(config.extension.buildDir).resolve(config.name))
 
-fun Project.benchmarkReportsDir(config: BenchmarkConfiguration) =
-    benchmarkBuildDir(config).resolve(config.extension.reportsDir)
+fun Project.benchmarkReportsDir(config: BenchmarkConfiguration): File =
+    file(buildDir.resolve(config.extension.reportsDir))
 
 class KotlinClosure1<in T : Any?, V : Any>(
     val function: T.() -> V?,

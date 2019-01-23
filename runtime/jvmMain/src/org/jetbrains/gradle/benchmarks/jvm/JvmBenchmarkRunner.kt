@@ -1,4 +1,4 @@
-package org.jetbrains.gradle.benchmarks
+package org.jetbrains.gradle.benchmarks.jvm
 
 import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.*
@@ -10,7 +10,6 @@ import org.openjdk.jmh.runner.options.*
 import java.io.*
 import java.util.concurrent.*
 
-
 fun main(args: Array<String>) {
     val reportFile = args.firstOrNull()
     if (reportFile == null) {
@@ -18,14 +17,17 @@ fun main(args: Array<String>) {
         return
     }
 
+    val iterations = args[1].toInt()
+    val iterationTime = args[2].toLong()
+
     // TODO: build options from command line
     val jmhOptions = OptionsBuilder()
         .mode(Mode.Throughput)
         .timeUnit(TimeUnit.SECONDS)
-        .warmupIterations(5)
-        .measurementIterations(5)
-        .warmupTime(TimeValue.milliseconds(500))
-        .measurementTime(TimeValue.milliseconds(500))
+        .warmupIterations(iterations)
+        .measurementIterations(iterations)
+        .warmupTime(TimeValue.milliseconds(iterationTime))
+        .measurementTime(TimeValue.milliseconds(iterationTime))
         .forks(1)
 
     val options = jmhOptions.apply {

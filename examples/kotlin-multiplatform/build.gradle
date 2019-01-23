@@ -105,6 +105,10 @@ kotlin {
 
 // Configure benchmark
 benchmark {
+    defaults {
+        iterationTime = 1000
+    }
+    
     // Setup configurations
     configurations {
         // This one matches compilation base name, e.g. 'jvm', 'jvmTest', etc
