@@ -1,0 +1,16 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.gradle.benchmarks.plugin' version '0.1-SNAPSHOT'
+}
+
+dependencies {
+    implementation project(":runtime")
+}
+
+benchmark {
+    configurations {
+        register("main") {
+            jmhVersion = "1.21"
+        }
+    }
+}
