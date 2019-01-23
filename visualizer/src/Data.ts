@@ -26,7 +26,7 @@ export interface ResultsMetric {
 export async function downloadBenchmarkResult(reportsDirUrl: string, _targets?: string[]): Promise<ResultsBundle> {
     const targets = _targets || ['js', 'jvm', 'native'];
     const results = await Promise.all(
-        targets.map(async target => (await fetch(reportsDirUrl + "/" + target)).json())
+        targets.map(async target => (await fetch(reportsDirUrl + "/" + target + ".json")).json())
     );
     const result: ResultsBundle = {};
     targets.forEach((target, index) => result[target] = results[index] as [ResultsBenchmark]);

@@ -1,18 +1,34 @@
 import React, {Component} from 'react';
 import './App.css';
 import {UploadView} from "./UploadView";
-import {loadBenchmarkFromFiles} from "./Data";
+import {downloadBenchmarkResult, loadBenchmarkFromFiles, ResultsBundle} from "./Data";
+import {ChartsView} from "./ChartsView";
 
-class App extends Component {
+class App extends Component<{}, { results: null | "loading" | ResultsBundle }> {
+    constructor(props: Readonly<{}>) {
+        super(props);
 
+        this.waitBundle(downloadBenchmarkResult('reports'))
+    }
 
     render() {
-    return (
-        <UploadView onDropAccepted={
-            (files) => loadBenchmarkFromFiles(files).then(bundle => console.log(bundle))
-        }/>
-    );
-  }
+        if (!this.state || this.state.results == null) {
+            return <UploadView onDropAccepted={
+                (files) => this.waitBundle(loadBenchmarkFromFiles(files))
+            }/>;
+        } else if (this.state.results == "loading") {
+            return "loading..."
+        } else {
+            return <ChartsView results={this.state.results as ResultsBundle}/>
+        }
+    }
+
+    waitBundle(promise: Promise<ResultsBundle>) {
+        this.setState({results: "loading"});
+        promise
+            .then(bundle => this.setState({results: bundle}))
+            .catch(() => this.setState({results: null}));
+    }
 }
 
 export default App;
