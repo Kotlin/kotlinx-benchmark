@@ -10,15 +10,21 @@ open class BenchmarksExtension(val project: Project) {
     var buildDir: String = "benchmarks"
     var reportsDir: String = "reports"
 
-    internal val multiplatform = project.extensions.findByType(KotlinMultiplatformExtension::class.java)
-    internal val javaConvention = project.convention.findPlugin(JavaPluginConvention::class.java)
-
     fun configurations(configureClosure: Closure<NamedDomainObjectContainer<BenchmarkConfiguration>>): NamedDomainObjectContainer<BenchmarkConfiguration> {
         return configurations.configure(configureClosure)
     }
-
+    
     val configurations: NamedDomainObjectContainer<BenchmarkConfiguration> = run {
         project.container(BenchmarkConfiguration::class.java) { name ->
+            val multiplatform = project.extensions.findByType(KotlinMultiplatformExtension::class.java)
+            val javaConvention = project.convention.findPlugin(JavaPluginConvention::class.java)
+
+            // Factory function which is called when a given registration is materialized
+            // Subscribing to NDOC (configurations.all) will cause every registration to eagerly materialize
+            // Materialization includes calling this factory method AND calling user-provided configuration closure
+            // We need to know type of the compilation/sourceSet for the given name to provide proper typed object
+            // to user configuration script.  
+            
             when {
                 multiplatform != null -> {
                     val compilations = multiplatform.targets.flatMap { it.compilations }

@@ -4,8 +4,12 @@ import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 
 open class BenchmarkConfiguration(val extension: BenchmarksExtension, val name: String) {
-    var iterations = ((extension.project.findProperty("benchmarks_iterations") as? String) ?: "10").toInt()
-    var iterationTime = ((extension.project.findProperty("benchmarks_iterationTime") as? String) ?: "1000").toInt()
+    var iterations : Int?= null
+    var iterationTime : Int? = ((extension.project.findProperty("benchmarks_iterationTime") as? String) ?: "1000").toInt()
+    
+    fun iterations() {
+        
+    }
 }
 
 class JavaBenchmarkConfiguration(

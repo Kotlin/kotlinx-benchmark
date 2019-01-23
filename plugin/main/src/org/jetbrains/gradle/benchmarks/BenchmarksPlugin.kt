@@ -23,38 +23,41 @@ class BenchmarksPlugin : Plugin<Project> {
         const val ASSEMBLE_BENCHMARKS_TASKNAME = "assembleBenchmarks"
     }
 
-    override fun apply(project: Project) {
+    override fun apply(project: Project) = project.run {
         if (GradleVersion.current() < GradleVersion.version("4.10")) {
-            project.logger.error("JetBrains Gradle Benchmarks plugin requires Gradle version 4.10 or higher")
+            logger.error("JetBrains Gradle Benchmarks plugin requires Gradle version 4.10 or higher")
             return // TODO: Do we need to fail build at this point or just ignore benchmarks?
         }
 
         // DO NOT use properties of an extension immediately, it will not contain any user-specified data
-        val extension = project.extensions.create(BENCHMARK_EXTENSION_NAME, BenchmarksExtension::class.java, project)
+        val extension = extensions.create(BENCHMARK_EXTENSION_NAME, BenchmarksExtension::class.java, project)
 
-        // Create empty task to run all benchmarks in a project
-        val runBenchmarks = project.task<DefaultTask>(RUN_BENCHMARKS_TASKNAME) {
-            group = BENCHMARKS_TASK_GROUP
-            description = "Execute all benchmarks in a project"
-        }
-
-        // Create empty task to build all benchmarks in a project
-        val assembleBenchmarks = project.task<DefaultTask>(ASSEMBLE_BENCHMARKS_TASKNAME) {
+        // Create empty task that will depend on all benchmark building tasks to build all benchmarks in a project
+        val assembleBenchmarks = task<DefaultTask>(ASSEMBLE_BENCHMARKS_TASKNAME) {
             group = BENCHMARKS_TASK_GROUP
             description = "Generate and build all benchmarks in a project"
         }
 
-        // Force all benchmarks runner to first build all benchmarks to ensure it won't spend time
-        // running some benchmarks when other will fail to compile
-        // Individual benchmarks depend on their respective building tasks for fast turnaround
-        runBenchmarks.get().dependsOn(assembleBenchmarks)
+        // Create empty task that will depend on all benchmark execution tasks to run all benchmarks in a project
+        val runBenchmarks = task<DefaultTask>(RUN_BENCHMARKS_TASKNAME) {
+            group = BENCHMARKS_TASK_GROUP
+            description = "Execute all benchmarks in a project"
 
-        project.afterEvaluate {
-            project.processConfigurations(extension)
+            // Force all benchmarks runner to first build all benchmarks to ensure it won't spend time
+            // running some benchmarks when other will fail to compile
+            // Individual benchmarks depend on their respective building tasks for fast turnaround
+            dependsOn(assembleBenchmarks)
+        }
+        
+        // TODO: Design configuration avoidance
+        // I currently don't how to do it correctly yet, so materialize all tasks after project evaluation. 
+        afterEvaluate {
+            processConfigurations(extension)
         }
     }
 
     private fun Project.processConfigurations(extension: BenchmarksExtension) {
+        // Calling `all` on NDOC causes all items to materialize and be configured
         extension.configurations.all { config ->
             when (config) {
                 is JavaBenchmarkConfiguration -> processJavaSourceSet(config)
