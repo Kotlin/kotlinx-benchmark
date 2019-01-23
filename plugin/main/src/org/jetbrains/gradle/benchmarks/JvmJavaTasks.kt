@@ -34,7 +34,7 @@ private fun configureJmhDependency(project: Project, config: JavaBenchmarkConfig
     val dependencies = project.dependencies
 
     // Add dependency to JMH core library to the source set designated by config.name
-    val jmhCore = dependencies.create("${BenchmarksPlugin.JMH_CORE_DEPENDENCY}${config.jmhVersion}")
+    val jmhCore = dependencies.create("${BenchmarksPlugin.JMH_CORE_DEPENDENCY}:${config.jmhVersion}")
     val configurationRoot = "implementation"
 
     val dependencyConfiguration = if (config.name == "main")

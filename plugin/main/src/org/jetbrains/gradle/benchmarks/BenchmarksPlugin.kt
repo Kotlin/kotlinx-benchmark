@@ -16,7 +16,7 @@ class BenchmarksPlugin : Plugin<Project> {
         const val BENCHMARK_COMPILATION_NAME = "benchmark"
         const val BENCHMARK_DEPENDENCIES_SUFFIX = "BenchmarkDependencies"
 
-        const val JMH_CORE_DEPENDENCY = "org.openjdk.jmh:jmh-core:"
+        const val JMH_CORE_DEPENDENCY = "org.openjdk.jmh:jmh-core"
         const val JMH_GENERATOR_DEPENDENCY = "org.openjdk.jmh:jmh-generator-bytecode:"
 
         const val RUN_BENCHMARKS_TASKNAME = "benchmark"
@@ -29,7 +29,6 @@ class BenchmarksPlugin : Plugin<Project> {
             return // TODO: Do we need to fail build at this point or just ignore benchmarks?
         }
 
-        println("APPLY PLUGIN")
         // DO NOT use properties of an extension immediately, it will not contain any user-specified data
         val extension = project.extensions.create(BENCHMARK_EXTENSION_NAME, BenchmarksExtension::class.java, project)
 

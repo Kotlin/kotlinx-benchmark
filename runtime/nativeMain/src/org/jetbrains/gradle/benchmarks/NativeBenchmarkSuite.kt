@@ -13,10 +13,9 @@ class Suite(private val args: Array<out String>) {
     )
 
     private val benchmarks = mutableListOf<BenchmarkDescriptor>()
-    private val reportFile = args.first()
-
-    val iterationTime = 1000 // ms
-    val iterationNumber = 10 // times
+    private val reportFile = args[0]
+    private val iterations = args[1].toInt()
+    private val iterationTime = args[2].toInt()
 
     fun add(name: String, function: () -> Any?, setup: () -> Unit, teardown: () -> Unit) {
         benchmarks.add(BenchmarkDescriptor(name, function, setup, teardown))
@@ -31,7 +30,7 @@ class Suite(private val args: Array<out String>) {
             val samples = try {
                 // Execute warmup
                 val cycles = warmup(benchmark)
-                DoubleArray(iterationNumber) {
+                DoubleArray(iterations) {
                     measure(benchmark, cycles)
                 }
             } finally {

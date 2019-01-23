@@ -84,20 +84,17 @@ fun Project.createNativeBenchmarkExecTask(
     ) {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Executes benchmark for '${config.name}'"
-        //setScript(file("$nodeModulesDir/${compilation.output}"))
-        val binary =
-            benchmarkCompilation.target.binaries.getExecutable(benchmarkCompilation.name, NativeBuildType.RELEASE)
+        val binary = benchmarkCompilation.target.binaries.getExecutable(benchmarkCompilation.name, NativeBuildType.RELEASE)
         val linkTask = binary.linkTask
 
         val reportsDir = benchmarkReportsDir(config)
         val reportFile = reportsDir.resolve("${config.name}.json")
 
         executable = linkTask.outputFile.get().absolutePath
-        args = listOf(reportFile.toString()) // TODO: configure!
+        args = listOf(reportFile.toString(), config.iterations, config.iterationTime) // TODO: configure!
         dependsOn(linkTask)
         doFirst {
             reportsDir.mkdirs()
-            //standardOutput = FileOutputStream(reportFile)
             logger.lifecycle("Running benchmarks for ${config.name}")
         }
     }

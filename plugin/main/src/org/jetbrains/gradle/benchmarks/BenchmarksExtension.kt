@@ -6,7 +6,7 @@ import org.gradle.api.plugins.*
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 
-open class BenchmarksExtension(private val project: Project) {
+open class BenchmarksExtension(val project: Project) {
     var buildDir: String = "benchmarks"
     var reportsDir: String = "reports"
 
@@ -19,7 +19,6 @@ open class BenchmarksExtension(private val project: Project) {
 
     val configurations: NamedDomainObjectContainer<BenchmarkConfiguration> = run {
         project.container(BenchmarkConfiguration::class.java) { name ->
-            println("CONFIGURE BENCHMARK: $name")
             when {
                 multiplatform != null -> {
                     val compilations = multiplatform.targets.flatMap { it.compilations }

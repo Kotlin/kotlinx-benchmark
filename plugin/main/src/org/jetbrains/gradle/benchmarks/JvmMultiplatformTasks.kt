@@ -27,7 +27,7 @@ private fun configureMultiplatformJvmCompilation(
     compilation: KotlinJvmCompilation
 ) {
     // Add JMH core library as an implementation dependency to the specified compilation
-    val jmhCore = project.dependencies.create("${BenchmarksPlugin.JMH_CORE_DEPENDENCY}${config.jmhVersion}")
+    val jmhCore = project.dependencies.create("${BenchmarksPlugin.JMH_CORE_DEPENDENCY}:${config.jmhVersion}")
     compilation.dependencies {
         implementation(jmhCore)
     }
