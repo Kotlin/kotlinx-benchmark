@@ -1,8 +1,8 @@
 import React, {Component} from 'react';
 import './App.css';
-import {UploadView} from "./UploadView";
-import {downloadBenchmarkResult, loadBenchmarkFromFiles, ResultsBundle} from "./Data";
-import {ChartsView} from "./ChartsView";
+import {UploadView} from "./views/UploadView";
+import {downloadBenchmarkResult, loadBenchmarkFromFiles, ResultsBundle} from "./model/Data";
+import {ChartsView} from "./views/ChartsView";
 
 class App extends Component<{}, { results: null | "loading" | ResultsBundle }> {
     constructor(props: Readonly<{}>) {
