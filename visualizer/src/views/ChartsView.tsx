@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {ResultsBundle} from "./Data";
+import {ResultsBundle} from "../model/Data";
 
 export class ChartsView extends Component<{ results: ResultsBundle }> {
     render() {
