@@ -6,12 +6,12 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.*
 
 fun Project.processJsCompilation(config: JsBenchmarkConfiguration) {
     project.logger.info("Configuring benchmarks for '${config.name}' using Kotlin/JS")
-    createJsBenchmarkInstallTask()
     val compilation = config.compilation
-    createJsBenchmarkGenerateSourceTask(
-        config,
-        compilation.output.allOutputs
-    )
+
+    configureMultiplatformJsCompilation(config)
+
+    createJsBenchmarkInstallTask()
+    createJsBenchmarkGenerateSourceTask(config, compilation.output.allOutputs)
 
     val benchmarkCompilation = createJsBenchmarkCompileTask(config)
     createJsBenchmarkDependenciesTask(config, benchmarkCompilation)
@@ -19,7 +19,6 @@ fun Project.processJsCompilation(config: JsBenchmarkConfiguration) {
 }
 
 private fun Project.createJsBenchmarkCompileTask(config: JsBenchmarkConfiguration): KotlinJsCompilation {
-
     val compilation = config.compilation
     val benchmarkBuildDir = benchmarkBuildDir(config)
     val benchmarkCompilation =
@@ -60,5 +59,14 @@ private fun Project.createJsBenchmarkGenerateSourceTask(
         inputClassesDirs = compilationOutput
         outputResourcesDir = file("$benchmarkBuildDir/resources")
         outputSourcesDir = file("$benchmarkBuildDir/sources")
+    }
+}
+
+private fun Project.configureMultiplatformJsCompilation(config: JsBenchmarkConfiguration) {
+    // Add runtime library as an implementation dependency to the specified compilation
+    val runtime = dependencies.create("${BenchmarksPlugin.RUNTIME_DEPENDENCY_BASE}-js:${config.extension.version}")
+
+    config.compilation.dependencies {
+        implementation(runtime)
     }
 }

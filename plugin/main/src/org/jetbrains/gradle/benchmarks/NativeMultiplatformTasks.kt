@@ -3,9 +3,14 @@ package org.jetbrains.gradle.benchmarks
 import org.gradle.api.*
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.konan.target.*
 
 fun Project.processNativeCompilation(config: NativeBenchmarkConfiguration) {
     project.logger.info("Configuring benchmarks for '${config.name}' using Kotlin/Native")
+
+    val compilation = config.compilation
+    configureMultiplatformNativeCompilation(config, compilation)
+
     createNativeBenchmarkGenerateSourceTask(config)
 
     val benchmarkCompilation = createNativeBenchmarkCompileTask(config)
@@ -101,5 +106,19 @@ fun Project.createNativeBenchmarkExecTask(
             logger.lifecycle("Running benchmarks for ${config.name}")
             logger.info("    I:${config.iterations()} T:${config.iterationTime()}")
         }
+    }
+}
+
+private fun Project.configureMultiplatformNativeCompilation(
+    config: NativeBenchmarkConfiguration,
+    compilation: KotlinNativeCompilation
+) {
+    val konanTarget = compilation.target.konanTarget
+    
+    // Add runtime library as an implementation dependency to the specified compilation
+    val runtime = dependencies.create("${BenchmarksPlugin.RUNTIME_DEPENDENCY_BASE}-${konanTarget.presetName}:${config.extension.version}")
+
+    compilation.dependencies {
+        implementation(runtime)
     }
 }

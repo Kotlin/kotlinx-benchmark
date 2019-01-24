@@ -1,3 +1,6 @@
+[![JetBrains incubator project](http://jb.gg/badges/incubator.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
+[![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](http://www.apache.org/licenses/LICENSE-2.0)
+
 # Setting up
 
 Add repository in `settings.gradle` to enable my bintray repository for plugin lookup
@@ -21,7 +24,7 @@ In `build.gradle` apply plugin:
 
 ```groovy
 plugins {
-    id 'org.jetbrains.gradle.benchmarks.plugin' version '0.1.5'
+    id 'org.jetbrains.gradle.benchmarks.plugin' version '0.1.6'
 }
 ```
 
@@ -65,24 +68,18 @@ allOpen {
 
 For JVM benchmarks you don't need anything, JMH core is added automatically.
 If you want to author multiplatform (especially common) benchmarks, you need a runtime library with small subset of 
-annotations and code that will wire things up:
+annotations and code that will wire things up. The dependency is added automatically, but you need to add a repository
+so that Gradle can resolve this dependency. 
 
 ```groovy
 repositories {
     maven { url 'https://dl.bintray.com/orangy/maven' }
 }
-
-sourceSets {
-    commonMain {
-        dependencies {
-            implementation 'org.jetbrains.kotlin:kotlin-stdlib-common'
-            implementation 'org.jetbrains.gradle.benchmarks:runtime:0.1.5'
-        }
-    }
-    …
-}
-        
 ```
+
+> Please note that in this early project stage only macOS x64 binaries are published. 
+If you need to run it on Linux or Windows, check out sources, update `build.gradle` for `runtime` project, and publish
+to Maven Local repository.   
 
 # Configuring benchmark source sets
 

@@ -3,8 +3,9 @@ plugins {
     id 'org.jetbrains.gradle.benchmarks.plugin' version '0.1-SNAPSHOT'
 }
 
-dependencies {
-    implementation project(":runtime")
+repositories {
+    mavenLocal() // runtime dependency requires publishing of runtime to mavenLocal
+    mavenCentral()
 }
 
 benchmark {

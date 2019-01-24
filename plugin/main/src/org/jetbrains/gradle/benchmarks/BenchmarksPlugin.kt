@@ -2,10 +2,13 @@ package org.jetbrains.gradle.benchmarks
 
 import org.gradle.api.*
 import org.gradle.util.*
+import org.jetbrains.kotlin.gradle.plugin.*
 
 @Suppress("unused")
 class BenchmarksPlugin : Plugin<Project> {
     companion object {
+        const val PLUGIN_ID = "org.jetbrains.gradle.benchmarks.plugin"
+        const val PLUGIN_VERSION = "0.1.6"
 
         const val BENCHMARKS_TASK_GROUP = "benchmark"
         const val BENCHMARK_EXTENSION_NAME = "benchmark"
@@ -16,6 +19,7 @@ class BenchmarksPlugin : Plugin<Project> {
         const val BENCHMARK_COMPILATION_NAME = "benchmark"
         const val BENCHMARK_DEPENDENCIES_SUFFIX = "BenchmarkDependencies"
 
+        const val RUNTIME_DEPENDENCY_BASE = "org.jetbrains.gradle.benchmarks:runtime"
         const val JMH_CORE_DEPENDENCY = "org.openjdk.jmh:jmh-core"
         const val JMH_GENERATOR_DEPENDENCY = "org.openjdk.jmh:jmh-generator-bytecode:"
 
@@ -27,6 +31,12 @@ class BenchmarksPlugin : Plugin<Project> {
         if (GradleVersion.current() < GradleVersion.version("4.10")) {
             logger.error("JetBrains Gradle Benchmarks plugin requires Gradle version 4.10 or higher")
             return // TODO: Do we need to fail build at this point or just ignore benchmarks?
+        }
+
+        plugins.findPlugin(KotlinBasePluginWrapper::class.java)?.run {
+            logger.info("Detected Kotlin plugin version '$kotlinPluginVersion'")
+            if (VersionNumber.parse(kotlinPluginVersion) < VersionNumber(1, 3, 20, null))
+                logger.error("JetBrains Gradle Benchmarks plugin requires Kotlin version 1.3.20 or higher")
         }
 
         // DO NOT use properties of an extension immediately, it will not contain any user-specified data
@@ -48,7 +58,7 @@ class BenchmarksPlugin : Plugin<Project> {
             // Individual benchmarks depend on their respective building tasks for fast turnaround
             dependsOn(assembleBenchmarks)
         }
-        
+
         // TODO: Design configuration avoidance
         // I currently don't how to do it correctly yet, so materialize all tasks after project evaluation. 
         afterEvaluate {

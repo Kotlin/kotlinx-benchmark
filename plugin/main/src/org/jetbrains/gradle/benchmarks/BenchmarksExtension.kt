@@ -2,7 +2,6 @@ package org.jetbrains.gradle.benchmarks
 
 import groovy.lang.*
 import org.gradle.api.*
-import org.gradle.api.internal.*
 import org.gradle.api.plugins.*
 import org.gradle.util.*
 import org.jetbrains.kotlin.gradle.dsl.*
@@ -11,6 +10,8 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.*
 open class BenchmarksExtension(val project: Project) {
     var buildDir: String = "benchmarks"
     var reportsDir: String = "reports/benchmarks"
+    
+    val version = BenchmarksPlugin.PLUGIN_VERSION
 
     val defaults = BenchmarkConfigurationDefaults()
 

@@ -30,6 +30,7 @@ allOpen {
 }
 
 repositories {
+    mavenLocal()
     mavenCentral()
     maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
     maven { url 'https://dl.bintray.com/kotlin/kotlin-dev' }
@@ -62,7 +63,6 @@ kotlin {
         commonMain {
             dependencies {
                 implementation 'org.jetbrains.kotlin:kotlin-stdlib-common'
-                implementation project(":runtime")
             }
         }
         commonTest {

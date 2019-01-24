@@ -40,50 +40,58 @@ kotlin {
     // For ARM, preset should be changed to presets.iosArm32 or presets.iosArm64
     // For Linux, preset should be changed to e.g. presets.linuxX64
     // For MacOS, preset should be changed to e.g. presets.macosX64
-    macosX64('native')
+    macosX64()
 
     sourceSets {
         commonMain {
+            kotlin.srcDirs = ["$it.name/src"]
             dependencies {
                 implementation 'org.jetbrains.kotlin:kotlin-stdlib-common'
             }
         }
         commonTest {
+            kotlin.srcDirs = ["$it.name/src"]
             dependencies {
                 implementation 'org.jetbrains.kotlin:kotlin-test-common'
                 implementation 'org.jetbrains.kotlin:kotlin-test-annotations-common'
             }
         }
         jvmMain {
+            kotlin.srcDirs = ["$it.name/src"]
             dependencies {
                 implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
                 compileOnly "org.openjdk.jmh:jmh-core:$jmhVersion"
             }
         }
         jvmTest {
+            kotlin.srcDirs = ["$it.name/src"]
             dependencies {
                 implementation 'org.jetbrains.kotlin:kotlin-test'
                 implementation 'org.jetbrains.kotlin:kotlin-test-junit'
             }
         }
         jsMain {
+            kotlin.srcDirs = ["$it.name/src"]
             dependencies {
                 implementation 'org.jetbrains.kotlin:kotlin-stdlib-js'
             }
         }
         jsTest {
+            kotlin.srcDirs = ["$it.name/src"]
             dependencies {
                 implementation 'org.jetbrains.kotlin:kotlin-test-js'
             }
         }
-        nativeMain {
+        
+        macosX64Main {
+            kotlin.srcDirs = ["nativeMain/src"]
         }
-        nativeTest {
+        macosX64Test {
+            kotlin.srcDirs = ["nativeTest/src"]
         }
     }
 
     sourceSets.all {
-        kotlin.srcDirs = ["$it.name/src"]
         resources.srcDirs = ["$it.name/resources"]
         languageSettings.progressiveMode = true
     }
