@@ -1,3 +1,6 @@
+import java.nio.file.Files
+import java.nio.file.Paths
+
 buildscript {
     repositories {
         mavenCentral()
@@ -10,6 +13,7 @@ buildscript {
 }
 
 plugins {
+    id 'maven-publish'
     id 'java-gradle-plugin'
     id 'org.jetbrains.kotlin.jvm' version "1.3.20"
 }
@@ -37,29 +41,31 @@ sourceSets {
 }
 
 dependencies {
-    // TODO: This group of dependencies should be runtime with some checks about existing at runtime
-    compile group: 'org.jetbrains.kotlin.multiplatform', name: 'org.jetbrains.kotlin.multiplatform.gradle.plugin', version: kotlin_version
-    compile group: 'org.jetbrains.kotlin', name: 'kotlin-native-library-reader', version: kotlin_version, {
-        exclude group: 'org.jetbrains.kotlin', module: 'kotlin-compiler'
-    }
-    compile group: 'com.moowork.node', name: 'com.moowork.node.gradle.plugin', version: '1.2.0'
 
     compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: kotlin_version
     compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk7', version: kotlin_version
     compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlin_version
 
     compile 'com.squareup:kotlinpoet:1.0.0'
-
     compile "org.openjdk.jmh:jmh-core:$jmhVersion"
+
+    compile group: 'org.jetbrains.kotlin', name: 'kotlin-native-library-reader', version: kotlin_version, {
+        exclude group: 'org.jetbrains.kotlin', module: 'kotlin-compiler'
+    }
+
+    compileOnly group: 'org.jetbrains.kotlin.multiplatform', name: 'org.jetbrains.kotlin.multiplatform.gradle.plugin', version: kotlin_version
+    compileOnly group: 'com.moowork.node', name: 'com.moowork.node.gradle.plugin', version: '1.2.0'
     compileOnly "org.openjdk.jmh:jmh-generator-bytecode:$jmhVersion" // used in worker
 
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
     testImplementation gradleTestKit()
     testImplementation 'junit:junit:4.12'
     
+/*
     // This is needed for test to get it on classpath and run
     runtime "org.jetbrains.kotlin:kotlin-allopen:$kotlin_version"
     runtime "org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlin_version"
+*/
 }
 
 repositories {
@@ -70,4 +76,28 @@ repositories {
     maven { url 'https://dl.bintray.com/kotlin/kotlin-dev' }
 }
 
-apply from: rootProject.file("gradle/publish.gradle")
+// Load `local.properties` file, if it exists. You can put your bintrayUser and bintrayApiKey values there, that file is ignored by git
+if (Files.exists(Paths.get("$project.rootDir/local.properties"))) {
+    def localProperties = new Properties()
+    localProperties.load(new FileInputStream("$project.rootDir/local.properties"))
+    localProperties.each { prop -> project.ext.set(prop.key, prop.value) }
+}
+
+publishing {
+    def user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
+    def key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
+
+    repositories {
+        maven {
+            name = 'bintray'
+            def bintrayOrg = project.bintrayOrg
+            def bintrayRepository = project.bintrayRepository
+            def bintrayPackage = project.bintrayPackage
+            url = "https://api.bintray.com/maven/$bintrayOrg/$bintrayRepository/$bintrayPackage/;publish=0"
+            credentials {
+                username = user
+                password = key
+            }
+        }
+    }
+}

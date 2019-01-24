@@ -10,7 +10,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.*
 open class BenchmarksExtension(val project: Project) {
     var buildDir: String = "benchmarks"
     var reportsDir: String = "reports/benchmarks"
-    
+
     val version = BenchmarksPlugin.PLUGIN_VERSION
 
     val defaults = BenchmarkConfigurationDefaults()
@@ -18,14 +18,15 @@ open class BenchmarksExtension(val project: Project) {
     fun defaults(configureClosure: Closure<BenchmarkConfigurationDefaults>) {
         ConfigureUtil.configureSelf(configureClosure, defaults)
     }
-    
+
     fun configurations(configureClosure: Closure<NamedDomainObjectContainer<BenchmarkConfiguration>>): NamedDomainObjectContainer<BenchmarkConfiguration> {
         return configurations.configure(configureClosure)
     }
 
     val configurations: NamedDomainObjectContainer<BenchmarkConfiguration> = run {
         project.container(BenchmarkConfiguration::class.java) { name ->
-            val multiplatform = project.extensions.findByType(KotlinMultiplatformExtension::class.java)
+            val multiplatformClass = tryGetClass<KotlinMultiplatformExtension>("org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension")
+            val multiplatform = multiplatformClass?.let { project.extensions.findByType(it) }
             val javaConvention = project.convention.findPlugin(JavaPluginConvention::class.java)
 
             // Factory function which is called when a given registration is materialized

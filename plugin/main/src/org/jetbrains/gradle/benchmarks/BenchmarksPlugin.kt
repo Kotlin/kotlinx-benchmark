@@ -33,10 +33,13 @@ class BenchmarksPlugin : Plugin<Project> {
             return // TODO: Do we need to fail build at this point or just ignore benchmarks?
         }
 
-        plugins.findPlugin(KotlinBasePluginWrapper::class.java)?.run {
-            logger.info("Detected Kotlin plugin version '$kotlinPluginVersion'")
-            if (VersionNumber.parse(kotlinPluginVersion) < VersionNumber(1, 3, 20, null))
-                logger.error("JetBrains Gradle Benchmarks plugin requires Kotlin version 1.3.20 or higher")
+        val kotlinClass = tryGetClass<KotlinBasePluginWrapper>("org.jetbrains.kotlin.gradle.plugin.KotlinBasePluginWrapper")
+        if (kotlinClass != null) {
+            plugins.findPlugin(kotlinClass)?.run {
+                logger.info("Detected Kotlin plugin version '$kotlinPluginVersion'")
+                if (VersionNumber.parse(kotlinPluginVersion) < VersionNumber(1, 3, 20, null))
+                    logger.error("JetBrains Gradle Benchmarks plugin requires Kotlin version 1.3.20 or higher")
+            }
         }
 
         // DO NOT use properties of an extension immediately, it will not contain any user-specified data
@@ -65,7 +68,7 @@ class BenchmarksPlugin : Plugin<Project> {
             processConfigurations(extension)
         }
     }
-
+    
     private fun Project.processConfigurations(extension: BenchmarksExtension) {
         // Calling `all` on NDOC causes all items to materialize and be configured
         extension.configurations.all { config ->

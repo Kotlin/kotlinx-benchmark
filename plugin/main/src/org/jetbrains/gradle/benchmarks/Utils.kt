@@ -48,3 +48,13 @@ class KotlinClosure1<in T : Any?, V : Any>(
 
 fun <T> Any.closureOf(action: T.() -> Unit): Closure<Any?> =
     KotlinClosure1(action, this, this)
+
+fun <T> Any.tryGetClass(className: String): Class<T>? {
+    val classLoader = javaClass.classLoader
+    return try {
+        Class.forName(className, false, classLoader) as Class<T>
+    } catch (e: ClassNotFoundException) {
+        null
+    }
+}
+

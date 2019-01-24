@@ -11,12 +11,6 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
 }
 
-repositories {
-    mavenCentral()
-    maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
-    maven { url 'https://dl.bintray.com/kotlin/kotlin-dev' }
-}
-
 dependencies {
     compile group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlin_version
     compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: kotlin_version

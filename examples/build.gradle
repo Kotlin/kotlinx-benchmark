@@ -1,9 +1,9 @@
-group 'org.jetbrains.gradle.examples'
+group 'org.jetbrains.gradle.benchmarks.examples'
 version '0.1-SNAPSHOT'
 
 subprojects {
     repositories {
         mavenCentral()
-        maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
+        maven { url 'https://dl.bintray.com/orangy/maven' }
     }
 }
