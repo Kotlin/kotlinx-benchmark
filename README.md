@@ -106,6 +106,34 @@ benchmark {
 }
 ```
 
+Configure benchmarks:
+
+```groovy
+benchmark {
+    defaults { // specify defaults for all configurations
+        iterations = 10 // number of iterations
+        iterationTime = 1000 // time in ms per iteration
+    }
+    
+    // Setup configurations
+    configurations {
+        // This one matches compilation base name, e.g. 'jvm', 'jvmTest', etc
+        register("jvm") {
+            jmhVersion = "1.21" // available only for JVM compilations & Java source sets
+            
+            // for now, we use iterations and iterationTime for both warmup and measurements
+        }
+        register("js") {
+            // Note, that benchmarks.js uses a different approach of minTime & maxTime and run benchmarks
+            // until results are stable. We estimate minTime as iterationTime and maxTime as iterationTime*iterations
+        }
+        register("native") {
+            iterationTime = 2000 // override the default
+        }
+    }
+}
+```
+
 # Separate source sets for benchmarks
 
 Often you want to have benchmarks in the same project, but separated from main code, much like tests. Here is how:
