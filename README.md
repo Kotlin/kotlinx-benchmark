@@ -9,7 +9,7 @@ Add repository in `settings.gradle` to enable my bintray repository for plugin l
 pluginManagement {
     repositories {
         maven { url 'https://dl.bintray.com/orangy/maven' }
-        maven { url 'https://plugins.gradle.org/m2/' }
+        gradlePluginPortal()
     }
 }
 ```
