@@ -55,6 +55,7 @@ class BenchmarksPlugin : Plugin<Project> {
         val runBenchmarks = task<DefaultTask>(RUN_BENCHMARKS_TASKNAME) {
             group = BENCHMARKS_TASK_GROUP
             description = "Execute all benchmarks in a project"
+            extensions.extraProperties.set("idea.internal.test", System.getProperty("idea.active"))
 
             // Force all benchmarks runner to first build all benchmarks to ensure it won't spend time
             // running some benchmarks when other will fail to compile

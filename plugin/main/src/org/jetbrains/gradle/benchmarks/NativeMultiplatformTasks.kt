@@ -25,6 +25,7 @@ private fun Project.createNativeBenchmarkGenerateSourceTask(config: NativeBenchm
 
         val compilation = config.compilation
         this.target = compilation.target.konanTarget.name
+        title = config.name
         inputClassesDirs = compilation.output.allOutputs
         inputDependencies = compilation.compileDependencyFiles
         outputResourcesDir = file("$benchmarkBuildDir/resources")
@@ -89,6 +90,8 @@ fun Project.createNativeBenchmarkExecTask(
     ) {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Executes benchmark for '${config.name}'"
+        extensions.extraProperties.set("idea.internal.test", System.getProperty("idea.active"))
+
         val binary = benchmarkCompilation.target.binaries.getExecutable(benchmarkCompilation.name, NativeBuildType.RELEASE)
         val linkTask = binary.linkTask
 
@@ -102,6 +105,8 @@ fun Project.createNativeBenchmarkExecTask(
         
         dependsOn(linkTask)
         doFirst {
+            val ideaActive = (extensions.extraProperties.get("idea.internal.test") as? String)?.toBoolean() ?: false
+            args(if (ideaActive) "xml" else "text")
             reportsDir.mkdirs()
             logger.lifecycle("Running benchmarks for ${config.name}")
             logger.info("    I:${config.iterations()} T:${config.iterationTime()}")

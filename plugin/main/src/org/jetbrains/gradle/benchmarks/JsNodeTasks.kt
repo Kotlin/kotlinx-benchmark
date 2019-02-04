@@ -30,6 +30,7 @@ fun Project.createJsBenchmarkExecTask(
     ) {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Executes benchmark for '${config.name}'"
+        extensions.extraProperties.set("idea.internal.test", System.getProperty("idea.active"))
 
         val reportsDir = benchmarkReportsDir(config)
         val reportFile = reportsDir.resolve("${config.name}.json")
@@ -39,6 +40,8 @@ fun Project.createJsBenchmarkExecTask(
         setWorkingDir(nodeModulesDir)
         dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_DEPENDENCIES_SUFFIX}")
         doFirst {
+            val ideaActive = (extensions.extraProperties.get("idea.internal.test") as? String)?.toBoolean() ?: false
+            addArgs(if (ideaActive) "xml" else "text")
             reportsDir.mkdirs()
             logger.lifecycle("Running benchmarks for ${config.name}")
             logger.info("    I:${config.iterations()} T:${config.iterationTime()}")

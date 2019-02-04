@@ -35,7 +35,10 @@ private fun Project.createJsBenchmarkCompileTask(config: JsBenchmarkConfiguratio
         compileKotlinTask.apply {
             group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
             description = "Compile JS benchmark source files for '${config.name}'"
-            destinationDir = file("$benchmarkBuildDir/classes")
+
+            //TODO: fix destination dir after KT-29711 is fixed
+            //println("JS: ${kotlinOptions.outputFile}")
+            //destinationDir = file("$benchmarkBuildDir/classes")
             dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}")
 
             kotlinOptions.apply {
@@ -55,7 +58,7 @@ private fun Project.createJsBenchmarkGenerateSourceTask(
     task<JsSourceGeneratorTask>("${config.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}") {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Generate JS source files for '${config.name}'"
-        // dependsOn(compilationTask) // next line should do it implicitly
+        title = config.name
         inputClassesDirs = compilationOutput
         outputResourcesDir = file("$benchmarkBuildDir/resources")
         outputSourcesDir = file("$benchmarkBuildDir/sources")

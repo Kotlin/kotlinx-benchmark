@@ -106,7 +106,8 @@ kotlin {
 // Configure benchmark
 benchmark {
     defaults {
-        iterationTime = 1000
+        iterations = 5 // number of iterations
+        iterationTime = 300 // time in ms per iteration
     }
     
     // Setup configurations
@@ -115,10 +116,8 @@ benchmark {
         register("jvm") {
             jmhVersion = "1.21"
         }
-        register("js")
-        register("native") {
-            iterationTime = 2000 
-        }
+        register("js") {}
+        register("native") {}
     }
 }
 

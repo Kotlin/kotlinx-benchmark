@@ -63,11 +63,13 @@ fun Project.createJvmBenchmarkExecTask(
         "${config.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}",
         depends = BenchmarksPlugin.RUN_BENCHMARKS_TASKNAME
     ) {
+        group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
+        description = "Execute benchmark for '${config.name}'"
+        extensions.extraProperties.set("idea.internal.test", System.getProperty("idea.active"))
+
         val benchmarkBuildDir = benchmarkBuildDir(config)
         val reportsDir = benchmarkReportsDir(config)
         val reportFile = reportsDir.resolve("${config.name}.json")
-        group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
-        description = "Execute benchmark for '${config.name}'"
         main = "org.jetbrains.gradle.benchmarks.jvm.JvmBenchmarkRunnerKt"
         classpath(
             file("$benchmarkBuildDir/classes"),
@@ -80,6 +82,9 @@ fun Project.createJvmBenchmarkExecTask(
         
         dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}")
         doFirst {
+            val ideaActive = (extensions.extraProperties.get("idea.internal.test") as? String)?.toBoolean() ?: false
+            args(if (ideaActive) "xml" else "text")
+            args(config.name)
             reportsDir.mkdirs()
             logger.lifecycle("Running benchmarks for ${config.name}")
             logger.info("    I:${config.iterations()} T:${config.iterationTime()}")

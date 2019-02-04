@@ -55,15 +55,12 @@ class ReportBenchmarksStatistics(values: DoubleArray) {
             val statistics = ReportBenchmarksStatistics(samples)
             val score = statistics.mean()
             val errorMargin = 1.96 * (statistics.standardDeviation() / sqrt(samples.size.toDouble()))
-
+/*
             val d = (4 - log10(score).toInt()).coerceAtLeast(0) // display 4 significant digits
-
-            println("  ~ ${score.format(d)} ops/sec ±${(errorMargin / score * 100).format(2)}%")
             val minText = statistics.min().format(d)
-            val meanText = statistics.mean().format(d)
             val maxText = statistics.max().format(d)
             val devText = statistics.standardDeviation().format(d)
-            println("    min: $minText, avg: $meanText, max: $maxText, stddev: $devText")
+*/
 
             // These quantiles are inverted, because we are interested in ops/sec and the higher the better
             // so we need minimum speed at which 90% of samples run

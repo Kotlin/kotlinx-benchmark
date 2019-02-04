@@ -3,6 +3,7 @@ version '0.1-SNAPSHOT'
 
 subprojects {
     repositories {
+        mavenLocal()
         mavenCentral()
         maven { url 'https://dl.bintray.com/orangy/maven' }
     }

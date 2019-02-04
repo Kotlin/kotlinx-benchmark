@@ -13,7 +13,7 @@ enum class Platform {
     JS, NATIVE
 }
 
-class SuiteSourceGenerator(val module: ModuleDescriptor, val output: File, val platform: Platform) {
+class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val output: File, val platform: Platform) {
     companion object {
         val setupFunctionName = "setup"
         val teardownFunctionName = "tearDown"
@@ -47,7 +47,7 @@ class SuiteSourceGenerator(val module: ModuleDescriptor, val output: File, val p
                 val array = ClassName("kotlin", "Array")
                 val arrayOfStrings = array.parameterizedBy(WildcardTypeName.producerOf(String::class))
                 addParameter("args", arrayOfStrings)
-                addStatement("val suite = %T(args)", suiteType)
+                addStatement("val suite = %T(%S, args)", suiteType, title)
                 for (benchmark in benchmarks) {
                     addStatement("%T().$addFunctionName(suite)", benchmark)
                 }

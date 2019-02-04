@@ -20,6 +20,9 @@ import javax.inject.*
 @CacheableTask
 open class JsSourceGeneratorTask
 @Inject constructor(private val workerExecutor: WorkerExecutor) : DefaultTask() {
+    @Input
+    lateinit var title: String
+    
     @InputFiles
     @PathSensitive(PathSensitivity.RELATIVE)
     lateinit var inputClassesDirs: FileCollection
@@ -69,7 +72,7 @@ open class JsSourceGeneratorTask
                 module.setDependencies(listOf(module, JsPlatform.builtIns.builtInsModule))
                 module.initialize(provider)
 
-                val generator = SuiteSourceGenerator(module, outputSourcesDir, Platform.JS)
+                val generator = SuiteSourceGenerator(title, module, outputSourcesDir, Platform.JS)
                 generator.generate()
             }
         }

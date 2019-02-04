@@ -19,6 +19,9 @@ import javax.inject.*
 @CacheableTask
 open class NativeSourceGeneratorTask
 @Inject constructor(private val workerExecutor: WorkerExecutor) : DefaultTask() {
+    @Input
+    lateinit var title: String
+
     @InputFiles
     @PathSensitive(PathSensitivity.RELATIVE)
     lateinit var inputClassesDirs: FileCollection
@@ -70,7 +73,7 @@ open class NativeSourceGeneratorTask
             val forwardDeclarationsModule = dependenciesResolved.forwardDeclarationsModule
 
             module.setDependencies(listOf(module) + dependenciesDescriptors + forwardDeclarationsModule)
-            val generator = SuiteSourceGenerator(module, outputSourcesDir, Platform.NATIVE)
+            val generator = SuiteSourceGenerator(title, module, outputSourcesDir, Platform.NATIVE)
             generator.generate()
         }
     }
