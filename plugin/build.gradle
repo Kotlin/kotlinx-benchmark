@@ -90,7 +90,7 @@ publishing {
     repositories {
         maven {
             name = 'build'
-            url = "$rootProject.buildDir/maven"
+            url = "$rootProject.projectDir/../build/maven"
         }
         maven {
             name = 'bintray'

@@ -54,3 +54,10 @@ task publishBintrayCreateVersion() {
         }
     }
 }
+
+afterEvaluate {
+    task('publishToBuildRepository') {
+        group = 'publishing'
+        dependsOn gradle.includedBuild('benchmarks.plugin').task(':publishToBuildRepository')
+    }
+}
