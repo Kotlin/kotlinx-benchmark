@@ -28,6 +28,7 @@ configure<AllOpenExtension> {
 
 dependencies {
     kotlin("kotlin-stdlib-jdk8")    
+    implementation(project(":runtime"))
 }
 
 tasks.withType<KotlinCompile> {

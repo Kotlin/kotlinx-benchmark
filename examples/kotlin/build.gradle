@@ -21,6 +21,7 @@ sourceSets {
 // Propagate dependencies from main sourceSet
 // You can add "+ sourceSets.test.output" to include test output as well
 dependencies {
+    implementation(project(":runtime"))
     benchmarksCompile sourceSets.main.output + sourceSets.main.compileClasspath 
 }
 

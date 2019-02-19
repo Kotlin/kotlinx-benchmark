@@ -43,5 +43,5 @@ private fun Project.configureJmhDependency(config: JavaBenchmarkConfiguration) {
         "${config.name}${configurationRoot.capitalize()}"
 
     dependencies.add(dependencyConfiguration, jmhCore)
-    dependencies.add(dependencyConfiguration, runtimeJvm)
+    //dependencies.add(dependencyConfiguration, runtimeJvm)
 }

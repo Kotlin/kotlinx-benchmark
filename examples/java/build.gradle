@@ -3,6 +3,10 @@ plugins {
     id 'org.jetbrains.gradle.benchmarks.plugin' version '0.1.7' 
 }
 
+dependencies {
+    implementation(project(":runtime"))
+}
+
 benchmark {
     configurations {
         register("main") {
