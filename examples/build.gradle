@@ -3,7 +3,11 @@ version '0.1-SNAPSHOT'
 
 subprojects {
     repositories {
-        mavenLocal()
+        maven {
+            name = 'build'
+            url = "$rootProject.buildDir/maven"
+        }
+
         mavenCentral()
         maven { url 'https://dl.bintray.com/orangy/maven' }
     }

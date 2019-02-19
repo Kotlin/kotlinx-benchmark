@@ -8,7 +8,7 @@ import org.jetbrains.kotlin.gradle.plugin.*
 class BenchmarksPlugin : Plugin<Project> {
     companion object {
         const val PLUGIN_ID = "org.jetbrains.gradle.benchmarks.plugin"
-        const val PLUGIN_VERSION = "0.1.6"
+        const val PLUGIN_VERSION = "0.1.7"
 
         const val BENCHMARKS_TASK_GROUP = "benchmark"
         const val BENCHMARK_EXTENSION_NAME = "benchmark"

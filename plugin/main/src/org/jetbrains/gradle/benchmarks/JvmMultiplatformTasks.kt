@@ -30,6 +30,6 @@ private fun Project.configureMultiplatformJvmCompilation(config: JvmBenchmarkCon
 
     config.compilation.dependencies {
         implementation(jmhCore)
-        implementation(runtime)
+        //implementation(runtime)
     }
 }

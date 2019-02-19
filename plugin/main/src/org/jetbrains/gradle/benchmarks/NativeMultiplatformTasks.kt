@@ -124,6 +124,6 @@ private fun Project.configureMultiplatformNativeCompilation(
     val runtime = dependencies.create("${BenchmarksPlugin.RUNTIME_DEPENDENCY_BASE}-${konanTarget.presetName}:${config.extension.version}")
 
     compilation.dependencies {
-        implementation(runtime)
+        //implementation(runtime)
     }
 }

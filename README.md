@@ -24,7 +24,7 @@ In `build.gradle` apply plugin:
 
 ```groovy
 plugins {
-    id 'org.jetbrains.gradle.benchmarks.plugin' version '0.1.6'
+    id 'org.jetbrains.gradle.benchmarks.plugin' version '0.1.7'
 }
 ```
 

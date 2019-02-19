@@ -1,5 +1,4 @@
-import java.nio.file.Files
-import java.nio.file.Paths
+import org.jetbrains.kotlin.konan.target.HostManager
 
 buildscript {
     repositories {
@@ -16,6 +15,9 @@ plugins {
     id 'maven-publish'
     id 'org.jetbrains.kotlin.multiplatform' version "1.3.20"
 }
+
+project.ext.hostManager = new HostManager()
+apply from: rootProject.file("gradle/utility.gradle")
 
 repositories {
     mavenCentral()
@@ -41,10 +43,25 @@ kotlin {
         }
     }
 
-    // For ARM, preset should be changed to presets.iosArm32 or presets.iosArm64
-    // For Linux, preset should be changed to e.g. presets.linuxX64
-    // For MacOS, preset should be changed to e.g. presets.macosX64
-    macosX64()
+    if (project.ext.ideaActive) {
+        targets {
+            project.ext.nativeTarget = fromPreset(project.ext.ideaPreset, 'native')
+        }
+    } else {
+        macosX64('macosX64')
+        linuxX64('linuxX64')
+        mingwX64('windowsX64')
+    }
+
+    sourceSets.all {
+        kotlin.srcDirs = ["$it.name/src"]
+        resources.srcDirs = ["$it.name/resources"]
+        languageSettings {
+            progressiveMode = true
+            useExperimentalAnnotation("kotlin.Experimental")
+            useExperimentalAnnotation('kotlin.ExperimentalUnsignedTypes')
+        }
+    }
 
     sourceSets {
         commonMain {
@@ -87,26 +104,35 @@ kotlin {
             }
         }
         
-        macosX64Main {
-            kotlin.srcDirs = ["nativeMain/src"]
-        }
-        macosX64Test {
-            kotlin.srcDirs = ["nativeTest/src"]
-        }
-    }
+        
+        if (ideaActive) {
+            nativeMain {
+                kotlin.srcDir("${project.ext.nativeTarget.preset.name}Main/src")
+            }
+        } else {
+            nativeMain {}
+            nativeTest {}
 
-    sourceSets.all {
-        resources.srcDirs = ["$it.name/resources"]
-        languageSettings.progressiveMode = true
+            configure([linuxX64Main, macosX64Main, windowsX64Main]) {
+                dependsOn nativeMain
+            }
+
+            configure([linuxX64Test, macosX64Test, windowsX64Test]) {
+                dependsOn nativeTest
+            }
+        }
+
+        nativeMain.dependencies {
+        }
     }
 }
 
-
 publishing {
-    def user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
-    def key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
-
     repositories {
+        maven {
+            name = 'build'
+            url = "$rootProject.buildDir/maven"
+        }
         maven {
             name = 'bintray'
             def bintrayOrg = project.bintrayOrg
@@ -114,9 +140,29 @@ publishing {
             def bintrayPackage = project.bintrayPackage
             url = "https://api.bintray.com/maven/$bintrayOrg/$bintrayRepository/$bintrayPackage/;publish=0"
             credentials {
-                username =  user
-                password = key
+                username = project.bintrayUser
+                password = project.bintrayApiKey
             }
         }
     }
 }
+
+afterEvaluate {
+    clean {
+        publishing.repositories.all { repository ->
+            if (repository.name == 'build') {
+                delete += repository.url
+            }
+        }
+    }
+
+    task('publishToBuildRepository') { publish ->
+        group = 'publishing'
+        tasks.withType(PublishToMavenRepository) { task ->
+            if (task.repository.name == 'build') {
+                publish.dependsOn(task)
+            }
+        }
+    }
+}
+

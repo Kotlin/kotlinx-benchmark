@@ -70,6 +70,6 @@ private fun Project.configureMultiplatformJsCompilation(config: JsBenchmarkConfi
     val runtime = dependencies.create("${BenchmarksPlugin.RUNTIME_DEPENDENCY_BASE}-js:${config.extension.version}")
 
     config.compilation.dependencies {
-        implementation(runtime)
+        //implementation(runtime)
     }
 }
