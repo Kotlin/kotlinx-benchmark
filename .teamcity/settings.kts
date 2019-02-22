@@ -87,7 +87,7 @@ fun Project.build(platform: String) = platform(platform, "Build") {
             jdkHome = "%env.JDK_18_x64%"
             jvmArgs = "-Xmx1g"
             // --continue is needed to run tests on all platforms even if one platform fails
-            tasks = "clean publishToBuildRepository check --continue"
+            tasks = "clean publishToBuildLocal check --continue"
             buildFile = ""
             gradleWrapperPath = ""
         }
