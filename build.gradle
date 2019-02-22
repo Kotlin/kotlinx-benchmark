@@ -1,63 +1,37 @@
-import java.nio.file.Files
-import java.nio.file.Paths
+buildscript {
+    repositories {
+        jcenter()
+        gradlePluginPortal()
+        //maven { url "../kotlin-libraries-infra/build/maven" }
+        maven { url "https://dl.bintray.com/orangy/maven" }
+    }
 
-subprojects {
-    // Load `local.properties` file, if it exists. You can put your bintrayUser and bintrayApiKey values there, that file is ignored by git
-    if (Files.exists(Paths.get("$project.rootDir/local.properties"))) {
-        def localProperties = new Properties()
-        localProperties.load(new FileInputStream("$project.rootDir/local.properties"))
-        localProperties.each { prop -> project.ext.set(prop.key, prop.value) }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "kotlinx.team:kotlinx.team.infra:0.1.0-dev-7"
     }
 }
 
-project.ext.bintrayUser = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : null
-project.ext.bintrayApiKey = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : null
+apply plugin: 'kotlinx.team.infra'
 
-task publishBintrayCreateVersion() {
-    doFirst {
-        def url = new URL("https://api.bintray.com/packages/${bintrayOrg}/${bintrayRepository}/${bintrayPackage}/versions")
-        def now = new Date()
-        def date = now.format("yyyy-MM-dd'T'HH:mm:ss'Z'", TimeZone.getTimeZone('UTC'))
-        def versionJson = '{"name": "' + project.version + '", "desc": "", "released":"' + date + '"}'
-        def user = project.bintrayUser
-        if (user == null)
-            throw new Exception("Cannot create version. User has not been specified. Provide project property with the name 'bintrayUser'")
+infra {
+    publishing {
+        include(":runtime")
 
-        def apiKey = project.bintrayApiKey
-        if (apiKey == null)
-            throw new Exception("Cannot create version. API key has not been specified. Provide project property with the name 'bintrayApiKey'")
+        bintray {
+            organization = 'orangy'
+            repository = 'maven'
+            library = 'gradle-benchmarks'
 
-        def encodedAuthorization = new sun.misc.BASE64Encoder().encode((user + ":" + apiKey).getBytes());
-
-        logger.lifecycle("Creating version ${project.version} for package ${bintrayPackage} in ${bintrayOrg}/${bintrayRepository} on bintray…")
-        logger.info("User: $user")
-        logger.info("Sending: $versionJson")
-        def connection = (HttpURLConnection) url.openConnection()
-        connection.with {
-            doOutput = true
-            requestMethod = 'POST'
-            setRequestProperty("Authorization", "Basic $encodedAuthorization");
-            setRequestProperty("Content-Type", "application/json")
-            outputStream.withWriter { writer ->
-                writer << versionJson
-            }
-        }
-        def code = connection.getResponseCode()
-        if (code >= 400) {
-            def br = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
-            def sb = new StringBuilder()
-            String output
-            while ((output = br.readLine()) != null) {
-                sb.append(output)
-            }
-            throw new Exception("Cannot create version. HTTP response $code: ${sb.toString()}")
+            username = findProperty('bintrayUser')
+            password = findProperty('bintrayApiKey')
         }
     }
-}
 
-afterEvaluate {
-    task('publishToBuildRepository') {
-        group = 'publishing'
-        dependsOn gradle.includedBuild('benchmarks.plugin').task(':publishToBuildRepository')
+    node {
+        version = '10.15.1'
+        mocha('4.1.0')
+        install("source-map-support", "0.5.3")
+        install("mocha-teamcity-reporter", "2.2.2")
     }
 }

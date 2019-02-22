@@ -4,16 +4,12 @@ buildscript {
     repositories {
         mavenCentral()
         jcenter()
-        maven { url "https://dl.bintray.com/jetbrains/kotlin-native-dependencies" }
-    }
-    dependencies {
-        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:$bintray_plugin_version"
     }
 }
 
 plugins {
     id 'maven-publish'
-    id 'org.jetbrains.kotlin.multiplatform' version "1.3.20"
+    id 'org.jetbrains.kotlin.multiplatform' 
 }
 
 project.ext.hostManager = new HostManager()
@@ -123,45 +119,6 @@ kotlin {
         }
 
         nativeMain.dependencies {
-        }
-    }
-}
-
-publishing {
-    repositories {
-        maven {
-            name = 'build'
-            url = "$rootProject.buildDir/maven"
-        }
-        maven {
-            name = 'bintray'
-            def bintrayOrg = project.bintrayOrg
-            def bintrayRepository = project.bintrayRepository
-            def bintrayPackage = project.bintrayPackage
-            url = "https://api.bintray.com/maven/$bintrayOrg/$bintrayRepository/$bintrayPackage/;publish=0"
-            credentials {
-                username = project.bintrayUser
-                password = project.bintrayApiKey
-            }
-        }
-    }
-}
-
-afterEvaluate {
-    clean {
-        publishing.repositories.all { repository ->
-            if (repository.name == 'build') {
-                delete += repository.url
-            }
-        }
-    }
-
-    task('publishToBuildRepository') { publish ->
-        group = 'publishing'
-        tasks.withType(PublishToMavenRepository) { task ->
-            if (task.repository.name == 'build') {
-                publish.dependsOn(task)
-            }
         }
     }
 }
