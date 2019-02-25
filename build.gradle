@@ -8,15 +8,11 @@ buildscript {
 
     dependencies {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "kotlinx.team:kotlinx.team.infra:0.1.0-dev-10"
+        classpath "kotlinx.team:kotlinx.team.infra:0.1.0-dev-11"
     }
 }
 
 apply plugin: 'kotlinx.team.infra'
-
-def apiKey = findProperty('bintrayApiKey')
-if (apiKey != null && apiKey.startsWith("credentialsJSON"))
-    logger.warn("INFRA: API key secure token was not expanded, publishing will fail with authentication exception")
 
 infra {
     publishing {
