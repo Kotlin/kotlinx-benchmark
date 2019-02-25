@@ -14,6 +14,10 @@ buildscript {
 
 apply plugin: 'kotlinx.team.infra'
 
+def apiKey = findProperty('bintrayApiKey')
+if (apiKey != null && apiKey.startsWith("credentialsJSON"))
+    logger.warn("INFRA: API key secure token was not expanded, publishing will fail with authentication exception")
+
 infra {
     publishing {
         include(":runtime")
