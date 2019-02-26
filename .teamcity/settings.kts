@@ -26,11 +26,16 @@ To debug in IntelliJ Idea, open the 'Maven Projects' tool window (View
 
 version = "2018.2"
 val versionParameter = "releaseVersion"
+
+// This value is transformed by gradle plugin
 val publishVersion = "0.1.7"
 
 val platforms = listOf("Windows", "Linux", "Mac OS X")
 
 project {
+    // This value is transformed by gradle plugin
+    name = "gradle-benchmarks"
+
     // Disable editing of project and build settings from the UI to avoid issues with TeamCity
     params {
         param("teamcity.ui.settings.readOnly", "true")
@@ -106,7 +111,7 @@ fun BuildType.dependsOnSnapshot(build: BuildType, configure: SnapshotDependency.
     dependencies.dependency(build) {
         snapshot {
             configure()
-            onDependencyFailure = FailureAction.ADD_PROBLEM
+            onDependencyFailure = FailureAction.FAIL_TO_START
             onDependencyCancel = FailureAction.CANCEL
         }
     }
