@@ -129,7 +129,7 @@ fun Project.deployConfigure() = BuildType {
         password("bintray-key", bintrayToken)
         param(versionSuffixParameter, "dev-%build.counter%")
         // Intentionally left empty. Gradle will ignore empty values and in custom build it can be specified
-        param(releaseVersionParameter, "") 
+        param(releaseVersionParameter, "dev") 
     }
 
     requirements {
@@ -166,6 +166,7 @@ fun Project.deploy(platform: String, configureBuild: BuildType) = platform(platf
     maxRunningBuilds = 1
     params {
         param(versionSuffixParameter, "${configureBuild.depParamRefs[versionSuffixParameter]}")
+        param(releaseVersionParameter, "${configureBuild.depParamRefs[releaseVersionParameter]}")
         param("bintray-user", bintrayUserName)
         password("bintray-key", bintrayToken)
     }
