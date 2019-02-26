@@ -18,8 +18,10 @@ includeBuild("plugin") {
     }
 }
 
+include "runtime"
+
+include "examples"
+include "examples:kotlin-multiplatform"
 include "examples:java"
 include "examples:kotlin"
-include "examples:kotlin-multiplatform"
 include "examples:kotlin-kts"
-include "runtime"

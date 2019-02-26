@@ -1,29 +1,25 @@
 package org.jetbrains.gradle.benchmarks
 
-import com.moowork.gradle.node.*
-import com.moowork.gradle.node.npm.*
-import com.moowork.gradle.node.task.*
+import kotlinx.team.infra.node.*
 import org.gradle.api.*
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 
 fun Project.createJsBenchmarkInstallTask() {
-    val node = project.extensions.getByType(NodeExtension::class.java)
-    task<NpmTask>("npmInstallBenchmarkJs") {
+    task<NpmInstallTask>("npmInstallBenchmarkJs") {
         group = "node"
         description = "Install benchmark.js to local node_modules"
-        setArgs(listOf("install", "--prefer-offline", "benchmark", "-s"))
-        setWorkingDir(node.nodeModulesDir) // For some reason configured node_modules dir is not picked up
+        packages.add("benchmark")
+        dependsOn(NodeSetupTask.NAME)
     }
 }
-
 
 fun Project.createJsBenchmarkExecTask(
     config: BenchmarkConfiguration,
     compilation: KotlinJsCompilation
 ) {
-    val node = project.extensions.getByType(NodeExtension::class.java)
-    val nodeModulesDir = node.nodeModulesDir.resolve("node_modules")
+    val node = NodeExtension[this]
+    val nodeModulesDir = node.node_modules
     task<NodeTask>(
         "${config.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}",
         depends = BenchmarksPlugin.RUN_BENCHMARKS_TASKNAME
@@ -35,13 +31,13 @@ fun Project.createJsBenchmarkExecTask(
         val reportsDir = benchmarkReportsDir(config)
         val reportFile = reportsDir.resolve("${config.name}.json")
 
-        setScript(nodeModulesDir.resolve(compilation.compileKotlinTask.outputFile.name))
-        addArgs(reportFile.toString(), config.iterations(), config.iterationTime()) // TODO: configure!
-        setWorkingDir(nodeModulesDir)
+        script = nodeModulesDir.resolve(compilation.compileKotlinTask.outputFile.name).absolutePath
+        arguments(reportFile.toString(), config.iterations().toString(), config.iterationTime().toString()) // TODO: configure!
+        //setWorkingDir(nodeModulesDir)
         dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_DEPENDENCIES_SUFFIX}")
         doFirst {
             val ideaActive = (extensions.extraProperties.get("idea.internal.test") as? String)?.toBoolean() ?: false
-            addArgs(if (ideaActive) "xml" else "text")
+            arguments(if (ideaActive) "xml" else "text")
             reportsDir.mkdirs()
             logger.lifecycle("Running benchmarks for ${config.name}")
             logger.info("    I:${config.iterations()} T:${config.iterationTime()}")
@@ -54,7 +50,7 @@ fun Project.createJsBenchmarkDependenciesTask(
     compilation: KotlinJsCompilation
 ) {
     val node = project.extensions.getByType(NodeExtension::class.java)
-    val nodeModulesDir = node.nodeModulesDir.resolve("node_modules")
+    val nodeModulesDir = node.node_modules
     val deployTask = task<Copy>("${config.name}${BenchmarksPlugin.BENCHMARK_DEPENDENCIES_SUFFIX}") {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Copy dependencies of benchmark for '${config.name}'"

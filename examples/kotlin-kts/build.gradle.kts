@@ -11,12 +11,6 @@ plugins {
     id("org.jetbrains.gradle.benchmarks.plugin") version "0.1.7" 
 }
 
-repositories {
-    mavenCentral()
-    maven { setUrl("https://dl.bintray.com/kotlin/kotlin-eap") }
-    maven { setUrl("https://dl.bintray.com/kotlin/kotlin-dev") }
-}
-
 sourceSets.all {
     java.srcDir("$name/src")
     resources.srcDir("$name/resources")

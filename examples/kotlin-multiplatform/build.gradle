@@ -1,44 +1,28 @@
 import org.jetbrains.kotlin.konan.target.HostManager
 
+buildscript {
+    repositories {
+//        maven { url "$rootProject.projectDir/../kotlin-libraries-infra/build/maven" }
+    }
+}
+
 plugins {
     id 'org.jetbrains.kotlin.multiplatform' 
     id 'org.jetbrains.kotlin.plugin.allopen' version "1.3.20"
-    id 'com.moowork.node' version '1.2.0'
     id 'org.jetbrains.gradle.benchmarks.plugin' version "0.1.7"
-}
-
-node {
-    version = "$node_version"
-    npmVersion = "$npm_version"
-    download = true
-
-    workDir = new File(rootProject.projectDir, ".gradle/nodejs")
-    npmWorkDir = new File(rootProject.projectDir, ".gradle/npm")
-    nodeModulesDir = file(buildDir)
-}
-
-// Workaround the problem with Node downloading
-repositories.all {
-    if (it instanceof IvyArtifactRepository) {
-        metadataSources {
-            artifact()
-        }
-    }
+    id 'kotlinx.team.node' 
 }
 
 project.ext.hostManager = new HostManager()
 apply from: rootProject.file("gradle/utility.gradle")
 
+node {
+    version = '10.15.1'
+}
+
 // how to apply plugin to a specific source set?
 allOpen {
     annotation("org.openjdk.jmh.annotations.State")
-}
-
-repositories {
-    mavenLocal()
-    mavenCentral()
-    maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
-    maven { url 'https://dl.bintray.com/kotlin/kotlin-dev' }
 }
 
 kotlin {

@@ -20,35 +20,15 @@ If you are using it for Kotlin Multiplatform, enable metadata in `settings.gradl
 enableFeaturePreview('GRADLE_METADATA')
 ```
 
-In `build.gradle` apply plugin:
-
-```groovy
-plugins {
-    id 'org.jetbrains.gradle.benchmarks.plugin' version '0.1.7'
-}
-```
-
 For Kotlin/JS code, add Node plugin as well:
 
 ```groovy
 plugins {
-    id 'com.moowork.node' version '1.2.0'
+    id 'kotlinx.team.node' 
 }
 
 node {
     version = "$node_version"
-    npmVersion = "$npm_version"
-    download = true
-    nodeModulesDir = file(buildDir)
-}
-
-// Workaround the problem with Node downloading
-repositories.whenObjectAdded {
-    if (it instanceof IvyArtifactRepository) {
-        metadataSources {
-            artifact()
-        }
-    }
 }
 ```
 
