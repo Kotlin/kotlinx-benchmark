@@ -61,40 +61,34 @@ kotlin {
 
     sourceSets {
         commonMain {
-            kotlin.srcDirs = ["$it.name/src"]
             dependencies {
                 implementation 'org.jetbrains.kotlin:kotlin-stdlib-common'
             }
         }
         commonTest {
-            kotlin.srcDirs = ["$it.name/src"]
             dependencies {
                 implementation 'org.jetbrains.kotlin:kotlin-test-common'
                 implementation 'org.jetbrains.kotlin:kotlin-test-annotations-common'
             }
         }
         jvmMain {
-            kotlin.srcDirs = ["$it.name/src"]
             dependencies {
                 implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
                 compileOnly "org.openjdk.jmh:jmh-core:$jmhVersion"
             }
         }
         jvmTest {
-            kotlin.srcDirs = ["$it.name/src"]
             dependencies {
                 implementation 'org.jetbrains.kotlin:kotlin-test'
                 implementation 'org.jetbrains.kotlin:kotlin-test-junit'
             }
         }
         jsMain {
-            kotlin.srcDirs = ["$it.name/src"]
             dependencies {
                 implementation 'org.jetbrains.kotlin:kotlin-stdlib-js'
             }
         }
         jsTest {
-            kotlin.srcDirs = ["$it.name/src"]
             dependencies {
                 implementation 'org.jetbrains.kotlin:kotlin-test-js'
             }
