@@ -3,7 +3,7 @@ def pomConfig = {
     licenses {
         license {
             name "The Apache Software License, Version 2.0"
-            url "http://www.apache.org/licenses/LICENSE-2.0.txt"
+            url "https://www.apache.org/licenses/LICENSE-2.0.txt"
             distribution "repo"
         }
     }
@@ -12,7 +12,7 @@ def pomConfig = {
             id "JetBrains"
             name "JetBrains Team"
             organization "JetBrains"
-            organizationUrl "http://www.jetbrains.com"
+            organizationUrl "https://www.jetbrains.com"
         }
     }
 
