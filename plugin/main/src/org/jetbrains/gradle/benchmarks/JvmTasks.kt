@@ -78,13 +78,15 @@ fun Project.createJvmBenchmarkExecTask(
         )
         
         //args = "-w 5 -r 5 -wi 1 -i 1 -f 1 
-        args(listOf(reportFile.toString(), config.iterations(), config.iterationTime())) // TODO: configure!
+        args("-r", reportFile.toString())
+        args("-i", config.iterations().toString())
+        args("-ti", config.iterationTime().toString())
         
         dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}")
         doFirst {
             val ideaActive = (extensions.extraProperties.get("idea.internal.test") as? String)?.toBoolean() ?: false
-            args(if (ideaActive) "xml" else "text")
-            args(config.name)
+            args("-t", if (ideaActive) "xml" else "text")
+            args("-n", config.name)
             reportsDir.mkdirs()
             logger.lifecycle("Running benchmarks for ${config.name}")
             logger.info("    I:${config.iterations()} T:${config.iterationTime()}")

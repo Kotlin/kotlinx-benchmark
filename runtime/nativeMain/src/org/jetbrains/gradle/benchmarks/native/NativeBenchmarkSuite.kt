@@ -1,10 +1,13 @@
 package org.jetbrains.gradle.benchmarks.native
 
+import kotlinx.cli.*
 import org.jetbrains.gradle.benchmarks.*
 import platform.posix.*
 import kotlin.system.*
 
-class Suite(val title: String, private val args: Array<out String>) {
+class Suite(private val title: String, args: Array<out String>) {
+    private val params = RunnerCommandLine().also { it.parse(args) }
+
     private class BenchmarkDescriptor(
         val name: String,
         val function: () -> Any?,
@@ -13,27 +16,28 @@ class Suite(val title: String, private val args: Array<out String>) {
     )
 
     private val benchmarks = mutableListOf<BenchmarkDescriptor>()
-    private val reportFile = args[0]
-    private val iterations = args[1].toInt()
-    private val iterationTime = args[2].toInt()
-    private val format = args[3]
 
     fun add(name: String, function: () -> Any?, setup: () -> Unit, teardown: () -> Unit) {
         benchmarks.add(BenchmarkDescriptor(name, function, setup, teardown))
     }
 
     fun run() {
-        when (format) {
+        val reportFile = params.reportFile ?: run {
+            println("Report file should be specified")
+            return
+        }
+
+        when (params.traceFormat) {
             "xml" -> {
                 println(ijLogStart(title, ""))
             }
             "text" -> {}
-            else -> throw UnsupportedOperationException("Format $format is not supported.")
+            else -> throw UnsupportedOperationException("Format ${params.traceFormat} is not supported.")
         }
 
         val results = benchmarks.map { benchmark ->
             val benchmarkFQN = benchmark.name
-            when (format) {
+            when (params.traceFormat) {
                 "xml" -> {
                     println(ijLogStart(benchmarkFQN, title))
                 }
@@ -41,14 +45,14 @@ class Suite(val title: String, private val args: Array<out String>) {
                     println()
                     println("… $benchmarkFQN")
                 }
-                else -> throw UnsupportedOperationException("Format $format is not supported.")
+                else -> throw UnsupportedOperationException("Format ${params.traceFormat} is not supported.")
             }
             
             benchmark.setup()
             val samples = try {
                 // Execute warmup
                 val cycles = warmup(benchmark)
-                DoubleArray(iterations) {
+                DoubleArray(params.iterations) {
                     measure(benchmark, cycles)
                 }
             } finally {
@@ -60,7 +64,7 @@ class Suite(val title: String, private val args: Array<out String>) {
                 "  ~ ${score.format(d)} ops/sec ±${(error / score * 100).format(2)}%"
             }
 
-            when (format) {
+            when (params.traceFormat) {
                 "xml" -> {
                     println(ijLogFinish(benchmarkFQN, title))
                     println(ijLogOutput(benchmarkFQN, title, message))
@@ -68,18 +72,18 @@ class Suite(val title: String, private val args: Array<out String>) {
                 "text" -> {
                     println("  $message")
                 }
-                else -> throw UnsupportedOperationException("Format $format is not supported.")
+                else -> throw UnsupportedOperationException("Format ${params.traceFormat} is not supported.")
             }
             result
         }
-        when (format) {
+        when (params.traceFormat) {
             "xml" -> {
                 println(ijLogFinish(title, ""))
             }
             "text" -> {
                 println()
             }
-            else -> throw UnsupportedOperationException("Format $format is not supported.")
+            else -> throw UnsupportedOperationException("Format ${params.traceFormat} is not supported.")
         }
 
         val file = fopen(reportFile, "w")
@@ -103,7 +107,7 @@ class Suite(val title: String, private val args: Array<out String>) {
     }
 
     private fun warmup(benchmark: BenchmarkDescriptor): Int {
-        val benchmarkNanos = iterationTime * 1_000_000
+        val benchmarkNanos = params.iterationTime * 1_000_000
         val startTime = getTimeNanos()
         var endTime = startTime
         var iterations = 0

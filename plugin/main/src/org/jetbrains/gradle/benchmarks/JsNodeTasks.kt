@@ -32,12 +32,14 @@ fun Project.createJsBenchmarkExecTask(
         val reportFile = reportsDir.resolve("${config.name}.json")
 
         script = nodeModulesDir.resolve(compilation.compileKotlinTask.outputFile.name).absolutePath
-        arguments(reportFile.toString(), config.iterations().toString(), config.iterationTime().toString()) // TODO: configure!
-        //setWorkingDir(nodeModulesDir)
+        arguments("-r", reportFile.toString())
+        arguments("-i", config.iterations().toString())
+        arguments("-ti", config.iterationTime().toString())
         dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_DEPENDENCIES_SUFFIX}")
         doFirst {
             val ideaActive = (extensions.extraProperties.get("idea.internal.test") as? String)?.toBoolean() ?: false
-            arguments(if (ideaActive) "xml" else "text")
+            arguments("-t", if (ideaActive) "xml" else "text")
+            arguments("-n", config.name)
             reportsDir.mkdirs()
             logger.lifecycle("Running benchmarks for ${config.name}")
             logger.info("    I:${config.iterations()} T:${config.iterationTime()}")

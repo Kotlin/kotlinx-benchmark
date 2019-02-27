@@ -99,14 +99,16 @@ fun Project.createNativeBenchmarkExecTask(
         val reportFile = reportsDir.resolve("${config.name}.json")
 
         executable = linkTask.outputFile.get().absolutePath
-        
-        // TODO: configure!
-        args(listOf(reportFile.toString(), config.iterations(), config.iterationTime())) 
+
+        args("-r", reportFile.toString())
+        args("-i", config.iterations().toString())
+        args("-ti", config.iterationTime().toString())
         
         dependsOn(linkTask)
         doFirst {
             val ideaActive = (extensions.extraProperties.get("idea.internal.test") as? String)?.toBoolean() ?: false
-            args(if (ideaActive) "xml" else "text")
+            args("-t", if (ideaActive) "xml" else "text")
+            args("-n", config.name)
             reportsDir.mkdirs()
             logger.lifecycle("Running benchmarks for ${config.name}")
             logger.info("    I:${config.iterations()} T:${config.iterationTime()}")

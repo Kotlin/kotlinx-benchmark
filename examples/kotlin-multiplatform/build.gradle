@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.konan.target.HostManager
 
 buildscript {
     repositories {
@@ -13,9 +12,6 @@ plugins {
     id 'kotlinx.team.node' 
 }
 
-project.ext.hostManager = new HostManager()
-apply from: rootProject.file("gradle/utility.gradle")
-
 node {
     version = '10.15.1'
 }
@@ -26,6 +22,12 @@ allOpen {
 }
 
 kotlin {
+    infra {
+        target('macosX64')
+        target('linuxX64')
+        target('mingwX64')
+    }
+    
     jvm {
         compilations.all {
             kotlinOptions {
@@ -42,17 +44,7 @@ kotlin {
             }
         }
     }
-
-    if (project.ext.ideaActive) {
-        targets {
-            project.ext.nativeTarget = fromPreset(project.ext.ideaPreset, 'native')
-        }
-    } else {
-        macosX64('macosX64')
-        linuxX64('linuxX64')
-        mingwX64('windowsX64')
-    }
-
+    
     sourceSets.all {
         languageSettings {
             progressiveMode = true
@@ -96,25 +88,9 @@ kotlin {
             }
         }
         
-        if (ideaActive) {
-            nativeMain {
-                kotlin.srcDir("src/${project.ext.nativeTarget.preset.name}Main")
+        nativeMain {
+            dependencies {
             }
-        } else {
-            nativeMain {}
-            nativeTest {}
-
-            configure([linuxX64Main, macosX64Main, windowsX64Main]) {
-                dependsOn nativeMain
-            }
-
-            configure([linuxX64Test, macosX64Test, windowsX64Test]) {
-                dependsOn nativeTest
-            }
-        }
-
-        nativeMain.dependencies {
-            
         }    
     }
 }

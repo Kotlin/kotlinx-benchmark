@@ -1,5 +1,6 @@
 package org.jetbrains.gradle.benchmarks.jvm
 
+import kotlinx.cli.*
 import org.jetbrains.gradle.benchmarks.*
 import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.*
@@ -12,48 +13,50 @@ import java.io.*
 import java.util.concurrent.*
 
 fun main(args: Array<String>) {
-    val reportFile = args.firstOrNull()
-    if (reportFile == null) {
-        println("Invalid invocation, should provide report file path")
+    val params = RunnerCommandLine().also { it.parse(args) }
+
+    val reportFile = params.reportFile ?: run {
+        println("Report file should be specified")
         return
     }
-
-    val iterations = args[1].toInt()
-    val iterationTime = args[2].toLong()
-    val format = args[3]
-    val title = args[4]
+    val title = params.name ?: run {
+        println("Name should be specified")
+        return
+    }
 
     // TODO: build options from command line
     val jmhOptions = OptionsBuilder()
         .mode(Mode.Throughput)
         .timeUnit(TimeUnit.SECONDS)
-        .warmupIterations(iterations)
-        .measurementIterations(iterations)
-        .warmupTime(TimeValue.milliseconds(iterationTime))
-        .measurementTime(TimeValue.milliseconds(iterationTime))
+        .warmupIterations(params.iterations)
+        .measurementIterations(params.iterations)
+        .warmupTime(TimeValue.milliseconds(params.iterationTime))
+        .measurementTime(TimeValue.milliseconds(params.iterationTime))
         .forks(1)
 
     val options = jmhOptions.apply {
         threads(1)
     }
-    val output = JmhOutputFormat(reportFile, format, title)
+    val output = JmhOutputFormat(reportFile, params.traceFormat, title)
 
-    when (format) {
+    when (params.traceFormat) {
         "xml" -> {
             println(ijLogStart(title, ""))
         }
-        "text" -> {}
-        else -> throw UnsupportedOperationException("Format $format is not supported.")
+        "text" -> {
+        }
+        else -> throw UnsupportedOperationException("Format ${params.traceFormat} is not supported.")
     }
 
     Runner(options.build(), output).run()
 
-    when (format) {
+    when (params.traceFormat) {
         "xml" -> {
             println(ijLogFinish(title, ""))
         }
-        "text" -> {}
-        else -> throw UnsupportedOperationException("Format $format is not supported.")
+        "text" -> {
+        }
+        else -> throw UnsupportedOperationException("Format ${params.traceFormat} is not supported.")
     }
 
 }
