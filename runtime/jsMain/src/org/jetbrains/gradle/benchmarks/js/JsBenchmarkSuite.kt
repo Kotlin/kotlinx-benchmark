@@ -2,12 +2,13 @@ package org.jetbrains.gradle.benchmarks.js
 
 import kotlinx.cli.*
 import org.jetbrains.gradle.benchmarks.*
+import kotlin.js.*
 import kotlin.math.*
 
 external fun require(module: String): dynamic
 private val benchmarkJs: dynamic = require("benchmark")
-private val fs = require("fs");
-private val process = require("process");
+private val fs = require("fs")
+private val process = require("process")
 
 class Suite(val title: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<out String>) {
     private val args = RunnerCommandLine().also { it.parse((process["argv"] as Array<String>).drop(2)) }
@@ -34,12 +35,27 @@ class Suite(val title: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<o
             }
             else -> throw UnsupportedOperationException("Format ${args.traceFormat} is not supported.")
         }
-        suite.run()
-        fs.writeFile(args.reportFile, results.toJson()) { err -> if (err) throw err }
+
+        suite.run().on("complete") {
+            fs.writeFile(args.reportFile, results.toJson()) { err -> if (err != null) throw err }
+        }
+    }
+
+    fun add(name: String, function: () -> Promise<*>, setup: () -> Unit, teardown: () -> Unit) {
+        suite.add(name) { deferred: Promise<Unit> ->
+            // Mind asDynamic: this is **not** a regular promise
+            function().then { (deferred.asDynamic()).resolve() }
+        }
+
+        configureBenchmark(setup, teardown, isAsynchronous = true)
     }
 
     fun add(name: String, function: () -> Any?, setup: () -> Unit, teardown: () -> Unit) {
         suite.add(name, function)
+        configureBenchmark(setup, teardown, isAsynchronous = false)
+    }
+
+    private fun configureBenchmark(setup: () -> Unit, teardown: () -> Unit, isAsynchronous: Boolean) {
         val benchmark = suite[suite.length - 1] // take back last added benchmark and subscribe to events
 
         // TODO: Configure properly
@@ -49,6 +65,8 @@ class Suite(val title: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<o
 
         benchmark.options.minTime = args.iterationTime / 1000.0
         benchmark.options.maxTime = args.iterationTime * args.iterations / 1000.0
+        benchmark.options.async = isAsynchronous
+        benchmark.options.defer = isAsynchronous
 
         benchmark.on("start") { event ->
             val benchmarkFQN = event.target.name
@@ -86,7 +104,6 @@ class Suite(val title: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<o
                 }
                 else -> throw UnsupportedOperationException("Format ${args.traceFormat} is not supported.")
             }
-
 
             results.add(result)
         }
