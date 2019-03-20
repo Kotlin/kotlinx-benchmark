@@ -41,3 +41,9 @@ infra {
         install("mocha-teamcity-reporter", "2.2.2")
     }
 }
+
+afterEvaluate {
+    gradle.includedBuilds.forEach { included ->
+        project(":runtime").tasks.named("publishToMavenLocal") { dependsOn(included.task(":publishToMavenLocal")) }
+    }
+}
