@@ -53,6 +53,9 @@ open class NativeSourceGeneratorTask
 
         val factory = DefaultDeserializedDescriptorFactory
         inputClassesDirs.files.filter { it.name.endsWith(KLIB_FILE_EXTENSION_WITH_DOT) }.forEach { lib ->
+            if (!lib.exists())
+                return@forEach
+            
             val konanFile = org.jetbrains.kotlin.konan.file.File(lib.canonicalPath)
 
             val library = createKonanLibrary(konanFile, ABI_VERSION, konanTarget, false)

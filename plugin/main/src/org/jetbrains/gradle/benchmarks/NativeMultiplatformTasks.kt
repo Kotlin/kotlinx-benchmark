@@ -98,7 +98,9 @@ fun Project.createNativeBenchmarkExecTask(
         val reportsDir = benchmarkReportsDir(config)
         val reportFile = reportsDir.resolve("${config.name}.json")
 
-        executable = linkTask.outputFile.get().absolutePath
+        val executableFile = linkTask.outputFile.get()
+        executable = executableFile.absolutePath
+        onlyIf { executableFile.exists() }
 
         args("-r", reportFile.toString())
         args("-i", config.iterations().toString())

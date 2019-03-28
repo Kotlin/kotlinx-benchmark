@@ -31,7 +31,10 @@ fun Project.createJsBenchmarkExecTask(
         val reportsDir = benchmarkReportsDir(config)
         val reportFile = reportsDir.resolve("${config.name}.json")
 
-        script = nodeModulesDir.resolve(compilation.compileKotlinTask.outputFile.name).absolutePath
+        val executableFile = nodeModulesDir.resolve(compilation.compileKotlinTask.outputFile.name)
+        script = executableFile.absolutePath
+        onlyIf { executableFile.exists() }
+        
         arguments("-r", reportFile.toString())
         arguments("-i", config.iterations().toString())
         arguments("-ti", config.iterationTime().toString())
