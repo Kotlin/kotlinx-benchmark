@@ -9,7 +9,7 @@ class ReportBenchmarkResult(
     val values: DoubleArray
 )
 
-fun List<ReportBenchmarkResult>.toJson() = joinToString(",", prefix = "[", postfix = "\n]") {
+fun Collection<ReportBenchmarkResult>.toJson() = joinToString(",", prefix = "[", postfix = "\n]") {
     """
   {
     "benchmark" : "${it.benchmark}",

@@ -1,31 +1,39 @@
 package org.jetbrains.gradle.benchmarks
 
-internal fun ijLogStart(name: String, parent: String) = buildString {
-    val shortName = name.substringAfterLast('.')
-    val className = name.substringBeforeLast('.')
+internal fun ijBenchmarkStart(parent: String, className: String, methodName: String) = buildString {
     append("<ijLog>")
     append("<event type='beforeTest'>")
-    append("<test id='$name' parentId='$parent'>")
-    append("<descriptor name='$shortName' className='$className' />")
+    append("<test id='$className.$methodName' parentId='$parent'>")
+    append("<descriptor name='$methodName' className='$className' />")
     append("</test>")
     append("</event>")
     append("</ijLog>")
 }
 
-internal  fun ijLogFinish(name: String, parent: String) = buildString {
+internal fun ijSuiteStart(parent: String, id: String) = buildString {
+    append("<ijLog>")
+    append("<event type='beforeTest'>")
+    append("<test id='$id' parentId='$parent'>")
+    append("<descriptor name='$id'/>")
+    append("</test>")
+    append("</event>")
+    append("</ijLog>")
+}
+
+internal  fun ijLogFinish(parent: String, id: String) = buildString {
     append("<ijLog>")
     append("<event type='afterTest'>")
-    append("<test id='$name' parentId='$parent'>")
+    append("<test id='$id' parentId='$parent'>")
     append("<result resultType='SUCCESS' startTime='0' endTime='0'/>")
     append("</test>")
     append("</event>")
     append("</ijLog>")
 }
 
-internal  fun ijLogOutput(name: String, parent: String, info: String) = buildString {
+internal  fun ijLogOutput(parent: String, id: String, info: String) = buildString {
     append("<ijLog>")
     append("<event type='onOutput'>")
-    append("<test id='$name' parentId='$parent'>")
+    append("<test id='$id' parentId='$parent'>")
     append("<event destination='StdOut'>")
     append("<![CDATA[${info.toByteArrayUtf8().encodeBase64()}]]>")
     append("</event>")

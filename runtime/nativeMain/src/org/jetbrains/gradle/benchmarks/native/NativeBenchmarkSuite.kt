@@ -2,11 +2,11 @@ package org.jetbrains.gradle.benchmarks.native
 
 import kotlinx.cli.*
 import org.jetbrains.gradle.benchmarks.*
-import platform.posix.*
 import kotlin.system.*
 
-class Suite(private val title: String, args: Array<out String>) {
+class Suite(private val suiteName: String, args: Array<out String>) {
     private val params = RunnerCommandLine().also { it.parse(args) }
+    private val reporter = BenchmarkReporter.create(params.reportFile, params.traceFormat)
 
     private class BenchmarkDescriptor(
         val name: String,
@@ -22,31 +22,11 @@ class Suite(private val title: String, args: Array<out String>) {
     }
 
     fun run() {
-        val reportFile = params.reportFile ?: run {
-            println("Report file should be specified")
-            return
-        }
-
-        when (params.traceFormat) {
-            "xml" -> {
-                println(ijLogStart(title, ""))
-            }
-            "text" -> {}
-            else -> throw UnsupportedOperationException("Format ${params.traceFormat} is not supported.")
-        }
-
+        reporter.startSuite(suiteName)
+        
         val results = benchmarks.map { benchmark ->
-            val benchmarkFQN = benchmark.name
-            when (params.traceFormat) {
-                "xml" -> {
-                    println(ijLogStart(benchmarkFQN, title))
-                }
-                "text" -> {
-                    println()
-                    println("… $benchmarkFQN")
-                }
-                else -> throw UnsupportedOperationException("Format ${params.traceFormat} is not supported.")
-            }
+            val benchmarkName = benchmark.name
+            reporter.startBenchmark(suiteName, benchmarkName)
             
             benchmark.setup()
             val samples = try {
@@ -58,37 +38,17 @@ class Suite(private val title: String, args: Array<out String>) {
             } finally {
                 benchmark.teardown()
             }
-            val result = ReportBenchmarksStatistics.createResult(benchmarkFQN, samples)
+            val result = ReportBenchmarksStatistics.createResult(benchmarkName, samples)
             val message = with(result) {
                 val d = (4 - kotlin.math.log10(score).toInt()).coerceAtLeast(0) // display 4 significant digits
                 "  ~ ${score.format(d)} ops/sec ±${(error / score * 100).format(2)}%"
             }
 
-            when (params.traceFormat) {
-                "xml" -> {
-                    println(ijLogFinish(benchmarkFQN, title))
-                    println(ijLogOutput(benchmarkFQN, title, message))
-                }
-                "text" -> {
-                    println("  $message")
-                }
-                else -> throw UnsupportedOperationException("Format ${params.traceFormat} is not supported.")
-            }
+            reporter.endBenchmark(suiteName, benchmarkName, message)
             result
         }
-        when (params.traceFormat) {
-            "xml" -> {
-                println(ijLogFinish(title, ""))
-            }
-            "text" -> {
-                println()
-            }
-            else -> throw UnsupportedOperationException("Format ${params.traceFormat} is not supported.")
-        }
 
-        val file = fopen(reportFile, "w")
-        fputs(results.toJson(), file)
-        fclose(file)
+        reporter.endSuite(suiteName, results)
     }
     
     private fun measure(benchmark: BenchmarkDescriptor, cycles: Int): Double {

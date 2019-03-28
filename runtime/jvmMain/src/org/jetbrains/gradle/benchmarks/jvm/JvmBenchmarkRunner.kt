@@ -5,7 +5,6 @@ import org.jetbrains.gradle.benchmarks.*
 import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.*
 import org.openjdk.jmh.results.*
-import org.openjdk.jmh.results.format.*
 import org.openjdk.jmh.runner.*
 import org.openjdk.jmh.runner.format.*
 import org.openjdk.jmh.runner.options.*
@@ -15,11 +14,7 @@ import java.util.concurrent.*
 fun main(args: Array<String>) {
     val params = RunnerCommandLine().also { it.parse(args) }
 
-    val reportFile = params.reportFile ?: run {
-        println("Report file should be specified")
-        return
-    }
-    val title = params.name ?: run {
+    val suiteName = params.name ?: run {
         println("Name should be specified")
         return
     }
@@ -33,36 +28,66 @@ fun main(args: Array<String>) {
         .warmupTime(TimeValue.milliseconds(params.iterationTime))
         .measurementTime(TimeValue.milliseconds(params.iterationTime))
         .forks(1)
+        .threads(1)
 
-    val options = jmhOptions.apply {
-        threads(1)
-    }
-    val output = JmhOutputFormat(reportFile, params.traceFormat, title)
-
-    when (params.traceFormat) {
-        "xml" -> {
-            println(ijLogStart(title, ""))
-        }
-        "text" -> {
-        }
-        else -> throw UnsupportedOperationException("Format ${params.traceFormat} is not supported.")
-    }
-
-    Runner(options.build(), output).run()
-
-    when (params.traceFormat) {
-        "xml" -> {
-            println(ijLogFinish(title, ""))
-        }
-        "text" -> {
-        }
-        else -> throw UnsupportedOperationException("Format ${params.traceFormat} is not supported.")
-    }
-
+    val reporter = BenchmarkReporter.create(params.reportFile, params.traceFormat)
+    val output = JmhOutputFormat(reporter, suiteName)
+    Runner(jmhOptions.build(), output).run()
 }
 
-abstract class PrintOutputFormat(val out: PrintStream) : OutputFormat {
+class JmhOutputFormat(private val reporter: BenchmarkReporter, private val suiteName: String) :
+    PrintOutputFormat(System.out) {
+    override fun startRun() {
+        reporter.startSuite(suiteName)
+    }
 
+    override fun endRun(result: Collection<RunResult>) {
+        reporter.endSuite(suiteName, result.toReportBenchmarkResult())
+    }
+
+    override fun startBenchmark(benchParams: BenchmarkParams) {
+        val benchmarkFQN = benchParams.benchmark
+        reporter.startBenchmark(suiteName, benchmarkFQN)
+    }
+
+
+    override fun endBenchmark(result: BenchmarkResult) {
+        val benchmarkFQN = result.params.benchmark
+        val value = result.primaryResult
+        val message = value.extendedInfo().trim()
+        reporter.endBenchmark(suiteName, benchmarkFQN, message)
+    }
+
+    override fun iteration(benchParams: BenchmarkParams, params: IterationParams, iteration: Int) {
+    }
+
+    override fun iterationResult(
+        benchParams: BenchmarkParams,
+        params: IterationParams,
+        iteration: Int,
+        data: IterationResult
+    ) {
+    }
+}
+
+private fun Collection<RunResult>.toReportBenchmarkResult(): Collection<ReportBenchmarkResult> = map { result ->
+    val benchmarkFQN = result.params.benchmark
+    val value = result.primaryResult
+
+    val (min, max) = value.getScoreConfidence()
+    val statistics = value.getStatistics()
+    val percentiles = listOf(0.0, 0.25, 0.5, 0.75, 0.90, 0.99, 0.999, 0.9999, 1.0).associate {
+        (it * 100) to statistics.getPercentile(it)
+    }
+    
+    val rawData = result.benchmarkResults
+        .flatMap { run -> run.iterationResults.map { iteration -> iteration.primaryResult.getScore() } }
+        .toDoubleArray()
+    
+    ReportBenchmarkResult(benchmarkFQN, value.getScore(), value.getScoreError(), min to max, percentiles, rawData)
+}
+
+abstract class PrintOutputFormat(private val out: PrintStream) : OutputFormat {
     override fun print(s: String) {
         out.print(s)
     }
@@ -83,64 +108,6 @@ abstract class PrintOutputFormat(val out: PrintStream) : OutputFormat {
         // out.println(s)
     }
 
-    fun printMessage(s: String) = out.print(s)
-    fun printMessageLine(s: String) = out.println(s)
-
     override fun flush() = out.flush()
     override fun close() = flush()
-}
-
-class JmhOutputFormat(val reportFile: String, val format: String, val title: String) : PrintOutputFormat(System.out) {
-    override fun startRun() {
-    }
-
-    override fun endRun(result: Collection<RunResult>) {
-        printMessageLine("")
-        File(reportFile).outputStream().use {
-            val reportFormat = ResultFormatFactory.getInstance(ResultFormatType.JSON, PrintStream(it))
-            reportFormat.writeOut(result)
-        }
-    }
-
-    override fun startBenchmark(benchParams: BenchmarkParams) {
-        val benchmarkFQN = benchParams.benchmark
-        when (format) {
-            "xml" -> {
-                printMessageLine(ijLogStart(benchmarkFQN, title))
-            }
-            "text" -> {
-                printMessageLine("")
-                printMessageLine("… $benchmarkFQN")
-            }
-            else -> throw UnsupportedOperationException("Format $format is not supported.")
-        }
-    }
-
-
-    override fun endBenchmark(result: BenchmarkResult) {
-        val benchmarkFQN = result.params.benchmark
-        val value = result.primaryResult
-        val message = value.extendedInfo().trim()
-        when (format) {
-            "xml" -> {
-                printMessageLine(ijLogOutput(benchmarkFQN, title, message))
-                printMessageLine(ijLogFinish(benchmarkFQN, title))
-            }
-            "text" -> {
-                printMessageLine("  $message")
-            }
-            else -> throw UnsupportedOperationException("Format $format is not supported.")
-        }
-    }
-
-    override fun iteration(benchParams: BenchmarkParams, params: IterationParams, iteration: Int) {
-    }
-
-    override fun iterationResult(
-        benchParams: BenchmarkParams,
-        params: IterationParams,
-        iteration: Int,
-        data: IterationResult
-    ) {
-    }
 }
