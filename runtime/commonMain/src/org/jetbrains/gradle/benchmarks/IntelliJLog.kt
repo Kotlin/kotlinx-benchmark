@@ -2,10 +2,7 @@ package org.jetbrains.gradle.benchmarks
 
 internal fun ijSuiteStart(parent: String, id: String) = buildString {
     append("<ijLog>")
-    if (parent.isEmpty()) // TODO: bug or inconsistency, if two suites are nested, IDEA won't group them
-        append("<event type='beforeSuite'>")
-    else
-        append("<event type='beforeTest'>")
+    append("<event type='beforeSuite'>")
     append("<test id='$id' parentId='$parent'>")
     append("<descriptor name='$id'/>")
     append("</test>")
@@ -15,10 +12,7 @@ internal fun ijSuiteStart(parent: String, id: String) = buildString {
 
 internal fun ijSuiteFinish(parent: String, id: String, status: BenchmarkReporter.FinishStatus) = buildString {
     append("<ijLog>")
-    if (parent.isEmpty()) // TODO: bug or inconsistency, if two suites are nested, IDEA won't group them
-        append("<event type='afterSuite'>")
-    else
-        append("<event type='afterTest'>")
+    append("<event type='afterSuite'>")
     append("<test id='$id' parentId='$parent'>")
     append("<result resultType='${status.toString().toUpperCase()}' startTime='0' endTime='0'/>")
     append("</test>")

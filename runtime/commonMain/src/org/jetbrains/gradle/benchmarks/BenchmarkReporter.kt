@@ -28,16 +28,20 @@ abstract class BenchmarkReporter(val reportFile: String?) {
 }
 
 class IntelliJBenchmarkReporter(reportFile: String?) : BenchmarkReporter(reportFile) {
+    private val rootId = "[root]"
+
     override fun startSuite(suite: String) {
         currentStatus = FinishStatus.Success
-        println(ijSuiteStart("", suite))
+        println(ijSuiteStart("", rootId))
+        println(ijSuiteStart(rootId, suite))
     }
 
     override fun endSuite(suite: String, result: Collection<ReportBenchmarkResult>) {
         if (currentClass != "") {
             println(ijSuiteFinish(suite, currentClass, currentStatus))
         }
-        println(ijSuiteFinish("", suite, suiteStatus))
+        println(ijSuiteFinish(rootId, suite, suiteStatus))
+        println(ijSuiteFinish("", rootId, suiteStatus))
         saveReport(reportFile, result)
     }
 
