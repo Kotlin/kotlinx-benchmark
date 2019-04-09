@@ -21,6 +21,19 @@ class CommonBenchmark {
     }
 
     @Benchmark
+    fun exception() {
+        try {
+            fail()   
+        } catch (e: Throwable) {
+            throw Exception("I failed!", e)
+        }
+    }
+
+    private fun fail() {
+        TODO("not implemented") 
+    }
+
+    @Benchmark
     fun mathBenchmark(): Double {
         return log(sqrt(data) * cos(data), 2.0)
     }

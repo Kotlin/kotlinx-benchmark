@@ -5,7 +5,9 @@ abstract class BenchmarkReporter(val reportFile: String?) {
     abstract fun endSuite(suite: String, result: Collection<ReportBenchmarkResult>)
 
     abstract fun startBenchmark(suite: String, benchmark: String)
-    abstract fun endBenchmark(suite: String, benchmark: String, message: String)
+    abstract fun endBenchmark(suite: String, benchmark: String, status: FinishStatus, message: String)
+    abstract fun endBenchmarkException(suite: String, benchmark: String, error: String, stacktrace: String)
+    abstract fun output(suite: String, benchmark: String, message: String)
 
     companion object {
         fun create(reportFile: String?, format: String) = when (format) {
@@ -18,30 +20,39 @@ abstract class BenchmarkReporter(val reportFile: String?) {
             else -> throw UnsupportedOperationException("Format $format is not supported.")
         }
     }
+
+    enum class FinishStatus {
+        Success,
+        Failure
+    }
 }
 
 class IntelliJBenchmarkReporter(reportFile: String?) : BenchmarkReporter(reportFile) {
     override fun startSuite(suite: String) {
+        currentStatus = FinishStatus.Success
         println(ijSuiteStart("", suite))
     }
 
     override fun endSuite(suite: String, result: Collection<ReportBenchmarkResult>) {
         if (currentClass != "") {
-            println(ijLogFinish(suite, currentClass))
+            println(ijSuiteFinish(suite, currentClass, currentStatus))
         }
-        println(ijLogFinish("", suite))
+        println(ijSuiteFinish("", suite, suiteStatus))
         saveReport(reportFile, result)
     }
 
     private var currentClass = ""
-    
+    private var currentStatus = FinishStatus.Success
+    private var suiteStatus = FinishStatus.Success
+
     override fun startBenchmark(suite: String, benchmark: String) {
         val methodName = benchmark.substringAfterLast('.')
         val className = benchmark.substringBeforeLast('.')
         if (currentClass != className) {
             if (currentClass != "") {
-                println(ijLogFinish(suite, currentClass))
+                println(ijSuiteFinish(suite, currentClass, currentStatus))
             }
+            currentStatus = FinishStatus.Success
             println(ijSuiteStart(suite, className))
             currentClass = className
         }
@@ -50,9 +61,19 @@ class IntelliJBenchmarkReporter(reportFile: String?) : BenchmarkReporter(reportF
         println(ijLogOutput(currentClass, benchmark, "$suite: $benchmark\n"))
     }
 
-    override fun endBenchmark(suite: String, benchmark: String, message: String) {
+    override fun endBenchmark(suite: String, benchmark: String, status: FinishStatus, message: String) {
         println(ijLogOutput(currentClass, benchmark, "$message\n\n"))
-        println(ijLogFinish(currentClass, benchmark))
+        println(ijBenchmarkFinish(currentClass, benchmark, status))
+    }
+
+    override fun endBenchmarkException(suite: String, benchmark: String, error: String, stacktrace: String) {
+        currentStatus = FinishStatus.Failure
+        suiteStatus = FinishStatus.Failure
+        println(ijBenchmarkFinishException(currentClass, benchmark, error, stacktrace))
+    }
+
+    override fun output(suite: String, benchmark: String, message: String) {
+        println(ijLogOutput(currentClass, benchmark, "$message\n"))
     }
 }
 
@@ -72,8 +93,17 @@ class ConsoleBenchmarkReporter(reportFile: String?) : BenchmarkReporter(reportFi
 
     }
 
-    override fun endBenchmark(suite: String, benchmark: String, message: String) {
-        println("  $message")
+    override fun endBenchmark(suite: String, benchmark: String, status: FinishStatus, message: String) {
+        println("  $status: $message")
+    }
+
+    override fun endBenchmarkException(suite: String, benchmark: String, error: String, stacktrace: String) {
+        println("  EXCEPTION: $error")
+        println(stacktrace)
+    }
+
+    override fun output(suite: String, benchmark: String, message: String) {
+        println(message)
     }
 }
 

@@ -1,5 +1,31 @@
 package org.jetbrains.gradle.benchmarks
 
+internal fun ijSuiteStart(parent: String, id: String) = buildString {
+    append("<ijLog>")
+    if (parent.isEmpty()) // TODO: bug or inconsistency, if two suites are nested, IDEA won't group them
+        append("<event type='beforeSuite'>")
+    else
+        append("<event type='beforeTest'>")
+    append("<test id='$id' parentId='$parent'>")
+    append("<descriptor name='$id'/>")
+    append("</test>")
+    append("</event>")
+    append("</ijLog>")
+}
+
+internal fun ijSuiteFinish(parent: String, id: String, status: BenchmarkReporter.FinishStatus) = buildString {
+    append("<ijLog>")
+    if (parent.isEmpty()) // TODO: bug or inconsistency, if two suites are nested, IDEA won't group them
+        append("<event type='afterSuite'>")
+    else
+        append("<event type='afterTest'>")
+    append("<test id='$id' parentId='$parent'>")
+    append("<result resultType='${status.toString().toUpperCase()}' startTime='0' endTime='0'/>")
+    append("</test>")
+    append("</event>")
+    append("</ijLog>")
+}
+
 internal fun ijBenchmarkStart(parent: String, className: String, methodName: String) = buildString {
     append("<ijLog>")
     append("<event type='beforeTest'>")
@@ -10,27 +36,34 @@ internal fun ijBenchmarkStart(parent: String, className: String, methodName: Str
     append("</ijLog>")
 }
 
-internal fun ijSuiteStart(parent: String, id: String) = buildString {
-    append("<ijLog>")
-    append("<event type='beforeTest'>")
-    append("<test id='$id' parentId='$parent'>")
-    append("<descriptor name='$id'/>")
-    append("</test>")
-    append("</event>")
-    append("</ijLog>")
-}
-
-internal  fun ijLogFinish(parent: String, id: String) = buildString {
+internal fun ijBenchmarkFinish(parent: String, id: String, status: BenchmarkReporter.FinishStatus) = buildString {
     append("<ijLog>")
     append("<event type='afterTest'>")
     append("<test id='$id' parentId='$parent'>")
-    append("<result resultType='SUCCESS' startTime='0' endTime='0'/>")
+    append("<result resultType='${status.toString().toUpperCase()}' startTime='0' endTime='0'/>")
     append("</test>")
     append("</event>")
     append("</ijLog>")
 }
 
-internal  fun ijLogOutput(parent: String, id: String, info: String) = buildString {
+internal fun ijBenchmarkFinishException(parent: String, id: String, error: String, stacktrace: String) = buildString {
+    append("<ijLog>")
+    append("<event type='afterTest'>")
+    append("<test id='$id' parentId='$parent'>")
+    append("<result resultType='FAILURE' startTime='0' endTime='0'>")
+    append("<errorMsg>")
+    append("<![CDATA[${error.toByteArrayUtf8().encodeBase64()}]]>")
+    append("</errorMsg>")
+    append("<stackTrace>")
+    append("<![CDATA[${stacktrace.toByteArrayUtf8().encodeBase64()}]]>")
+    append("</stackTrace>")
+    append("</result>")
+    append("</test>")
+    append("</event>")
+    append("</ijLog>")
+}
+
+internal fun ijLogOutput(parent: String, id: String, info: String) = buildString {
     append("<ijLog>")
     append("<event type='onOutput'>")
     append("<test id='$id' parentId='$parent'>")
@@ -70,4 +103,4 @@ private fun ByteArray.encodeBase64(): String {
     return String(result.toCharArray())
 }
 
-expect fun String.toByteArrayUtf8() : ByteArray
+expect fun String.toByteArrayUtf8(): ByteArray

@@ -22,8 +22,8 @@ private fun Project.createNativeBenchmarkGenerateSourceTask(config: NativeBenchm
     task<NativeSourceGeneratorTask>("${config.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}") {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Generate Native source files for '${config.name}'"
-
         val compilation = config.compilation
+        onlyIf { compilation.compileKotlinTask.enabled }
         this.target = compilation.target.konanTarget.name
         title = config.name
         inputClassesDirs = compilation.output.allOutputs
@@ -44,8 +44,7 @@ private fun Project.createNativeBenchmarkCompileTask(config: NativeBenchmarkConf
     // In the previous version of this method a compileTask was changed to build an executable instead of klib.
     // Currently it's impossible to change task output kind and an executable is always produced by
     // a link task. So we disable execution the klib compiling task to save time.
-    val compileTask = tasks.getByName(benchmarkCompilation.compileKotlinTaskName)
-    compileTask.enabled = false
+    benchmarkCompilation.compileKotlinTask.enabled = false
 
     benchmarkCompilation.apply {
         val sourceSet = kotlinSourceSets.single()
@@ -72,6 +71,7 @@ private fun Project.createNativeBenchmarkCompileTask(config: NativeBenchmarkConf
                     // See https://youtrack.jetbrains.com/issue/KT-29395
                     destinationDir = file("$benchmarkBuildDir/classes")
                 }
+                linkTask.onlyIf { compilation.compileKotlinTask.enabled }
                 tasks.getByName(BenchmarksPlugin.ASSEMBLE_BENCHMARKS_TASKNAME).dependsOn(linkTask)
                 entryPoint("org.jetbrains.gradle.benchmarks.generated.main")
             }
@@ -94,6 +94,7 @@ fun Project.createNativeBenchmarkExecTask(
 
         val binary = benchmarkCompilation.target.binaries.getExecutable(benchmarkCompilation.name, NativeBuildType.RELEASE)
         val linkTask = binary.linkTask
+        onlyIf { linkTask.enabled }
 
         val reportsDir = benchmarkReportsDir(config)
         val reportFile = reportsDir.resolve("${config.name}.json")

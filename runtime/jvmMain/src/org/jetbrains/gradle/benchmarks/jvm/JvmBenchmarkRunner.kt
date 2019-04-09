@@ -9,6 +9,7 @@ import org.openjdk.jmh.runner.*
 import org.openjdk.jmh.runner.format.*
 import org.openjdk.jmh.runner.options.*
 import java.io.*
+import java.lang.Exception
 import java.util.concurrent.*
 
 fun main(args: Array<String>) {
@@ -32,11 +33,19 @@ fun main(args: Array<String>) {
 
     val reporter = BenchmarkReporter.create(params.reportFile, params.traceFormat)
     val output = JmhOutputFormat(reporter, suiteName)
-    Runner(jmhOptions.build(), output).run()
+    try {
+        Runner(jmhOptions.build(), output).run()
+    } catch (e: Exception) {
+        e.printStackTrace()
+        reporter.endBenchmark(suiteName, output.lastBenchmarkStart, BenchmarkReporter.FinishStatus.Failure, e.message ?: "<unknown error>")
+    }
 }
 
 class JmhOutputFormat(private val reporter: BenchmarkReporter, private val suiteName: String) :
     PrintOutputFormat(System.out) {
+    
+    internal var lastBenchmarkStart = ""
+    
     override fun startRun() {
         reporter.startSuite(suiteName)
     }
@@ -48,14 +57,18 @@ class JmhOutputFormat(private val reporter: BenchmarkReporter, private val suite
     override fun startBenchmark(benchParams: BenchmarkParams) {
         val benchmarkFQN = benchParams.benchmark
         reporter.startBenchmark(suiteName, benchmarkFQN)
+        lastBenchmarkStart = benchmarkFQN
     }
 
-
-    override fun endBenchmark(result: BenchmarkResult) {
-        val benchmarkFQN = result.params.benchmark
-        val value = result.primaryResult
-        val message = value.extendedInfo().trim()
-        reporter.endBenchmark(suiteName, benchmarkFQN, message)
+    override fun endBenchmark(result: BenchmarkResult?) {
+        if (result != null) {
+            val benchmarkFQN = result.params.benchmark
+            val value = result.primaryResult
+            val message = value.extendedInfo().trim()
+            reporter.endBenchmark(suiteName, benchmarkFQN, BenchmarkReporter.FinishStatus.Success, message)
+        } else {
+            reporter.endBenchmarkException(suiteName, lastBenchmarkStart, "<ERROR>", "")
+        }
     }
 
     override fun iteration(benchParams: BenchmarkParams, params: IterationParams, iteration: Int) {
@@ -67,6 +80,11 @@ class JmhOutputFormat(private val reporter: BenchmarkReporter, private val suite
         iteration: Int,
         data: IterationResult
     ) {
+    }
+
+    override fun println(s: String) {
+        if (!s.startsWith("#"))
+            reporter.output(suiteName, lastBenchmarkStart, s)
     }
 }
 

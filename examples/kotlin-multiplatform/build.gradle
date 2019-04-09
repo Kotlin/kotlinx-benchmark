@@ -110,6 +110,9 @@ benchmark {
         }
         register("js") {}
         register("native") {}
+        register("macosX64") {}
+        register("linuxX64") {}
+        register("mingwX64") {}
     }
 }
 

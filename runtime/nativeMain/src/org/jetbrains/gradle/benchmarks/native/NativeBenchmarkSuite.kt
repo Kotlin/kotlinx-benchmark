@@ -23,34 +23,51 @@ class Suite(private val suiteName: String, args: Array<out String>) {
 
     fun run() {
         reporter.startSuite(suiteName)
-        
+
         val results = benchmarks.map { benchmark ->
             val benchmarkName = benchmark.name
             reporter.startBenchmark(suiteName, benchmarkName)
-            
+
             benchmark.setup()
+            var exception : Throwable? = null
             val samples = try {
                 // Execute warmup
                 val cycles = warmup(benchmark)
                 DoubleArray(params.iterations) {
                     measure(benchmark, cycles)
                 }
+            } catch (e: Throwable) {
+                exception = e
+                doubleArrayOf()
             } finally {
                 benchmark.teardown()
             }
-            val result = ReportBenchmarksStatistics.createResult(benchmarkName, samples)
-            val message = with(result) {
-                val d = (4 - kotlin.math.log10(score).toInt()).coerceAtLeast(0) // display 4 significant digits
-                "  ~ ${score.format(d)} ops/sec ±${(error / score * 100).format(2)}%"
-            }
+            
+            if (exception == null) {
+                val result = ReportBenchmarksStatistics.createResult(benchmarkName, samples)
+                val message = with(result) {
+                    val d = (4 - kotlin.math.log10(score).toInt()).coerceAtLeast(0) // display 4 significant digits
+                    "  ~ ${score.format(d)} ops/sec ±${(error / score * 100).format(2)}%"
+                }
 
-            reporter.endBenchmark(suiteName, benchmarkName, message)
-            result
+                reporter.endBenchmark(suiteName, benchmarkName, BenchmarkReporter.FinishStatus.Success, message)
+                result
+            } else {
+                val error = exception.toString()
+                val stacktrace = exception.stacktrace()
+                reporter.endBenchmarkException(suiteName, benchmarkName, error, stacktrace)
+                ReportBenchmarksStatistics.createResult(benchmarkName, samples)
+            }
         }
 
         reporter.endSuite(suiteName, results)
     }
     
+    private fun Throwable.stacktrace() : String {
+        val nested = cause ?: return getStackTrace().joinToString("\n")
+        return getStackTrace().joinToString("\n") + "\nCause: ${nested.message}\n" + nested.stacktrace()
+    }
+
     private fun measure(benchmark: BenchmarkDescriptor, cycles: Int): Double {
         val executeFunction = benchmark.function
         var counter = cycles

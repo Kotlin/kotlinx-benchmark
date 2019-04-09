@@ -67,8 +67,14 @@ class Suite(private val suiteName: String, @Suppress("UNUSED_PARAMETER") dummy_a
                 val d = (4 - log10(score).toInt()).coerceAtLeast(0) // display 4 significant digits
                 "  ~ ${score.format(d)} ops/sec ±${(error / score * 100).format(2)}%"
             }
-            reporter.endBenchmark(suiteName, benchmarkFQN, message)
-            results.add(result)
+            val error = event.target.error
+            if (error == null) {
+                reporter.endBenchmark(suiteName, benchmarkFQN, BenchmarkReporter.FinishStatus.Success, message)
+                results.add(result)
+            } else {
+                val stacktrace = error.stack
+                reporter.endBenchmarkException(suiteName, benchmarkFQN, error.toString(), stacktrace.toString())
+            }
         }
     }
 }
