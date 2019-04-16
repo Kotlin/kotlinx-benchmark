@@ -13,7 +13,7 @@ buildscript {
 
 plugins {
     id 'java-gradle-plugin'
-    id 'org.jetbrains.kotlin.jvm' version "1.3.20"
+    id 'org.jetbrains.kotlin.jvm' version "1.3.30"
 }
 
 apply plugin: 'kotlinx.team.infra'

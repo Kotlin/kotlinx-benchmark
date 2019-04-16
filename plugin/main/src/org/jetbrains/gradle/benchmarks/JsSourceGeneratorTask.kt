@@ -43,7 +43,7 @@ open class JsSourceGeneratorTask
             libs.forEach { metadata ->
                 val configuration = CompilerConfiguration()
 
-                val storageManager = LockBasedStorageManager()
+                val storageManager = LockBasedStorageManager("Inspect")
                 val languageVersionSettings = configuration.languageVersionSettings
 
                 val skipCheck = true // languageVersionSettings.getFlag(AnalysisFlags.skipMetadataVersionCheck)

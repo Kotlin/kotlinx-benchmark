@@ -54,7 +54,7 @@ kotlin {
         commonMain {
             dependencies {
                 implementation 'org.jetbrains.kotlin:kotlin-stdlib-common'
-                implementation 'org.jetbrains.kotlinx:kotlinx-cli:0.1.0-dev-3'
+                implementation "org.jetbrains.kotlinx:kotlinx-cli:$cli_version"
             }
         }
         commonTest {

@@ -36,7 +36,7 @@ For Kotlin/JVM code, add `allopen` plugin to make JMH happy:
 
 ```groovy
 plugins {
-    id 'org.jetbrains.kotlin.plugin.allopen' version "1.3.20"
+    id 'org.jetbrains.kotlin.plugin.allopen' version "1.3.30"
 }
 
 allOpen {
