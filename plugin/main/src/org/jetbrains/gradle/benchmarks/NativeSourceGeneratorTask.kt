@@ -92,22 +92,29 @@ class ProvidedPathResolver(
 
     override val searchRoots: List<org.jetbrains.kotlin.konan.file.File> get() = emptyList()
 
-    private val shortMap = dependencies
-        .map { org.jetbrains.kotlin.konan.file.File(it.absolutePath) }
-        .associateBy { it.name.removeSuffix(KLIB_FILE_EXTENSION_WITH_DOT) }
+    private val nameMap = dependencies
+        // TODO: what's wrong with JARs? They seem common libs, how does native ignores them?
+        .filter { it.extension != "jar" }
+        .map {
+            val file = org.jetbrains.kotlin.konan.file.File(it.absolutePath)
+            // Need to load library to know its uniqueName, some libs like atomicfu has it different from klib file name
+            createKonanLibrary(file, 1, target)
+        }
+        .associateBy { it.uniqueName }
+        .mapValues { it.value.libraryFile }
 
     override fun resolve(givenPath: String): org.jetbrains.kotlin.konan.file.File {
         val path = Paths.get(givenPath)
         return when {
             path.isAbsolute -> org.jetbrains.kotlin.konan.file.File(path)
             else -> {
-                val file = shortMap[givenPath]
+                val file = nameMap[givenPath]
                 if (file != null)
                     return file
 
                 logger.error("Cannot resolve library $givenPath with the following dependencies:")
                 logger.error(dependencies.joinToString(prefix = "  ", separator = "\n  "))
-                throw Exception("Cannot resolve library '$givenPath' with $shortMap")
+                throw Exception("Cannot resolve library '$givenPath' with $nameMap")
             }
         }
     }
