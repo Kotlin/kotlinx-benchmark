@@ -4,10 +4,12 @@ import kotlinx.team.infra.node.*
 import org.gradle.api.*
 import org.gradle.api.artifacts.*
 import org.gradle.api.artifacts.component.*
+import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
+import java.util.concurrent.*
 
 fun Project.createJsBenchmarkInstallTask() {
     task<NpmInstallTask>("npmInstallBenchmarkJs") {
@@ -40,7 +42,7 @@ fun Project.createJsBenchmarkExecTask(
         script = executableFile.absolutePath
         options("-r", "source-map-support/register")
         onlyIf { executableFile.exists() }
-        
+
         arguments("-r", reportFile.toString())
         arguments("-i", config.iterations().toString())
         arguments("-ti", config.iterationTime().toString())
@@ -83,7 +85,7 @@ fun Project.createJsBenchmarkDependenciesTask(
         from(compilation.output) {
             transformSourceMaps(compilation.output.classesDirs)
         }
-        
+
         from(dependencyFiles) {
             // We need to transform source maps from paths relative to output compilation folder to absolute paths.
             // The problem is that for dependencies at this point we don't know what task and in which project produced them.
@@ -97,7 +99,7 @@ fun Project.createJsBenchmarkDependenciesTask(
     tasks.getByName(BenchmarksPlugin.ASSEMBLE_BENCHMARKS_TASKNAME).dependsOn(deployTask)
 }
 
-private fun Project.discoverOutputFolders(configuration: Configuration): List<File> {
+private fun Project.discoverOutputFolders(configuration: Configuration) = files(Callable {
     // This is magic. I'm sure I will not understand it in a week when I come back.
     // So lets walk through…
     // Configuration dependencies are just what's specified, so we need resolvedConfiguration
@@ -145,11 +147,11 @@ private fun Project.discoverOutputFolders(configuration: Configuration): List<Fi
                 emptyList()
         }
     }
-    return dependencyOutputFolders
-}
+    dependencyOutputFolders
+})
 
 /// Process .js.map files by replacing relative paths with absolute paths using provided roots
-private fun Copy.transformSourceMaps(roots: Iterable<File>) {
+private fun Copy.transformSourceMaps(roots: FileCollection) {
     //println("TRANSFORM: roots: ${roots.files}")
     filesMatching("*.js.map") {
         //  println("FILE: ${it.sourcePath} (${it.relativeSourcePath})")
