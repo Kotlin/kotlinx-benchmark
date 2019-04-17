@@ -6,7 +6,7 @@ buildscript {
         maven { url "https://dl.bintray.com/orangy/maven" }
     }
     dependencies {
-        classpath "kotlinx.team:kotlinx.team.infra:0.1.0-dev-26"
+        classpath "kotlinx.team:kotlinx.team.infra:0.1.0-dev-44"
     }
 
 }
@@ -77,7 +77,7 @@ dependencies {
         exclude group: 'org.jetbrains.kotlin', module: 'kotlin-compiler'
     }
 
-    compileOnly "kotlinx.team:kotlinx.team.infra:0.1.0-dev-26"
+    compileOnly "kotlinx.team:kotlinx.team.infra:0.1.0-dev-44"
 
     compileOnly group: 'org.jetbrains.kotlin.multiplatform', name: 'org.jetbrains.kotlin.multiplatform.gradle.plugin', version: kotlin_version
     compileOnly "org.openjdk.jmh:jmh-generator-bytecode:$jmhVersion" // used in worker
