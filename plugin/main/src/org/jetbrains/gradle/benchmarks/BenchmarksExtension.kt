@@ -7,6 +7,10 @@ import org.gradle.util.*
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 
+fun Project.benchmark(configure: Action<BenchmarksExtension>) {
+    configure.execute(extensions.getByType(BenchmarksExtension::class.java))
+}
+
 open class BenchmarksExtension(val project: Project) {
     var buildDir: String = "benchmarks"
     var reportsDir: String = "reports/benchmarks"
@@ -14,9 +18,13 @@ open class BenchmarksExtension(val project: Project) {
     val version = BenchmarksPlugin.PLUGIN_VERSION
 
     val defaults = BenchmarkConfigurationDefaults()
-
-    fun defaults(configureClosure: Closure<BenchmarkConfigurationDefaults>) {
-        ConfigureUtil.configureSelf(configureClosure, defaults)
+    
+    fun defaults(configure: Action<BenchmarkConfigurationDefaults>) {
+        configure.execute(defaults)
+    }
+    
+    fun defaults(configure: Closure<BenchmarkConfigurationDefaults>) {
+        ConfigureUtil.configureSelf(configure, defaults)
     }
 
     fun configurations(configureClosure: Closure<NamedDomainObjectContainer<BenchmarkConfiguration>>): NamedDomainObjectContainer<BenchmarkConfiguration> {

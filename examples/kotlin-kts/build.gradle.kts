@@ -31,7 +31,11 @@ tasks.withType<KotlinCompile> {
     }
 }
 
-configure<BenchmarksExtension> {
+benchmark {
+    defaults {
+        
+    }
+    
     configurations {
         register("main") {
             //jmhVersion = "1.21"
