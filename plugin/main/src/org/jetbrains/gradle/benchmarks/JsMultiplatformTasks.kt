@@ -1,10 +1,16 @@
 package org.jetbrains.gradle.benchmarks
 
+import kotlinx.team.infra.node.*
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 
 fun Project.processJsCompilation(config: JsBenchmarkConfiguration) {
+    if (!plugins.hasPlugin(NodePlugin::class.java)) {
+        logger.info("Enabling node plugin in $this")
+        pluginManager.apply(NodePlugin::class.java)
+    }
+
     project.logger.info("Configuring benchmarks for '${config.name}' using Kotlin/JS")
     val compilation = config.compilation
 

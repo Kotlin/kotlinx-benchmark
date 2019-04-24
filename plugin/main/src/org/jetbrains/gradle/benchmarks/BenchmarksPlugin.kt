@@ -29,11 +29,6 @@ class BenchmarksPlugin : Plugin<Project> {
     }
 
     override fun apply(project: Project) = project.run {
-        if (!plugins.hasPlugin(NodePlugin::class.java)) {
-            logger.info("Enabling node plugin in $this")
-            pluginManager.apply(NodePlugin::class.java)
-        }
-
         if (GradleVersion.current() < GradleVersion.version("4.10")) {
             logger.error("JetBrains Gradle Benchmarks plugin requires Gradle version 4.10 or higher")
             return // TODO: Do we need to fail build at this point or just ignore benchmarks?
