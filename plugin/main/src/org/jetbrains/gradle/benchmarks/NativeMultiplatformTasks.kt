@@ -4,6 +4,7 @@ import org.gradle.api.*
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.konan.target.*
+import java.io.*
 
 fun Project.processNativeCompilation(config: NativeBenchmarkConfiguration) {
     project.logger.info("Configuring benchmarks for '${config.name}' using Kotlin/Native")
@@ -101,6 +102,9 @@ fun Project.createNativeBenchmarkExecTask(
 
         val executableFile = linkTask.outputFile.get()
         executable = executableFile.absolutePath
+        if (config.workingDir != null)
+            workingDir = File(config.workingDir)
+
         onlyIf { executableFile.exists() }
 
         args("-r", reportFile.toString())

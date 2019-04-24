@@ -6,6 +6,8 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.*
 open class BenchmarkConfiguration(val extension: BenchmarksExtension, val name: String) { 
     var iterations: Int? = null
     var iterationTime: Long? = null
+    
+    var workingDir : String? = null
 
     // TODO: this is error prone. User should use the mutable variables above. Plugin code should use these methods
     // Basically, we want external properties, such as `-P` to override what's in build script

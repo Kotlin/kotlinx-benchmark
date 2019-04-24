@@ -40,6 +40,12 @@ fun Project.createJsBenchmarkExecTask(
 
         val executableFile = nodeModulesDir.resolve(compilation.compileKotlinTask.outputFile.name)
         script = executableFile.absolutePath
+        if (config.workingDir != null) {
+            advanced {
+                it.workingDir = File(config.workingDir)
+            }
+        }
+
         options("-r", "source-map-support/register")
         onlyIf { executableFile.exists() }
 

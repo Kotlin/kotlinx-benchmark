@@ -5,6 +5,7 @@ import org.gradle.api.artifacts.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.compile.*
+import java.io.*
 
 fun Project.createJvmBenchmarkCompileTask(config: BenchmarkConfiguration, compileClasspath: FileCollection) {
     val benchmarkBuildDir = benchmarkBuildDir(config)
@@ -59,6 +60,7 @@ fun Project.createJvmBenchmarkExecTask(
     config: BenchmarkConfiguration,
     runtimeClasspath: FileCollection
 ) {
+    // TODO: add working dir parameter?
     task<JavaExec>(
         "${config.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}",
         depends = BenchmarksPlugin.RUN_BENCHMARKS_TASKNAME
@@ -71,6 +73,10 @@ fun Project.createJvmBenchmarkExecTask(
         val reportsDir = benchmarkReportsDir(config)
         val reportFile = reportsDir.resolve("${config.name}.json")
         main = "org.jetbrains.gradle.benchmarks.jvm.JvmBenchmarkRunnerKt"
+        
+        if (config.workingDir != null)
+            workingDir = File(config.workingDir)
+        
         classpath(
             file("$benchmarkBuildDir/classes"),
             file("$benchmarkBuildDir/resources"),
