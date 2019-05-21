@@ -10,13 +10,13 @@ private val benchmarkJs: dynamic = require("benchmark")
 private val process = require("process")
 
 class Suite(private val suiteName: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<out String>) {
-    private val args = RunnerCommandLine().also { it.parse((process["argv"] as Array<String>).drop(2)) }
+    private val params = RunnerCommandLine().also { it.parse((process["argv"] as Array<String>).drop(2)) }
+    private val filter = params.filter
     private val suite: dynamic = benchmarkJs.Suite()
-    private val reporter = BenchmarkReporter.create(args.reportFile, args.traceFormat)
+    private val reporter = BenchmarkReporter.create(params.reportFile, params.traceFormat)
     private val results = mutableListOf<ReportBenchmarkResult>()
 
     fun run() {
-
         suite.on("complete") {
             reporter.endSuite(suiteName, results)
         }
@@ -25,7 +25,14 @@ class Suite(private val suiteName: String, @Suppress("UNUSED_PARAMETER") dummy_a
         suite.run()
     }
 
+    private fun matchesFilter(name: String): Boolean {
+        return filter == null || name.indexOf(filter) != -1
+    }
+
     fun add(name: String, function: () -> Promise<*>, setup: () -> Unit, teardown: () -> Unit) {
+        if (!matchesFilter(name))
+            return
+
         suite.add(name) { deferred: Promise<Unit> ->
             // Mind asDynamic: this is **not** a regular promise
             function().then { (deferred.asDynamic()).resolve() }
@@ -35,6 +42,9 @@ class Suite(private val suiteName: String, @Suppress("UNUSED_PARAMETER") dummy_a
     }
 
     fun add(name: String, function: () -> Any?, setup: () -> Unit, teardown: () -> Unit) {
+        if (!matchesFilter(name))
+            return
+
         suite.add(name, function)
         configureBenchmark(setup, teardown, asynchronous = false)
     }
@@ -47,8 +57,8 @@ class Suite(private val suiteName: String, @Suppress("UNUSED_PARAMETER") dummy_a
         // minTime: The time needed to reduce the percent uncertainty of measurement to 1% (secs).
         // maxTime: The maximum time a benchmark is allowed to run before finishing (secs).
 
-        benchmark.options.minTime = args.iterationTime / 1000.0
-        benchmark.options.maxTime = args.iterationTime * args.iterations / 1000.0
+        benchmark.options.minTime = params.iterationTime / 1000.0
+        benchmark.options.maxTime = params.iterationTime * params.iterations / 1000.0
         benchmark.options.async = asynchronous
         benchmark.options.defer = asynchronous
 

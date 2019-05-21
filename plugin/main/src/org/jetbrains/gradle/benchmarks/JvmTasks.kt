@@ -5,6 +5,7 @@ import org.gradle.api.artifacts.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.compile.*
+import org.gradle.api.tasks.options.*
 import java.io.*
 
 fun Project.createJvmBenchmarkCompileTask(config: BenchmarkConfiguration, compileClasspath: FileCollection) {
@@ -61,7 +62,7 @@ fun Project.createJvmBenchmarkExecTask(
     runtimeClasspath: FileCollection
 ) {
     // TODO: add working dir parameter?
-    task<JavaExec>(
+    task<JvmBenchmarkExec>(
         "${config.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}",
         depends = BenchmarksPlugin.RUN_BENCHMARKS_TASKNAME
     ) {
@@ -84,6 +85,7 @@ fun Project.createJvmBenchmarkExecTask(
         )
         
         //args = "-w 5 -r 5 -wi 1 -i 1 -f 1 
+        args("-n", config.name)
         args("-r", reportFile.toString())
         args("-i", config.iterations().toString())
         args("-ti", config.iterationTime().toString())
@@ -91,13 +93,20 @@ fun Project.createJvmBenchmarkExecTask(
         dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}")
         doFirst {
             val ideaActive = (extensions.extraProperties.get("idea.internal.test") as? String)?.toBoolean() ?: false
+            filter?.let { args("-f", it) }
             args("-t", if (ideaActive) "xml" else "text")
-            args("-n", config.name)
             reportsDir.mkdirs()
-            logger.lifecycle("Running benchmarks for ${config.name}")
+            if (filter == null)
+                logger.lifecycle("Running all benchmarks for ${config.name}")
+            else
+                logger.lifecycle("Running benchmarks matching '$filter' for ${config.name}")
             logger.info("    I:${config.iterations()} T:${config.iterationTime()}")
         }
     }
 }
 
 
+open class JvmBenchmarkExec : JavaExec() {
+    @Option(option = "filter", description = "Configures the filter for benchmarks to run.")
+    var filter: String? = null
+}

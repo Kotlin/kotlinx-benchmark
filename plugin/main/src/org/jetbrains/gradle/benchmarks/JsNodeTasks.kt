@@ -6,6 +6,7 @@ import org.gradle.api.artifacts.*
 import org.gradle.api.artifacts.component.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
+import org.gradle.api.tasks.options.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
@@ -27,7 +28,7 @@ fun Project.createJsBenchmarkExecTask(
 ) {
     val node = NodeExtension[this]
     val nodeModulesDir = node.node_modules
-    task<NodeTask>(
+    task<JsBenchmarkExec>(
         "${config.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}",
         depends = BenchmarksPlugin.RUN_BENCHMARKS_TASKNAME
     ) {
@@ -49,20 +50,31 @@ fun Project.createJsBenchmarkExecTask(
         options("-r", "source-map-support/register")
         onlyIf { executableFile.exists() }
 
+        arguments("-n", config.name)
         arguments("-r", reportFile.toString())
         arguments("-i", config.iterations().toString())
         arguments("-ti", config.iterationTime().toString())
+        
         dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_DEPENDENCIES_SUFFIX}")
         doFirst {
             val ideaActive = (extensions.extraProperties.get("idea.internal.test") as? String)?.toBoolean() ?: false
+            filter?.let { arguments("-f", it) }
             arguments("-t", if (ideaActive) "xml" else "text")
-            arguments("-n", config.name)
             reportsDir.mkdirs()
-            logger.lifecycle("Running benchmarks for ${config.name}")
+            if (filter == null)
+                logger.lifecycle("Running all benchmarks for ${config.name}")
+            else
+                logger.lifecycle("Running benchmarks matching '$filter' for ${config.name}")
             logger.info("    I:${config.iterations()} T:${config.iterationTime()}")
         }
     }
 }
+
+open class JsBenchmarkExec : NodeTask() {
+    @Option(option = "filter", description = "Configures the filter for benchmarks to run.")
+    var filter: String? = null
+}
+
 
 fun Project.createJsBenchmarkDependenciesTask(
     config: BenchmarkConfiguration,

@@ -7,6 +7,7 @@ import kotlin.system.*
 class Suite(private val suiteName: String, args: Array<out String>) {
     private val params = RunnerCommandLine().also { it.parse(args) }
     private val reporter = BenchmarkReporter.create(params.reportFile, params.traceFormat)
+    private val filter = params.filter
 
     private class BenchmarkDescriptor(
         val name: String,
@@ -18,7 +19,13 @@ class Suite(private val suiteName: String, args: Array<out String>) {
     private val benchmarks = mutableListOf<BenchmarkDescriptor>()
 
     fun add(name: String, function: () -> Any?, setup: () -> Unit, teardown: () -> Unit) {
+        if (!matchesFilter(name))
+            return
         benchmarks.add(BenchmarkDescriptor(name, function, setup, teardown))
+    }
+
+    private fun matchesFilter(name: String): Boolean {
+        return filter == null || name.indexOf(filter) != -1
     }
 
     fun run() {

@@ -2,6 +2,7 @@ package org.jetbrains.gradle.benchmarks
 
 import org.gradle.api.*
 import org.gradle.api.tasks.*
+import org.gradle.api.tasks.options.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.konan.target.*
 import java.io.*
@@ -85,7 +86,7 @@ fun Project.createNativeBenchmarkExecTask(
     config: NativeBenchmarkConfiguration,
     benchmarkCompilation: KotlinNativeCompilation
 ) {
-    task<Exec>(
+    task<NativeBenchmarkExec>(
         "${config.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}",
         depends = BenchmarksPlugin.RUN_BENCHMARKS_TASKNAME
     ) {
@@ -107,20 +108,29 @@ fun Project.createNativeBenchmarkExecTask(
 
         onlyIf { executableFile.exists() }
 
+        args("-n", config.name)
         args("-r", reportFile.toString())
         args("-i", config.iterations().toString())
         args("-ti", config.iterationTime().toString())
-        
+
         dependsOn(linkTask)
         doFirst {
             val ideaActive = (extensions.extraProperties.get("idea.internal.test") as? String)?.toBoolean() ?: false
+            filter?.let { args("-f", it) }
             args("-t", if (ideaActive) "xml" else "text")
-            args("-n", config.name)
             reportsDir.mkdirs()
-            logger.lifecycle("Running benchmarks for ${config.name}")
+            if (filter == null)
+                logger.lifecycle("Running all benchmarks for ${config.name}")
+            else
+                logger.lifecycle("Running benchmarks matching '$filter' for ${config.name}")
             logger.info("    I:${config.iterations()} T:${config.iterationTime()}")
         }
     }
+}
+
+open class NativeBenchmarkExec : Exec() {
+    @Option(option = "filter", description = "Configures the filter for benchmarks to run.")
+    var filter: String? = null
 }
 
 private fun Project.configureMultiplatformNativeCompilation(

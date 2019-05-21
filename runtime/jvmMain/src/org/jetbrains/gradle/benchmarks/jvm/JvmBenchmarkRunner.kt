@@ -9,11 +9,11 @@ import org.openjdk.jmh.runner.*
 import org.openjdk.jmh.runner.format.*
 import org.openjdk.jmh.runner.options.*
 import java.io.*
-import java.lang.Exception
 import java.util.concurrent.*
 
 fun main(args: Array<String>) {
     val params = RunnerCommandLine().also { it.parse(args) }
+    val filter = params.filter
 
     val suiteName = params.name ?: run {
         println("Name should be specified")
@@ -31,13 +31,20 @@ fun main(args: Array<String>) {
         .forks(1)
         .threads(1)
 
+    filter?.let { jmhOptions.include(it) }
+
     val reporter = BenchmarkReporter.create(params.reportFile, params.traceFormat)
     val output = JmhOutputFormat(reporter, suiteName)
     try {
         Runner(jmhOptions.build(), output).run()
     } catch (e: Exception) {
         e.printStackTrace()
-        reporter.endBenchmark(suiteName, output.lastBenchmarkStart, BenchmarkReporter.FinishStatus.Failure, e.message ?: "<unknown error>")
+        reporter.endBenchmark(
+            suiteName,
+            output.lastBenchmarkStart,
+            BenchmarkReporter.FinishStatus.Failure,
+            e.message ?: "<unknown error>"
+        )
     }
 }
 
