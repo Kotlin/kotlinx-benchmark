@@ -76,8 +76,7 @@ class JmhOutputFormat(private val reporter: BenchmarkReporter, private val suite
         }
     }
 
-    override fun iteration(benchParams: BenchmarkParams, params: IterationParams, iteration: Int) {
-    }
+    override fun iteration(benchParams: BenchmarkParams, params: IterationParams, iteration: Int) {}
 
     override fun iterationResult(
         benchParams: BenchmarkParams,
@@ -85,8 +84,14 @@ class JmhOutputFormat(private val reporter: BenchmarkReporter, private val suite
         iteration: Int,
         data: IterationResult
     ) {
+        when (params.type) {
+            IterationType.WARMUP -> println("Warm-up $iteration: ${data.primaryResult}")
+            IterationType.MEASUREMENT -> println("Iteration $iteration: ${data.primaryResult}")
+            null -> throw UnsupportedOperationException("Iteration type not set")
+        }
+        flush()
     }
-
+    
     override fun println(s: String) {
         if (!s.startsWith("#"))
             reporter.output(suiteName, lastBenchmarkStart, s)
@@ -102,33 +107,40 @@ private fun Collection<RunResult>.toReportBenchmarkResult(): Collection<ReportBe
     val percentiles = listOf(0.0, 0.25, 0.5, 0.75, 0.90, 0.99, 0.999, 0.9999, 1.0).associate {
         (it * 100) to statistics.getPercentile(it)
     }
-    
+
     val rawData = result.benchmarkResults
         .flatMap { run -> run.iterationResults.map { iteration -> iteration.primaryResult.getScore() } }
         .toDoubleArray()
-    
+
     ReportBenchmarkResult(benchmarkFQN, value.getScore(), value.getScoreError(), min to max, percentiles, rawData)
 }
 
-abstract class PrintOutputFormat(private val out: PrintStream) : OutputFormat {
+abstract class PrintOutputFormat(private val out: PrintStream, private val verbose: VerboseMode = VerboseMode.NORMAL) :
+    OutputFormat {
+
     override fun print(s: String) {
-        out.print(s)
+        if (verbose != VerboseMode.SILENT)
+            out.print(s)
     }
 
     override fun verbosePrintln(s: String) {
+        if (verbose == VerboseMode.EXTRA)
+            out.println(s)
     }
 
     override fun write(b: Int) {
-        out.print(b)
+        if (verbose != VerboseMode.SILENT)
+            out.print(b)
     }
 
     override fun write(b: ByteArray) {
-        out.print(b)
+        if (verbose != VerboseMode.SILENT)
+            out.print(b)
     }
 
     override fun println(s: String) {
-        // Don't print other diagnostic messages
-        // out.println(s)
+        if (verbose != VerboseMode.SILENT)
+            out.println(s)
     }
 
     override fun flush() = out.flush()

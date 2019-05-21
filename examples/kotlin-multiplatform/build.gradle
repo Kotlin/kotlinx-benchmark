@@ -106,6 +106,8 @@ benchmark {
     configurations {
         // This one matches compilation base name, e.g. 'jvm', 'jvmTest', etc
         register("jvm") {
+            iterations = -1 // use annotations values
+            iterationTime = -1 // use annotations values
             jmhVersion = "1.21"
         }
         register("js") {}

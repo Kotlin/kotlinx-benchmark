@@ -5,7 +5,9 @@ import java.util.concurrent.*
 
 @State(Scope.Benchmark)
 @Fork(1)
-@Warmup(iterations = 0)
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.NANOSECONDS)
+@Warmup(iterations = 20, time = 1, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 1, time = 1, timeUnit = TimeUnit.SECONDS)
 class JvmTestBenchmark {
     private var data = 0.0
