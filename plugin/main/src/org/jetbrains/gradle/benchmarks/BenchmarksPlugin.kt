@@ -29,6 +29,9 @@ class BenchmarksPlugin : Plugin<Project> {
     }
 
     override fun apply(project: Project) = project.run {
+        // DO NOT use properties of an extension immediately, it will not contain any user-specified data
+        val extension = extensions.create(BENCHMARK_EXTENSION_NAME, BenchmarksExtension::class.java, project)
+
         if (GradleVersion.current() < GradleVersion.version("4.10")) {
             logger.error("JetBrains Gradle Benchmarks plugin requires Gradle version 4.10 or higher")
             return // TODO: Do we need to fail build at this point or just ignore benchmarks?
@@ -42,9 +45,6 @@ class BenchmarksPlugin : Plugin<Project> {
                     logger.error("JetBrains Gradle Benchmarks plugin requires Kotlin version 1.3.30 or higher")
             }
         }
-
-        // DO NOT use properties of an extension immediately, it will not contain any user-specified data
-        val extension = extensions.create(BENCHMARK_EXTENSION_NAME, BenchmarksExtension::class.java, project)
 
         // Create empty task that will depend on all benchmark building tasks to build all benchmarks in a project
         val assembleBenchmarks = task<DefaultTask>(ASSEMBLE_BENCHMARKS_TASKNAME) {
