@@ -25,7 +25,7 @@ private fun Project.createNativeBenchmarkGenerateSourceTask(config: NativeBenchm
         description = "Generate Native source files for '${config.name}'"
         val compilation = config.compilation
         onlyIf { compilation.compileKotlinTask.enabled }
-        this.target = compilation.target.konanTarget.name
+        this.nativeTarget = compilation.target.konanTarget.name
         title = config.name
         inputClassesDirs = compilation.output.allOutputs
         inputDependencies = compilation.compileDependencyFiles
