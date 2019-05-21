@@ -4,6 +4,8 @@ import groovy.lang.*
 import org.gradle.api.*
 import org.gradle.api.tasks.*
 import java.io.*
+import java.time.*
+import java.time.format.*
 
 fun cleanup(file: File) {
     if (file.exists()) {
@@ -33,8 +35,14 @@ inline fun <reified T : Task> Project.task(
 fun Project.benchmarkBuildDir(config: BenchmarkConfiguration): File =
     file(buildDir.resolve(config.extension.buildDir).resolve(config.name))
 
-fun Project.benchmarkReportsDir(config: BenchmarkConfiguration): File =
-    file(buildDir.resolve(config.extension.reportsDir))
+fun Project.benchmarkReportsDir(config: BenchmarkConfiguration): File {
+    val ext = project.extensions.extraProperties
+    val time = if (ext.has("reportTime")) {
+        ext.get("reportTime") as LocalDateTime
+    } else
+        LocalDateTime.now()
+    return file(buildDir.resolve(config.extension.reportsDir).resolve(time.format(DateTimeFormatter.ISO_DATE_TIME)))
+}
 
 class KotlinClosure1<in T : Any?, V : Any>(
     val function: T.() -> V?,
