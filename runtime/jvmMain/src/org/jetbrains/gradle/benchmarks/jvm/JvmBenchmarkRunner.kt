@@ -2,14 +2,12 @@ package org.jetbrains.gradle.benchmarks.jvm
 
 import kotlinx.cli.*
 import org.jetbrains.gradle.benchmarks.*
-import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.infra.*
 import org.openjdk.jmh.results.*
 import org.openjdk.jmh.runner.*
 import org.openjdk.jmh.runner.format.*
 import org.openjdk.jmh.runner.options.*
 import java.io.*
-import java.util.concurrent.*
 
 fun main(args: Array<String>) {
     val params = RunnerCommandLine().also { it.parse(args) }
@@ -20,17 +18,17 @@ fun main(args: Array<String>) {
         return
     }
 
-    // TODO: build options from command line
     val jmhOptions = OptionsBuilder()
-        .mode(Mode.Throughput)
-        .timeUnit(TimeUnit.SECONDS)
-        .warmupIterations(params.iterations)
-        .measurementIterations(params.iterations)
-        .warmupTime(TimeValue.milliseconds(params.iterationTime))
-        .measurementTime(TimeValue.milliseconds(params.iterationTime))
-        .forks(1)
-        .threads(1)
+    if (params.iterations != -1) {
+        jmhOptions.warmupIterations(params.iterations)
+        jmhOptions.measurementIterations(params.iterations)
+    }
 
+    if (params.iterationTime != -1L) {
+        jmhOptions.warmupTime(TimeValue.milliseconds(params.iterationTime))
+        jmhOptions.measurementTime(TimeValue.milliseconds(params.iterationTime))
+    }
+    
     filter?.let { jmhOptions.include(it) }
 
     val reporter = BenchmarkReporter.create(params.reportFile, params.traceFormat)
