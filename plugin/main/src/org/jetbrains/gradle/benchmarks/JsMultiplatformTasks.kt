@@ -2,7 +2,6 @@ package org.jetbrains.gradle.benchmarks
 
 import kotlinx.team.infra.node.*
 import org.gradle.api.*
-import org.gradle.api.file.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 
 fun Project.processJsCompilation(config: JsBenchmarkConfiguration) {
@@ -17,7 +16,7 @@ fun Project.processJsCompilation(config: JsBenchmarkConfiguration) {
     configureMultiplatformJsCompilation(config)
 
     createJsBenchmarkInstallTask()
-    createJsBenchmarkGenerateSourceTask(config, compilation.output.allOutputs)
+    createJsBenchmarkGenerateSourceTask(config, compilation)
 
     val benchmarkCompilation = createJsBenchmarkCompileTask(config)
     createJsBenchmarkDependenciesTask(config, benchmarkCompilation)
@@ -58,14 +57,15 @@ private fun Project.createJsBenchmarkCompileTask(config: JsBenchmarkConfiguratio
 
 private fun Project.createJsBenchmarkGenerateSourceTask(
     config: JsBenchmarkConfiguration,
-    compilationOutput: FileCollection
+    compilationOutput: KotlinJsCompilation
 ) {
     val benchmarkBuildDir = benchmarkBuildDir(config)
     task<JsSourceGeneratorTask>("${config.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}") {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Generate JS source files for '${config.name}'"
         title = config.name
-        inputClassesDirs = compilationOutput
+        inputClassesDirs = compilationOutput.output.allOutputs
+        inputDependencies = compilationOutput.compileDependencyFiles
         outputResourcesDir = file("$benchmarkBuildDir/resources")
         outputSourcesDir = file("$benchmarkBuildDir/sources")
     }

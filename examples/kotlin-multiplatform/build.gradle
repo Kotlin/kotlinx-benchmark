@@ -97,11 +97,25 @@ kotlin {
 
 // Configure benchmark
 benchmark {
-    defaults {
-        iterations = 5 // number of iterations
-        iterationTime = 300 // time in ms per iteration
+/*    
+    configurations {
+        defaults { // --> jvmBenchmark/jsBenchmark + benchmark
+            iterations = 5 // number of iterations
+            iterationTime = 300 // time in ms per iteration
+        }
+        
+        big { // --> jvmBigBenchmark + bigBenchmark(jvm+js+native)
+            param("collectionSize", "1000000")
+        }
+        
+        fast { // --> jvmFastBenchmark
+            exclude("sdf")
+            include("sdfgsdf")
+            param("collectionSize", ["10","100"])
+            iterations = 1   
+        }
     }
-    
+    */
     // Setup configurations
     configurations {
         // This one matches compilation base name, e.g. 'jvm', 'jvmTest', etc

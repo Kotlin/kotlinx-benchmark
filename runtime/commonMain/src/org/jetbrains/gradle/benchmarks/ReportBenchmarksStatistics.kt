@@ -80,3 +80,38 @@ class ReportBenchmarksStatistics(values: DoubleArray) {
 }
 
 expect fun Double.format(precision: Int): String
+
+fun Double.formatAtMost(precision: Int): String {
+    val d = (precision - log10(this).toInt()).coerceAtLeast(0) // display 4 significant digits
+    return format(d)
+}
+
+@Suppress("REDUNDANT_ELSE_IN_WHEN")
+fun Double.nanosToText(mode: Mode, unit: BenchmarkTimeUnit): String {
+    val value = nanosToSample(mode, unit)
+    return when (mode) {
+        Mode.Throughput -> "${value.formatAtMost(4)} ops/${unit.toText()}"
+        Mode.AverageTime -> "${value.formatAtMost(4)} ${unit.toText()}/op"
+        else -> throw UnsupportedOperationException("$mode is not supported")
+    }
+}
+
+@Suppress("REDUNDANT_ELSE_IN_WHEN")
+fun Double.sampleToText(mode: Mode, unit: BenchmarkTimeUnit): String {
+    val value = this
+    return when (mode) {
+        Mode.Throughput -> "${value.formatAtMost(4)} ops/${unit.toText()}"
+        Mode.AverageTime -> "${value.formatAtMost(4)} ${unit.toText()}/op"
+        else -> throw UnsupportedOperationException("$mode is not supported")
+    }
+}
+
+@Suppress("REDUNDANT_ELSE_IN_WHEN")
+fun Double.nanosToSample(mode: Mode, unit: BenchmarkTimeUnit): Double {
+    val multiplier = unit.toMultiplier() // unit in nanos 
+    return when (mode) {
+        Mode.Throughput -> multiplier / this
+        Mode.AverageTime -> this / multiplier
+        else -> throw UnsupportedOperationException("$mode is not supported")
+    }
+}

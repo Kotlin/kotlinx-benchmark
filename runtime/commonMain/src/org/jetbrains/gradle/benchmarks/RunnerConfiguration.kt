@@ -2,7 +2,7 @@ package org.jetbrains.gradle.benchmarks
 
 import kotlinx.cli.*
 
-class RunnerCommandLine : CommandLineInterface("Client") {
+class RunnerConfiguration : CommandLineInterface("Client") {
     val name by onFlagValue("-n", "name", "Name of the configuration").store()
     val filter by onFlagValue("-f", "filter", "Filter for benchmarks, matched by substring").store()
     val reportFile by onFlagValue("-r", "reportFile", "File to save report to").store()

@@ -41,7 +41,9 @@ fun Project.benchmarkReportsDir(config: BenchmarkConfiguration): File {
         ext.get("reportTime") as LocalDateTime
     } else
         LocalDateTime.now()
-    return file(buildDir.resolve(config.extension.reportsDir).resolve(time.format(DateTimeFormatter.ISO_DATE_TIME)))
+    val timestamp = time.format(DateTimeFormatter.ISO_DATE_TIME)
+    val compatibleTime = timestamp.replace(":", ".") // Windows doesn't allow ':' in path
+    return file(buildDir.resolve(config.extension.reportsDir).resolve(compatibleTime))
 }
 
 class KotlinClosure1<in T : Any?, V : Any>(

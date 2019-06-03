@@ -131,7 +131,7 @@ private fun Project.discoverOutputFolders(configuration: Configuration) = files(
     val projectIds = resolvedConfiguration.resolvedArtifacts.mapNotNull {
         when (val component = it.id.componentIdentifier) {
             is ProjectComponentIdentifier ->
-                it.moduleVersion.id to rootProject.project(component.projectName)
+                it.moduleVersion.id to rootProject.project(component.projectPath)
             else -> null
         }
     }.toMap()

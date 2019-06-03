@@ -10,7 +10,7 @@ import org.openjdk.jmh.runner.options.*
 import java.io.*
 
 fun main(args: Array<String>) {
-    val params = RunnerCommandLine().also { it.parse(args) }
+    val params = RunnerConfiguration().also { it.parse(args) }
     val filter = params.filter
 
     val suiteName = params.name ?: run {

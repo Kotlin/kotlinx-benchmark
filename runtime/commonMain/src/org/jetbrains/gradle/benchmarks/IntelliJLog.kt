@@ -10,11 +10,14 @@ internal fun ijSuiteStart(parent: String, id: String) = buildString {
     append("</ijLog>")
 }
 
-internal fun ijSuiteFinish(parent: String, id: String, status: BenchmarkReporter.FinishStatus) = buildString {
+internal fun ijSuiteFinish(
+    parent: String, id: String, status: BenchmarkReporter.FinishStatus,
+    startTime: Long = 0, endTime: Long = startTime
+) = buildString {
     append("<ijLog>")
     append("<event type='afterSuite'>")
     append("<test id='$id' parentId='$parent'>")
-    append("<result resultType='${status.toString().toUpperCase()}' startTime='0' endTime='0'/>")
+    append("<result resultType='${status.toString().toUpperCase()}' startTime='$startTime' endTime='$endTime'/>")
     append("</test>")
     append("</event>")
     append("</ijLog>")
@@ -30,21 +33,27 @@ internal fun ijBenchmarkStart(parent: String, className: String, methodName: Str
     append("</ijLog>")
 }
 
-internal fun ijBenchmarkFinish(parent: String, id: String, status: BenchmarkReporter.FinishStatus) = buildString {
+internal fun ijBenchmarkFinish(
+    parent: String, id: String, status: BenchmarkReporter.FinishStatus,
+    startTime: Long = 0, endTime: Long = startTime
+) = buildString {
     append("<ijLog>")
     append("<event type='afterTest'>")
     append("<test id='$id' parentId='$parent'>")
-    append("<result resultType='${status.toString().toUpperCase()}' startTime='0' endTime='0'/>")
+    append("<result resultType='${status.toString().toUpperCase()}' startTime='$startTime' endTime='$endTime'/>")
     append("</test>")
     append("</event>")
     append("</ijLog>")
 }
 
-internal fun ijBenchmarkFinishException(parent: String, id: String, error: String, stacktrace: String) = buildString {
+internal fun ijBenchmarkFinishException(
+    parent: String, id: String, error: String, stacktrace: String,
+    startTime: Long = 0, endTime: Long = startTime
+) = buildString {
     append("<ijLog>")
     append("<event type='afterTest'>")
     append("<test id='$id' parentId='$parent'>")
-    append("<result resultType='FAILURE' startTime='0' endTime='0'>")
+    append("<result resultType='FAILURE' startTime='$startTime' endTime='$endTime'>")
     append("<errorMsg>")
     append("<![CDATA[${error.toByteArrayUtf8().encodeBase64()}]]>")
     append("</errorMsg>")

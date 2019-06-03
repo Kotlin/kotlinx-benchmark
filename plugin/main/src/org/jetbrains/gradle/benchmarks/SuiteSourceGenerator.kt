@@ -5,6 +5,8 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.name.*
 import org.jetbrains.kotlin.resolve.*
+import org.jetbrains.kotlin.resolve.annotations.*
+import org.jetbrains.kotlin.resolve.constants.*
 import org.jetbrains.kotlin.resolve.descriptorUtil.*
 import org.jetbrains.kotlin.resolve.scopes.*
 import java.io.*
@@ -15,26 +17,41 @@ enum class Platform {
 
 class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val output: File, val platform: Platform) {
     companion object {
-        val setupFunctionName = "setup"
+        val setupFunctionName = "setUp"
         val teardownFunctionName = "tearDown"
-        val addFunctionName = "addToSuite"
 
         val benchmarkAnnotationFQN = "org.jetbrains.gradle.benchmarks.Benchmark"
         val setupAnnotationFQN = "org.jetbrains.gradle.benchmarks.Setup"
         val teardownAnnotationFQN = "org.jetbrains.gradle.benchmarks.TearDown"
         val stateAnnotationFQN = "org.jetbrains.gradle.benchmarks.State"
+        val modeAnnotationFQN = "org.jetbrains.gradle.benchmarks.BenchmarkMode"
+        val timeUnitFQN = "org.jetbrains.gradle.benchmarks.BenchmarkTimeUnit"
+        val modeFQN = "org.jetbrains.gradle.benchmarks.Mode"
+        val timeAnnotationFQN = "org.jetbrains.gradle.benchmarks.OutputTimeUnit"
+        val warmupAnnotationFQN = "org.jetbrains.gradle.benchmarks.Warmup"
+        val measureAnnotationFQN = "org.jetbrains.gradle.benchmarks.Measurement"
+
         val mainBenchmarkPackage = "org.jetbrains.gradle.benchmarks.generated"
-        val nativeSuite = ClassName.bestGuess("org.jetbrains.gradle.benchmarks.native.Suite")
-        val jsSuite = ClassName.bestGuess("org.jetbrains.gradle.benchmarks.js.Suite")
+
+        val suppressUnusedParameter = AnnotationSpec.builder(Suppress::class).addMember("\"UNUSED_PARAMETER\"").build()
     }
 
-    val suiteType = when (platform) {
-        Platform.JS -> jsSuite
-        Platform.NATIVE -> nativeSuite
+    private val executorType = when (platform) {
+        Platform.JS -> ClassName.bestGuess("org.jetbrains.gradle.benchmarks.js.JsExecutor")
+        Platform.NATIVE -> ClassName.bestGuess("org.jetbrains.gradle.benchmarks.native.NativeExecutor")
+    }
+
+    private val suiteDescriptorType = when (platform) {
+        Platform.JS -> ClassName.bestGuess("org.jetbrains.gradle.benchmarks.SuiteDescriptor")
+        Platform.NATIVE -> ClassName.bestGuess("org.jetbrains.gradle.benchmarks.SuiteDescriptor")
+    }
+
+    private val benchmarkDescriptorType = when (platform) {
+        Platform.JS -> ClassName.bestGuess("org.jetbrains.gradle.benchmarks.js.JsBenchmarkDescriptor")
+        Platform.NATIVE -> ClassName.bestGuess("org.jetbrains.gradle.benchmarks.native.NativeBenchmarkDescriptor")
     }
 
     val benchmarks = mutableListOf<ClassName>()
-
 
     fun generate() {
         processPackage(module, module.getPackage(FqName.ROOT))
@@ -47,11 +64,11 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
                 val array = ClassName("kotlin", "Array")
                 val arrayOfStrings = array.parameterizedBy(WildcardTypeName.producerOf(String::class))
                 addParameter("args", arrayOfStrings)
-                addStatement("val suite = %T(%S, args)", suiteType, title)
+                addStatement("val executor = %T(%S, args)", executorType, title)
                 for (benchmark in benchmarks) {
-                    addStatement("%T().$addFunctionName(suite)", benchmark)
+                    addStatement("executor.suite(%T.describe())", benchmark)
                 }
-                addStatement("suite.run()")
+                addStatement("executor.run()")
             }
         }.build()
         file.writeTo(output)
@@ -62,6 +79,7 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
             DescriptorUtils.getAllDescriptors(packageFragment.getMemberScope())
                 .filterIsInstance<ClassDescriptor>()
                 .filter { it.annotations.any { it.fqName.toString() == stateAnnotationFQN } }
+                .filter { it.modality != Modality.ABSTRACT }
                 .forEach {
                     generateBenchmark(it)
                 }
@@ -78,56 +96,112 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
         val originalClass = ClassName(originalPackage.toString(), originalName.toString())
 
         val benchmarkPackageName = originalPackage.child(Name.identifier("generated")).toString()
-        val benchmarkName = originalName.toString() + "_runner"
+        val benchmarkName = originalName.toString() + "_Descriptor"
         val benchmarkClass = ClassName(mainBenchmarkPackage, benchmarkName)
 
         val functions = DescriptorUtils.getAllDescriptors(original.unsubstitutedMemberScope)
             .filterIsInstance<FunctionDescriptor>()
 
+        val measureAnnotation = original.annotations.singleOrNull { it.fqName.toString() == measureAnnotationFQN }
+        val warmupAnnotation = original.annotations.singleOrNull { it.fqName.toString() == warmupAnnotationFQN }
+        val timeAnnotation = original.annotations.singleOrNull { it.fqName.toString() == timeAnnotationFQN }
+        val modeAnnotation = original.annotations.singleOrNull { it.fqName.toString() == modeAnnotationFQN }
+
+        val timeUnitValue = timeAnnotation?.argumentValue("value") as? EnumValue
+        val timeUnit = timeUnitValue?.enumEntryName?.toString() ?: "SECONDS"
+        
+        val modesValue = modeAnnotation?.argumentValue("value")?.value as? List<EnumValue>
+        val mode = modesValue?.single()?.enumEntryName?.toString() ?: "AverageTime"
+        
+        val measureIterations = measureAnnotation?.argumentValue("iterations")?.value as? Int
+        val measureIterationTime = measureAnnotation?.argumentValue("time")?.value as? Int
+        val measureIterationTimeUnit = measureAnnotation?.argumentValue("timeUnit")?.value as? EnumValue
+
+        val warmupIterations = warmupAnnotation?.argumentValue("iterations")?.value as? Int
+        val warmupIterationTime = warmupAnnotation?.argumentValue("time")?.value as? Int
+        val warmupIterationTimeUnit = warmupAnnotation?.argumentValue("timeUnit")?.value as? EnumValue
+
+        val iterations = measureIterations ?: 10
+        val iterationTime = measureIterationTime ?: 1000
+        val iterationTimeUnit = measureIterationTimeUnit?.enumEntryName?.toString() ?: "SECONDS"
+        val warmups = warmupIterations ?: 10
+        val warmupTime = warmupIterationTime ?: 1000
+        val warmupTimeUnit = warmupIterationTimeUnit?.enumEntryName?.toString() ?: "SECONDS"
+
         val benchmarkFunctions =
             functions.filter { it.annotations.any { it.fqName.toString() == benchmarkAnnotationFQN } }
-        
-        // TODO: collect setup functions from hierarchy in order
-        val setupFunctions =
-            functions.filter { it.annotations.any { it.fqName.toString() == setupAnnotationFQN } }
-        
-        // TODO: collect teardown functions from hierarchy in reverse order
-        val teardownFunctions =
-            functions.filter { it.annotations.any { it.fqName.toString() == teardownAnnotationFQN } }.reversed()
+
+        val setupFunctions = functions
+            .filter { it.annotations.any { it.fqName.toString() == setupAnnotationFQN } }
+
+        val teardownFunctions = functions
+            .filter { it.annotations.any { it.fqName.toString() == teardownAnnotationFQN } }.reversed()
 
         val file = FileSpec.builder(mainBenchmarkPackage, benchmarkName).apply {
-            declareClass(benchmarkClass) {
-                property("_instance", originalClass) {
-                    addModifiers(KModifier.PRIVATE)
-                    initializer(codeBlock {
-                        addStatement("%T()", originalClass)
-                    })
-                }
-                
+            declareObject(benchmarkClass) {
+                addAnnotation(suppressUnusedParameter)
+
                 function(setupFunctionName) {
+                    addModifiers(KModifier.PRIVATE)
+                    addParameter("instance", originalClass)
                     for (fn in setupFunctions) {
                         val functionName = fn.name.toString()
-                        addStatement("_instance.%N()", functionName)
+                        addStatement("instance.%N()", functionName)
                     }
                 }
 
                 function(teardownFunctionName) {
+                    addModifiers(KModifier.PRIVATE)
+                    addParameter("instance", originalClass)
                     for (fn in teardownFunctions) {
                         val functionName = fn.name.toString()
-                        addStatement("_instance.%N()", functionName)
+                        addStatement("instance.%N()", functionName)
                     }
                 }
 
-                function(addFunctionName) {
-                    addParameter("suite", suiteType)
+                val timeUnitClass = ClassName.bestGuess(timeUnitFQN)
+                val modeClass = ClassName.bestGuess(modeFQN)
+                
+                function("describe") {
+                    returns(suiteDescriptorType.parameterizedBy(originalClass))
+                    addStatement(
+                        """
+val descriptor = %T(
+name = %S,
+factory = ::%T,
+setup = ::%N,
+teardown = ::%N,
+iterations = $iterations,
+warmups = $warmups,
+iterationTime = $iterationTime to %T.%N,
+outputUnit = %T.%N,
+mode = %T.%N
+)
+""",
+                        suiteDescriptorType,
+                        originalName,
+                        originalClass,
+                        setupFunctionName,
+                        teardownFunctionName,
+                        timeUnitClass,
+                        MemberName(timeUnitClass, iterationTimeUnit),
+                        timeUnitClass,
+                        MemberName(timeUnitClass, timeUnit),
+                        modeClass,
+                        MemberName(modeClass, mode)
+                    )
+                    addStatement("")
                     for (fn in benchmarkFunctions) {
                         val functionName = fn.name.toString()
                         addStatement(
-                            "suite.add(%P, _instance::%N, this::$setupFunctionName, this::$teardownFunctionName)",
+                            "descriptor.add(%T(%S, descriptor, %T::%N))",
+                            benchmarkDescriptorType,
                             "${originalClass.canonicalName}.$functionName",
+                            originalClass,
                             functionName
                         )
                     }
+                    addStatement("return descriptor")
                 }
 
             }
@@ -140,6 +214,12 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
 
 inline fun codeBlock(builderAction: CodeBlock.Builder.() -> Unit): CodeBlock {
     return CodeBlock.builder().apply(builderAction).build()
+}
+
+inline fun FileSpec.Builder.declareObject(name: ClassName, builderAction: TypeSpec.Builder.() -> Unit): TypeSpec {
+    return TypeSpec.objectBuilder(name).apply(builderAction).build().also {
+        addType(it)
+    }
 }
 
 inline fun FileSpec.Builder.declareClass(name: String, builderAction: TypeSpec.Builder.() -> Unit): TypeSpec {
