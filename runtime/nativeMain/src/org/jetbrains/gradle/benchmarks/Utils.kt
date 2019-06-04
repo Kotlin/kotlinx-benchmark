@@ -5,16 +5,16 @@ import platform.posix.*
 
 actual fun Double.format(precision: Int): String {
     val longPart = toLong()
-    val fractional = this@format - longPart
+    val fractional = this - longPart
     val thousands = longPart.toString().replace(Regex("\\B(?=(\\d{3})+(?!\\d))"), ",")
-    if (fractional == 0.0 || precision == 0)
+    if (fractional < DBL_EPSILON || precision == 0)
         return thousands
-    
+
     return memScoped {
         val bytes = allocArray<ByteVar>(100)
         sprintf(bytes, "%.${precision}F", fractional)
         val fractionText = bytes.toKString()
-        return thousands + fractionText.removePrefix("0")
+        thousands + fractionText.removePrefix("0")
     }
 }
 
