@@ -16,7 +16,7 @@ class FormatTests {
     
     @Test
     fun formatTimeUnits() {
-        assertEquals("83.33 ops/us", 12.0.nanosToText(Mode.Throughput, BenchmarkTimeUnit.MICROSECONDS))
-        assertEquals("0.01200 us/op", 12.0.nanosToText(Mode.AverageTime, BenchmarkTimeUnit.MICROSECONDS))
+        assertEquals("83.3333 ops/us", 12.0.nanosToText(Mode.Throughput, BenchmarkTimeUnit.MICROSECONDS))
+        assertEquals("0.0120000 us/op", 12.0.nanosToText(Mode.AverageTime, BenchmarkTimeUnit.MICROSECONDS))
     }
 }

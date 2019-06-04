@@ -8,7 +8,7 @@ dependencies {
 }
 
 benchmark {
-    configurations {
+    targets {
         register("main") {
             jmhVersion = "1.21"
         }

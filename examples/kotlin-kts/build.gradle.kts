@@ -32,13 +32,10 @@ tasks.withType<KotlinCompile> {
 }
 
 benchmark {
-    defaults {
-        
-    }
-    
-    configurations {
+    targets {
         register("main") {
-            //jmhVersion = "1.21"
+            this as JvmBenchmarkTarget
+            jmhVersion = "1.21"
         }
     }
 }

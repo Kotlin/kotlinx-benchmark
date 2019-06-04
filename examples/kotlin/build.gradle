@@ -27,7 +27,7 @@ dependencies {
 // Configure benchmark
 benchmark {
     // Setup configurations
-    configurations {
+    targets {
         // This one matches sourceSet name above
         register("benchmarks") {
             jmhVersion = "1.21"
