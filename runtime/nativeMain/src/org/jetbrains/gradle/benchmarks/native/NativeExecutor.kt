@@ -46,7 +46,7 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
                     "  ~ ${score.sampleToText(
                         config.mode,
                         config.outputTimeUnit
-                    )} ±${(error / score * 100).formatAtMost(2)}%"
+                    )} ±${(error / score * 100).formatSignificant(2)}%"
                 }
 
                 reporter.endBenchmark(executionName, benchmark.name, BenchmarkProgress.FinishStatus.Success, message)

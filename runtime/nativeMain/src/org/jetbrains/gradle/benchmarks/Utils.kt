@@ -7,7 +7,7 @@ actual fun Double.format(precision: Int): String {
     val longPart = toLong()
     val fractional = this - longPart
     val thousands = longPart.toString().replace(Regex("\\B(?=(\\d{3})+(?!\\d))"), ",")
-    if (fractional < DBL_EPSILON || precision == 0)
+    if (precision == 0)
         return thousands
 
     return memScoped {

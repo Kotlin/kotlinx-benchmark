@@ -89,7 +89,7 @@ class JsExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<o
                     .toDoubleArray()
                 val result = ReportBenchmarksStatistics.createResult(benchmark, config, samples)
                 val message = with(result) {
-                    "  ~ ${score.sampleToText(config.mode, config.outputTimeUnit)} ±${(error / score * 100).formatAtMost(2)}%"
+                    "  ~ ${score.sampleToText(config.mode, config.outputTimeUnit)} ±${(error / score * 100).formatSignificant(2)}%"
                 }
                 val error = event.target.error
                 if (error == null) {
