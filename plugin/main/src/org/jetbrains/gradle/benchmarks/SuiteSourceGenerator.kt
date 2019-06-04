@@ -121,11 +121,11 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
         val warmupIterationTime = warmupAnnotation?.argumentValue("time")?.value as? Int
         val warmupIterationTimeUnit = warmupAnnotation?.argumentValue("timeUnit")?.value as? EnumValue
 
-        val iterations = measureIterations ?: 10
-        val iterationTime = measureIterationTime ?: 1000
+        val iterations = measureIterations ?: 3
+        val iterationTime = measureIterationTime ?: 1
         val iterationTimeUnit = measureIterationTimeUnit?.enumEntryName?.toString() ?: "SECONDS"
-        val warmups = warmupIterations ?: 10
-        val warmupTime = warmupIterationTime ?: 1000
+        val warmups = warmupIterations ?: 3
+        val warmupTime = warmupIterationTime ?: 1
         val warmupTimeUnit = warmupIterationTimeUnit?.enumEntryName?.toString() ?: "SECONDS"
 
         val benchmarkFunctions =

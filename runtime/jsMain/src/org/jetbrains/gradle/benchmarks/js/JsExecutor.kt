@@ -7,6 +7,8 @@ class JsExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<o
     name,
     (process["argv"] as Array<String>).drop(2).toTypedArray()
 ) {
+    private val benchmarkJs: dynamic = require("benchmark")
+
     override fun run(reporter: BenchmarkReporter, benchmarks: List<BenchmarkDescriptor<Any?>>, complete: () -> Unit) {
         val jsSuite: dynamic = benchmarkJs.Suite()
         jsSuite.on("complete") {
@@ -110,6 +112,5 @@ class JsExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<o
 }
 
 external fun require(module: String): dynamic
-private val benchmarkJs: dynamic = require("benchmark")
 private val process = require("process")
 

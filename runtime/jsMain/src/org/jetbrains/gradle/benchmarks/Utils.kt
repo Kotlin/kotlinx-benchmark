@@ -1,6 +1,10 @@
 package org.jetbrains.gradle.benchmarks
 
 actual fun Double.format(precision: Int): String {
+    val options = js("{maximumFractionDigits:2, minimumFractionDigits:2, useGrouping:true}")
+    options.minimumFractionDigits = precision
+    options.maximumFractionDigits = precision
+    return this.asDynamic().toLocaleString(undefined, options)
     val text = this.asDynamic().toFixed(precision) as String
     return text.replace(Regex("\\B(?=(\\d{3})+(?!\\d))"), ",")
 }

@@ -4,7 +4,7 @@ import org.jetbrains.gradle.benchmarks.*
 import kotlin.math.*
 
 @State(Scope.Benchmark)
-@Measurement(iterations = 10, time = 3, timeUnit = BenchmarkTimeUnit.SECONDS)
+@Measurement(iterations = 3, time = 1, timeUnit = BenchmarkTimeUnit.SECONDS)
 @OutputTimeUnit(BenchmarkTimeUnit.MILLISECONDS)
 @BenchmarkMode(Mode.Throughput)
 class CommonBenchmark {

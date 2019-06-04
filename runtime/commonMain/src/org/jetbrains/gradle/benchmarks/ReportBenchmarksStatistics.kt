@@ -82,7 +82,7 @@ class ReportBenchmarksStatistics(values: DoubleArray) {
 expect fun Double.format(precision: Int): String
 
 fun Double.formatAtMost(precision: Int): String {
-    val d = (precision - log10(this).toInt()).coerceAtLeast(0) // display 4 significant digits
+    val d = (precision - ceil(log10(this)).toInt()).coerceAtLeast(0) // display 4 significant digits
     return format(d)
 }
 
