@@ -32,10 +32,10 @@ inline fun <reified T : Task> Project.task(
     return task
 }
 
-fun Project.benchmarkBuildDir(config: BenchmarkConfiguration): File =
-    file(buildDir.resolve(config.extension.buildDir).resolve(config.name))
+fun Project.benchmarkBuildDir(target: BenchmarkTarget): File =
+    file(buildDir.resolve(target.extension.buildDir).resolve(target.name))
 
-fun Project.benchmarkReportsDir(config: BenchmarkConfiguration): File {
+fun Project.benchmarkReportsDir(config: BenchmarkConfiguration, target: BenchmarkTarget): File {
     val ext = project.extensions.extraProperties
     val time = if (ext.has("reportTime")) {
         ext.get("reportTime") as LocalDateTime
@@ -43,7 +43,7 @@ fun Project.benchmarkReportsDir(config: BenchmarkConfiguration): File {
         LocalDateTime.now()
     val timestamp = time.format(DateTimeFormatter.ISO_DATE_TIME)
     val compatibleTime = timestamp.replace(":", ".") // Windows doesn't allow ':' in path
-    return file(buildDir.resolve(config.extension.reportsDir).resolve(compatibleTime))
+    return file(buildDir.resolve(target.extension.reportsDir).resolve(config.name).resolve(compatibleTime))
 }
 
 class KotlinClosure1<in T : Any?, V : Any>(

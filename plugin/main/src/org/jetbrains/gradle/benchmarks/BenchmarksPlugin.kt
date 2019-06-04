@@ -1,6 +1,5 @@
 package org.jetbrains.gradle.benchmarks
 
-import kotlinx.team.infra.node.*
 import org.gradle.api.*
 import org.gradle.util.*
 import org.jetbrains.kotlin.gradle.plugin.*
@@ -52,33 +51,36 @@ class BenchmarksPlugin : Plugin<Project> {
             description = "Generate and build all benchmarks in a project"
         }
 
-        // Create empty task that will depend on all benchmark execution tasks to run all benchmarks in a project
-        val runBenchmarks = task<DefaultTask>(RUN_BENCHMARKS_TASKNAME) {
-            group = BENCHMARKS_TASK_GROUP
-            description = "Execute all benchmarks in a project"
-            extensions.extraProperties.set("idea.internal.test", System.getProperty("idea.active"))
-
-            // Force all benchmarks runner to first build all benchmarks to ensure it won't spend time
-            // running some benchmarks when other will fail to compile
-            // Individual benchmarks depend on their respective building tasks for fast turnaround
-            dependsOn(assembleBenchmarks)
-        }
-
         // TODO: Design configuration avoidance
         // I currently don't how to do it correctly yet, so materialize all tasks after project evaluation. 
         afterEvaluate {
+            extension.configurations.forEach {
+                // Create empty task that will depend on all benchmark execution tasks to run all benchmarks in a project
+                task<DefaultTask>(it.prefixName(RUN_BENCHMARKS_TASKNAME)) {
+                    group = BENCHMARKS_TASK_GROUP
+                    description = "Execute all benchmarks in a project"
+                    extensions.extraProperties.set("idea.internal.test", System.getProperty("idea.active"))
+
+                    // Force all benchmarks runner to first build all benchmarks to ensure it won't spend time
+                    // running some benchmarks when other will fail to compile
+                    // Individual benchmarks depend on their respective building tasks for fast turnaround
+                    dependsOn(assembleBenchmarks)
+                }
+
+            }
+
             processConfigurations(extension)
         }
     }
     
     private fun Project.processConfigurations(extension: BenchmarksExtension) {
         // Calling `all` on NDOC causes all items to materialize and be configured
-        extension.configurations.all { config ->
+        extension.targets.all { config ->
             when (config) {
-                is JavaBenchmarkConfiguration -> processJavaSourceSet(config)
-                is JvmBenchmarkConfiguration -> processJvmCompilation(config)
-                is JsBenchmarkConfiguration -> processJsCompilation(config)
-                is NativeBenchmarkConfiguration -> processNativeCompilation(config)
+                is JavaBenchmarkTarget -> processJavaSourceSet(config)
+                is KotlinJvmBenchmarkTarget -> processJvmCompilation(config)
+                is JsBenchmarkTarget -> processJsCompilation(config)
+                is NativeBenchmarkTarget -> processNativeCompilation(config)
             }
         }
     }

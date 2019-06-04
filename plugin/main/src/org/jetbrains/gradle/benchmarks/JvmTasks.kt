@@ -8,15 +8,15 @@ import org.gradle.api.tasks.compile.*
 import org.gradle.api.tasks.options.*
 import java.io.*
 
-fun Project.createJvmBenchmarkCompileTask(config: BenchmarkConfiguration, compileClasspath: FileCollection) {
-    val benchmarkBuildDir = benchmarkBuildDir(config)
+fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, compileClasspath: FileCollection) {
+    val benchmarkBuildDir = benchmarkBuildDir(target)
     task<JavaCompile>(
-        "${config.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}",
+        "${target.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}",
         depends = BenchmarksPlugin.ASSEMBLE_BENCHMARKS_TASKNAME
     ) {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
-        description = "Compile JMH source files for '${config.name}'"
-        dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}")
+        description = "Compile JMH source files for '${target.name}'"
+        dependsOn("${target.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}")
         classpath = compileClasspath
         source = fileTree("$benchmarkBuildDir/sources")
         destinationDir = file("$benchmarkBuildDir/classes")
@@ -38,16 +38,16 @@ fun Project.createJmhGenerationRuntimeConfiguration(name: String, jmhVersion: St
 }
 
 fun Project.createJvmBenchmarkGenerateSourceTask(
-    config: BenchmarkConfiguration,
+    target: BenchmarkTarget,
     workerClasspath: FileCollection,
     compileClasspath: FileCollection,
     compilationTask: String,
     compilationOutput: FileCollection
 ) {
-    val benchmarkBuildDir = benchmarkBuildDir(config)
-    task<JmhBytecodeGeneratorTask>("${config.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}") {
+    val benchmarkBuildDir = benchmarkBuildDir(target)
+    task<JmhBytecodeGeneratorTask>("${target.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}") {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
-        description = "Generate JMH source files for '${config.name}'"
+        description = "Generate JMH source files for '${target.name}'"
         dependsOn(compilationTask)
         runtimeClasspath = workerClasspath
         inputCompileClasspath = compileClasspath
@@ -59,24 +59,25 @@ fun Project.createJvmBenchmarkGenerateSourceTask(
 
 fun Project.createJvmBenchmarkExecTask(
     config: BenchmarkConfiguration,
+    target: JvmBenchmarkTarget,
     runtimeClasspath: FileCollection
 ) {
     // TODO: add working dir parameter?
     task<JvmBenchmarkExec>(
-        "${config.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}",
-        depends = BenchmarksPlugin.RUN_BENCHMARKS_TASKNAME
+        "${target.name}${config.capitalizedName()}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}",
+        depends = config.prefixName(BenchmarksPlugin.RUN_BENCHMARKS_TASKNAME)
     ) {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
-        description = "Execute benchmark for '${config.name}'"
+        description = "Execute benchmark for '${target.name}'"
         extensions.extraProperties.set("idea.internal.test", System.getProperty("idea.active"))
 
-        val benchmarkBuildDir = benchmarkBuildDir(config)
-        val reportsDir = benchmarkReportsDir(config)
-        val reportFile = reportsDir.resolve("${config.name}.json")
+        val benchmarkBuildDir = benchmarkBuildDir(target)
+        val reportsDir = benchmarkReportsDir(config, target)
+        val reportFile = reportsDir.resolve("${target.name}.json")
         main = "org.jetbrains.gradle.benchmarks.jvm.JvmBenchmarkRunnerKt"
         
-        if (config.workingDir != null)
-            workingDir = File(config.workingDir)
+        if (target.workingDir != null)
+            workingDir = File(target.workingDir)
         
         classpath(
             file("$benchmarkBuildDir/classes"),
@@ -84,29 +85,36 @@ fun Project.createJvmBenchmarkExecTask(
             runtimeClasspath
         )
         
-        //args = "-w 5 -r 5 -wi 1 -i 1 -f 1 
-        args("-n", config.name)
+        args("-n", target.name)
         args("-r", reportFile.toString())
         args("-i", config.iterations().toString())
         args("-it", config.iterationTime().toString())
-        
-        dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}")
+        args("-itu", config.iterationTimeUnit.toString())
+
+        config.includes.forEach {
+            args("-I", it)
+        }
+        config.excludes.forEach {
+            args("-E", it)
+        }
+        config.params.forEach {
+            args("-P", "\"${it.key}=${it.value}\"")
+        }
+
+        dependsOn("${target.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}")
         doFirst {
             val ideaActive = (extensions.extraProperties.get("idea.internal.test") as? String)?.toBoolean() ?: false
-            filter?.let { args("-f", it) }
             args("-t", if (ideaActive) "xml" else "text")
             reportsDir.mkdirs()
-            if (filter == null)
-                logger.lifecycle("Running all benchmarks for ${config.name}")
-            else
-                logger.lifecycle("Running benchmarks matching '$filter' for ${config.name}")
-            logger.info("    I:${config.iterations()} T:${config.iterationTime()}")
+            logger.lifecycle("Running '${config.name}' benchmarks for '${target.name}'")
         }
     }
 }
 
 
 open class JvmBenchmarkExec : JavaExec() {
+/*
     @Option(option = "filter", description = "Configures the filter for benchmarks to run.")
     var filter: String? = null
+*/
 }

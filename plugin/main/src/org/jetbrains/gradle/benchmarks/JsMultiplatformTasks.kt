@@ -4,28 +4,30 @@ import kotlinx.team.infra.node.*
 import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 
-fun Project.processJsCompilation(config: JsBenchmarkConfiguration) {
+fun Project.processJsCompilation(target: JsBenchmarkTarget) {
     if (!plugins.hasPlugin(NodePlugin::class.java)) {
         logger.info("Enabling node plugin in $this")
         pluginManager.apply(NodePlugin::class.java)
     }
 
-    project.logger.info("Configuring benchmarks for '${config.name}' using Kotlin/JS")
-    val compilation = config.compilation
+    project.logger.info("Configuring benchmarks for '${target.name}' using Kotlin/JS")
+    val compilation = target.compilation
 
-    configureMultiplatformJsCompilation(config)
+    configureMultiplatformJsCompilation(target)
 
     createJsBenchmarkInstallTask()
-    createJsBenchmarkGenerateSourceTask(config, compilation)
+    createJsBenchmarkGenerateSourceTask(target, compilation)
 
-    val benchmarkCompilation = createJsBenchmarkCompileTask(config)
-    createJsBenchmarkDependenciesTask(config, benchmarkCompilation)
-    createJsBenchmarkExecTask(config, benchmarkCompilation)
+    val benchmarkCompilation = createJsBenchmarkCompileTask(target)
+    createJsBenchmarkDependenciesTask(target, benchmarkCompilation)
+    target.extension.configurations.forEach {
+        createJsBenchmarkExecTask(it, target, benchmarkCompilation)
+    }
 }
 
-private fun Project.createJsBenchmarkCompileTask(config: JsBenchmarkConfiguration): KotlinJsCompilation {
-    val compilation = config.compilation
-    val benchmarkBuildDir = benchmarkBuildDir(config)
+private fun Project.createJsBenchmarkCompileTask(target: JsBenchmarkTarget): KotlinJsCompilation {
+    val compilation = target.compilation
+    val benchmarkBuildDir = benchmarkBuildDir(target)
     val benchmarkCompilation =
         compilation.target.compilations.create(BenchmarksPlugin.BENCHMARK_COMPILATION_NAME) as KotlinJsCompilation
 
@@ -39,12 +41,12 @@ private fun Project.createJsBenchmarkCompileTask(config: JsBenchmarkConfiguratio
         }
         compileKotlinTask.apply {
             group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
-            description = "Compile JS benchmark source files for '${config.name}'"
+            description = "Compile JS benchmark source files for '${target.name}'"
 
             //TODO: fix destination dir after KT-29711 is fixed
             //println("JS: ${kotlinOptions.outputFile}")
             //destinationDir = file("$benchmarkBuildDir/classes")
-            dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}")
+            dependsOn("${target.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}")
 
             kotlinOptions.apply {
                 sourceMap = true
@@ -56,14 +58,14 @@ private fun Project.createJsBenchmarkCompileTask(config: JsBenchmarkConfiguratio
 }
 
 private fun Project.createJsBenchmarkGenerateSourceTask(
-    config: JsBenchmarkConfiguration,
+    target: JsBenchmarkTarget,
     compilationOutput: KotlinJsCompilation
 ) {
-    val benchmarkBuildDir = benchmarkBuildDir(config)
-    task<JsSourceGeneratorTask>("${config.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}") {
+    val benchmarkBuildDir = benchmarkBuildDir(target)
+    task<JsSourceGeneratorTask>("${target.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}") {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
-        description = "Generate JS source files for '${config.name}'"
-        title = config.name
+        description = "Generate JS source files for '${target.name}'"
+        title = target.name
         inputClassesDirs = compilationOutput.output.allOutputs
         inputDependencies = compilationOutput.compileDependencyFiles
         outputResourcesDir = file("$benchmarkBuildDir/resources")
@@ -71,11 +73,11 @@ private fun Project.createJsBenchmarkGenerateSourceTask(
     }
 }
 
-private fun Project.configureMultiplatformJsCompilation(config: JsBenchmarkConfiguration) {
+private fun Project.configureMultiplatformJsCompilation(target: JsBenchmarkTarget) {
     // Add runtime library as an implementation dependency to the specified compilation
-    val runtime = dependencies.create("${BenchmarksPlugin.RUNTIME_DEPENDENCY_BASE}-js:${config.extension.version}")
+    val runtime = dependencies.create("${BenchmarksPlugin.RUNTIME_DEPENDENCY_BASE}-js:${target.extension.version}")
 
-    config.compilation.dependencies {
+    target.compilation.dependencies {
         //implementation(runtime)
     }
 }

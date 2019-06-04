@@ -6,7 +6,7 @@ import org.gradle.api.artifacts.*
 import org.gradle.api.artifacts.component.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
-import org.gradle.api.tasks.options.*
+import org.jetbrains.gradle.benchmarks.BenchmarksPlugin.Companion.RUN_BENCHMARKS_TASKNAME
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*
@@ -24,67 +24,76 @@ fun Project.createJsBenchmarkInstallTask() {
 
 fun Project.createJsBenchmarkExecTask(
     config: BenchmarkConfiguration,
+    target: JsBenchmarkTarget,
     compilation: KotlinJsCompilation
 ) {
     val node = NodeExtension[this]
     val nodeModulesDir = node.node_modules
     task<JsBenchmarkExec>(
-        "${config.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}",
-        depends = BenchmarksPlugin.RUN_BENCHMARKS_TASKNAME
+        "${target.name}${config.capitalizedName()}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}",
+        depends = config.prefixName(RUN_BENCHMARKS_TASKNAME)
     ) {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
-        description = "Executes benchmark for '${config.name}'"
+        description = "Executes benchmark for '${target.name}'"
         extensions.extraProperties.set("idea.internal.test", System.getProperty("idea.active"))
 
-        val reportsDir = benchmarkReportsDir(config)
-        val reportFile = reportsDir.resolve("${config.name}.json")
+        val reportsDir = benchmarkReportsDir(config, target)
+        val reportFile = reportsDir.resolve("${target.name}.json")
 
         val executableFile = nodeModulesDir.resolve(compilation.compileKotlinTask.outputFile.name)
         script = executableFile.absolutePath
-        if (config.workingDir != null) {
+        if (target.workingDir != null) {
             advanced {
-                it.workingDir = File(config.workingDir)
+                it.workingDir = File(target.workingDir)
             }
         }
 
         options("-r", "source-map-support/register")
         onlyIf { executableFile.exists() }
 
-        arguments("-n", config.name)
+        arguments("-n", target.name)
         arguments("-r", reportFile.toString())
         arguments("-i", config.iterations().toString())
         arguments("-it", config.iterationTime().toString())
-        
-        dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_DEPENDENCIES_SUFFIX}")
+        arguments("-itu", config.iterationTimeUnit.toString())
+
+        config.includes.forEach {
+            arguments("-I", it)
+        }
+        config.excludes.forEach {
+            arguments("-E", it)
+        }
+        config.params.forEach {
+            arguments("-P", "\"${it.key}=${it.value}\"")
+        }
+
+        dependsOn("${target.name}${BenchmarksPlugin.BENCHMARK_DEPENDENCIES_SUFFIX}")
         doFirst {
             val ideaActive = (extensions.extraProperties.get("idea.internal.test") as? String)?.toBoolean() ?: false
-            filter?.let { arguments("-f", it) }
             arguments("-t", if (ideaActive) "xml" else "text")
             reportsDir.mkdirs()
-            if (filter == null)
-                logger.lifecycle("Running all benchmarks for ${config.name}")
-            else
-                logger.lifecycle("Running benchmarks matching '$filter' for ${config.name}")
-            logger.info("    I:${config.iterations()} T:${config.iterationTime()}")
+            logger.lifecycle("Running '${config.name}' benchmarks for '${target.name}'")
         }
     }
 }
 
 open class JsBenchmarkExec : NodeTask() {
+/*
     @Option(option = "filter", description = "Configures the filter for benchmarks to run.")
     var filter: String? = null
+*/
 }
 
 
 fun Project.createJsBenchmarkDependenciesTask(
-    config: BenchmarkConfiguration,
+    target: JsBenchmarkTarget,
     compilation: KotlinJsCompilation
 ) {
     val node = project.extensions.getByType(NodeExtension::class.java)
     val nodeModulesDir = node.node_modules
-    val deployTask = task<Copy>("${config.name}${BenchmarksPlugin.BENCHMARK_DEPENDENCIES_SUFFIX}") {
+    val deployTask = task<Copy>("${target.name}${BenchmarksPlugin.BENCHMARK_DEPENDENCIES_SUFFIX}") {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
-        description = "Copy dependencies of benchmark for '${config.name}'"
+        description = "Copy dependencies of benchmark for '${target.name}'"
         val configurationName = compilation.runtimeDependencyConfigurationName
         val configuration = configurations.getByName(configurationName)
 

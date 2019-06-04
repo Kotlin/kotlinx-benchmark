@@ -11,42 +11,50 @@ import java.io.*
 
 fun main(args: Array<String>) {
     val params = RunnerConfiguration().also { it.parse(args) }
-    val filter = params.filter
-
     val suiteName = params.name ?: run {
         println("Name should be specified")
         return
     }
 
     val jmhOptions = OptionsBuilder()
-    if (params.iterations != -1) {
-        jmhOptions.warmupIterations(params.iterations)
-        jmhOptions.measurementIterations(params.iterations)
+    params.iterations?.let { jmhOptions.measurementIterations(it) }
+    params.warmups?.let { jmhOptions.warmupIterations(it) }
+    params.iterationTime?.let {
+        val timeValue = TimeValue(it, params.iterationTimeUnit)
+        jmhOptions.warmupTime(timeValue)
+        jmhOptions.measurementTime(timeValue)
     }
-
-    if (params.iterationTime != -1L) {
-        jmhOptions.warmupTime(TimeValue.milliseconds(params.iterationTime))
-        jmhOptions.measurementTime(TimeValue.milliseconds(params.iterationTime))
+    params.outputTimeUnit?.let {
+        jmhOptions.timeUnit(it)
+    }
+    params.mode?.let {
+        jmhOptions.mode(it)
     }
     
-    filter?.let { jmhOptions.include(it) }
+    params.include.forEach { 
+        jmhOptions.include(it)
+    }
+    params.exclude.forEach { 
+        jmhOptions.exclude(it)
+    }
 
-    val reporter = BenchmarkReporter.create(params.reportFile, params.traceFormat)
+    val reporter = BenchmarkProgress.create(params.traceFormat)
     val output = JmhOutputFormat(reporter, suiteName)
     try {
         Runner(jmhOptions.build(), output).run()
+        saveReport(reportFile, result)
     } catch (e: Exception) {
         e.printStackTrace()
         reporter.endBenchmark(
             suiteName,
             output.lastBenchmarkStart,
-            BenchmarkReporter.FinishStatus.Failure,
+            BenchmarkProgress.FinishStatus.Failure,
             e.message ?: "<unknown error>"
         )
     }
 }
 
-class JmhOutputFormat(private val reporter: BenchmarkReporter, private val suiteName: String) :
+class JmhOutputFormat(private val reporter: BenchmarkProgress, private val suiteName: String) :
     PrintOutputFormat(System.out) {
     
     internal var lastBenchmarkStart = ""
@@ -70,7 +78,7 @@ class JmhOutputFormat(private val reporter: BenchmarkReporter, private val suite
             val benchmarkFQN = result.params.benchmark
             val value = result.primaryResult
             val message = value.extendedInfo().trim()
-            reporter.endBenchmark(suiteName, benchmarkFQN, BenchmarkReporter.FinishStatus.Success, message)
+            reporter.endBenchmark(suiteName, benchmarkFQN, BenchmarkProgress.FinishStatus.Success, message)
         } else {
             reporter.endBenchmarkException(suiteName, lastBenchmarkStart, "<ERROR>", "")
         }

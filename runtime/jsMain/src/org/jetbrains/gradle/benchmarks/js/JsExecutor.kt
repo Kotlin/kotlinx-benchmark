@@ -11,7 +11,7 @@ class JsExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<o
 
     override fun run(
         runnerConfiguration: RunnerConfiguration,
-        reporter: BenchmarkReporter,
+        reporter: BenchmarkProgress,
         benchmarks: List<BenchmarkDescriptor<Any?>>,
         complete: () -> Unit
     ) {
@@ -87,7 +87,7 @@ class JsExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<o
                         nanos.nanosToSample(config.mode, config.outputTimeUnit)
                     }
                     .toDoubleArray()
-                val result = ReportBenchmarksStatistics.createResult(event.target.name, samples)
+                val result = ReportBenchmarksStatistics.createResult(benchmark, config, samples)
                 val message = with(result) {
                     "  ~ ${score.sampleToText(config.mode, config.outputTimeUnit)} ±${(error / score * 100).formatAtMost(2)}%"
                 }
@@ -96,7 +96,7 @@ class JsExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<o
                     reporter.endBenchmark(
                         executionName,
                         benchmarkFQN,
-                        BenchmarkReporter.FinishStatus.Success,
+                        BenchmarkProgress.FinishStatus.Success,
                         message
                     )
                     result(result)

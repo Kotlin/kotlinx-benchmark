@@ -1,4 +1,3 @@
-
 buildscript {
     repositories {
 //        maven { url "$rootProject.projectDir/../kotlin-libraries-infra/build/maven" }
@@ -6,10 +5,10 @@ buildscript {
 }
 
 plugins {
-    id 'org.jetbrains.kotlin.multiplatform' 
+    id 'org.jetbrains.kotlin.multiplatform'
     id 'org.jetbrains.kotlin.plugin.allopen' version "1.3.30"
     id 'org.jetbrains.gradle.benchmarks.plugin' version "0.1.7"
-    id 'kotlinx.team.node' 
+    id 'kotlinx.team.node'
 }
 
 node {
@@ -27,7 +26,7 @@ kotlin {
         target('linuxX64')
         target('mingwX64')
     }
-    
+
     jvm {
         compilations.all {
             kotlinOptions {
@@ -44,7 +43,7 @@ kotlin {
             }
         }
     }
-    
+
     sourceSets.all {
         languageSettings {
             progressiveMode = true
@@ -87,48 +86,48 @@ kotlin {
                 implementation 'org.jetbrains.kotlin:kotlin-test-js'
             }
         }
-        
+
         nativeMain {
             dependencies {
             }
-        }    
+        }
     }
 }
 
 // Configure benchmark
 benchmark {
-/*    
     configurations {
-        defaults { // --> jvmBenchmark/jsBenchmark + benchmark
+        main { // --> jvmBenchmark/jsBenchmark + benchmark
             iterations = 5 // number of iterations
             iterationTime = 300 // time in ms per iteration
         }
-        
+
         big { // --> jvmBigBenchmark + bigBenchmark(jvm+js+native)
             param("collectionSize", "1000000")
         }
-        
+
         fast { // --> jvmFastBenchmark
-            exclude("sdf")
-            include("sdfgsdf")
-            param("collectionSize", ["10","100"])
-            iterations = 1   
+            include(".*Common.*")
+            exclude(".*long.*")
+            param("collectionSize", 10)
+            param("repeats", 1000)
+            iterations = 1
+            iterationTime = 300 // time in ms per iteration
+            iterationTimeUnit = "ms" // time in ms per iteration
         }
     }
-    */
+
     // Setup configurations
-    configurations {
+    targets {
         // This one matches compilation base name, e.g. 'jvm', 'jvmTest', etc
         register("jvm") {
-            iterations = -1 // use annotations values
-            iterationTime = -1 // use annotations values
             jmhVersion = "1.21"
         }
-        register("js") {}
-        register("native") {}
-        register("macosX64") {}
-        register("linuxX64") {}
-        register("mingwX64") {}
+        register("js")
+        register("native")
+        register("macosX64")
+        register("linuxX64")
+        register("mingwX64")
     }
 }
 

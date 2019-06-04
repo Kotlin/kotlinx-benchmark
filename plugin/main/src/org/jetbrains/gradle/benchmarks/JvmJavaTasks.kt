@@ -2,20 +2,20 @@ package org.jetbrains.gradle.benchmarks
 
 import org.gradle.api.*
 
-fun Project.processJavaSourceSet(config: JavaBenchmarkConfiguration) {
-    logger.info("Configuring benchmarks for '${config.name}' using Java")
+fun Project.processJavaSourceSet(target: JavaBenchmarkTarget) {
+    logger.info("Configuring benchmarks for '${target.name}' using Java")
 
-    val sourceSet = config.sourceSet
+    val sourceSet = target.sourceSet
 
     // get configure source set and add JMH core dependency to it
-    this.configureJmhDependency(config)
+    this.configureJmhDependency(target)
 
     // we need JMH generator runtime configuration for each BenchmarkConfiguration since version can be different
-    val workerClasspath = createJmhGenerationRuntimeConfiguration(config.name, config.jmhVersion)
+    val workerClasspath = createJmhGenerationRuntimeConfiguration(target.name, target.jmhVersion)
 
     // Create a task that will process output bytecode and generate benchmark Java source code
     createJvmBenchmarkGenerateSourceTask(
-        config,
+        target,
         workerClasspath,
         sourceSet.compileClasspath,
         sourceSet.classesTaskName,
@@ -23,24 +23,26 @@ fun Project.processJavaSourceSet(config: JavaBenchmarkConfiguration) {
     )
 
     // Create a task that will compile generated Java source code into class files
-    createJvmBenchmarkCompileTask(config, sourceSet.runtimeClasspath)
+    createJvmBenchmarkCompileTask(target, sourceSet.runtimeClasspath)
 
     // Create a task that will execute benchmark code
-    createJvmBenchmarkExecTask(config, sourceSet.runtimeClasspath)
+    target.extension.configurations.forEach {
+        createJvmBenchmarkExecTask(it, target, sourceSet.runtimeClasspath)
+    }
 }
 
-private fun Project.configureJmhDependency(config: JavaBenchmarkConfiguration) {
+private fun Project.configureJmhDependency(target: JavaBenchmarkTarget) {
     val dependencies = dependencies
 
     // Add dependency to JMH core library to the source set designated by config.name
-    val jmhCore = dependencies.create("${BenchmarksPlugin.JMH_CORE_DEPENDENCY}:${config.jmhVersion}")
-    val runtimeJvm = dependencies.create("${BenchmarksPlugin.RUNTIME_DEPENDENCY_BASE}-jvm:${config.extension.version}")
+    val jmhCore = dependencies.create("${BenchmarksPlugin.JMH_CORE_DEPENDENCY}:${target.jmhVersion}")
+    val runtimeJvm = dependencies.create("${BenchmarksPlugin.RUNTIME_DEPENDENCY_BASE}-jvm:${target.extension.version}")
     val configurationRoot = "implementation"
 
-    val dependencyConfiguration = if (config.name == "main")
+    val dependencyConfiguration = if (target.name == "main")
         configurationRoot
     else
-        "${config.name}${configurationRoot.capitalize()}"
+        "${target.name}${configurationRoot.capitalize()}"
 
     dependencies.add(dependencyConfiguration, jmhCore)
     //dependencies.add(dependencyConfiguration, runtimeJvm)

@@ -33,6 +33,16 @@ open class BenchmarksExtension(val project: Project) {
 
     val configurations: NamedDomainObjectContainer<BenchmarkConfiguration> = run {
         project.container(BenchmarkConfiguration::class.java) { name ->
+            BenchmarkConfiguration(this, name)
+        }
+    }
+    
+    fun targets(configureClosure: Closure<NamedDomainObjectContainer<BenchmarkTarget>>): NamedDomainObjectContainer<BenchmarkTarget> {
+        return targets.configure(configureClosure)
+    }
+
+    val targets: NamedDomainObjectContainer<BenchmarkTarget> = run {
+        project.container(BenchmarkTarget::class.java) { name ->
             val multiplatformClass = tryGetClass<KotlinMultiplatformExtension>("org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension")
             val multiplatform = multiplatformClass?.let { project.extensions.findByType(it) }
             val javaConvention = project.convention.findPlugin(JavaPluginConvention::class.java)
@@ -50,20 +60,20 @@ open class BenchmarksExtension(val project: Project) {
                     when (compilation) {
                         null -> {
                             project.logger.warn("Warning: Cannot find a benchmark compilation '$name', ignoring.")
-                            BenchmarkConfiguration(this, name) // ignore
+                            BenchmarkTarget(this, name) // ignore
                         }
                         is KotlinJvmCompilation -> {
-                            JvmBenchmarkConfiguration(this, name, compilation)
+                            KotlinJvmBenchmarkTarget(this, name, compilation)
                         }
                         is KotlinJsCompilation -> {
-                            JsBenchmarkConfiguration(this, name, compilation)
+                            JsBenchmarkTarget(this, name, compilation)
                         }
                         is KotlinNativeCompilation -> {
-                            NativeBenchmarkConfiguration(this, name, compilation)
+                            NativeBenchmarkTarget(this, name, compilation)
                         }
                         else -> {
                             project.logger.warn("Warning: Unsupported compilation '$compilation', ignoring.")
-                            BenchmarkConfiguration(this, name) // ignore
+                            BenchmarkTarget(this, name) // ignore
                         }
                     }
 
@@ -73,16 +83,16 @@ open class BenchmarksExtension(val project: Project) {
                     when (sourceSet) {
                         null -> {
                             project.logger.warn("Warning: Cannot find a benchmark sourceSet '$name', ignoring.")
-                            BenchmarkConfiguration(this, name) // ignore
+                            BenchmarkTarget(this, name) // ignore
                         }
                         else -> {
-                            JavaBenchmarkConfiguration(this, name, sourceSet)
+                            JavaBenchmarkTarget(this, name, sourceSet)
                         }
                     }
                 }
                 else -> {
                     project.logger.warn("Warning: No Java or Kotlin Multiplatform plugin found, ignoring.")
-                    BenchmarkConfiguration(this, name) // ignore
+                    BenchmarkTarget(this, name) // ignore
                 }
             }
         }

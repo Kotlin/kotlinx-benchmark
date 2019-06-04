@@ -51,7 +51,7 @@ class ReportBenchmarksStatistics(values: DoubleArray) {
     }
 
     companion object {
-        fun createResult(benchmarkName: String, samples: DoubleArray): ReportBenchmarkResult {
+        fun createResult(benchmark: BenchmarkDescriptor<*>, config: BenchmarkConfiguration, samples: DoubleArray): ReportBenchmarkResult {
             val statistics = ReportBenchmarksStatistics(samples)
             val score = statistics.mean()
             val errorMargin = 1.96 * (statistics.standardDeviation() / sqrt(samples.size.toDouble()))
@@ -68,7 +68,8 @@ class ReportBenchmarksStatistics(values: DoubleArray) {
                 (it * 100) to statistics.valueAt(it)
             }
             return ReportBenchmarkResult(
-                benchmarkName,
+                config,
+                benchmark,
                 score,
                 errorMargin,
                 (score - errorMargin) to (score + errorMargin),
@@ -94,6 +95,13 @@ fun Double.nanosToText(mode: Mode, unit: BenchmarkTimeUnit): String {
         Mode.AverageTime -> "${value.formatAtMost(6)} ${unit.toText()}/op"
         else -> throw UnsupportedOperationException("$mode is not supported")
     }
+}
+
+@Suppress("REDUNDANT_ELSE_IN_WHEN")
+fun unitText(mode: Mode, unit: BenchmarkTimeUnit) = when (mode) {
+    Mode.Throughput -> "ops/${unit.toText()}"
+    Mode.AverageTime -> "${unit.toText()}/op"
+    else -> throw UnsupportedOperationException("$mode is not supported")
 }
 
 @Suppress("REDUNDANT_ELSE_IN_WHEN")

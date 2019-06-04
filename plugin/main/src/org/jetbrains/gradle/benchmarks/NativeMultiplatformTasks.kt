@@ -7,27 +7,29 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.konan.target.*
 import java.io.*
 
-fun Project.processNativeCompilation(config: NativeBenchmarkConfiguration) {
-    project.logger.info("Configuring benchmarks for '${config.name}' using Kotlin/Native")
+fun Project.processNativeCompilation(target: NativeBenchmarkTarget) {
+    project.logger.info("Configuring benchmarks for '${target.name}' using Kotlin/Native")
 
-    val compilation = config.compilation
-    configureMultiplatformNativeCompilation(config, compilation)
+    val compilation = target.compilation
+    configureMultiplatformNativeCompilation(target, compilation)
 
-    createNativeBenchmarkGenerateSourceTask(config)
+    createNativeBenchmarkGenerateSourceTask(target)
 
-    val benchmarkCompilation = createNativeBenchmarkCompileTask(config)
-    createNativeBenchmarkExecTask(config, benchmarkCompilation)
+    val benchmarkCompilation = createNativeBenchmarkCompileTask(target)
+    target.extension.configurations.forEach {
+        createNativeBenchmarkExecTask(it, target, benchmarkCompilation)
+    }
 }
 
-private fun Project.createNativeBenchmarkGenerateSourceTask(config: NativeBenchmarkConfiguration) {
-    val benchmarkBuildDir = benchmarkBuildDir(config)
-    task<NativeSourceGeneratorTask>("${config.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}") {
+private fun Project.createNativeBenchmarkGenerateSourceTask(target: NativeBenchmarkTarget) {
+    val benchmarkBuildDir = benchmarkBuildDir(target)
+    task<NativeSourceGeneratorTask>("${target.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}") {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
-        description = "Generate Native source files for '${config.name}'"
-        val compilation = config.compilation
+        description = "Generate Native source files for '${target.name}'"
+        val compilation = target.compilation
         onlyIf { compilation.compileKotlinTask.enabled }
         this.nativeTarget = compilation.target.konanTarget.name
-        title = config.name
+        title = target.name
         inputClassesDirs = compilation.output.allOutputs
         inputDependencies = compilation.compileDependencyFiles
         outputResourcesDir = file("$benchmarkBuildDir/resources")
@@ -35,13 +37,13 @@ private fun Project.createNativeBenchmarkGenerateSourceTask(config: NativeBenchm
     }
 }
 
-private fun Project.createNativeBenchmarkCompileTask(config: NativeBenchmarkConfiguration): KotlinNativeCompilation {
+private fun Project.createNativeBenchmarkCompileTask(target: NativeBenchmarkTarget): KotlinNativeCompilation {
 
-    val compilation = config.compilation
-    val benchmarkBuildDir = benchmarkBuildDir(config)
-    val target = compilation.target
+    val compilation = target.compilation
+    val benchmarkBuildDir = benchmarkBuildDir(target)
+    val compilationTarget = compilation.target
     val benchmarkCompilation =
-        target.compilations.create(BenchmarksPlugin.BENCHMARK_COMPILATION_NAME) as KotlinNativeCompilation
+        compilationTarget.compilations.create(BenchmarksPlugin.BENCHMARK_COMPILATION_NAME) as KotlinNativeCompilation
 
     // In the previous version of this method a compileTask was changed to build an executable instead of klib.
     // Currently it's impossible to change task output kind and an executable is always produced by
@@ -58,7 +60,7 @@ private fun Project.createNativeBenchmarkCompileTask(config: NativeBenchmarkConf
         }
     }
 
-    target.apply {
+    compilationTarget.apply {
         binaries {
             // The release build type is already optimized and non-debuggable.
             executable(benchmarkCompilation.name, listOf(RELEASE)) {
@@ -66,8 +68,8 @@ private fun Project.createNativeBenchmarkCompileTask(config: NativeBenchmarkConf
                 // A link task's name is linkReleaseExecutable<Target>.
                 linkTask.apply {
                     group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
-                    description = "Compile Native benchmark source files for '${config.name}'"
-                    dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}")
+                    description = "Compile Native benchmark source files for '${compilationTarget.name}'"
+                    dependsOn("${compilationTarget.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}")
 
                     // It's impossible to change output directory using the binaries DSL.
                     // See https://youtrack.jetbrains.com/issue/KT-29395
@@ -83,64 +85,75 @@ private fun Project.createNativeBenchmarkCompileTask(config: NativeBenchmarkConf
 }
 
 fun Project.createNativeBenchmarkExecTask(
-    config: NativeBenchmarkConfiguration,
+    config: BenchmarkConfiguration,
+    target: NativeBenchmarkTarget,
     benchmarkCompilation: KotlinNativeCompilation
 ) {
     task<NativeBenchmarkExec>(
-        "${config.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}",
-        depends = BenchmarksPlugin.RUN_BENCHMARKS_TASKNAME
+        "${target.name}${config.capitalizedName()}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}",
+        depends = config.prefixName(BenchmarksPlugin.RUN_BENCHMARKS_TASKNAME)
     ) {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
-        description = "Executes benchmark for '${config.name}'"
+        description = "Executes benchmark for '${target.name}'"
         extensions.extraProperties.set("idea.internal.test", System.getProperty("idea.active"))
 
-        val binary = benchmarkCompilation.target.binaries.getExecutable(benchmarkCompilation.name, NativeBuildType.RELEASE)
+        val binary =
+            benchmarkCompilation.target.binaries.getExecutable(benchmarkCompilation.name, NativeBuildType.RELEASE)
         val linkTask = binary.linkTask
         onlyIf { linkTask.enabled }
 
-        val reportsDir = benchmarkReportsDir(config)
-        val reportFile = reportsDir.resolve("${config.name}.json")
+        val reportsDir = benchmarkReportsDir(config, target)
+        val reportFile = reportsDir.resolve("${target.name}.json")
 
         val executableFile = linkTask.outputFile.get()
         executable = executableFile.absolutePath
-        if (config.workingDir != null)
-            workingDir = File(config.workingDir)
+        if (target.workingDir != null)
+            workingDir = File(target.workingDir)
 
         onlyIf { executableFile.exists() }
 
-        args("-n", config.name)
+        args("-n", target.name)
         args("-r", reportFile.toString())
         args("-i", config.iterations().toString())
         args("-it", config.iterationTime().toString())
+        args("-itu", config.iterationTimeUnit.toString())
+
+        config.includes.forEach {
+            args("-I", it)
+        }
+        config.excludes.forEach {
+            args("-E", it)
+        }
+        config.params.forEach {
+            args("-P", "\"${it.key}=${it.value}\"")
+        }
 
         dependsOn(linkTask)
         doFirst {
             val ideaActive = (extensions.extraProperties.get("idea.internal.test") as? String)?.toBoolean() ?: false
-            filter?.let { args("-f", it) }
             args("-t", if (ideaActive) "xml" else "text")
             reportsDir.mkdirs()
-            if (filter == null)
-                logger.lifecycle("Running all benchmarks for ${config.name}")
-            else
-                logger.lifecycle("Running benchmarks matching '$filter' for ${config.name}")
-            logger.info("    I:${config.iterations()} T:${config.iterationTime()}")
+            logger.lifecycle("Running '${config.name}' benchmarks for '${target.name}'")
         }
     }
 }
 
 open class NativeBenchmarkExec : Exec() {
+/*
     @Option(option = "filter", description = "Configures the filter for benchmarks to run.")
     var filter: String? = null
+*/
 }
 
 private fun Project.configureMultiplatformNativeCompilation(
-    config: NativeBenchmarkConfiguration,
+    target: NativeBenchmarkTarget,
     compilation: KotlinNativeCompilation
 ) {
     val konanTarget = compilation.target.konanTarget
-    
+
     // Add runtime library as an implementation dependency to the specified compilation
-    val runtime = dependencies.create("${BenchmarksPlugin.RUNTIME_DEPENDENCY_BASE}-${konanTarget.presetName}:${config.extension.version}")
+    val runtime =
+        dependencies.create("${BenchmarksPlugin.RUNTIME_DEPENDENCY_BASE}-${konanTarget.presetName}:${target.extension.version}")
 
     compilation.dependencies {
         //implementation(runtime)

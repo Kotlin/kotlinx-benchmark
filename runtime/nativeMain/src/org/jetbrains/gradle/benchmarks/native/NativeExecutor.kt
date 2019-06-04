@@ -6,7 +6,7 @@ import kotlin.system.*
 class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name, args) {
     override fun run(
         runnerConfiguration: RunnerConfiguration,
-        reporter: BenchmarkReporter,
+        reporter: BenchmarkProgress,
         benchmarks: List<BenchmarkDescriptor<Any?>>,
         complete: () -> Unit
     ) {
@@ -40,7 +40,7 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
             }
 
             if (exception == null) {
-                val result = ReportBenchmarksStatistics.createResult(benchmark.name, samples)
+                val result = ReportBenchmarksStatistics.createResult(benchmark, config, samples)
                 val message = with(result) {
                     // TODO: metric
                     "  ~ ${score.sampleToText(
@@ -49,13 +49,13 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
                     )} ±${(error / score * 100).formatAtMost(2)}%"
                 }
 
-                reporter.endBenchmark(executionName, benchmark.name, BenchmarkReporter.FinishStatus.Success, message)
+                reporter.endBenchmark(executionName, benchmark.name, BenchmarkProgress.FinishStatus.Success, message)
                 result(result)
             } else {
                 val error = exception.toString()
                 val stacktrace = exception.stacktrace()
                 reporter.endBenchmarkException(executionName, benchmark.name, error, stacktrace)
-                result(ReportBenchmarksStatistics.createResult(benchmark.name, samples))
+                result(ReportBenchmarksStatistics.createResult(benchmark, config, samples))
             }
         }
         complete()

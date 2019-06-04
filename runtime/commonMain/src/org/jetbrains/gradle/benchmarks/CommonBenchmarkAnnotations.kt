@@ -42,6 +42,13 @@ fun BenchmarkTimeUnit.toText() = when (this) {
 }
 
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
+fun Mode.toText() = when (this) {
+    Mode.Throughput -> "thrpt"
+    Mode.AverageTime -> "avgt"
+    else -> throw UnsupportedOperationException("$this is not supported")
+}
+
+@Suppress("REDUNDANT_ELSE_IN_WHEN")
 fun BenchmarkTimeUnit.toMultiplier() = when (this) {
     BenchmarkTimeUnit.NANOSECONDS -> 1
     BenchmarkTimeUnit.MICROSECONDS -> 1_000

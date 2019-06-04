@@ -10,5 +10,5 @@ actual fun saveReport(reportFile: String?, results: Collection<ReportBenchmarkRe
     if (reportFile == null)
         return
 
-    File(reportFile).writeText(results.toJson())
+    File(reportFile).writeText(formatJson(results))
 }

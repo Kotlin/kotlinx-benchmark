@@ -5,7 +5,7 @@ import kotlinx.cli.*
 abstract class SuiteExecutor(val executionName: String, arguments: Array<out String>) {
     private val config = RunnerConfiguration().also { it.parse(arguments) }
 
-    val reporter = BenchmarkReporter.create(config.reportFile, config.traceFormat)
+    val reporter = BenchmarkProgress.create(config.traceFormat)
 
     private val results = mutableListOf<ReportBenchmarkResult>()
 
@@ -16,18 +16,23 @@ abstract class SuiteExecutor(val executionName: String, arguments: Array<out Str
     }
 
     fun run() {
+        //println(config.toString())
         reporter.startSuite(executionName)
-        val filter = config.filter
+        val include = config.include.map { Regex(it) }
+        val exclude = config.exclude.map { Regex(it) }
 
         @Suppress("UNCHECKED_CAST")
         val benchmarks = suites.flatMap { suite ->
             suite.benchmarks
-                .filter { filter == null || it.name.indexOf(filter) != -1 }
-                    as List<BenchmarkDescriptor<Any?>>
+                .filter { benchmark ->
+                    val fullName = suite.name + "." + benchmark.name
+                    include.any { it.matches(fullName) } && exclude.none { it.matches(fullName) }
+                } as List<BenchmarkDescriptor<Any?>>
         }
 
         run(config, reporter, benchmarks) {
             reporter.endSuite(executionName, results)
+            saveReport(config.reportFile, results)
         }
     }
 
@@ -37,7 +42,7 @@ abstract class SuiteExecutor(val executionName: String, arguments: Array<out Str
 
     abstract fun run(
         runnerConfiguration: RunnerConfiguration,
-        reporter: BenchmarkReporter,
+        reporter: BenchmarkProgress,
         benchmarks: List<BenchmarkDescriptor<Any?>>,
         complete: () -> Unit
     )

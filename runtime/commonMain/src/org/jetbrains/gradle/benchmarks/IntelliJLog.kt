@@ -11,7 +11,7 @@ internal fun ijSuiteStart(parent: String, id: String) = buildString {
 }
 
 internal fun ijSuiteFinish(
-    parent: String, id: String, status: BenchmarkReporter.FinishStatus,
+    parent: String, id: String, status: BenchmarkProgress.FinishStatus,
     startTime: Long = 0, endTime: Long = startTime
 ) = buildString {
     append("<ijLog>")
@@ -34,7 +34,7 @@ internal fun ijBenchmarkStart(parent: String, className: String, methodName: Str
 }
 
 internal fun ijBenchmarkFinish(
-    parent: String, id: String, status: BenchmarkReporter.FinishStatus,
+    parent: String, id: String, status: BenchmarkProgress.FinishStatus,
     startTime: Long = 0, endTime: Long = startTime
 ) = buildString {
     append("<ijLog>")

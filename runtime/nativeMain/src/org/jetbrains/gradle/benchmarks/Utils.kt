@@ -23,6 +23,6 @@ actual fun saveReport(reportFile: String?, results: Collection<ReportBenchmarkRe
         return
 
     val file = fopen(reportFile, "w")
-    fputs(results.toJson(), file)
+    fputs(formatJson(results), file)
     fclose(file)
 }

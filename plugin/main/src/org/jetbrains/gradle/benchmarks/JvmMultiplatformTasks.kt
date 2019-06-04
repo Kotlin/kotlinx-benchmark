@@ -2,33 +2,35 @@ package org.jetbrains.gradle.benchmarks
 
 import org.gradle.api.*
 
-fun Project.processJvmCompilation(config: JvmBenchmarkConfiguration) {
-    project.logger.info("Configuring benchmarks for '${config.name}' using Kotlin/JVM")
-    val compilation = config.compilation
+fun Project.processJvmCompilation(target: KotlinJvmBenchmarkTarget) {
+    project.logger.info("Configuring benchmarks for '${target.name}' using Kotlin/JVM")
+    val compilation = target.compilation
 
-    configureMultiplatformJvmCompilation(config)
+    configureMultiplatformJvmCompilation(target)
 
-    val workerClasspath = this.createJmhGenerationRuntimeConfiguration(config.name, config.jmhVersion)
+    val workerClasspath = this.createJmhGenerationRuntimeConfiguration(target.name, target.jmhVersion)
     createJvmBenchmarkGenerateSourceTask(
-        config,
+        target,
         workerClasspath,
         compilation.compileDependencyFiles,
         compilation.compileAllTaskName,
         compilation.output.allOutputs
     )
     val runtimeClasspath = compilation.output.allOutputs + compilation.runtimeDependencyFiles
-    createJvmBenchmarkCompileTask(config, runtimeClasspath)
-    createJvmBenchmarkExecTask(config, runtimeClasspath)
+    createJvmBenchmarkCompileTask(target, runtimeClasspath)
+    target.extension.configurations.forEach {
+        createJvmBenchmarkExecTask(it, target, runtimeClasspath)
+    }
 }
 
-private fun Project.configureMultiplatformJvmCompilation(config: JvmBenchmarkConfiguration) {
+private fun Project.configureMultiplatformJvmCompilation(target: KotlinJvmBenchmarkTarget) {
     // Add JMH core library as an implementation dependency to the specified compilation
-    val jmhCore = dependencies.create("${BenchmarksPlugin.JMH_CORE_DEPENDENCY}:${config.jmhVersion}")
+    val jmhCore = dependencies.create("${BenchmarksPlugin.JMH_CORE_DEPENDENCY}:${target.jmhVersion}")
 
     // Add runtime library as an implementation dependency to the specified compilation
-    val runtime = dependencies.create("${BenchmarksPlugin.RUNTIME_DEPENDENCY_BASE}-jvm:${config.extension.version}")
+    val runtime = dependencies.create("${BenchmarksPlugin.RUNTIME_DEPENDENCY_BASE}-jvm:${target.extension.version}")
 
-    config.compilation.dependencies {
+    target.compilation.dependencies {
         implementation(jmhCore)
         //implementation(runtime)
     }
