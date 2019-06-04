@@ -5,12 +5,12 @@ import org.gradle.api.artifacts.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.compile.*
-import org.gradle.api.tasks.options.*
+import org.gradle.jvm.tasks.*
 import java.io.*
 
 fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, compileClasspath: FileCollection) {
     val benchmarkBuildDir = benchmarkBuildDir(target)
-    task<JavaCompile>(
+    val compileTask = task<JavaCompile>(
         "${target.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}",
         depends = BenchmarksPlugin.ASSEMBLE_BENCHMARKS_TASKNAME
     ) {
@@ -20,6 +20,29 @@ fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, compileCla
         classpath = compileClasspath
         source = fileTree("$benchmarkBuildDir/sources")
         destinationDir = file("$benchmarkBuildDir/classes")
+    }
+    
+    task<Jar>(
+        "${target.name}${BenchmarksPlugin.BENCHMARK_JAR_SUFFIX}",
+        depends = BenchmarksPlugin.ASSEMBLE_BENCHMARKS_TASKNAME
+    ) {
+        group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
+        description = "Build JAR for JMH compiled files for '${target.name}'"
+        dependsOn("${target.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}")
+        conventionMapping.map("classifier") { "JMH"}
+        manifest.attributes["Main-Class"] = "org.openjdk.jmh.Main"
+
+        from(compileClasspath.map {
+            when {
+                it.isDirectory -> it
+                it.exists() -> zipTree(it)
+                else -> files()
+            }
+        })
+        from(compileTask)
+        from(file("$benchmarkBuildDir/resources"))
+        destinationDirectory.set(File("$benchmarkBuildDir/jars"))
+        archiveBaseName.set("${project.name}-${target.name}-jmh")
     }
 }
 

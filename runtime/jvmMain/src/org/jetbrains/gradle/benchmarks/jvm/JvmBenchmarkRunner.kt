@@ -4,6 +4,7 @@ import kotlinx.cli.*
 import org.jetbrains.gradle.benchmarks.*
 import org.openjdk.jmh.infra.*
 import org.openjdk.jmh.results.*
+import org.openjdk.jmh.results.format.*
 import org.openjdk.jmh.runner.*
 import org.openjdk.jmh.runner.format.*
 import org.openjdk.jmh.runner.options.*
@@ -11,10 +12,6 @@ import java.io.*
 
 fun main(args: Array<String>) {
     val params = RunnerConfiguration().also { it.parse(args) }
-    val suiteName = params.name ?: run {
-        println("Name should be specified")
-        return
-    }
 
     val jmhOptions = OptionsBuilder()
     params.iterations?.let { jmhOptions.measurementIterations(it) }
@@ -39,14 +36,16 @@ fun main(args: Array<String>) {
     }
 
     val reporter = BenchmarkProgress.create(params.traceFormat)
-    val output = JmhOutputFormat(reporter, suiteName)
+    val output = JmhOutputFormat(reporter, params.name)
     try {
-        Runner(jmhOptions.build(), output).run()
-        saveReport(reportFile, result)
+        val runner = Runner(jmhOptions.build(), output)
+        val results = runner.run()
+        val resultFormat = ResultFormatFactory.getInstance(ResultFormatType.JSON, PrintStream(File(params.reportFile)))
+        resultFormat.writeOut(results)
     } catch (e: Exception) {
         e.printStackTrace()
         reporter.endBenchmark(
-            suiteName,
+            params.name,
             output.lastBenchmarkStart,
             BenchmarkProgress.FinishStatus.Failure,
             e.message ?: "<unknown error>"
@@ -64,7 +63,7 @@ class JmhOutputFormat(private val reporter: BenchmarkProgress, private val suite
     }
 
     override fun endRun(result: Collection<RunResult>) {
-        reporter.endSuite(suiteName, result.toReportBenchmarkResult())
+        reporter.endSuite(suiteName)
     }
 
     override fun startBenchmark(benchParams: BenchmarkParams) {
@@ -106,6 +105,7 @@ class JmhOutputFormat(private val reporter: BenchmarkProgress, private val suite
     }
 }
 
+/*
 private fun Collection<RunResult>.toReportBenchmarkResult(): Collection<ReportBenchmarkResult> = map { result ->
     val benchmarkFQN = result.params.benchmark
     val value = result.primaryResult
@@ -122,6 +122,7 @@ private fun Collection<RunResult>.toReportBenchmarkResult(): Collection<ReportBe
 
     ReportBenchmarkResult(benchmarkFQN, value.getScore(), value.getScoreError(), min to max, percentiles, rawData)
 }
+*/
 
 abstract class PrintOutputFormat(private val out: PrintStream, private val verbose: VerboseMode = VerboseMode.NORMAL) :
     OutputFormat {

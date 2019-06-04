@@ -1,8 +1,8 @@
-package org.jetbrains.gradle.benchmarks;
+package org.jetbrains.gradle.benchmarks
 
-abstract class BenchmarkProgress() {
+abstract class BenchmarkProgress {
     abstract fun startSuite(suite: String)
-    abstract fun endSuite(suite: String, result: Collection<ReportBenchmarkResult>)
+    abstract fun endSuite(suite: String)
 
     abstract fun startBenchmark(suite: String, benchmark: String)
     abstract fun endBenchmark(suite: String, benchmark: String, status: FinishStatus, message: String)
@@ -27,7 +27,7 @@ abstract class BenchmarkProgress() {
     }
 }
 
-class IntelliJBenchmarkProgress() : BenchmarkProgress() {
+class IntelliJBenchmarkProgress : BenchmarkProgress() {
     private val rootId = "[root]"
 
     override fun startSuite(suite: String) {
@@ -36,7 +36,7 @@ class IntelliJBenchmarkProgress() : BenchmarkProgress() {
         println(ijSuiteStart(rootId, suite))
     }
 
-    override fun endSuite(suite: String, result: Collection<ReportBenchmarkResult>) {
+    override fun endSuite(suite: String) {
         if (currentClass != "") {
             println(ijSuiteFinish(suite, currentClass, currentStatus))
         }
@@ -85,7 +85,7 @@ class ConsoleBenchmarkProgress : BenchmarkProgress() {
 
     }
 
-    override fun endSuite(suite: String, result: Collection<ReportBenchmarkResult>) {
+    override fun endSuite(suite: String) {
         println()
     }
 

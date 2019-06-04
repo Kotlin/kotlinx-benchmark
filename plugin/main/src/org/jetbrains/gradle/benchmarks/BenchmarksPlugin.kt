@@ -15,6 +15,7 @@ class BenchmarksPlugin : Plugin<Project> {
 
         const val BENCHMARK_GENERATE_SUFFIX = "BenchmarkGenerate"
         const val BENCHMARK_COMPILE_SUFFIX = "BenchmarkCompile"
+        const val BENCHMARK_JAR_SUFFIX = "BenchmarkJar"
         const val BENCHMARK_EXEC_SUFFIX = "Benchmark"
         const val BENCHMARK_COMPILATION_NAME = "benchmark"
         const val BENCHMARK_DEPENDENCIES_SUFFIX = "BenchmarkDependencies"

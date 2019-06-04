@@ -3,8 +3,8 @@ package org.jetbrains.gradle.benchmarks
 import kotlinx.cli.*
 
 class RunnerConfiguration : CommandLineInterface("Client") {
-    val name by onFlagValue("-n", "name", "Name of the configuration").store()
-    val reportFile by onFlagValue("-r", "reportFile", "File to save report to").store()
+    val name by onFlagValue("-n", "name", "Name of the configuration").storeRequired()
+    val reportFile by onFlagValue("-r", "reportFile", "File to save report to").storeRequired()
     val traceFormat by onFlagValue("-t", "traceFormat", "Format of tracing report (text or xml)").store("text")
 
     val params by onFlagValue(
@@ -73,6 +73,24 @@ class RunnerConfiguration : CommandLineInterface("Client") {
         add { value -> list.add(value) }
         return ArgumentStorage(list)
     }
+
+    private fun <T : Any> Event<T>.storeRequired(): ArgumentValue<T> =
+        LateInitArgumentStorage<T>().apply {
+            add { setValue(it) }
+        }
+
+
+    class LateInitArgumentStorage<T : Any>() : ArgumentValue<T> {
+        private lateinit var value: T
+        
+        override fun getValue(thisRef: Any?, prop: Any?): T =
+            value
+
+        fun setValue(newValue: T) {
+            value = newValue
+        }
+    }
+
 
     override fun toString(): String {
         return """$name -> $reportFile ($traceFormat)

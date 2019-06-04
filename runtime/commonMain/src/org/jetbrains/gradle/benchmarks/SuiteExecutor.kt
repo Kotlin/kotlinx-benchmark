@@ -31,7 +31,7 @@ abstract class SuiteExecutor(val executionName: String, arguments: Array<out Str
         }
 
         run(config, reporter, benchmarks) {
-            reporter.endSuite(executionName, results)
+            reporter.endSuite(executionName)
             saveReport(config.reportFile, results)
         }
     }

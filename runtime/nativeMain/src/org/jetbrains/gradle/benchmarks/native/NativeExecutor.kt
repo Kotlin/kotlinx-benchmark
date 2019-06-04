@@ -55,7 +55,6 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
                 val error = exception.toString()
                 val stacktrace = exception.stacktrace()
                 reporter.endBenchmarkException(executionName, benchmark.name, error, stacktrace)
-                result(ReportBenchmarksStatistics.createResult(benchmark, config, samples))
             }
         }
         complete()
