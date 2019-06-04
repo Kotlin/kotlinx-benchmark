@@ -4,27 +4,33 @@ import org.jetbrains.gradle.benchmarks.*
 import kotlin.system.*
 
 class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name, args) {
-
-    override fun run(reporter: BenchmarkReporter, benchmarks: List<BenchmarkDescriptor<Any?>>, complete: () -> Unit) {
+    override fun run(
+        runnerConfiguration: RunnerConfiguration,
+        reporter: BenchmarkReporter,
+        benchmarks: List<BenchmarkDescriptor<Any?>>,
+        complete: () -> Unit
+    ) {
         benchmarks.forEach { benchmark ->
             val suite = benchmark.suite
+            val config = BenchmarkConfiguration(runnerConfiguration, suite)
             reporter.startBenchmark(executionName, benchmark.name)
 
             val instance = suite.factory() // TODO: should we create instance per bench or per suite?
             benchmark.suite.setup(instance)
+
             var exception: Throwable? = null
             val samples = try {
                 // Execute warmup
-                val cycles = warmup(suite, instance, benchmark)
-                DoubleArray(suite.iterations) { iteration->
+                val cycles = warmup(suite.name, config, instance, benchmark)
+                DoubleArray(config.iterations) { iteration ->
                     val nanosecondsPerOperation = measure(instance, benchmark, cycles)
-                    val text = nanosecondsPerOperation.nanosToText(suite.mode, suite.outputUnit)
+                    val text = nanosecondsPerOperation.nanosToText(config.mode, config.outputTimeUnit)
                     reporter.output(
                         executionName,
                         benchmark.name,
                         "Iteration #$iteration: $text"
                     )
-                    nanosecondsPerOperation.nanosToSample(suite.mode, suite.outputUnit)
+                    nanosecondsPerOperation.nanosToSample(config.mode, config.outputTimeUnit)
                 }
             } catch (e: Throwable) {
                 exception = e
@@ -37,7 +43,10 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
                 val result = ReportBenchmarksStatistics.createResult(benchmark.name, samples)
                 val message = with(result) {
                     // TODO: metric
-                    "  ~ ${score.sampleToText(suite.mode, suite.outputUnit)} ±${(error / score * 100).formatAtMost(2)}%"
+                    "  ~ ${score.sampleToText(
+                        config.mode,
+                        config.outputTimeUnit
+                    )} ±${(error / score * 100).formatAtMost(2)}%"
                 }
 
                 reporter.endBenchmark(executionName, benchmark.name, BenchmarkReporter.FinishStatus.Success, message)
@@ -74,10 +83,15 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
         return time.toDouble() / cycles
     }
 
-    private fun <T> warmup(suite: SuiteDescriptor<T>, instance: T, benchmark: BenchmarkDescriptor<T>): Int {
+    private fun <T> warmup(
+        name: String,
+        config: BenchmarkConfiguration,
+        instance: T,
+        benchmark: BenchmarkDescriptor<T>
+    ): Int {
         var iterations = 0
-        repeat(suite.warmups) { iteration ->
-            val benchmarkNanos = suite.iterationTime.first * suite.iterationTime.second.toMultiplier()
+        repeat(config.warmups) { iteration ->
+            val benchmarkNanos = config.iterationTime * config.iterationTimeUnit.toMultiplier()
             val startTime = getTimeNanos()
             var endTime = startTime
             val executeFunction = benchmark.function
@@ -89,8 +103,8 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
             }
             val time = endTime - startTime
             val metric = time.toDouble() / iterations // TODO: metric
-            val sample = metric.nanosToText(suite.mode, suite.outputUnit)
-            reporter.output(suite.name, benchmark.name, "Warm-up #$iteration: $sample")
+            val sample = metric.nanosToText(config.mode, config.outputTimeUnit)
+            reporter.output(name, benchmark.name, "Warm-up #$iteration: $sample")
         }
         return iterations
     }

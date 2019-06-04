@@ -9,7 +9,12 @@ class JsExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<o
 ) {
     private val benchmarkJs: dynamic = require("benchmark")
 
-    override fun run(reporter: BenchmarkReporter, benchmarks: List<BenchmarkDescriptor<Any?>>, complete: () -> Unit) {
+    override fun run(
+        runnerConfiguration: RunnerConfiguration,
+        reporter: BenchmarkReporter,
+        benchmarks: List<BenchmarkDescriptor<Any?>>,
+        complete: () -> Unit
+    ) {
         val jsSuite: dynamic = benchmarkJs.Suite()
         jsSuite.on("complete") {
             complete()
@@ -17,6 +22,7 @@ class JsExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<o
 
         benchmarks.forEach { benchmark ->
             val suite = benchmark.suite
+            val config = BenchmarkConfiguration(runnerConfiguration, suite)
             val jsDescriptor = benchmark as JsBenchmarkDescriptor
 
             @Suppress("UNCHECKED_CAST")
@@ -44,9 +50,9 @@ class JsExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<o
             // minTime: The time needed to reduce the percent uncertainty of measurement to 1% (secs).
             // maxTime: The maximum time a benchmark is allowed to run before finishing (secs).
 
-            jsBenchmark.options.initCount = suite.warmups
-            jsBenchmark.options.minSamples = suite.iterations
-            val iterationSeconds = suite.iterationTime.first * suite.iterationTime.second.toSecondsMultiplier()
+            jsBenchmark.options.initCount = config.warmups
+            jsBenchmark.options.minSamples = config.iterations
+            val iterationSeconds = config.iterationTime * config.iterationTimeUnit.toSecondsMultiplier()
             jsBenchmark.options.minTime = iterationSeconds
             jsBenchmark.options.maxTime = iterationSeconds
             jsBenchmark.options.async = asynchronous
@@ -62,7 +68,7 @@ class JsExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<o
                 val target = event.target
                 val benchmarkName = target.name as String
                 val nanos = (target.times.period as Double) * BenchmarkTimeUnit.SECONDS.toMultiplier()
-                val sample = nanos.nanosToText(suite.mode, suite.outputUnit)
+                val sample = nanos.nanosToText(config.mode, config.outputTimeUnit)
                 // (${target.cycles} × ${target.count} calls) -- TODO: what's this?
                 reporter.output(
                     executionName,
@@ -78,12 +84,12 @@ class JsExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<o
                     .unsafeCast<DoubleArray>()
                     .map {
                         val nanos = it * BenchmarkTimeUnit.SECONDS.toMultiplier()
-                        nanos.nanosToSample(suite.mode, suite.outputUnit)
+                        nanos.nanosToSample(config.mode, config.outputTimeUnit)
                     }
                     .toDoubleArray()
                 val result = ReportBenchmarksStatistics.createResult(event.target.name, samples)
                 val message = with(result) {
-                    "  ~ ${score.sampleToText(suite.mode, suite.outputUnit)} ±${(error / score * 100).formatAtMost(2)}%"
+                    "  ~ ${score.sampleToText(config.mode, config.outputTimeUnit)} ±${(error / score * 100).formatAtMost(2)}%"
                 }
                 val error = event.target.error
                 if (error == null) {

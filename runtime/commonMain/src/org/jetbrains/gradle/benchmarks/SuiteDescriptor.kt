@@ -6,12 +6,12 @@ open class SuiteDescriptor<T>(
     val setup: (T) -> Unit,
     val teardown: (T) -> Unit,
 
-    val iterations: Int,
-    val warmups: Int,
+    val iterations: Int = 3,
+    val warmups: Int = 3,
 
-    val iterationTime: Pair<Int, BenchmarkTimeUnit>,
-    val outputUnit: BenchmarkTimeUnit,
-    val mode: Mode
+    val iterationTime: IterationTime = IterationTime(1, BenchmarkTimeUnit.SECONDS),
+    val outputTimeUnit: BenchmarkTimeUnit = BenchmarkTimeUnit.MILLISECONDS,
+    val mode: Mode = Mode.Throughput
 ) {
     private val _benchmarks = mutableListOf<BenchmarkDescriptor<T>>()
 
@@ -21,3 +21,5 @@ open class SuiteDescriptor<T>(
         _benchmarks.add(benchmark)
     }
 }
+
+data class IterationTime(val value: Long, val timeUnit: BenchmarkTimeUnit)

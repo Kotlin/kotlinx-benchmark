@@ -53,7 +53,7 @@ fun Project.createJsBenchmarkExecTask(
         arguments("-n", config.name)
         arguments("-r", reportFile.toString())
         arguments("-i", config.iterations().toString())
-        arguments("-ti", config.iterationTime().toString())
+        arguments("-it", config.iterationTime().toString())
         
         dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_DEPENDENCIES_SUFFIX}")
         doFirst {

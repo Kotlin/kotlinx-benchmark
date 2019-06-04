@@ -90,8 +90,8 @@ fun Double.formatAtMost(precision: Int): String {
 fun Double.nanosToText(mode: Mode, unit: BenchmarkTimeUnit): String {
     val value = nanosToSample(mode, unit)
     return when (mode) {
-        Mode.Throughput -> "${value.formatAtMost(4)} ops/${unit.toText()}"
-        Mode.AverageTime -> "${value.formatAtMost(4)} ${unit.toText()}/op"
+        Mode.Throughput -> "${value.formatAtMost(6)} ops/${unit.toText()}"
+        Mode.AverageTime -> "${value.formatAtMost(6)} ${unit.toText()}/op"
         else -> throw UnsupportedOperationException("$mode is not supported")
     }
 }
@@ -100,8 +100,8 @@ fun Double.nanosToText(mode: Mode, unit: BenchmarkTimeUnit): String {
 fun Double.sampleToText(mode: Mode, unit: BenchmarkTimeUnit): String {
     val value = this
     return when (mode) {
-        Mode.Throughput -> "${value.formatAtMost(4)} ops/${unit.toText()}"
-        Mode.AverageTime -> "${value.formatAtMost(4)} ${unit.toText()}/op"
+        Mode.Throughput -> "${value.formatAtMost(6)} ops/${unit.toText()}"
+        Mode.AverageTime -> "${value.formatAtMost(6)} ${unit.toText()}/op"
         else -> throw UnsupportedOperationException("$mode is not supported")
     }
 }

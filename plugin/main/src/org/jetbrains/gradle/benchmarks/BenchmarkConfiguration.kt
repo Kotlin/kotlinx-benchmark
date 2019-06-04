@@ -29,7 +29,7 @@ open class BenchmarkConfiguration(val extension: BenchmarksExtension, val name: 
 
 class BenchmarkConfigurationDefaults {
     var iterations = 10 // times
-    var iterationTime = 1000L // ms
+    var iterationTime = 1L // seconds
 }
 
 class JavaBenchmarkConfiguration(

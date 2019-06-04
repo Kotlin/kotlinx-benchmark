@@ -1,6 +1,7 @@
 package org.jetbrains.gradle.benchmarks
 
 @Target(AnnotationTarget.FUNCTION)
+
 expect annotation class Setup()
 
 @Target(AnnotationTarget.FUNCTION)

@@ -88,7 +88,7 @@ fun Project.createJvmBenchmarkExecTask(
         args("-n", config.name)
         args("-r", reportFile.toString())
         args("-i", config.iterations().toString())
-        args("-ti", config.iterationTime().toString())
+        args("-it", config.iterationTime().toString())
         
         dependsOn("${config.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}")
         doFirst {

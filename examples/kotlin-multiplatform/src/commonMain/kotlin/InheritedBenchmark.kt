@@ -4,6 +4,7 @@ import org.jetbrains.gradle.benchmarks.*
 import kotlin.math.*
 
 @State(Scope.Benchmark)
+@OutputTimeUnit(BenchmarkTimeUnit.SECONDS)
 abstract class BaseBenchmark {
     protected var data = 0.0
     private lateinit var text: String

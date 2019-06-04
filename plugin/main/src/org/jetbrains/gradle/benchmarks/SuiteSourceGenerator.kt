@@ -20,14 +20,16 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
         val setupFunctionName = "setUp"
         val teardownFunctionName = "tearDown"
 
+        val externalConfigurationFQN = "org.jetbrains.gradle.benchmarks.ExternalConfiguration"
         val benchmarkAnnotationFQN = "org.jetbrains.gradle.benchmarks.Benchmark"
         val setupAnnotationFQN = "org.jetbrains.gradle.benchmarks.Setup"
         val teardownAnnotationFQN = "org.jetbrains.gradle.benchmarks.TearDown"
         val stateAnnotationFQN = "org.jetbrains.gradle.benchmarks.State"
         val modeAnnotationFQN = "org.jetbrains.gradle.benchmarks.BenchmarkMode"
         val timeUnitFQN = "org.jetbrains.gradle.benchmarks.BenchmarkTimeUnit"
+        val iterationTimeFQN = "org.jetbrains.gradle.benchmarks.IterationTime"
         val modeFQN = "org.jetbrains.gradle.benchmarks.Mode"
-        val timeAnnotationFQN = "org.jetbrains.gradle.benchmarks.OutputTimeUnit"
+        val outputTimeAnnotationFQN = "org.jetbrains.gradle.benchmarks.OutputTimeUnit"
         val warmupAnnotationFQN = "org.jetbrains.gradle.benchmarks.Warmup"
         val measureAnnotationFQN = "org.jetbrains.gradle.benchmarks.Measurement"
 
@@ -104,29 +106,25 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
 
         val measureAnnotation = original.annotations.singleOrNull { it.fqName.toString() == measureAnnotationFQN }
         val warmupAnnotation = original.annotations.singleOrNull { it.fqName.toString() == warmupAnnotationFQN }
-        val timeAnnotation = original.annotations.singleOrNull { it.fqName.toString() == timeAnnotationFQN }
+        val outputTimeAnnotation = original.annotations.singleOrNull { it.fqName.toString() == outputTimeAnnotationFQN }
         val modeAnnotation = original.annotations.singleOrNull { it.fqName.toString() == modeAnnotationFQN }
 
-        val timeUnitValue = timeAnnotation?.argumentValue("value") as? EnumValue
-        val timeUnit = timeUnitValue?.enumEntryName?.toString() ?: "SECONDS"
-        
+        val outputTimeUnitValue = outputTimeAnnotation?.argumentValue("value") as? EnumValue
+        val outputTimeUnit = outputTimeUnitValue?.enumEntryName?.toString()
+
         val modesValue = modeAnnotation?.argumentValue("value")?.value as? List<EnumValue>
-        val mode = modesValue?.single()?.enumEntryName?.toString() ?: "AverageTime"
-        
+        val mode = modesValue?.single()?.enumEntryName?.toString()
+
         val measureIterations = measureAnnotation?.argumentValue("iterations")?.value as? Int
         val measureIterationTime = measureAnnotation?.argumentValue("time")?.value as? Int
         val measureIterationTimeUnit = measureAnnotation?.argumentValue("timeUnit")?.value as? EnumValue
 
         val warmupIterations = warmupAnnotation?.argumentValue("iterations")?.value as? Int
-        val warmupIterationTime = warmupAnnotation?.argumentValue("time")?.value as? Int
-        val warmupIterationTimeUnit = warmupAnnotation?.argumentValue("timeUnit")?.value as? EnumValue
 
-        val iterations = measureIterations ?: 3
-        val iterationTime = measureIterationTime ?: 1
+        val iterations = measureIterations
+        val iterationTime = measureIterationTime
         val iterationTimeUnit = measureIterationTimeUnit?.enumEntryName?.toString() ?: "SECONDS"
-        val warmups = warmupIterations ?: 3
-        val warmupTime = warmupIterationTime ?: 1
-        val warmupTimeUnit = warmupIterationTimeUnit?.enumEntryName?.toString() ?: "SECONDS"
+        val warmups = warmupIterations
 
         val benchmarkFunctions =
             functions.filter { it.annotations.any { it.fqName.toString() == benchmarkAnnotationFQN } }
@@ -160,36 +158,42 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
                 }
 
                 val timeUnitClass = ClassName.bestGuess(timeUnitFQN)
+                val iterationTimeClass = ClassName.bestGuess(iterationTimeFQN)
                 val modeClass = ClassName.bestGuess(modeFQN)
-                
+
                 function("describe") {
                     returns(suiteDescriptorType.parameterizedBy(originalClass))
-                    addStatement(
-                        """
-val descriptor = %T(
-name = %S,
-factory = ::%T,
-setup = ::%N,
-teardown = ::%N,
-iterations = $iterations,
-warmups = $warmups,
-iterationTime = $iterationTime to %T.%N,
-outputUnit = %T.%N,
-mode = %T.%N
-)
-""",
+                    addCode(
+                        "«val descriptor = %T(name = %S, factory = ::%T, setup = ::%N, teardown = ::%N",
                         suiteDescriptorType,
                         originalName,
                         originalClass,
                         setupFunctionName,
-                        teardownFunctionName,
-                        timeUnitClass,
-                        MemberName(timeUnitClass, iterationTimeUnit),
-                        timeUnitClass,
-                        MemberName(timeUnitClass, timeUnit),
-                        modeClass,
-                        MemberName(modeClass, mode)
+                        teardownFunctionName
                     )
+
+                    if (iterations != null)
+                        addCode(", iterations = $iterations")
+                    if (warmups != null)
+                        addCode(", warmups = $warmups")
+                    if (iterationTime != null)
+                        addCode(
+                            ", iterationTime = %T($measureIterationTime, %T.%N)",
+                            iterationTimeClass,
+                            timeUnitClass,
+                            MemberName(timeUnitClass, iterationTimeUnit)
+                        )
+                    if (outputTimeUnit != null)
+                        addCode(
+                            ", outputTimeUnit = %T.%N", timeUnitClass,
+                            MemberName(timeUnitClass, outputTimeUnit)
+                        )
+                    if (mode != null)
+                        addCode(
+                            ", mode = %T.%N", modeClass,
+                            MemberName(modeClass, mode)
+                        )
+                    addCode(")\n»")
                     addStatement("")
                     for (fn in benchmarkFunctions) {
                         val functionName = fn.name.toString()
