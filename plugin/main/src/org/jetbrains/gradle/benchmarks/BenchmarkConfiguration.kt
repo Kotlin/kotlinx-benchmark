@@ -7,6 +7,9 @@ open class BenchmarkConfiguration(val extension: BenchmarksExtension, val name: 
     var iterations: Int? = null
     var iterationTime: Long? = null
     var iterationTimeUnit: String? = null
+    var mode: String? = null
+    var outputTimeUnit: String? = null
+    
     var includes: MutableList<String> = mutableListOf()
     var excludes: MutableList<String> = mutableListOf()
     var params: MutableMap<String, Any?> = mutableMapOf()
@@ -21,23 +24,6 @@ open class BenchmarkConfiguration(val extension: BenchmarksExtension, val name: 
 
     fun param(name: String, value: Any?) {
         params[name] = value
-    }
-
-    // TODO: this is error prone. User should use the mutable variables above. Plugin code should use these methods
-    // Basically, we want external properties, such as `-P` to override what's in build script
-    // We also want to use defaults if per configuration setting is missing 
-    fun iterations(): Int {
-        val externalSetting = extension.project.findProperty("benchmarks_iterations") as? String
-        if (externalSetting != null)
-            return externalSetting.toInt()
-        return iterations ?: extension.defaults.iterations
-    }
-
-    fun iterationTime(): Long {
-        val externalSetting = extension.project.findProperty("benchmarks_iterationTime") as? String
-        if (externalSetting != null)
-            return externalSetting.toLong()
-        return iterationTime ?: extension.defaults.iterationTime
     }
 
     fun capitalizedName() = if (name == "main") "" else name.capitalize()

@@ -57,18 +57,14 @@ repositories {
 }
 ```
 
-> Please note that in this early project stage only macOS x64 binaries are published. 
-If you need to run it on Linux or Windows, check out sources, update `build.gradle` for `runtime` project, and publish
-to Maven Local repository.   
+# Configuring benchmark targets
 
-# Configuring benchmark source sets
-
-In a `build.gradle` file create ` benchmark` section, and inside it add a `configurations` section.
+In a `build.gradle` file create ` benchmark` section, and inside it add a `targets` section.
 Example for multiplatform project:
 
 ```groovy
 benchmark {
-    configurations {
+    targets {
         register("jvm") 
         register("js")
         register("native")
@@ -80,7 +76,7 @@ Example for plain Java project:
 
 ```groovy
 benchmark {
-    configurations {
+    targets {
         register("main") 
     }
 }
@@ -90,26 +86,31 @@ Configure benchmarks:
 
 ```groovy
 benchmark {
-    defaults { // specify defaults for all configurations
-        iterations = 10 // number of iterations
-        iterationTime = 1000 // time in ms per iteration
+    // Create configurations
+    configurations {
+        main { // main configuration is created automatically, but you can change its defaults
+            iterations = 10 // number of iterations
+            iterationTime = 3 // time in seconds per iteration
+        }
+        fast {
+            warmups = 5 // number of warmup iterations
+            iterations = 3 // number of iterations
+            iterationTime = 500 // time in seconds per iteration
+            iterationTimeUnit = "ms" // time unity for iterationTime, default is seconds
+        }   
     }
     
-    // Setup configurations
-    configurations {
+    // Setup targets
+    targets {
         // This one matches compilation base name, e.g. 'jvm', 'jvmTest', etc
         register("jvm") {
             jmhVersion = "1.21" // available only for JVM compilations & Java source sets
-            
-            // for now, we use iterations and iterationTime for both warmup and measurements
         }
         register("js") {
             // Note, that benchmarks.js uses a different approach of minTime & maxTime and run benchmarks
             // until results are stable. We estimate minTime as iterationTime and maxTime as iterationTime*iterations
         }
-        register("native") {
-            iterationTime = 2000 // override the default
-        }
+        register("native")
     }
 }
 ```
@@ -129,7 +130,7 @@ Propagate dependencies and output from `main` sourceSet.
 
 ```groovy
 dependencies {
-    benchmarksCompile sourceSets.main.output + sourceSets.main.compileClasspath 
+    benchmarksCompile sourceSets.main.output + sourceSets.main.runtimeClasspath 
 }
 ```
 
@@ -141,7 +142,7 @@ Register `benchmarks` source set:
 
 ```groovy
 benchmarks {
-    configurations {
+    targets {
         register("benchmarks")    
     }
 }

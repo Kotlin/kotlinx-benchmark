@@ -53,9 +53,11 @@ fun Project.createJsBenchmarkExecTask(
 
         arguments("-n", target.name)
         arguments("-r", reportFile.toString())
-        arguments("-i", config.iterations().toString())
-        arguments("-it", config.iterationTime().toString())
-        arguments("-itu", config.iterationTimeUnit.toString())
+        config.iterations?.let { arguments("-i", it.toString()) }
+        config.iterationTime?.let { arguments("-it", it.toString()) }
+        config.iterationTimeUnit?.let { arguments("-itu", it) }
+        config.outputTimeUnit?.let { arguments("-otu", it) }
+        config.mode?.let { arguments("-m", it) }
 
         config.includes.forEach {
             arguments("-I", it)

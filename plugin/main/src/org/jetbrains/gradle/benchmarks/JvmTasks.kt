@@ -110,9 +110,11 @@ fun Project.createJvmBenchmarkExecTask(
         
         args("-n", target.name)
         args("-r", reportFile.toString())
-        args("-i", config.iterations().toString())
-        args("-it", config.iterationTime().toString())
-        args("-itu", config.iterationTimeUnit.toString())
+        config.iterations?.let { args("-i", it.toString()) }
+        config.iterationTime?.let { args("-it", it.toString()) }
+        config.iterationTimeUnit?.let { args("-itu", it) }
+        config.outputTimeUnit?.let { args("-otu", it) }
+        config.mode?.let { args("-m", it) }
 
         config.includes.forEach {
             args("-I", it)

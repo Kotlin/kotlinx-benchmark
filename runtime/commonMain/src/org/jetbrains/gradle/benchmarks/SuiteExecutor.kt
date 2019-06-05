@@ -18,7 +18,10 @@ abstract class SuiteExecutor(val executionName: String, arguments: Array<out Str
     fun run() {
         //println(config.toString())
         reporter.startSuite(executionName)
-        val include = config.include.map { Regex(it) }
+        val include = if (config.include.isEmpty())
+            listOf(Regex(".*"))
+        else
+            config.include.map { Regex(it) }
         val exclude = config.exclude.map { Regex(it) }
 
         @Suppress("UNCHECKED_CAST")
@@ -26,7 +29,7 @@ abstract class SuiteExecutor(val executionName: String, arguments: Array<out Str
             suite.benchmarks
                 .filter { benchmark ->
                     val fullName = suite.name + "." + benchmark.name
-                    include.any { it.matches(fullName) } && exclude.none { it.matches(fullName) }
+                    include.any { it.containsMatchIn(fullName) } && exclude.none { it.containsMatchIn(fullName) }
                 } as List<BenchmarkDescriptor<Any?>>
         }
 

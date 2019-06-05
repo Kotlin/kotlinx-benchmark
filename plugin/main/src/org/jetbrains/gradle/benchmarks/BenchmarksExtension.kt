@@ -17,24 +17,16 @@ open class BenchmarksExtension(val project: Project) {
 
     val version = BenchmarksPlugin.PLUGIN_VERSION
 
-    val defaults = BenchmarkConfigurationDefaults()
-    
-    fun defaults(configure: Action<BenchmarkConfigurationDefaults>) {
-        configure.execute(defaults)
-    }
-    
-    fun defaults(configure: Closure<BenchmarkConfigurationDefaults>) {
-        ConfigureUtil.configureSelf(configure, defaults)
-    }
-
     fun configurations(configureClosure: Closure<NamedDomainObjectContainer<BenchmarkConfiguration>>): NamedDomainObjectContainer<BenchmarkConfiguration> {
         return configurations.configure(configureClosure)
     }
 
     val configurations: NamedDomainObjectContainer<BenchmarkConfiguration> = run {
-        project.container(BenchmarkConfiguration::class.java) { name ->
+        val container = project.container(BenchmarkConfiguration::class.java) { name ->
             BenchmarkConfiguration(this, name)
         }
+        container.register("main")
+        container
     }
     
     fun targets(configureClosure: Closure<NamedDomainObjectContainer<BenchmarkTarget>>): NamedDomainObjectContainer<BenchmarkTarget> {
