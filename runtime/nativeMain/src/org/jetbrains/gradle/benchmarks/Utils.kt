@@ -12,7 +12,7 @@ actual fun Double.format(precision: Int): String {
 
     return memScoped {
         val bytes = allocArray<ByteVar>(100)
-        sprintf(bytes, "%.${precision}F", fractional)
+        sprintf(bytes, "%.${precision}f", fractional)
         val fractionText = bytes.toKString()
         thousands + fractionText.removePrefix("0")
     }
