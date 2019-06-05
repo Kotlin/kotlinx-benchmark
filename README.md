@@ -141,7 +141,7 @@ to reuse some of the test infrastructure.
 Register `benchmarks` source set:
 
 ```groovy
-benchmarks {
+benchmark {
     targets {
         register("benchmarks")    
     }
