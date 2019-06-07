@@ -39,8 +39,11 @@ fun Project.benchmarkReportsDir(config: BenchmarkConfiguration, target: Benchmar
     val ext = project.extensions.extraProperties
     val time = if (ext.has("reportTime")) {
         ext.get("reportTime") as LocalDateTime
-    } else
-        LocalDateTime.now()
+    } else {
+        LocalDateTime.now().also {
+            ext.set("reportTime", it)
+        }
+    }
     val timestamp = time.format(DateTimeFormatter.ISO_DATE_TIME)
     val compatibleTime = timestamp.replace(":", ".") // Windows doesn't allow ':' in path
     return file(buildDir.resolve(target.extension.reportsDir).resolve(config.name).resolve(compatibleTime))
