@@ -32,11 +32,11 @@ class RunnerConfiguration : CommandLineInterface("Client") {
     ).map { parseTimeUnit(it) }.store()
 
     private fun parseTimeUnit(text: String) = when (text) {
-        BenchmarkTimeUnit.SECONDS.name, "s" -> BenchmarkTimeUnit.SECONDS
-        BenchmarkTimeUnit.MICROSECONDS.name, "us" -> BenchmarkTimeUnit.MICROSECONDS
-        BenchmarkTimeUnit.MILLISECONDS.name, "ms" -> BenchmarkTimeUnit.MILLISECONDS
-        BenchmarkTimeUnit.NANOSECONDS.name, "ns" -> BenchmarkTimeUnit.NANOSECONDS
-        BenchmarkTimeUnit.MINUTES.name, "m" -> BenchmarkTimeUnit.MINUTES
+        BenchmarkTimeUnit.SECONDS.name, "s", "sec" -> BenchmarkTimeUnit.SECONDS
+        BenchmarkTimeUnit.MICROSECONDS.name, "us", "micros" -> BenchmarkTimeUnit.MICROSECONDS
+        BenchmarkTimeUnit.MILLISECONDS.name, "ms", "millis" -> BenchmarkTimeUnit.MILLISECONDS
+        BenchmarkTimeUnit.NANOSECONDS.name, "ns", "nanos" -> BenchmarkTimeUnit.NANOSECONDS
+        BenchmarkTimeUnit.MINUTES.name, "m", "min" -> BenchmarkTimeUnit.MINUTES
         else -> throw UnsupportedOperationException("Unknown time unit: $text")
     }
 

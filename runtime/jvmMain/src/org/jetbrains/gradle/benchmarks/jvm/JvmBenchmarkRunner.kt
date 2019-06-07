@@ -9,6 +9,7 @@ import org.openjdk.jmh.runner.*
 import org.openjdk.jmh.runner.format.*
 import org.openjdk.jmh.runner.options.*
 import java.io.*
+import java.util.concurrent.*
 
 fun main(args: Array<String>) {
     val params = RunnerConfiguration().also { it.parse(args) }
@@ -17,7 +18,7 @@ fun main(args: Array<String>) {
     params.iterations?.let { jmhOptions.measurementIterations(it) }
     params.warmups?.let { jmhOptions.warmupIterations(it) }
     params.iterationTime?.let {
-        val timeValue = TimeValue(it, params.iterationTimeUnit)
+        val timeValue = TimeValue(it, params.iterationTimeUnit ?: TimeUnit.SECONDS)
         jmhOptions.warmupTime(timeValue)
         jmhOptions.measurementTime(timeValue)
     }
