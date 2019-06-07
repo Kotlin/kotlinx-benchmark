@@ -54,6 +54,7 @@ fun Project.createJsBenchmarkExecTask(
         arguments("-n", target.name)
         arguments("-r", reportFile.toString())
         config.iterations?.let { arguments("-i", it.toString()) }
+        config.warmups?.let { arguments("-w", it.toString()) }
         config.iterationTime?.let { arguments("-it", it.toString()) }
         config.iterationTimeUnit?.let { arguments("-itu", it) }
         config.outputTimeUnit?.let { arguments("-otu", it) }
@@ -65,8 +66,8 @@ fun Project.createJsBenchmarkExecTask(
         config.excludes.forEach {
             arguments("-E", it)
         }
-        config.params.forEach {
-            arguments("-P", "\"${it.key}=${it.value}\"")
+        config.params.forEach { (param, values) ->
+            values.forEach { value -> arguments("-P", "\"$param=$value\"") }
         }
 
         dependsOn("${target.name}${BenchmarksPlugin.BENCHMARK_DEPENDENCIES_SUFFIX}")

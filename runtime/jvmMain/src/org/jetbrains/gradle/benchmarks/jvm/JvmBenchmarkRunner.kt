@@ -27,12 +27,16 @@ fun main(args: Array<String>) {
     params.mode?.let {
         jmhOptions.mode(it)
     }
-    
-    params.include.forEach { 
+
+    params.include.forEach {
         jmhOptions.include(it)
     }
-    params.exclude.forEach { 
+    params.exclude.forEach {
         jmhOptions.exclude(it)
+    }
+
+    params.params.forEach { (key, value) ->
+        jmhOptions.param(key, *value.toTypedArray())
     }
 
     val reporter = BenchmarkProgress.create(params.traceFormat)
@@ -55,9 +59,9 @@ fun main(args: Array<String>) {
 
 class JmhOutputFormat(private val reporter: BenchmarkProgress, private val suiteName: String) :
     PrintOutputFormat(System.out) {
-    
+
     internal var lastBenchmarkStart = ""
-    
+
     override fun startRun() {
         reporter.startSuite(suiteName)
     }
@@ -67,20 +71,30 @@ class JmhOutputFormat(private val reporter: BenchmarkProgress, private val suite
     }
 
     override fun startBenchmark(benchParams: BenchmarkParams) {
-        val benchmarkFQN = benchParams.benchmark
-        reporter.startBenchmark(suiteName, benchmarkFQN)
-        lastBenchmarkStart = benchmarkFQN
+        val benchmarkId = getBenchmarkId(benchParams)
+        reporter.startBenchmark(suiteName, benchmarkId)
+        lastBenchmarkStart = benchmarkId
     }
 
     override fun endBenchmark(result: BenchmarkResult?) {
         if (result != null) {
-            val benchmarkFQN = result.params.benchmark
+            val benchmarkId = getBenchmarkId(result.params)
             val value = result.primaryResult
             val message = value.extendedInfo().trim()
-            reporter.endBenchmark(suiteName, benchmarkFQN, BenchmarkProgress.FinishStatus.Success, message)
+            reporter.endBenchmark(suiteName, benchmarkId, BenchmarkProgress.FinishStatus.Success, message)
         } else {
             reporter.endBenchmarkException(suiteName, lastBenchmarkStart, "<ERROR>", "")
         }
+    }
+
+    private fun getBenchmarkId(params: BenchmarkParams): String {
+        val benchmarkName = params.benchmark
+        val paramKeys = params.paramsKeys
+        val benchmarkId = if (paramKeys.isEmpty())
+            benchmarkName
+        else
+            benchmarkName + paramKeys.joinToString(prefix = " | ") { "$it=${params.getParam(it)}" }
+        return benchmarkId
     }
 
     override fun iteration(benchParams: BenchmarkParams, params: IterationParams, iteration: Int) {}
@@ -98,7 +112,7 @@ class JmhOutputFormat(private val reporter: BenchmarkProgress, private val suite
         }
         flush()
     }
-    
+
     override fun println(s: String) {
         if (!s.startsWith("#"))
             reporter.output(suiteName, lastBenchmarkStart, s)

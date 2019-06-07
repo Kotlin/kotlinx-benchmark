@@ -111,6 +111,7 @@ fun Project.createJvmBenchmarkExecTask(
         args("-n", target.name)
         args("-r", reportFile.toString())
         config.iterations?.let { args("-i", it.toString()) }
+        config.warmups?.let { args("-w", it.toString()) }
         config.iterationTime?.let { args("-it", it.toString()) }
         config.iterationTimeUnit?.let { args("-itu", it) }
         config.outputTimeUnit?.let { args("-otu", it) }
@@ -122,8 +123,8 @@ fun Project.createJvmBenchmarkExecTask(
         config.excludes.forEach {
             args("-E", it)
         }
-        config.params.forEach {
-            args("-P", "\"${it.key}=${it.value}\"")
+        config.params.forEach { (param, values) ->
+            values.forEach { value -> args("-P", "\"$param=$value\"") }
         }
 
         dependsOn("${target.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}")

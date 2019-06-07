@@ -11,7 +11,7 @@ class RunnerConfiguration : CommandLineInterface("Client") {
         "-P",
         "<name>=<value>",
         "Specifies parameter with the given name and value"
-    ).toKeyValuePair().storeToMap()
+    ).toKeyValuePair().storeToMultimap()
 
     val include by onFlagValue("-I", "<pattern>", "Include benchmarks matching the given pattern").storeToList()
     val exclude by onFlagValue("-E", "<pattern>", "Include benchmarks matching the given pattern").storeToList()
@@ -55,16 +55,16 @@ class RunnerConfiguration : CommandLineInterface("Client") {
 
     private fun Event<String>.toKeyValuePair() =
         map {
-            val parts = it.split('=', limit = 2)
+            val parts = it.removeSurrounding("\"").split('=', limit = 2)
             if (parts.size == 1)
                 parts[0] to ""
             else
                 parts[0] to parts[1]
         }
 
-    private fun Event<Pair<String, String>>.storeToMap(): ArgumentValue<Map<String, String>> {
-        val map = hashMapOf<String, String>()
-        add { (key, value) -> map[key] = value }
+    private fun Event<Pair<String, String>>.storeToMultimap(): ArgumentValue<Map<String, List<String>>> {
+        val map = hashMapOf<String, MutableList<String>>()
+        add { (key, value) -> map.getOrPut(key) { mutableListOf() }.add(value) }
         return ArgumentStorage(map)
     }
 
@@ -82,7 +82,7 @@ class RunnerConfiguration : CommandLineInterface("Client") {
 
     class LateInitArgumentStorage<T : Any>() : ArgumentValue<T> {
         private lateinit var value: T
-        
+
         override fun getValue(thisRef: Any?, prop: Any?): T =
             value
 
@@ -90,7 +90,6 @@ class RunnerConfiguration : CommandLineInterface("Client") {
             value = newValue
         }
     }
-
 
     override fun toString(): String {
         return """$name -> $reportFile ($traceFormat)

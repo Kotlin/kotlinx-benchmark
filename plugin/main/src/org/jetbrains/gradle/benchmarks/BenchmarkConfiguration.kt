@@ -5,14 +5,15 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.*
 
 open class BenchmarkConfiguration(val extension: BenchmarksExtension, val name: String) {
     var iterations: Int? = null
+    var warmups: Int? = null
     var iterationTime: Long? = null
     var iterationTimeUnit: String? = null
     var mode: String? = null
     var outputTimeUnit: String? = null
-    
+
     var includes: MutableList<String> = mutableListOf()
     var excludes: MutableList<String> = mutableListOf()
-    var params: MutableMap<String, Any?> = mutableMapOf()
+    var params: MutableMap<String, MutableList<Any?>> = mutableMapOf()
 
     fun include(pattern: String) {
         includes.add(pattern)
@@ -22,8 +23,9 @@ open class BenchmarkConfiguration(val extension: BenchmarksExtension, val name: 
         excludes.add(pattern)
     }
 
-    fun param(name: String, value: Any?) {
-        params[name] = value
+    fun param(name: String, vararg value: Any?) {
+        val values = params.getOrPut(name) { mutableListOf() }
+        values.addAll(value)
     }
 
     fun capitalizedName() = if (name == "main") "" else name.capitalize()
@@ -32,11 +34,6 @@ open class BenchmarkConfiguration(val extension: BenchmarksExtension, val name: 
 
 open class BenchmarkTarget(val extension: BenchmarksExtension, val name: String) {
     var workingDir: String? = null
-}
-
-class BenchmarkConfigurationDefaults {
-    var iterations = 10 // times
-    var iterationTime = 1L // seconds
 }
 
 abstract class JvmBenchmarkTarget(
