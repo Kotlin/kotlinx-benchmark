@@ -44,7 +44,7 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
                 }
 
                 if (exception == null) {
-                    val result = ReportBenchmarksStatistics.createResult(benchmark, config, samples)
+                    val result = ReportBenchmarksStatistics.createResult(benchmark, params, config, samples)
                     val message = with(result) {
                         // TODO: metric
                         "  ~ ${score.sampleToText(

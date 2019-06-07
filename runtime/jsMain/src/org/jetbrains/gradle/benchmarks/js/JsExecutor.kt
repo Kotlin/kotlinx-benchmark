@@ -88,7 +88,7 @@ class JsExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<o
                             nanos.nanosToSample(config.mode, config.outputTimeUnit)
                         }
                         .toDoubleArray()
-                    val result = ReportBenchmarksStatistics.createResult(benchmark, config, samples)
+                    val result = ReportBenchmarksStatistics.createResult(benchmark, params, config, samples)
                     val message = with(result) {
                         "  ~ ${score.sampleToText(
                             config.mode,

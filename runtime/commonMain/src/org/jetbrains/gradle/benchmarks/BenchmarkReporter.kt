@@ -3,30 +3,35 @@ package org.jetbrains.gradle.benchmarks
 expect fun saveReport(reportFile: String?, results: Collection<ReportBenchmarkResult>)
 
 fun formatJson(results: Collection<ReportBenchmarkResult>) =
-    results.joinToString(",", prefix = "[", postfix = "\n]") {
+    results.joinToString(",", prefix = "[", postfix = "\n]") { result ->
         """
   {
-    "benchmark" : "${it.benchmark.name}",
-    "mode" : "${it.config.mode.toText()}",
-    "warmupIterations" : ${it.config.warmups},
-    "warmupTime" : "${it.config.iterationTime} ${it.config.iterationTimeUnit.toText()}",
-    "measurementIterations" : ${it.config.iterations},
-    "measurementTime" : "${it.config.iterationTime} ${it.config.iterationTimeUnit.toText()}",
+    "benchmark" : "${result.benchmark.name}",
+    "mode" : "${result.config.mode.toText()}",
+    "warmupIterations" : ${result.config.warmups},
+    "warmupTime" : "${result.config.iterationTime} ${result.config.iterationTimeUnit.toText()}",
+    "measurementIterations" : ${result.config.iterations},
+    "measurementTime" : "${result.config.iterationTime} ${result.config.iterationTimeUnit.toText()}",
+    "params" : {
+          ${result.params.entries.joinToString(separator = ",\n          ") {
+            "\"${it.key}\" : \"${it.value}\""
+        }}
+    },
     "primaryMetric" : {
-       "score": ${it.score},
-       "scoreError": ${it.error},
+       "score": ${result.score},
+       "scoreError": ${result.error},
        "scoreConfidence" : [
-          ${it.confidence.first},
-          ${it.confidence.second}
+          ${result.confidence.first},
+          ${result.confidence.second}
        ],
        "scorePercentiles" : {
-          ${it.percentiles.entries.joinToString(separator = ",\n          ") {
+          ${result.percentiles.entries.joinToString(separator = ",\n          ") {
             "\"${it.key.format(2)}\" : ${it.value}"
         }}
        },
-       "scoreUnit" : "${unitText(it.config.mode, it.config.outputTimeUnit)}",
+       "scoreUnit" : "${unitText(result.config.mode, result.config.outputTimeUnit)}",
        "rawData" : [
-           ${it.values.joinToString(
+           ${result.values.joinToString(
             prefix = "[\n             ",
             postfix = "\n           ]",
             separator = ",\n             "

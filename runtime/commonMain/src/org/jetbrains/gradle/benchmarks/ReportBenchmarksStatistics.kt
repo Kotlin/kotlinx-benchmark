@@ -51,7 +51,12 @@ class ReportBenchmarksStatistics(values: DoubleArray) {
     }
 
     companion object {
-        fun createResult(benchmark: BenchmarkDescriptor<*>, config: BenchmarkConfiguration, samples: DoubleArray): ReportBenchmarkResult {
+        fun createResult(
+            benchmark: BenchmarkDescriptor<*>,
+            params: Map<String, String>,
+            config: BenchmarkConfiguration,
+            samples: DoubleArray
+        ): ReportBenchmarkResult {
             val statistics = ReportBenchmarksStatistics(samples)
             val score = statistics.mean()
             val errorMargin = 1.96 * (statistics.standardDeviation() / sqrt(samples.size.toDouble()))
@@ -70,6 +75,7 @@ class ReportBenchmarksStatistics(values: DoubleArray) {
             return ReportBenchmarkResult(
                 config,
                 benchmark,
+                params,
                 score,
                 errorMargin,
                 (score - errorMargin) to (score + errorMargin),
