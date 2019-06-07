@@ -3,8 +3,12 @@ package org.jetbrains.gradle.benchmarks
 open class SuiteDescriptor<T>(
     val name: String,
     val factory: () -> T,
+    val parametrize: (T, Map<String, String>) -> Unit,
     val setup: (T) -> Unit,
     val teardown: (T) -> Unit,
+
+    val parameters: List<String>,
+    val defaultParameters: Map<String, List<String>>,
 
     val iterations: Int = 3,
     val warmups: Int = 3,

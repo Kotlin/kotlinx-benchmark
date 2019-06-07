@@ -39,6 +39,8 @@ fun main(args: Array<String>) {
         jmhOptions.param(key, *value.toTypedArray())
     }
 
+    jmhOptions.forks(1)
+    
     val reporter = BenchmarkProgress.create(params.traceFormat)
     val output = JmhOutputFormat(reporter, params.name)
     try {

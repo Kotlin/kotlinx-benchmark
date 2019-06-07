@@ -49,5 +49,54 @@ abstract class SuiteExecutor(val executionName: String, arguments: Array<out Str
         benchmarks: List<BenchmarkDescriptor<Any?>>,
         complete: () -> Unit
     )
+
+    protected fun id(name: String, params: Map<String, String>): String {
+        val id = if (params.isEmpty())
+            name
+        else
+            name + params.entries.joinToString(prefix = " | ") { "${it.key}=${it.value}" }
+        return id
+    }
+}
+
+fun runWithParameters(
+    names: List<String>,
+    parameters: Map<String, List<String>>,
+    defaults: Map<String, List<String>>,
+    function: (Map<String, String>) -> Unit
+) {
+    if (names.isEmpty()) {
+        function(mapOf())
+        return
+    }
+    
+    fun parameterValues(name: String): List<String> {
+        return parameters.getOrElse(name) {
+            defaults.getOrElse(name) {
+                error("No value specified for parameter '$name'")
+            }
+        }
+    }
+
+    val valueIndices = IntArray(names.size)
+    val valueLimits = IntArray(names.size) {
+        val name = names[it]
+        parameterValues(name).size
+    }
+    while (true) {
+        val paramsVariant = names.indices.associateBy({ names[it] }, {
+            parameterValues(names[it])[valueIndices[it]]
+        })
+        function(paramsVariant)
+        for (index in valueIndices.indices) {
+            valueIndices[index]++
+            if (valueIndices[index] < valueLimits[index])
+                break
+            else
+                if (index == valueIndices.lastIndex)
+                    return
+            valueIndices[index] = 0
+        }
+    }
 }
 

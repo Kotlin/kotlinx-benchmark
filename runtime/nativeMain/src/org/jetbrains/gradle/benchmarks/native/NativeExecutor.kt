@@ -13,53 +13,63 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
         benchmarks.forEach { benchmark ->
             val suite = benchmark.suite
             val config = BenchmarkConfiguration(runnerConfiguration, suite)
-            reporter.startBenchmark(executionName, benchmark.name)
 
-            val instance = suite.factory() // TODO: should we create instance per bench or per suite?
-            benchmark.suite.setup(instance)
+            runWithParameters(suite.parameters, runnerConfiguration.params, suite.defaultParameters) { params ->
+                val id = id(benchmark.name, params)
 
-            var exception: Throwable? = null
-            val samples = try {
-                // Execute warmup
-                val cycles = warmup(suite.name, config, instance, benchmark)
-                DoubleArray(config.iterations) { iteration ->
-                    val nanosecondsPerOperation = measure(instance, benchmark, cycles)
-                    val text = nanosecondsPerOperation.nanosToText(config.mode, config.outputTimeUnit)
-                    reporter.output(
+                val instance = suite.factory() // TODO: should we create instance per bench or per suite?
+                suite.parametrize(instance, params)
+                benchmark.suite.setup(instance)
+
+                reporter.startBenchmark(executionName, id)
+                var exception: Throwable? = null
+                val samples = try {
+                    // Execute warmup
+                    val cycles = warmup(suite.name, config, instance, benchmark)
+                    DoubleArray(config.iterations) { iteration ->
+                        val nanosecondsPerOperation = measure(instance, benchmark, cycles)
+                        val text = nanosecondsPerOperation.nanosToText(config.mode, config.outputTimeUnit)
+                        reporter.output(
+                            executionName,
+                            id,
+                            "Iteration #$iteration: $text"
+                        )
+                        nanosecondsPerOperation.nanosToSample(config.mode, config.outputTimeUnit)
+                    }
+                } catch (e: Throwable) {
+                    exception = e
+                    doubleArrayOf()
+                } finally {
+                    benchmark.suite.teardown(instance)
+                }
+
+                if (exception == null) {
+                    val result = ReportBenchmarksStatistics.createResult(benchmark, config, samples)
+                    val message = with(result) {
+                        // TODO: metric
+                        "  ~ ${score.sampleToText(
+                            config.mode,
+                            config.outputTimeUnit
+                        )} ±${(error / score * 100).formatSignificant(2)}%"
+                    }
+
+                    reporter.endBenchmark(
                         executionName,
-                        benchmark.name,
-                        "Iteration #$iteration: $text"
+                        id,
+                        BenchmarkProgress.FinishStatus.Success,
+                        message
                     )
-                    nanosecondsPerOperation.nanosToSample(config.mode, config.outputTimeUnit)
+                    result(result)
+                } else {
+                    val error = exception.toString()
+                    val stacktrace = exception.stacktrace()
+                    reporter.endBenchmarkException(executionName, id, error, stacktrace)
                 }
-            } catch (e: Throwable) {
-                exception = e
-                doubleArrayOf()
-            } finally {
-                benchmark.suite.teardown(instance)
-            }
-
-            if (exception == null) {
-                val result = ReportBenchmarksStatistics.createResult(benchmark, config, samples)
-                val message = with(result) {
-                    // TODO: metric
-                    "  ~ ${score.sampleToText(
-                        config.mode,
-                        config.outputTimeUnit
-                    )} ±${(error / score * 100).formatSignificant(2)}%"
-                }
-
-                reporter.endBenchmark(executionName, benchmark.name, BenchmarkProgress.FinishStatus.Success, message)
-                result(result)
-            } else {
-                val error = exception.toString()
-                val stacktrace = exception.stacktrace()
-                reporter.endBenchmarkException(executionName, benchmark.name, error, stacktrace)
             }
         }
         complete()
     }
-
+    
     private fun Throwable.stacktrace(): String {
         val nested = cause ?: return getStackTrace().joinToString("\n")
         return getStackTrace().joinToString("\n") + "\nCause: ${nested.message}\n" + nested.stacktrace()

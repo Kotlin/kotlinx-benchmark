@@ -25,3 +25,6 @@ actual typealias Warmup = org.openjdk.jmh.annotations.Warmup
 
 @Suppress("ACTUAL_ANNOTATION_CONFLICTING_DEFAULT_ARGUMENT_VALUE")
 actual typealias Measurement = org.openjdk.jmh.annotations.Measurement
+
+@Suppress("NO_ACTUAL_CLASS_MEMBER_FOR_EXPECTED_CLASS")
+actual typealias Param = org.openjdk.jmh.annotations.Param

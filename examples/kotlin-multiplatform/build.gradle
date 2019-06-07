@@ -99,19 +99,22 @@ benchmark {
     configurations {
         main { // --> jvmBenchmark/jsBenchmark + benchmark
             iterations = 5 // number of iterations
-            iterationTime = 300  
+            iterationTime = 300
             iterationTimeUnit = "ms"
         }
 
-        big { // --> jvmBigBenchmark + bigBenchmark(jvm+js+native)
-            param("collectionSize", "1000000")
+        params {
+            iterations = 5 // number of iterations
+            iterationTime = 300
+            iterationTimeUnit = "ms"
+            include("ParamBenchmark")
+            param("data", 5, 1, 8)
+            param("unused", 6, 9)
         }
 
         fast { // --> jvmFastBenchmark
             include("Common")
             exclude("long")
-            param("collectionSize", 10)
-            param("repeats", 1000)
             iterations = 1
             iterationTime = 300 // time in ms per iteration
             iterationTimeUnit = "ms" // time in ms per iteration

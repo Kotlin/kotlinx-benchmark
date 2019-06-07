@@ -80,3 +80,5 @@ expect annotation class Measurement(
     val timeUnit: BenchmarkTimeUnit = BenchmarkTimeUnit.SECONDS,
     val batchSize: Int = -1
 )
+
+expect annotation class Param(vararg val value: String)

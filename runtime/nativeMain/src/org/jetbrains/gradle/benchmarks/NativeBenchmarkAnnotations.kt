@@ -36,3 +36,5 @@ actual annotation class Measurement(
     actual val timeUnit: BenchmarkTimeUnit,
     actual val batchSize: Int
 )
+
+actual annotation class Param(actual vararg val value: String)

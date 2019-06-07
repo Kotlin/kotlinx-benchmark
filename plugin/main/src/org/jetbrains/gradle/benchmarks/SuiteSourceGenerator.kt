@@ -2,6 +2,7 @@ package org.jetbrains.gradle.benchmarks
 
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import org.jetbrains.kotlin.builtins.*
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.name.*
 import org.jetbrains.kotlin.resolve.*
@@ -9,6 +10,7 @@ import org.jetbrains.kotlin.resolve.annotations.*
 import org.jetbrains.kotlin.resolve.constants.*
 import org.jetbrains.kotlin.resolve.descriptorUtil.*
 import org.jetbrains.kotlin.resolve.scopes.*
+import org.jetbrains.kotlin.types.*
 import java.io.*
 
 enum class Platform {
@@ -19,6 +21,7 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
     companion object {
         val setupFunctionName = "setUp"
         val teardownFunctionName = "tearDown"
+        val parametersFunctionName = "parametrize"
 
         val externalConfigurationFQN = "org.jetbrains.gradle.benchmarks.ExternalConfiguration"
         val benchmarkAnnotationFQN = "org.jetbrains.gradle.benchmarks.Benchmark"
@@ -32,6 +35,7 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
         val outputTimeAnnotationFQN = "org.jetbrains.gradle.benchmarks.OutputTimeUnit"
         val warmupAnnotationFQN = "org.jetbrains.gradle.benchmarks.Warmup"
         val measureAnnotationFQN = "org.jetbrains.gradle.benchmarks.Measurement"
+        val paramAnnotationFQN = "org.jetbrains.gradle.benchmarks.Param"
 
         val mainBenchmarkPackage = "org.jetbrains.gradle.benchmarks.generated"
 
@@ -104,6 +108,10 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
         val functions = DescriptorUtils.getAllDescriptors(original.unsubstitutedMemberScope)
             .filterIsInstance<FunctionDescriptor>()
 
+        val parameterProperties = DescriptorUtils.getAllDescriptors(original.unsubstitutedMemberScope)
+            .filterIsInstance<PropertyDescriptor>()
+            .filter { it.annotations.any { it.fqName.toString() == paramAnnotationFQN } }
+
         val measureAnnotation = original.annotations.singleOrNull { it.fqName.toString() == measureAnnotationFQN }
         val warmupAnnotation = original.annotations.singleOrNull { it.fqName.toString() == warmupAnnotationFQN }
         val outputTimeAnnotation = original.annotations.singleOrNull { it.fqName.toString() == outputTimeAnnotationFQN }
@@ -157,6 +165,36 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
                     }
                 }
 
+                /*
+                      private fun parametrize(instance: ParamBenchmark, params: Map<String, String>) {
+                          instance.data = (params["data"] ?: error("No parameter value provided for property 'data'")).toInt()
+                      }  
+                 */
+                function(parametersFunctionName) {
+                    addModifiers(KModifier.PRIVATE)
+                    addParameter("instance", originalClass)
+                    addParameter("params", MAP.parameterizedBy(STRING, STRING))
+                    parameterProperties.forEach { property ->
+                        val type = property.type.nameIfStandardType ?: error("Only simple types are supported and `${property.type}` is not.")
+                        addStatement("instance.${property.name} = params.getValue(\"${property.name}\").to$type()")
+                    }
+                }
+
+                val defaultParameters = parameterProperties.associateBy({ it.name }, {
+                    val annotation = it.annotations.findAnnotation(FqName(paramAnnotationFQN))!!
+                    val constant = annotation.argumentValue("value") 
+                        ?: error("@Param annotation should have at least one default value")
+                    val values = constant.value as? List<String>
+                        ?: error("@Param annotation should have at least one default value")
+                    values
+                })
+                
+                val defaultParametersString = defaultParameters.entries
+                    .joinToString(prefix = "mapOf(", postfix = ")") {  
+                        "\"${it.key}\" to " + it.value.joinToString(prefix = "listOf(", postfix = ")")
+                        
+                    }
+
                 val timeUnitClass = ClassName.bestGuess(timeUnitFQN)
                 val iterationTimeClass = ClassName.bestGuess(iterationTimeFQN)
                 val modeClass = ClassName.bestGuess(modeFQN)
@@ -164,13 +202,20 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
                 function("describe") {
                     returns(suiteDescriptorType.parameterizedBy(originalClass))
                     addCode(
-                        "«val descriptor = %T(name = %S, factory = ::%T, setup = ::%N, teardown = ::%N",
+                        "«val descriptor = %T(name = %S, factory = ::%T, setup = ::%N, teardown = ::%N, parametrize = ::%N",
                         suiteDescriptorType,
                         originalName,
                         originalClass,
                         setupFunctionName,
-                        teardownFunctionName
+                        teardownFunctionName,
+                        parametersFunctionName
                     )
+
+                    val params =
+                        parameterProperties.joinToString(prefix = "listOf(", postfix = ")") { "\"${it.name}\"" }
+                    addCode(", parameters = $params")
+
+                    addCode(", defaultParameters = $defaultParametersString")
 
                     if (iterations != null)
                         addCode(", iterations = $iterations")
@@ -265,3 +310,6 @@ inline fun FileSpec.Builder.function(
         addFunction(it)
     }
 }
+
+val KotlinType.nameIfStandardType: Name?
+    get() = constructor.declarationDescriptor?.name 
