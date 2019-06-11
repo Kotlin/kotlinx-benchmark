@@ -2,7 +2,7 @@
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0)
 
 `kotlinx.benchmark` is a toolkit for running benchmarks for code written in Kotlin 
-and supporting all supported targets: JVM, JavaScript and Native. 
+and running on all supported targets: JVM, JavaScript and Native. 
 
 If you're familiar with [JMH](https://openjdk.java.net/projects/code-tools/jmh/), it is very similar and uses it under 
 the hoods to run benchmarks on JVM.   
