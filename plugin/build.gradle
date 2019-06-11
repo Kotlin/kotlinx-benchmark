@@ -46,8 +46,8 @@ repositories {
 gradlePlugin {
     plugins {
         benchmarkPlugin {
-            id = "org.jetbrains.gradle.benchmarks.plugin"
-            implementationClass = "org.jetbrains.gradle.benchmarks.BenchmarksPlugin"
+            id = "kotlinx.benchmark"
+            implementationClass = "kotlinx.benchmark.gradle.BenchmarksPlugin"
         }
     }
 }

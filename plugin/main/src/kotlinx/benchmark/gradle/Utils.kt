@@ -1,4 +1,4 @@
-package org.jetbrains.gradle.benchmarks
+package kotlinx.benchmark.gradle
 
 import groovy.lang.*
 import org.gradle.api.*

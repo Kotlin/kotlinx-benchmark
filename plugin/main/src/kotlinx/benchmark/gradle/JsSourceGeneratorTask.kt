@@ -1,4 +1,4 @@
-package org.jetbrains.gradle.benchmarks
+package kotlinx.benchmark.gradle
 
 import org.gradle.api.*
 import org.gradle.api.file.*
@@ -63,7 +63,12 @@ open class JsSourceGeneratorTask
     private fun generateSources(lib: File) {
         val modules = load(lib)
         modules.forEach { module ->
-            val generator = SuiteSourceGenerator(title, module, outputSourcesDir, Platform.JS)
+            val generator = SuiteSourceGenerator(
+                title,
+                module,
+                outputSourcesDir,
+                Platform.JS
+            )
             generator.generate()
         }
     }

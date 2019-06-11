@@ -1,4 +1,4 @@
-package org.jetbrains.gradle.benchmarks
+package kotlinx.benchmark.gradle
 
 import kotlinx.team.infra.node.*
 import org.gradle.api.*
@@ -6,7 +6,7 @@ import org.gradle.api.artifacts.*
 import org.gradle.api.artifacts.component.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
-import org.jetbrains.gradle.benchmarks.BenchmarksPlugin.Companion.RUN_BENCHMARKS_TASKNAME
+import kotlinx.benchmark.gradle.BenchmarksPlugin.Companion.RUN_BENCHMARKS_TASKNAME
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.tasks.*
 import java.io.*

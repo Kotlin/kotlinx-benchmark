@@ -1,10 +1,10 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.gradle.benchmarks.plugin' version '0.1.7' 
+    id 'kotlinx.benchmark' version '0.1.7' 
 }
 
 dependencies {
-    implementation(project(":runtime"))
+    implementation(project(":kotlinx.benchmark.runtime"))
 }
 
 benchmark {

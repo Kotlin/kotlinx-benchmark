@@ -1,9 +1,8 @@
-package org.jetbrains.gradle.benchmarks
+package kotlinx.benchmark.gradle
 
 import groovy.lang.*
 import org.gradle.api.*
 import org.gradle.api.plugins.*
-import org.gradle.util.*
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 

@@ -1,8 +1,7 @@
-package org.jetbrains.gradle.benchmarks
+package kotlinx.benchmark.gradle
 
 import org.gradle.api.*
 import org.gradle.api.tasks.*
-import org.gradle.api.tasks.options.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.konan.target.*
 import java.io.*

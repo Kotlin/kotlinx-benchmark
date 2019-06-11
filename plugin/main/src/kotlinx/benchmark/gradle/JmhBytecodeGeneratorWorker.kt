@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jetbrains.gradle.benchmarks
+package kotlinx.benchmark.gradle
 
 import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.generators.core.*

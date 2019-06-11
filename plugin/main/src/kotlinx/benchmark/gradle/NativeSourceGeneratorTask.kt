@@ -1,4 +1,4 @@
-package org.jetbrains.gradle.benchmarks
+package kotlinx.benchmark.gradle
 
 import kotlinx.team.infra.*
 import org.gradle.api.*
@@ -42,7 +42,12 @@ open class NativeSourceGeneratorTask
             .filter { it.exists() && it.name.endsWith(KLIB_FILE_EXTENSION_WITH_DOT) }
             .forEach { lib ->
                 val module = project.createModuleDescriptor(nativeTarget, lib, inputDependencies.files)
-                val generator = SuiteSourceGenerator(title, module, outputSourcesDir, Platform.NATIVE)
+                val generator = SuiteSourceGenerator(
+                    title,
+                    module,
+                    outputSourcesDir,
+                    Platform.NATIVE
+                )
                 generator.generate()
             }
 

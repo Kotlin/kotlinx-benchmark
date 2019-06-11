@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm' 
     id 'org.jetbrains.kotlin.plugin.allopen' version "1.3.30"
-    id 'org.jetbrains.gradle.benchmarks.plugin' version '0.1.7' 
+    id 'kotlinx.benchmark' version '0.1.7' 
 }
 
 apply from: rootProject.file('gradle/shared.gradle')
@@ -20,7 +20,7 @@ sourceSets {
 // Propagate dependencies from main sourceSet
 // You can add "+ sourceSets.test.output" to include test output as well
 dependencies {
-    implementation(project(":runtime"))
+    implementation(project(":kotlinx.benchmark.runtime"))
     benchmarksCompile sourceSets.main.output + sourceSets.main.runtimeClasspath 
 }
 

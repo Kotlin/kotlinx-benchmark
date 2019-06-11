@@ -16,18 +16,18 @@ apply plugin: 'kotlinx.team.infra'
 
 infra {
     teamcity {
-        projectName = "gradle-benchmarks"
+        projectName = "kotlinx-benchmark"
         bintrayUser = "orangy"
         bintrayToken = "credentialsJSON:9a48193c-d16d-46c7-8751-2fb434b09e07"
     }
 
     publishing {
-        include(":runtime")
+        include(":kotlinx.benchmark.runtime")
 
         bintray {
-            organization = 'orangy'
-            repository = 'maven'
-            library = 'gradle-benchmarks'
+            organization = 'kotlin'
+            repository = 'kotlinx'
+            library = 'kotlinx.benchmark'
 
             username = findProperty('bintrayUser')
             password = findProperty('bintrayApiKey')
@@ -44,6 +44,6 @@ infra {
 
 afterEvaluate {
     gradle.includedBuilds.forEach { included ->
-        project(":runtime").tasks.named("publishToMavenLocal") { dependsOn(included.task(":publishToMavenLocal")) }
+        project(":kotlinx.benchmark.runtime").tasks.named("publishToMavenLocal") { dependsOn(included.task(":publishToMavenLocal")) }
     }
 }

@@ -1,6 +1,6 @@
 @file:Suppress("UnstableApiUsage")
 
-import org.jetbrains.gradle.benchmarks.*
+import kotlinx.benchmark.gradle.*
 import org.jetbrains.kotlin.allopen.gradle.*
 import org.jetbrains.kotlin.gradle.tasks.*
 
@@ -8,7 +8,7 @@ plugins {
     java
     kotlin("jvm") 
     kotlin("plugin.allopen") version "1.3.30"
-    id("org.jetbrains.gradle.benchmarks.plugin") version "0.1.7" 
+    id("kotlinx.benchmark") version "0.1.7" 
 }
 
 sourceSets.all {
@@ -22,7 +22,7 @@ configure<AllOpenExtension> {
 
 dependencies {
     kotlin("kotlin-stdlib-jdk8")    
-    implementation(project(":runtime"))
+    implementation(project(":kotlinx.benchmark.runtime"))
 }
 
 tasks.withType<KotlinCompile> {

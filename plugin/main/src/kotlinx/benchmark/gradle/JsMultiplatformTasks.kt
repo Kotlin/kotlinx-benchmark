@@ -1,4 +1,4 @@
-package org.jetbrains.gradle.benchmarks
+package kotlinx.benchmark.gradle
 
 import kotlinx.team.infra.node.*
 import org.gradle.api.*

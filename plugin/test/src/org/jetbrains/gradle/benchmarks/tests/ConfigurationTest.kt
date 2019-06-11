@@ -61,7 +61,7 @@ plugins {
     id 'java'
     id 'org.jetbrains.kotlin.jvm' 
     id 'org.jetbrains.kotlin.plugin.allopen' 
-    id 'org.jetbrains.gradle.benchmarks.plugin' 
+    id 'kotlinx.benchmark' 
 }
 
 allOpen {

@@ -1,4 +1,4 @@
-package org.jetbrains.gradle.benchmarks
+package kotlinx.benchmark.gradle
 
 import com.squareup.kotlinpoet.*
 import org.gradle.api.file.*
