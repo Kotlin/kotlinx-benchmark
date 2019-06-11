@@ -26,6 +26,30 @@ pluginManagement {
 }
 ```
 
+Use plugin in `build.gradle`:
+
+```groovy
+plugins {
+    id 'kotlinx.benchmark' version "0.2.0-dev-2"
+}
+```
+
+Alternatively, you can use build script dependencies and "apply plugin" syntax:
+
+```groovy
+buildscript {
+    repositories {
+        …
+        maven { url 'https://dl.bintray.com/kotlin/kotlinx' }
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlinx:kotlinx.benchmark.gradle:0.2.0-dev-2"
+    }
+}
+ 
+apply plugin: 'kotlinx.benchmark'
+```
+
 For Kotlin/JS specify building `nodejs` flavour:
 
 ```groovy
