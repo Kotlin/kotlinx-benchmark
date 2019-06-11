@@ -1,25 +1,17 @@
 package kotlinx.benchmark.gradle
 
-import kotlinx.team.infra.node.*
 import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 
 fun Project.processJsCompilation(target: JsBenchmarkTarget) {
-    if (!plugins.hasPlugin(NodePlugin::class.java)) {
-        logger.info("Enabling node plugin in $this")
-        pluginManager.apply(NodePlugin::class.java)
-    }
-
     project.logger.info("Configuring benchmarks for '${target.name}' using Kotlin/JS")
     val compilation = target.compilation
 
     configureMultiplatformJsCompilation(target)
 
-    createJsBenchmarkInstallTask()
     createJsBenchmarkGenerateSourceTask(target, compilation)
 
     val benchmarkCompilation = createJsBenchmarkCompileTask(target)
-    createJsBenchmarkDependenciesTask(target, benchmarkCompilation)
     target.extension.configurations.forEach {
         createJsBenchmarkExecTask(it, target, benchmarkCompilation)
     }
@@ -38,6 +30,8 @@ private fun Project.createJsBenchmarkCompileTask(target: JsBenchmarkTarget): Kot
         sourceSet.dependencies {
             implementation(compilation.compileDependencyFiles)
             implementation(compilation.output.allOutputs)
+            implementation(npm("benchmark"))
+            runtimeOnly(npm("source-map-support"))
         }
         compileKotlinTask.apply {
             group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP

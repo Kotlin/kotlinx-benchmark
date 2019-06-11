@@ -3,7 +3,9 @@ buildscript {
         jcenter()
         gradlePluginPortal()
 //        maven { url "../kotlin-libraries-infra/build/maven" }
-        maven { url "https://dl.bintray.com/orangy/maven" }
+        maven { url "https://dl.bintray.com/orangy/maven" } // for kotlinx.cli & infra
+        maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
+        maven { url 'https://dl.bintray.com/kotlin/kotlin-dev' }
     }
 
     dependencies {
@@ -13,6 +15,11 @@ buildscript {
 }
 
 apply plugin: 'kotlinx.team.infra'
+
+repositories {
+    maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
+    maven { url 'https://dl.bintray.com/kotlin/kotlin-dev' }
+}
 
 infra {
     teamcity {
@@ -32,13 +39,6 @@ infra {
             username = findProperty('bintrayUser')
             password = findProperty('bintrayApiKey')
         }
-    }
-
-    node {
-        version = '10.15.1'
-        mocha('4.1.0')
-        install("source-map-support", "0.5.3")
-        install("mocha-teamcity-reporter", "2.2.2")
     }
 }
 
