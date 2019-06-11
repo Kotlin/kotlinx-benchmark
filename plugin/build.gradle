@@ -23,9 +23,9 @@ infra {
         include(":")
 
         bintray {
-            organization = 'orangy'
-            repository = 'maven'
-            library = 'gradle-benchmarks'
+            organization = 'kotlin'
+            repository = 'kotlinx'
+            library = 'kotlinx.benchmark'
 
             username = findProperty('bintrayUser')
             password = findProperty('bintrayApiKey')

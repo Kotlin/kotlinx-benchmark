@@ -1,6 +1,6 @@
 package test
 
-import org.jetbrains.gradle.benchmarks.*
+import kotlinx.benchmark.*
 import kotlin.js.*
 
 @State(Scope.Benchmark)

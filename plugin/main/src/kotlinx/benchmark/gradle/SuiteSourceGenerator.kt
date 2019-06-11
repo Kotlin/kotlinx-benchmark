@@ -22,38 +22,38 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
         val teardownFunctionName = "tearDown"
         val parametersFunctionName = "parametrize"
 
-        val externalConfigurationFQN = "org.jetbrains.gradle.benchmarks.ExternalConfiguration"
-        val benchmarkAnnotationFQN = "org.jetbrains.gradle.benchmarks.Benchmark"
-        val setupAnnotationFQN = "org.jetbrains.gradle.benchmarks.Setup"
-        val teardownAnnotationFQN = "org.jetbrains.gradle.benchmarks.TearDown"
-        val stateAnnotationFQN = "org.jetbrains.gradle.benchmarks.State"
-        val modeAnnotationFQN = "org.jetbrains.gradle.benchmarks.BenchmarkMode"
-        val timeUnitFQN = "org.jetbrains.gradle.benchmarks.BenchmarkTimeUnit"
-        val iterationTimeFQN = "org.jetbrains.gradle.benchmarks.IterationTime"
-        val modeFQN = "org.jetbrains.gradle.benchmarks.Mode"
-        val outputTimeAnnotationFQN = "org.jetbrains.gradle.benchmarks.OutputTimeUnit"
-        val warmupAnnotationFQN = "org.jetbrains.gradle.benchmarks.Warmup"
-        val measureAnnotationFQN = "org.jetbrains.gradle.benchmarks.Measurement"
-        val paramAnnotationFQN = "org.jetbrains.gradle.benchmarks.Param"
+        val externalConfigurationFQN = "kotlinx.benchmark.ExternalConfiguration"
+        val benchmarkAnnotationFQN = "kotlinx.benchmark.Benchmark"
+        val setupAnnotationFQN = "kotlinx.benchmark.Setup"
+        val teardownAnnotationFQN = "kotlinx.benchmark.TearDown"
+        val stateAnnotationFQN = "kotlinx.benchmark.State"
+        val modeAnnotationFQN = "kotlinx.benchmark.BenchmarkMode"
+        val timeUnitFQN = "kotlinx.benchmark.BenchmarkTimeUnit"
+        val iterationTimeFQN = "kotlinx.benchmark.IterationTime"
+        val modeFQN = "kotlinx.benchmark.Mode"
+        val outputTimeAnnotationFQN = "kotlinx.benchmark.OutputTimeUnit"
+        val warmupAnnotationFQN = "kotlinx.benchmark.Warmup"
+        val measureAnnotationFQN = "kotlinx.benchmark.Measurement"
+        val paramAnnotationFQN = "kotlinx.benchmark.Param"
 
-        val mainBenchmarkPackage = "org.jetbrains.gradle.benchmarks.generated"
+        val mainBenchmarkPackage = "kotlinx.benchmark.generated"
 
         val suppressUnusedParameter = AnnotationSpec.builder(Suppress::class).addMember("\"UNUSED_PARAMETER\"").build()
     }
 
     private val executorType = when (platform) {
-        Platform.JS -> ClassName.bestGuess("org.jetbrains.gradle.benchmarks.js.JsExecutor")
-        Platform.NATIVE -> ClassName.bestGuess("org.jetbrains.gradle.benchmarks.native.NativeExecutor")
+        Platform.JS -> ClassName.bestGuess("kotlinx.benchmark.js.JsExecutor")
+        Platform.NATIVE -> ClassName.bestGuess("kotlinx.benchmark.native.NativeExecutor")
     }
 
     private val suiteDescriptorType = when (platform) {
-        Platform.JS -> ClassName.bestGuess("org.jetbrains.gradle.benchmarks.SuiteDescriptor")
-        Platform.NATIVE -> ClassName.bestGuess("org.jetbrains.gradle.benchmarks.SuiteDescriptor")
+        Platform.JS -> ClassName.bestGuess("kotlinx.benchmark.SuiteDescriptor")
+        Platform.NATIVE -> ClassName.bestGuess("kotlinx.benchmark.SuiteDescriptor")
     }
 
     private val benchmarkDescriptorType = when (platform) {
-        Platform.JS -> ClassName.bestGuess("org.jetbrains.gradle.benchmarks.js.JsBenchmarkDescriptor")
-        Platform.NATIVE -> ClassName.bestGuess("org.jetbrains.gradle.benchmarks.native.NativeBenchmarkDescriptor")
+        Platform.JS -> ClassName.bestGuess("kotlinx.benchmark.js.JsBenchmarkDescriptor")
+        Platform.NATIVE -> ClassName.bestGuess("kotlinx.benchmark.native.NativeBenchmarkDescriptor")
     }
 
     val benchmarks = mutableListOf<ClassName>()

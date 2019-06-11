@@ -76,7 +76,7 @@ private fun Project.createNativeBenchmarkCompileTask(target: NativeBenchmarkTarg
                 }
                 linkTask.onlyIf { compilation.compileKotlinTask.enabled }
                 tasks.getByName(BenchmarksPlugin.ASSEMBLE_BENCHMARKS_TASKNAME).dependsOn(linkTask)
-                entryPoint("org.jetbrains.gradle.benchmarks.generated.main")
+                entryPoint("kotlinx.benchmark.generated.main")
             }
         }
     }

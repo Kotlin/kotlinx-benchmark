@@ -97,7 +97,7 @@ fun Project.createJvmBenchmarkExecTask(
         val benchmarkBuildDir = benchmarkBuildDir(target)
         val reportsDir = benchmarkReportsDir(config, target)
         val reportFile = reportsDir.resolve("${target.name}.json")
-        main = "org.jetbrains.gradle.benchmarks.jvm.JvmBenchmarkRunnerKt"
+        main = "kotlinx.benchmark.jvm.JvmBenchmarkRunnerKt"
         
         if (target.workingDir != null)
             workingDir = File(target.workingDir)

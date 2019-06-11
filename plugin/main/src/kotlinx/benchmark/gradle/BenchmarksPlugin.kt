@@ -8,7 +8,7 @@ import org.jetbrains.kotlin.gradle.plugin.*
 class BenchmarksPlugin : Plugin<Project> {
     companion object {
         const val PLUGIN_ID = "kotlinx.benchmark"
-        const val PLUGIN_VERSION = "0.1.7"
+        const val PLUGIN_VERSION = "0.2.0"
 
         const val BENCHMARKS_TASK_GROUP = "benchmark"
         const val BENCHMARK_EXTENSION_NAME = "benchmark"
@@ -20,7 +20,7 @@ class BenchmarksPlugin : Plugin<Project> {
         const val BENCHMARK_COMPILATION_NAME = "benchmark"
         const val BENCHMARK_DEPENDENCIES_SUFFIX = "BenchmarkDependencies"
 
-        const val RUNTIME_DEPENDENCY_BASE = "org.jetbrains.gradle.benchmarks:runtime"
+        const val RUNTIME_DEPENDENCY_BASE = "kotlinx.benchmark:runtime"
         const val JMH_CORE_DEPENDENCY = "org.openjdk.jmh:jmh-core"
         const val JMH_GENERATOR_DEPENDENCY = "org.openjdk.jmh:jmh-generator-bytecode:"
 

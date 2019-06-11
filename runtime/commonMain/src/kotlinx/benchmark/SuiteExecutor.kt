@@ -1,0 +1,102 @@
+package kotlinx.benchmark
+
+import kotlinx.cli.*
+
+abstract class SuiteExecutor(val executionName: String, arguments: Array<out String>) {
+    private val config = RunnerConfiguration().also { it.parse(arguments) }
+
+    val reporter = BenchmarkProgress.create(config.traceFormat)
+
+    private val results = mutableListOf<ReportBenchmarkResult>()
+
+    private val suites = mutableListOf<SuiteDescriptor<*>>()
+
+    fun <T> suite(descriptor: SuiteDescriptor<T>) {
+        suites.add(descriptor)
+    }
+
+    fun run() {
+        //println(config.toString())
+        reporter.startSuite(executionName)
+        val include = if (config.include.isEmpty())
+            listOf(Regex(".*"))
+        else
+            config.include.map { Regex(it) }
+        val exclude = config.exclude.map { Regex(it) }
+
+        @Suppress("UNCHECKED_CAST")
+        val benchmarks = suites.flatMap { suite ->
+            suite.benchmarks
+                .filter { benchmark ->
+                    val fullName = suite.name + "." + benchmark.name
+                    include.any { it.containsMatchIn(fullName) } && exclude.none { it.containsMatchIn(fullName) }
+                } as List<BenchmarkDescriptor<Any?>>
+        }
+
+        run(config, reporter, benchmarks) {
+            reporter.endSuite(executionName)
+            saveReport(config.reportFile, results)
+        }
+    }
+
+    fun result(result: ReportBenchmarkResult) {
+        results.add(result)
+    }
+
+    abstract fun run(
+        runnerConfiguration: RunnerConfiguration,
+        reporter: BenchmarkProgress,
+        benchmarks: List<BenchmarkDescriptor<Any?>>,
+        complete: () -> Unit
+    )
+
+    protected fun id(name: String, params: Map<String, String>): String {
+        val id = if (params.isEmpty())
+            name
+        else
+            name + params.entries.joinToString(prefix = " | ") { "${it.key}=${it.value}" }
+        return id
+    }
+}
+
+fun runWithParameters(
+    names: List<String>,
+    parameters: Map<String, List<String>>,
+    defaults: Map<String, List<String>>,
+    function: (Map<String, String>) -> Unit
+) {
+    if (names.isEmpty()) {
+        function(mapOf())
+        return
+    }
+    
+    fun parameterValues(name: String): List<String> {
+        return parameters.getOrElse(name) {
+            defaults.getOrElse(name) {
+                error("No value specified for parameter '$name'")
+            }
+        }
+    }
+
+    val valueIndices = IntArray(names.size)
+    val valueLimits = IntArray(names.size) {
+        val name = names[it]
+        parameterValues(name).size
+    }
+    while (true) {
+        val paramsVariant = names.indices.associateBy({ names[it] }, {
+            parameterValues(names[it])[valueIndices[it]]
+        })
+        function(paramsVariant)
+        for (index in valueIndices.indices) {
+            valueIndices[index]++
+            if (valueIndices[index] < valueLimits[index])
+                break
+            else
+                if (index == valueIndices.lastIndex)
+                    return
+            valueIndices[index] = 0
+        }
+    }
+}
+
