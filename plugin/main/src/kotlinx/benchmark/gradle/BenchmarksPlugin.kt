@@ -18,7 +18,6 @@ class BenchmarksPlugin : Plugin<Project> {
         const val BENCHMARK_JAR_SUFFIX = "BenchmarkJar"
         const val BENCHMARK_EXEC_SUFFIX = "Benchmark"
         const val BENCHMARK_COMPILATION_NAME = "benchmark"
-        const val BENCHMARK_DEPENDENCIES_SUFFIX = "BenchmarkDependencies"
 
         const val RUNTIME_DEPENDENCY_BASE = "kotlinx.benchmark:runtime"
         const val JMH_CORE_DEPENDENCY = "org.openjdk.jmh:jmh-core"
@@ -32,8 +31,8 @@ class BenchmarksPlugin : Plugin<Project> {
         // DO NOT use properties of an extension immediately, it will not contain any user-specified data
         val extension = extensions.create(BENCHMARK_EXTENSION_NAME, BenchmarksExtension::class.java, project)
 
-        if (GradleVersion.current() < GradleVersion.version("4.10")) {
-            logger.error("JetBrains Gradle Benchmarks plugin requires Gradle version 4.10 or higher")
+        if (GradleVersion.current() < GradleVersion.version("5.1")) {
+            logger.error("JetBrains Gradle Benchmarks plugin requires Gradle version 5.1 or higher")
             return // TODO: Do we need to fail build at this point or just ignore benchmarks?
         }
 
@@ -53,7 +52,7 @@ class BenchmarksPlugin : Plugin<Project> {
         }
 
         // TODO: Design configuration avoidance
-        // I currently don't how to do it correctly yet, so materialize all tasks after project evaluation. 
+        // I currently don't know how to do it correctly yet, so materialize all tasks after project evaluation. 
         afterEvaluate {
             extension.configurations.forEach {
                 // Create empty task that will depend on all benchmark execution tasks to run all benchmarks in a project

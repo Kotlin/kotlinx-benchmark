@@ -7,9 +7,14 @@ import org.jetbrains.kotlin.konan.target.*
 import java.io.*
 
 fun Project.processNativeCompilation(target: NativeBenchmarkTarget) {
-    project.logger.info("Configuring benchmarks for '${target.name}' using Kotlin/Native")
-
     val compilation = target.compilation
+    if (compilation.target.konanTarget != HostManager.host) {
+        project.logger.warn("Skipping benchmarks for '${target.name}' because they cannot be run on current OS")
+        return        
+    }
+    
+    project.logger.info("Configuring benchmarks for '${target.name}' using Kotlin/Native")
+    
     configureMultiplatformNativeCompilation(target, compilation)
 
     createNativeBenchmarkGenerateSourceTask(target)

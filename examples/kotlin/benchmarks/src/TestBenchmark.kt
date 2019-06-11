@@ -2,6 +2,7 @@ package test
 
 import org.openjdk.jmh.annotations.*
 import java.util.concurrent.*
+import kotlin.math.*
 
 @State(Scope.Benchmark)
 @Fork(1)
@@ -17,11 +18,11 @@ class TestBenchmark {
 
     @Benchmark
     fun sqrtBenchmark(): Double {
-        return Math.sqrt(data.value)
+        return sqrt(data.value)
     }
 
     @Benchmark
     fun cosBenchmark(): Double {
-        return Math.cos(data.value)
+        return cos(data.value)
     }
 }

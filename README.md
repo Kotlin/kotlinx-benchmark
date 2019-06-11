@@ -1,11 +1,17 @@
 [![JetBrains incubator project](https://jb.gg/badges/incubator.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0)
+[![Download](https://api.bintray.com/packages/kotlin/kotlinx/kotlinx.benchmark/images/download.svg) ](https://bintray.com/kotlin/kotlinx/kotlinx.benchmark/_latestVersion)
 
-`kotlinx.benchmark` is a toolkit for running benchmarks for code written in Kotlin 
+**kotlinx.benchmark** is a toolkit for running benchmarks for multiplatform code written in Kotlin 
 and running on all supported targets: JVM, JavaScript and Native. 
 
 If you're familiar with [JMH](https://openjdk.java.net/projects/code-tools/jmh/), it is very similar and uses it under 
 the hoods to run benchmarks on JVM.   
+
+# Requirements
+
+Gradle 5.1 or newer
+Kotlin 1.3.40 or newer
 
 # Gradle plugin
 
@@ -20,23 +26,14 @@ pluginManagement {
 }
 ```
 
-TODO: This is not needed in latest Gradle versions.  
-If you are using it for Kotlin Multiplatform, enable metadata in `settings.gradle`:
+For Kotlin/JS specify building `nodejs` flavour:
 
 ```groovy
-enableFeaturePreview('GRADLE_METADATA')
-```
-
-TODO: Migrate to 1.3.40 node.js integrated support. 
-For Kotlin/JS code, add Node plugin as well:
-
-```groovy
-plugins {
-    id 'kotlinx.team.node' 
-}
-
-node {
-    version = "$node_version"
+kotlin {
+    js {
+        nodejs()
+        …
+    }   
 }
 ```
 
@@ -44,7 +41,7 @@ For Kotlin/JVM code, add `allopen` plugin to make JMH happy. Alternatively, make
 
 ```groovy
 plugins {
-    id 'org.jetbrains.kotlin.plugin.allopen' version "1.3.31"
+    id 'org.jetbrains.kotlin.plugin.allopen'
 }
 
 allOpen {
@@ -82,7 +79,7 @@ benchmark {
 }
 ```
 
-Example for plain Java project:
+This package can also be used for Java and Kotlin/JVM projects. Register a Java sourceSet as a target:
 
 ```groovy
 benchmark {

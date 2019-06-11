@@ -6,7 +6,7 @@ buildscript {
 
 plugins {
     id 'org.jetbrains.kotlin.multiplatform'
-    id 'org.jetbrains.kotlin.plugin.allopen' version "1.3.40-eap-104"
+    id 'org.jetbrains.kotlin.plugin.allopen' version "1.3.40-eap-105"
     id 'kotlinx.benchmark' version "0.2.0"
     id 'kotlinx.team.node'
 }
@@ -17,13 +17,11 @@ allOpen {
 }
 
 kotlin {
-/*
     infra {
         target('macosX64')
         target('linuxX64')
         target('mingwX64')
     }
-*/
 
     jvm {
         compilations.all {

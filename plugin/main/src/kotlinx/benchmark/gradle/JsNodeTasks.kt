@@ -50,7 +50,6 @@ fun Project.createJsBenchmarkExecTask(
             values.forEach { value -> args("-P", "\"$param=$value\"") }
         }
 
-        //dependsOn("${target.name}${BenchmarksPlugin.BENCHMARK_DEPENDENCIES_SUFFIX}")
         doFirst {
             val ideaActive = (extensions.extraProperties.get("idea.internal.test") as? String)?.toBoolean() ?: false
             args("-t", if (ideaActive) "xml" else "text")
