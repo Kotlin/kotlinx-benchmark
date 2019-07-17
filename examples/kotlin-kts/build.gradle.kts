@@ -7,13 +7,13 @@ import org.jetbrains.kotlin.gradle.tasks.*
 plugins {
     java
     kotlin("jvm") 
-    kotlin("plugin.allopen") version "1.3.40-eap-105"
+    kotlin("plugin.allopen") version "1.3.41"
     id("kotlinx.benchmark") version "0.2.0" 
 }
 
 sourceSets.all {
-    java.srcDir("$name/src")
-    resources.srcDir("$name/resources")
+    java.setSrcDirs(listOf("$name/src"))
+    resources.setSrcDirs(listOf("$name/resources"))
 }
 
 configure<AllOpenExtension> {
