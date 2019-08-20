@@ -21,7 +21,7 @@ fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, compileCla
         source = fileTree("$benchmarkBuildDir/sources")
         destinationDir = file("$benchmarkBuildDir/classes")
     }
-    
+
     task<Jar>(
         "${target.name}${BenchmarksPlugin.BENCHMARK_JAR_SUFFIX}",
         depends = BenchmarksPlugin.ASSEMBLE_BENCHMARKS_TASKNAME
@@ -29,7 +29,7 @@ fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, compileCla
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Build JAR for JMH compiled files for '${target.name}'"
         dependsOn("${target.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}")
-        conventionMapping.map("classifier") { "JMH"}
+        conventionMapping.map("classifier") { "JMH" }
         manifest.attributes["Main-Class"] = "org.openjdk.jmh.Main"
 
         from(compileClasspath.map {
@@ -86,7 +86,7 @@ fun Project.createJvmBenchmarkExecTask(
     runtimeClasspath: FileCollection
 ) {
     // TODO: add working dir parameter?
-    task<JvmBenchmarkExec>(
+    task<JavaExec>(
         "${target.name}${config.capitalizedName()}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}",
         depends = config.prefixName(BenchmarksPlugin.RUN_BENCHMARKS_TASKNAME)
     ) {
@@ -98,49 +98,23 @@ fun Project.createJvmBenchmarkExecTask(
         val reportsDir = benchmarkReportsDir(config, target)
         val reportFile = reportsDir.resolve("${target.name}.json")
         main = "kotlinx.benchmark.jvm.JvmBenchmarkRunnerKt"
-        
+
         if (target.workingDir != null)
             workingDir = File(target.workingDir)
-        
+
         classpath(
             file("$benchmarkBuildDir/classes"),
             file("$benchmarkBuildDir/resources"),
             runtimeClasspath
         )
-        
-        args("-n", target.name)
-        args("-r", reportFile.toString())
-        config.iterations?.let { args("-i", it.toString()) }
-        config.warmups?.let { args("-w", it.toString()) }
-        config.iterationTime?.let { args("-it", it.toString()) }
-        config.iterationTimeUnit?.let { args("-itu", it) }
-        config.outputTimeUnit?.let { args("-otu", it) }
-        config.mode?.let { args("-m", it) }
 
-        config.includes.forEach {
-            args("-I", it)
-        }
-        config.excludes.forEach {
-            args("-E", it)
-        }
-        config.params.forEach { (param, values) ->
-            values.forEach { value -> args("-P", "\"$param=$value\"") }
-        }
 
         dependsOn("${target.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}")
         doFirst {
             val ideaActive = (extensions.extraProperties.get("idea.internal.test") as? String)?.toBoolean() ?: false
-            args("-t", if (ideaActive) "xml" else "text")
+            args(writeParameters(target.name, reportFile, if (ideaActive) "xml" else "text", config))
             reportsDir.mkdirs()
             logger.lifecycle("Running '${config.name}' benchmarks for '${target.name}'")
         }
     }
-}
-
-
-open class JvmBenchmarkExec : JavaExec() {
-/*
-    @Option(option = "filter", description = "Configures the filter for benchmarks to run.")
-    var filter: String? = null
-*/
 }

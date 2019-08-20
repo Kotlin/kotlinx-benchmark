@@ -4,6 +4,7 @@ import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.workers.*
+import org.jetbrains.kotlin.builtins.*
 import org.jetbrains.kotlin.config.*
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.descriptors.impl.*
@@ -80,6 +81,7 @@ open class JsSourceGeneratorTask
         dependencies: List<ModuleDescriptorImpl> = listOf()
     ): List<ModuleDescriptorImpl> {
         val modules = KotlinJavascriptMetadataUtils.loadMetadata(lib)
+        val builtIns = org.jetbrains.kotlin.js.resolve.JsPlatformAnalyzerServices.builtIns
         return modules.map { metadata ->
             val skipCheck = languageVersionSettings.getFlag(AnalysisFlags.skipMetadataVersionCheck)
             assert(metadata.version.isCompatible() || skipCheck) {
@@ -89,7 +91,7 @@ open class JsSourceGeneratorTask
             val module = ModuleDescriptorImpl(
                 Name.special("<" + metadata.moduleName + ">"),
                 storageManager,
-                JsPlatform.builtIns
+                builtIns
             )
             val (header, body) = KotlinJavascriptSerializationUtil.readModuleAsProto(
                 metadata.body,
@@ -104,7 +106,7 @@ open class JsSourceGeneratorTask
                 CompilerDeserializationConfiguration(languageVersionSettings),
                 LookupTracker.DO_NOTHING
             )
-            module.setDependencies(listOf(module, JsPlatform.builtIns.builtInsModule) + dependencies)
+            module.setDependencies(listOf(module, builtIns.builtInsModule) + dependencies)
             module.initialize(provider)
             module
         }

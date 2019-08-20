@@ -1,6 +1,5 @@
 package kotlinx.benchmark.jvm
 
-import kotlinx.cli.*
 import kotlinx.benchmark.*
 import org.openjdk.jmh.infra.*
 import org.openjdk.jmh.results.*
@@ -12,7 +11,7 @@ import java.io.*
 import java.util.concurrent.*
 
 fun main(args: Array<String>) {
-    val params = RunnerConfiguration().also { it.parse(args) }
+    val params = RunnerConfiguration(args[0].readConfigFile())
 
     val jmhOptions = OptionsBuilder()
     params.iterations?.let { jmhOptions.measurementIterations(it) }

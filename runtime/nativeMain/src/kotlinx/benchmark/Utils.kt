@@ -26,3 +26,21 @@ actual fun saveReport(reportFile: String?, results: Collection<ReportBenchmarkRe
     fputs(formatJson(results), file)
     fclose(file)
 }
+
+actual fun String.readConfigFile(): String = buildString {
+    val file = fopen(this@readConfigFile, "rb")
+    try {
+        memScoped {
+            while (true) {
+                val bufferLength = 64 * 1024
+                val buffer = allocArray<ByteVar>(bufferLength)
+                val line = fgets(buffer, bufferLength, file)?.toKString()
+                if (line == null || line.isEmpty()) break
+                appendln(line)
+            }
+        }
+
+    } finally {
+        fclose(file)
+    }
+}

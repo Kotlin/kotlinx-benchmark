@@ -7,6 +7,7 @@ import org.gradle.workers.*
 import org.jetbrains.kotlin.config.*
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.konan.library.*
+import org.jetbrains.kotlin.konan.library.impl.*
 import org.jetbrains.kotlin.konan.properties.*
 import org.jetbrains.kotlin.konan.target.*
 import org.jetbrains.kotlin.konan.util.*
@@ -14,6 +15,7 @@ import org.jetbrains.kotlin.storage.*
 import java.io.*
 import java.nio.file.*
 import javax.inject.*
+import kotlin.reflect.jvm.*
 
 @Suppress("UnstableApiUsage")
 @CacheableTask
@@ -41,7 +43,7 @@ open class NativeSourceGeneratorTask
 
     @TaskAction
     fun generate() {
-        workerExecutor.submit(NativeBytecodeGeneratorWorker::class.java) { config ->
+        workerExecutor.submit(NativeSourceGeneratorWorker::class.java) { config ->
             config.isolationMode = IsolationMode.CLASSLOADER
             //config.classpath = runtimeClasspath
             config.params(
@@ -57,7 +59,7 @@ open class NativeSourceGeneratorTask
     }
 }
 
-class NativeBytecodeGeneratorWorker
+class NativeSourceGeneratorWorker
 @Inject constructor(
     private val title: String,
     private val target: String,
@@ -89,7 +91,8 @@ class NativeBytecodeGeneratorWorker
         if (nativeTarget.isEmpty())
             throw Exception("nativeTarget should be specified for API generator for native targets")
 
-        val konanTarget = PredefinedKonanTargets.getByName(nativeTarget)!!
+        val hostManager = HostManager()
+        val konanTarget = hostManager.targetByName(nativeTarget)
         val versionSpec = LanguageVersionSettingsImpl(
             LanguageVersion.LATEST_STABLE,
             ApiVersion.LATEST_STABLE
@@ -103,7 +106,7 @@ class NativeBytecodeGeneratorWorker
 
         val konanFile = org.jetbrains.kotlin.konan.file.File(lib.canonicalPath)
 
-        val library = createKonanLibrary(konanFile, ABI_VERSION, konanTarget, false)
+        val library = reflectCreateKonanLibrary(konanFile, ABI_VERSION, konanTarget)
         val unresolvedDependencies = library.manifestProperties.propertyList(KLIB_PROPERTY_DEPENDS)
         val storageManager = LockBasedStorageManager("Inspect")
 
@@ -124,6 +127,25 @@ class NativeBytecodeGeneratorWorker
         return module
     }
 
+    companion object {
+        private fun reflectCreateKonanLibrary(
+            libraryFile: org.jetbrains.kotlin.konan.file.File,
+            abi: Int,
+            konanTarget: KonanTarget
+        ): KonanLibrary {
+            val clazz = Class.forName("org.jetbrains.kotlin.konan.library.KonanLibraryUtilsKt")
+            val method = clazz.methods.single { it.name == "createKonanLibrary" }.kotlinFunction
+            val params = method!!.parameters
+            if (params[1].name == "currentAbiVersion") {
+                // new mode
+                return createKonanLibrary(libraryFile, abi, konanTarget, false)
+            } else {
+                return method.call(libraryFile, konanTarget, false, DefaultMetadataReaderImpl) as KonanLibrary
+            }
+        }
+    }
+
+
     private class ProvidedPathResolver(private val dependencies: Set<File>, override val target: KonanTarget) :
         SearchPathResolverWithTarget {
 
@@ -135,7 +157,7 @@ class NativeBytecodeGeneratorWorker
             .map {
                 val file = org.jetbrains.kotlin.konan.file.File(it.absolutePath)
                 // Need to load library to know its uniqueName, some libs like atomicfu has it different from klib file name
-                createKonanLibrary(file, 1, target)
+                reflectCreateKonanLibrary(file, 1, target)
             }
             .associateBy { it.uniqueName }
             .mapValues { it.value.libraryFile }

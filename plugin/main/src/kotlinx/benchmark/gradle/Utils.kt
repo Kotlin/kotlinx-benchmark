@@ -71,3 +71,34 @@ fun <T> Any.tryGetClass(className: String): Class<T>? {
     }
 }
 
+fun writeParameters(
+    name: String,
+    reportFile: File,
+    format: String,
+    config: BenchmarkConfiguration
+): File {
+    val file = createTempFile("benchmarks")
+    file.writeText(buildString {
+        appendln("name:$name")
+        appendln("reportFile:$reportFile")
+        appendln("traceFormat:$format")
+        config.iterations?.let { appendln("iterations:$it") }
+        config.warmups?.let { appendln("warmups:$it") }
+        config.iterationTime?.let { appendln("iterationTime:$it") }
+        config.iterationTimeUnit?.let { appendln("iterationTimeUnit:$it") }
+        config.outputTimeUnit?.let { appendln("outputTimeUnit:$it") }
+        config.mode?.let { appendln("mode:$it") }
+
+        config.includes.forEach {
+            appendln("include:$it")
+        }
+        config.excludes.forEach {
+            appendln("exclude:$it")
+        }
+        config.params.forEach { (param, values) ->
+            values.forEach { value -> appendln("param:$param=$value") }
+        }
+    })
+    return file
+}
+

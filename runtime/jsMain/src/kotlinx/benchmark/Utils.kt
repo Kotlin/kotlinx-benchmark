@@ -15,3 +15,7 @@ actual fun saveReport(reportFile: String?, results: Collection<ReportBenchmarkRe
 
     fs.writeFile(reportFile, formatJson(results)) { err -> if (err != null) throw err }
 }
+
+actual fun String.readConfigFile(): String {
+    return fs.readFileSync(this, "utf8")
+}

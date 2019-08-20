@@ -1,35 +1,66 @@
 package kotlinx.benchmark
 
-import kotlinx.cli.*
+class RunnerConfiguration(config: String) {
 
-class RunnerConfiguration : CommandLineInterface("Client") {
-    val name by onFlagValue("-n", "name", "Name of the configuration").storeRequired()
-    val reportFile by onFlagValue("-r", "reportFile", "File to save report to").storeRequired()
-    val traceFormat by onFlagValue("-t", "traceFormat", "Format of tracing report (text or xml)").store("text")
+    private val values = config.lines().groupBy({
+        it.substringBefore(":")
+    }, { it.substringAfter(":", "") })
+    
+/*
+    init {
+        println("Config:")
+        println(config)
+        
+        println("Values:")
+        println(values)
+    }
+*/
+    
+    val name = singleValue("name")
+    val reportFile = singleValue("reportFile")
+    val traceFormat = singleValue("traceFormat")
 
-    val params by onFlagValue(
-        "-P",
-        "<name>=<value>",
-        "Specifies parameter with the given name and value"
-    ).toKeyValuePair().storeToMultimap()
+    val params = mapValues(
+        "param", "="
+    )
 
-    val include by onFlagValue("-I", "<pattern>", "Include benchmarks matching the given pattern").storeToList()
-    val exclude by onFlagValue("-E", "<pattern>", "Include benchmarks matching the given pattern").storeToList()
+    val include = listValues("include")
+    val exclude = listValues("exclude")
 
-    val iterations by onFlagValue("-i", "iterations", "Number of iterations per benchmark").map { it.toInt() }.store()
-    val warmups by onFlagValue("-w", "warmups", "Number of warmup iterations per benchmark").map { it.toInt() }.store()
+    val iterations = singleValueOrNull("iterations") { it.toInt() }
+    val warmups = singleValueOrNull("warmups") { it.toInt() }
+    val iterationTime = singleValueOrNull("iterationTime") { it.toLong() }
+    val iterationTimeUnit = singleValueOrNull("iterationTimeUnit") { parseTimeUnit(it) }
 
-    val iterationTime by onFlagValue(
-        "-it",
-        "iterationTime",
-        "Time to run one iteration in milliseconds"
-    ).map { it.toLong() }.store()
+    val outputTimeUnit = singleValueOrNull(
+        "outputTimeUnit"
+    ) { parseTimeUnit(it) }
 
-    val iterationTimeUnit by onFlagValue(
-        "-itu",
-        "iterationTimeUnit",
-        "Time unit for iteration time"
-    ).map { parseTimeUnit(it) }.store()
+    private fun <T> singleValueOrNull(name: String, map: (String) -> T): T? =
+        singleValueOrNull(name)?.let(map)
+
+    private fun singleValueOrNull(name: String): String? {
+        val values = values[name] ?: return null
+        return values.single()
+    }
+    private fun singleValue(name: String): String {
+        val values = values[name] ?: throw NoSuchElementException("Parameter `$name` is required.")
+        return values.single()
+    }
+
+    private fun mapValues(name: String, delimiter: String): Map<String, List<String>> {
+        val values = values[name] ?: return emptyMap()
+        return values.groupBy({ it.substringBefore(delimiter) }, { it.substringAfter(delimiter) })
+    }
+
+    private fun listValues(name: String): List<String> {
+        return this.values[name] ?: emptyList()
+    }
+
+    val mode = singleValueOrNull(
+        "mode"
+    ) { Mode.valueOf(it) }
+
 
     private fun parseTimeUnit(text: String) = when (text) {
         BenchmarkTimeUnit.SECONDS.name, "s", "sec" -> BenchmarkTimeUnit.SECONDS
@@ -38,57 +69,6 @@ class RunnerConfiguration : CommandLineInterface("Client") {
         BenchmarkTimeUnit.NANOSECONDS.name, "ns", "nanos" -> BenchmarkTimeUnit.NANOSECONDS
         BenchmarkTimeUnit.MINUTES.name, "m", "min" -> BenchmarkTimeUnit.MINUTES
         else -> throw UnsupportedOperationException("Unknown time unit: $text")
-    }
-
-    val outputTimeUnit by onFlagValue(
-        "-otu",
-        "outputTimeUnit",
-        "Time unit for output values, one of: NANOSECONDS or ns, MICROSECONDS or us, MILLISECONDS or ms, SECONDS or s, MINUTES or m"
-    ).map { parseTimeUnit(it) }.store()
-
-    val mode by onFlagValue(
-        "-m",
-        "mode",
-        "Result display mode, one of: Throughput, AverageTime"
-    ).map { Mode.valueOf(it) }.store()
-
-
-    private fun Event<String>.toKeyValuePair() =
-        map {
-            val parts = it.removeSurrounding("\"").split('=', limit = 2)
-            if (parts.size == 1)
-                parts[0] to ""
-            else
-                parts[0] to parts[1]
-        }
-
-    private fun Event<Pair<String, String>>.storeToMultimap(): ArgumentValue<Map<String, List<String>>> {
-        val map = hashMapOf<String, MutableList<String>>()
-        add { (key, value) -> map.getOrPut(key) { mutableListOf() }.add(value) }
-        return ArgumentStorage(map)
-    }
-
-    private fun Event<String>.storeToList(): ArgumentValue<List<String>> {
-        val list = mutableListOf<String>()
-        add { value -> list.add(value) }
-        return ArgumentStorage(list)
-    }
-
-    private fun <T : Any> Event<T>.storeRequired(): ArgumentValue<T> =
-        LateInitArgumentStorage<T>().apply {
-            add { setValue(it) }
-        }
-
-
-    class LateInitArgumentStorage<T : Any>() : ArgumentValue<T> {
-        private lateinit var value: T
-
-        override fun getValue(thisRef: Any?, prop: Any?): T =
-            value
-
-        fun setValue(newValue: T) {
-            value = newValue
-        }
     }
 
     override fun toString(): String {
@@ -105,3 +85,5 @@ mode: $mode
 """
     }
 }
+
+expect fun String.readConfigFile(): String

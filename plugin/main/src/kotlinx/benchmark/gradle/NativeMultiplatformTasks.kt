@@ -116,29 +116,10 @@ fun Project.createNativeBenchmarkExecTask(
 
         onlyIf { executableFile.exists() }
 
-        args("-n", target.name)
-        args("-r", reportFile.toString())
-        config.iterations?.let { args("-i", it.toString()) }
-        config.warmups?.let { args("-w", it.toString()) }
-        config.iterationTime?.let { args("-it", it.toString()) }
-        config.iterationTimeUnit?.let { args("-itu", it) }
-        config.outputTimeUnit?.let { args("-otu", it) }
-        config.mode?.let { args("-m", it) }
-
-        config.includes.forEach {
-            args("-I", it)
-        }
-        config.excludes.forEach {
-            args("-E", it)
-        }
-        config.params.forEach { (param, values) ->
-            values.forEach { value -> args("-P", "\"$param=$value\"") }
-        }
-
         dependsOn(linkTask)
         doFirst {
             val ideaActive = (extensions.extraProperties.get("idea.internal.test") as? String)?.toBoolean() ?: false
-            args("-t", if (ideaActive) "xml" else "text")
+            args(writeParameters(target.name, reportFile, if (ideaActive) "xml" else "text", config))
             reportsDir.mkdirs()
             logger.lifecycle("Running '${config.name}' benchmarks for '${target.name}'")
         }

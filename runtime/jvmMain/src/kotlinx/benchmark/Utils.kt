@@ -12,3 +12,7 @@ actual fun saveReport(reportFile: String?, results: Collection<ReportBenchmarkRe
 
     File(reportFile).writeText(formatJson(results))
 }
+
+actual fun String.readConfigFile(): String {
+    return File(this).readText()
+}

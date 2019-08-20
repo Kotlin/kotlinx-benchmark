@@ -1,9 +1,7 @@
 package kotlinx.benchmark
 
-import kotlinx.cli.*
-
 abstract class SuiteExecutor(val executionName: String, arguments: Array<out String>) {
-    private val config = RunnerConfiguration().also { it.parse(arguments) }
+    private val config = RunnerConfiguration(arguments.first().readConfigFile())
 
     val reporter = BenchmarkProgress.create(config.traceFormat)
 
@@ -69,7 +67,7 @@ fun runWithParameters(
         function(mapOf())
         return
     }
-    
+
     fun parameterValues(name: String): List<String> {
         return parameters.getOrElse(name) {
             defaults.getOrElse(name) {
