@@ -6,9 +6,9 @@ import org.jetbrains.kotlin.gradle.tasks.*
 
 plugins {
     java
-    kotlin("jvm") 
+    kotlin("jvm")
     kotlin("plugin.allopen") version "1.3.50-release-105"
-    id("kotlinx.benchmark") version "0.2.0" 
+    id("kotlinx.benchmark") version "0.2.0"
 }
 
 sourceSets.all {
@@ -17,11 +17,11 @@ sourceSets.all {
 }
 
 configure<AllOpenExtension> {
-    annotation("org.openjdk.jmh.annotations.State") 
+    annotation("org.openjdk.jmh.annotations.State")
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))    
+    implementation(kotlin("stdlib-jdk8"))
     implementation(project(":kotlinx.benchmark.runtime"))
 }
 
@@ -32,6 +32,13 @@ tasks.withType<KotlinCompile> {
 }
 
 benchmark {
+    configurations {
+        named("main") {
+            iterationTime = 5
+            iterationTimeUnit = "sec"
+            
+        }
+    }
     targets {
         register("main") {
             this as JvmBenchmarkTarget

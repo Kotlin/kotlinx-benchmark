@@ -14,6 +14,7 @@ open class BenchmarkConfiguration(val extension: BenchmarksExtension, val name: 
     var includes: MutableList<String> = mutableListOf()
     var excludes: MutableList<String> = mutableListOf()
     var params: MutableMap<String, MutableList<Any?>> = mutableMapOf()
+    var advanced: MutableMap<String, Any?> = mutableMapOf()
 
     fun include(pattern: String) {
         includes.add(pattern)
@@ -28,6 +29,10 @@ open class BenchmarkConfiguration(val extension: BenchmarksExtension, val name: 
         values.addAll(value)
     }
 
+    fun advanced(name: String, value: Any?) {
+        advanced[name] = value
+    }
+    
     fun capitalizedName() = if (name == "main") "" else name.capitalize()
     fun prefixName(suffix: String) = if (name == "main") suffix else name + suffix.capitalize()
 }

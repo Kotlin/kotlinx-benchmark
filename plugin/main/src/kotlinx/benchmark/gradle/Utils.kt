@@ -98,6 +98,9 @@ fun writeParameters(
         config.params.forEach { (param, values) ->
             values.forEach { value -> appendln("param:$param=$value") }
         }
+        config.advanced.forEach { (param, value) ->
+            appendln("$param:$value")
+        }
     })
     return file
 }

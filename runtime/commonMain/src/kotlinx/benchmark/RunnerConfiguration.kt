@@ -32,6 +32,8 @@ class RunnerConfiguration(config: String) {
     val iterationTime = singleValueOrNull("iterationTime") { it.toLong() }
     val iterationTimeUnit = singleValueOrNull("iterationTimeUnit") { parseTimeUnit(it) }
 
+    val forks = singleValueOrNull("forks") { it.toInt() }
+
     val outputTimeUnit = singleValueOrNull(
         "outputTimeUnit"
     ) { parseTimeUnit(it) }

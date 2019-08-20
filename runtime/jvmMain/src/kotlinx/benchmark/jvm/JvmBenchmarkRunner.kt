@@ -8,50 +8,58 @@ import org.openjdk.jmh.runner.*
 import org.openjdk.jmh.runner.format.*
 import org.openjdk.jmh.runner.options.*
 import java.io.*
+import java.lang.management.*
 import java.util.concurrent.*
 
+
 fun main(args: Array<String>) {
-    val params = RunnerConfiguration(args[0].readConfigFile())
+    val config = RunnerConfiguration(args[0].readConfigFile())
 
     val jmhOptions = OptionsBuilder()
-    params.iterations?.let { jmhOptions.measurementIterations(it) }
-    params.warmups?.let { jmhOptions.warmupIterations(it) }
-    params.iterationTime?.let {
-        val timeValue = TimeValue(it, params.iterationTimeUnit ?: TimeUnit.SECONDS)
+    config.iterations?.let { jmhOptions.measurementIterations(it) }
+    config.warmups?.let { jmhOptions.warmupIterations(it) }
+    config.iterationTime?.let {
+        val timeValue = TimeValue(it, config.iterationTimeUnit ?: TimeUnit.SECONDS)
         jmhOptions.warmupTime(timeValue)
         jmhOptions.measurementTime(timeValue)
     }
-    params.outputTimeUnit?.let {
+    config.outputTimeUnit?.let {
         jmhOptions.timeUnit(it)
     }
-    params.mode?.let {
+    config.mode?.let {
         jmhOptions.mode(it)
     }
 
-    params.include.forEach {
+    config.include.forEach {
         jmhOptions.include(it)
     }
-    params.exclude.forEach {
+    config.exclude.forEach {
         jmhOptions.exclude(it)
     }
 
-    params.params.forEach { (key, value) ->
+    config.params.forEach { (key, value) ->
         jmhOptions.param(key, *value.toTypedArray())
     }
 
-    jmhOptions.forks(1)
-    
-    val reporter = BenchmarkProgress.create(params.traceFormat)
-    val output = JmhOutputFormat(reporter, params.name)
+    val runtimeMXBean = ManagementFactory.getRuntimeMXBean()
+    val jvmArgs = runtimeMXBean.inputArguments
+    when {
+        jvmArgs.any { it.contains("libasyncProfiler") } -> jmhOptions.forks(0)
+        config.forks == null -> jmhOptions.forks(1) 
+        config.forks > 0 -> jmhOptions.forks(config.forks) 
+    }
+
+    val reporter = BenchmarkProgress.create(config.traceFormat)
+    val output = JmhOutputFormat(reporter, config.name)
     try {
         val runner = Runner(jmhOptions.build(), output)
         val results = runner.run()
-        val resultFormat = ResultFormatFactory.getInstance(ResultFormatType.JSON, PrintStream(File(params.reportFile)))
+        val resultFormat = ResultFormatFactory.getInstance(ResultFormatType.JSON, PrintStream(File(config.reportFile)))
         resultFormat.writeOut(results)
     } catch (e: Exception) {
         e.printStackTrace()
         reporter.endBenchmark(
-            params.name,
+            config.name,
             output.lastBenchmarkStart,
             BenchmarkProgress.FinishStatus.Failure,
             e.message ?: "<unknown error>"
