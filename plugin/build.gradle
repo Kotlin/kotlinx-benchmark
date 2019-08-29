@@ -7,15 +7,16 @@ buildscript {
     }
     dependencies {
         classpath "kotlinx.team:kotlinx.team.infra:$infra_version"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 
 }
 
 plugins {
     id 'java-gradle-plugin'
-    id 'org.jetbrains.kotlin.jvm' version "1.3.50-release-105"
 }
 
+apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'kotlinx.team.infra'
 
 infra {
@@ -38,7 +39,7 @@ repositories {
     jcenter()
     gradlePluginPortal()
     maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
-    maven { url 'https://dl.bintray.com/kotlin/kotlin-dev' }
+//    maven { url 'https://dl.bintray.com/kotlin/kotlin-dev' }
 //    maven { url "../../kotlin-libraries-infra/build/maven" }
     maven { url "https://dl.bintray.com/orangy/maven" } // for kotlinx.cli & infra
 }
