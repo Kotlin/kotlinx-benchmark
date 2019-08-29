@@ -11,7 +11,7 @@ subprojects {
         mavenLocal()
         mavenCentral()
         maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
-        maven { url 'https://dl.bintray.com/kotlin/kotlin-dev' }
+//        maven { url 'https://dl.bintray.com/kotlin/kotlin-dev' }
 //        maven { url "$rootProject.projectDir/../kotlin-libraries-infra/build/maven" }
     }
 }
