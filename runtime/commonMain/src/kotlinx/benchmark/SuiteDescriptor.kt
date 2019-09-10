@@ -4,8 +4,16 @@ open class SuiteDescriptor<T>(
     val name: String,
     val factory: () -> T,
     val parametrize: (T, Map<String, String>) -> Unit,
-    val setup: (T) -> Unit,
-    val teardown: (T) -> Unit,
+
+    val hasInvocationFixture: Boolean,
+
+    val invocationSetup: (T) -> Unit,
+    val iterationSetup: (T) -> Unit,
+    val trialSetup: (T) -> Unit,
+
+    val invocationTearDown: (T) -> Unit,
+    val iterationTearDown: (T) -> Unit,
+    val trialTearDown: (T) -> Unit,
 
     val parameters: List<String>,
     val defaultParameters: Map<String, List<String>>,

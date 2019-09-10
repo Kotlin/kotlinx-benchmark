@@ -4,8 +4,12 @@ actual typealias Scope = org.openjdk.jmh.annotations.Scope
 
 actual typealias State = org.openjdk.jmh.annotations.State
 
+@Suppress("ACTUAL_ANNOTATION_CONFLICTING_DEFAULT_ARGUMENT_VALUE")
 actual typealias Setup = org.openjdk.jmh.annotations.Setup
 
+actual typealias Level = org.openjdk.jmh.annotations.Level
+
+@Suppress("ACTUAL_ANNOTATION_CONFLICTING_DEFAULT_ARGUMENT_VALUE")
 actual typealias TearDown = org.openjdk.jmh.annotations.TearDown
 
 actual typealias Benchmark = org.openjdk.jmh.annotations.Benchmark
