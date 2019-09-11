@@ -21,6 +21,7 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
         val setupFunctionName = "setUp"
         val teardownFunctionName = "tearDown"
         val parametersFunctionName = "parametrize"
+        val bindBlackholeFunctionName = "bind"
 
         val externalConfigurationFQN = "kotlinx.benchmark.ExternalConfiguration"
         val benchmarkAnnotationFQN = "kotlinx.benchmark.Benchmark"
@@ -35,6 +36,8 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
         val warmupAnnotationFQN = "kotlinx.benchmark.Warmup"
         val measureAnnotationFQN = "kotlinx.benchmark.Measurement"
         val paramAnnotationFQN = "kotlinx.benchmark.Param"
+
+        val blackholeFQN = "kotlinx.benchmark.Blackhole"
 
         val mainBenchmarkPackage = "kotlinx.benchmark.generated"
 
@@ -179,6 +182,28 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
                     }
                 }
 
+                val bhClass = ClassName.bestGuess(blackholeFQN)
+
+                /*
+                    private fun bind(function: CommonBenchmark.(Blackhole) -> Any?, bh: Blackhole): CommonBenchmark.() -> Any? {
+                        return { function(bh) }
+                    }
+                */
+                function(bindBlackholeFunctionName) {
+                    addModifiers(KModifier.PRIVATE)
+
+                    val bhParam = ParameterSpec.unnamed(bhClass)
+                    val bhBenchType = LambdaTypeName.get(originalClass, listOf(bhParam), ANY.copy(nullable = true))
+                    val boundBenchType = LambdaTypeName.get(originalClass, emptyList(), ANY.copy(nullable = true))
+
+                    addParameter("function", bhBenchType)
+                    addParameter("bh", bhClass)
+                    returns(boundBenchType)
+
+                    addStatement("return { function(bh) }")
+                }
+
+
                 val defaultParameters = parameterProperties.associateBy({ it.name }, {
                     val annotation = it.annotations.findAnnotation(FqName(paramAnnotationFQN))!!
                     val constant = annotation.argumentValue("value") 
@@ -241,13 +266,29 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
                     addStatement("")
                     for (fn in benchmarkFunctions) {
                         val functionName = fn.name.toString()
-                        addStatement(
-                            "descriptor.add(%T(%S, descriptor, %T::%N))",
-                            benchmarkDescriptorType,
-                            "${originalClass.canonicalName}.$functionName",
-                            originalClass,
-                            functionName
-                        )
+
+                        val hasABlackholeParameter = fn.valueParameters.singleOrNull()?.type.toString() == "Blackhole"
+                        if (hasABlackholeParameter) {
+                            println("WARNING: Blackhole works correctly only on JVM")
+
+                            addStatement(
+                                "descriptor.add(%T(%S, descriptor, %N(%T::%N, %T())))",
+                                benchmarkDescriptorType,
+                                "${originalClass.canonicalName}.$functionName",
+                                bindBlackholeFunctionName,
+                                originalClass,
+                                functionName,
+                                bhClass
+                            )
+                        }
+                        else
+                            addStatement(
+                                "descriptor.add(%T(%S, descriptor, %T::%N))",
+                                benchmarkDescriptorType,
+                                "${originalClass.canonicalName}.$functionName",
+                                originalClass,
+                                functionName
+                            )
                     }
                     addStatement("return descriptor")
                 }

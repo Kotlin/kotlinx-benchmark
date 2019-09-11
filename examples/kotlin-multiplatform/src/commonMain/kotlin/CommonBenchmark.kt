@@ -50,4 +50,10 @@ class CommonBenchmark {
         return value
     }
 
+    @Benchmark
+    fun longBlackholeBenchmark(bh: Blackhole) {
+        repeat(1000) {
+            bh.consume(text.length)
+        }
+    }
 }
