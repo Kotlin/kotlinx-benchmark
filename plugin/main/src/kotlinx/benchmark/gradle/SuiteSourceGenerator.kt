@@ -103,9 +103,9 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
         val originalName = original.fqNameSafe.shortName()
         val originalClass = ClassName(originalPackage.toString(), originalName.toString())
 
-        val benchmarkPackageName = originalPackage.child(Name.identifier("generated")).toString()
+        val benchmarkPackageName = "$mainBenchmarkPackage.$originalPackage"
         val benchmarkName = originalName.toString() + "_Descriptor"
-        val benchmarkClass = ClassName(mainBenchmarkPackage, benchmarkName)
+        val benchmarkClass = ClassName(benchmarkPackageName, benchmarkName)
 
         val functions = DescriptorUtils.getAllDescriptors(original.unsubstitutedMemberScope)
             .filterIsInstance<FunctionDescriptor>()
@@ -145,7 +145,7 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
         val teardownFunctions = functions
             .filter { it.annotations.any { it.fqName.toString() == teardownAnnotationFQN } }.reversed()
 
-        val file = FileSpec.builder(mainBenchmarkPackage, benchmarkName).apply {
+        val file = FileSpec.builder(benchmarkPackageName, benchmarkName).apply {
             declareObject(benchmarkClass) {
                 addAnnotation(suppressUnusedParameter)
 
