@@ -32,13 +32,16 @@ fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, compileCla
         conventionMapping.map("classifier") { "JMH" }
         manifest.attributes["Main-Class"] = "org.openjdk.jmh.Main"
 
-        from(compileClasspath.map {
-            when {
-                it.isDirectory -> it
-                it.exists() -> zipTree(it)
-                else -> files()
+        from(project.provider {
+            compileClasspath.map {
+                when {
+                    it.isDirectory -> it
+                    it.exists() -> zipTree(it)
+                    else -> files()
+                }
             }
         })
+
         from(compileTask)
         from(file("$benchmarkBuildDir/resources"))
         destinationDirectory.set(File("$benchmarkBuildDir/jars"))
