@@ -38,7 +38,7 @@ fun Project.createJsBenchmarkExecTask(
         }
     }
 
-    tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(task.getTaskOrProvider())
+    tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(task)
 }
 
 

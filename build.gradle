@@ -2,10 +2,7 @@ buildscript {
     repositories {
         jcenter()
         gradlePluginPortal()
-//        maven { url "../kotlin-libraries-infra/build/maven" }
-        maven { url "https://dl.bintray.com/orangy/maven" } // for kotlinx.cli & infra
-        maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
-        maven { url 'https://dl.bintray.com/kotlin/kotlin-dev' }
+        maven { url 'https://dl.bintray.com/kotlin/kotlinx' }
     }
 
     dependencies {
@@ -15,11 +12,6 @@ buildscript {
 }
 
 apply plugin: 'kotlinx.team.infra'
-
-repositories {
-    maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
-    maven { url 'https://dl.bintray.com/kotlin/kotlin-dev' }
-}
 
 infra {
     teamcity {
