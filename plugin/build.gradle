@@ -2,8 +2,7 @@ buildscript {
     repositories {
         mavenCentral()
         jcenter()
-        // maven { url "../../kotlin-libraries-infra/build/maven" }
-        maven { url "https://dl.bintray.com/orangy/maven" } // for kotlinx.cli & infra
+        maven { url 'https://dl.bintray.com/kotlin/kotlinx' }
     }
     dependencies {
         classpath "kotlinx.team:kotlinx.team.infra:$infra_version"
@@ -38,10 +37,6 @@ repositories {
     mavenCentral()
     jcenter()
     gradlePluginPortal()
-    maven { url 'https://dl.bintray.com/kotlin/kotlin-eap' }
-//    maven { url 'https://dl.bintray.com/kotlin/kotlin-dev' }
-//    maven { url "../../kotlin-libraries-infra/build/maven" }
-    maven { url "https://dl.bintray.com/orangy/maven" } // for kotlinx.cli & infra
 }
 
 gradlePlugin {
@@ -74,16 +69,16 @@ dependencies {
     compile 'com.squareup:kotlinpoet:1.3.0'
     compile "org.openjdk.jmh:jmh-core:$jmhVersion"
 
-    compile group: 'org.jetbrains.kotlin', name: 'kotlin-native-library-reader', version: kotlin_version, {
-        exclude group: 'org.jetbrains.kotlin', module: 'kotlin-compiler'
-    }
+    compile group: 'org.jetbrains.kotlin', name: 'kotlin-util-klib-metadata', version: kotlin_version
+    compile group: 'org.jetbrains.kotlin', name: 'kotlin-util-klib', version: kotlin_version
+    compile group: 'org.jetbrains.kotlin', name: 'kotlin-util-io', version: kotlin_version
     
     compileOnly group: 'org.jetbrains.kotlin.multiplatform', name: 'org.jetbrains.kotlin.multiplatform.gradle.plugin', version: kotlin_version
     compileOnly "org.openjdk.jmh:jmh-generator-bytecode:$jmhVersion" // used in worker
 
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
     testImplementation gradleTestKit()
-    testImplementation 'junit:junit:4.12'
+    testImplementation "junit:junit:$junit_version"
     
 /*
     // This is needed for test to get it on classpath and run

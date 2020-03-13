@@ -6,16 +6,16 @@ import org.gradle.api.tasks.*
 import org.gradle.workers.*
 import org.jetbrains.kotlin.config.*
 import org.jetbrains.kotlin.descriptors.*
-import org.jetbrains.kotlin.konan.library.*
-import org.jetbrains.kotlin.konan.library.impl.*
-import org.jetbrains.kotlin.konan.properties.*
-import org.jetbrains.kotlin.konan.target.*
 import org.jetbrains.kotlin.konan.util.*
-import org.jetbrains.kotlin.storage.*
+import org.jetbrains.kotlin.builtins.*
+import org.jetbrains.kotlin.serialization.konan.*
+import org.jetbrains.kotlin.storage.LockBasedStorageManager
+import org.jetbrains.kotlin.util.Logger
+import org.jetbrains.kotlin.library.*
+import org.jetbrains.kotlin.library.impl.*
+import org.jetbrains.kotlin.library.resolver.impl.*
 import java.io.*
-import java.nio.file.*
 import javax.inject.*
-import kotlin.reflect.jvm.*
 
 @Suppress("UnstableApiUsage")
 @CacheableTask
@@ -59,6 +59,9 @@ open class NativeSourceGeneratorTask
     }
 }
 
+private val Builtins = DefaultBuiltIns.Instance
+private val NativeFactories = KlibMetadataFactories( { Builtins }, NullFlexibleTypeDeserializer)
+
 class NativeSourceGeneratorWorker
 @Inject constructor(
     private val title: String,
@@ -91,32 +94,30 @@ class NativeSourceGeneratorWorker
         if (nativeTarget.isEmpty())
             throw Exception("nativeTarget should be specified for API generator for native targets")
 
-        val hostManager = HostManager()
-        val konanTarget = hostManager.targetByName(nativeTarget)
-        val versionSpec = LanguageVersionSettingsImpl(
-            LanguageVersion.LATEST_STABLE,
-            ApiVersion.LATEST_STABLE
-        )
-        val ABI_VERSION = 8
+        val logger = object : Logger {
+            override fun log(message: String) {}
+            override fun error(message: String) = kotlin.error("e: $message")
+            override fun warning(message: String) {}
+            override fun fatal(message: String) = kotlin.error("e: $message")
+        }
+        val pathResolver = SeveralKlibComponentResolver(dependencyPaths.map { it.canonicalPath }, listOf(KotlinAbiVersion.CURRENT), logger)
+        val libraryResolver = pathResolver.libraryResolver()
 
-        val pathResolver = ProvidedPathResolver(dependencyPaths, konanTarget)
-        val libraryResolver = pathResolver.libraryResolver(ABI_VERSION)
-
-        val factory = KonanFactories.DefaultDeserializedDescriptorFactory
+        val factory = NativeFactories.DefaultDeserializedDescriptorFactory
 
         val konanFile = org.jetbrains.kotlin.konan.file.File(lib.canonicalPath)
+        val library = createKotlinLibrary(konanFile)
 
-        val library = reflectCreateKonanLibrary(konanFile, ABI_VERSION, konanTarget)
-        val unresolvedDependencies = library.manifestProperties.propertyList(KLIB_PROPERTY_DEPENDS)
+        val versionSpec = LanguageVersionSettingsImpl(LanguageVersion.LATEST_STABLE, ApiVersion.LATEST_STABLE)
         val storageManager = LockBasedStorageManager("Inspect")
 
-        val module = factory.createDescriptorAndNewBuiltIns(library, versionSpec, storageManager)
+        val module = factory.createDescriptorOptionalBuiltIns(library, versionSpec, storageManager, Builtins, null)
 
-        val dependencies = libraryResolver.resolveWithDependencies(unresolvedDependencies)
-        val dependenciesResolved = KonanFactories.DefaultResolvedDescriptorsFactory.createResolved(
+        val dependencies = libraryResolver.resolveWithDependencies(library.unresolvedDependencies)
+        val dependenciesResolved = NativeFactories.DefaultResolvedDescriptorsFactory.createResolved(
             dependencies,
             storageManager,
-            null,
+            Builtins,
             versionSpec
         )
 
@@ -127,61 +128,14 @@ class NativeSourceGeneratorWorker
         return module
     }
 
-    companion object {
-        private fun reflectCreateKonanLibrary(
-            libraryFile: org.jetbrains.kotlin.konan.file.File,
-            abi: Int,
-            konanTarget: KonanTarget
-        ): KonanLibrary {
-            val clazz = Class.forName("org.jetbrains.kotlin.konan.library.KonanLibraryUtilsKt")
-            val method = clazz.methods.single { it.name == "createKonanLibrary" }.kotlinFunction
-            val params = method!!.parameters
-            if (params[1].name == "currentAbiVersion") {
-                // new mode
-                return createKonanLibrary(libraryFile, abi, konanTarget, false)
-            } else {
-                return method.call(libraryFile, konanTarget, false, DefaultMetadataReaderImpl) as KonanLibrary
-            }
-        }
-    }
-
-
-    private class ProvidedPathResolver(private val dependencies: Set<File>, override val target: KonanTarget) :
-        SearchPathResolverWithTarget {
-
-        override val searchRoots: List<org.jetbrains.kotlin.konan.file.File> get() = emptyList()
-
-        private val nameMap = dependencies
-            // TODO: what's wrong with JARs? They seem common libs, how does native ignores them?
-            .filter { it.extension != "jar" }
-            .map {
-                val file = org.jetbrains.kotlin.konan.file.File(it.absolutePath)
-                // Need to load library to know its uniqueName, some libs like atomicfu has it different from klib file name
-                reflectCreateKonanLibrary(file, 1, target)
-            }
-            .associateBy { it.uniqueName }
-            .mapValues { it.value.libraryFile }
-
-        override fun resolve(givenPath: String): org.jetbrains.kotlin.konan.file.File {
-            val path = Paths.get(givenPath)
-            return when {
-                path.isAbsolute -> org.jetbrains.kotlin.konan.file.File(path)
-                else -> {
-                    val file = nameMap[givenPath]
-                    if (file != null)
-                        return file
-
-                    println("Cannot resolve library $givenPath with the following dependencies:")
-                    println(dependencies.joinToString(prefix = "  ", separator = "\n  "))
-                    throw Exception("Cannot resolve library '$givenPath' with $nameMap")
-                }
-            }
-        }
-
-        override fun defaultLinks(
-            noStdLib: Boolean,
-            noDefaultLibs: Boolean
-        ): List<org.jetbrains.kotlin.konan.file.File> =
-            emptyList()
+    private class SeveralKlibComponentResolver(
+        klibFiles: List<String>,
+        knownAbiVersions: List<KotlinAbiVersion>?,
+        logger: Logger
+    ) : KotlinLibraryProperResolverWithAttributes<KotlinLibrary>(
+        emptyList(), klibFiles, knownAbiVersions, emptyList(),
+        null, null, false, logger, emptyList()
+    ) {
+        override fun libraryBuilder(file: org.jetbrains.kotlin.konan.file.File, isDefault: Boolean) = createKotlinLibrary(file, isDefault)
     }
 }

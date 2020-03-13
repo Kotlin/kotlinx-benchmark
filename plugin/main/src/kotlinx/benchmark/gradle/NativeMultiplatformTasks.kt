@@ -25,9 +25,12 @@ fun Project.processNativeCompilation(target: NativeBenchmarkTarget) {
     }
 }
 
+private fun generateSourceTaskName(target: NativeBenchmarkTarget)
+        = target.name + BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX
+
 private fun Project.createNativeBenchmarkGenerateSourceTask(target: NativeBenchmarkTarget) {
     val benchmarkBuildDir = benchmarkBuildDir(target)
-    task<NativeSourceGeneratorTask>("${target.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}") {
+    task<NativeSourceGeneratorTask>(generateSourceTaskName(target)) {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Generate Native source files for '${target.name}'"
         val compilation = target.compilation
@@ -52,7 +55,9 @@ private fun Project.createNativeBenchmarkCompileTask(target: NativeBenchmarkTarg
     // In the previous version of this method a compileTask was changed to build an executable instead of klib.
     // Currently it's impossible to change task output kind and an executable is always produced by
     // a link task. So we disable execution the klib compiling task to save time.
-    benchmarkCompilation.compileKotlinTask.enabled = false
+//    benchmarkCompilation.compileKotlinTask.enabled = false
+
+    benchmarkCompilation.compileKotlinTask.dependsOn(generateSourceTaskName(target))
 
     benchmarkCompilation.apply {
         val sourceSet = kotlinSourceSets.single()
@@ -73,7 +78,7 @@ private fun Project.createNativeBenchmarkCompileTask(target: NativeBenchmarkTarg
                 linkTask.apply {
                     group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
                     description = "Compile Native benchmark source files for '${compilationTarget.name}'"
-                    dependsOn("${compilationTarget.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}")
+                    dependsOn(generateSourceTaskName(target))
 
                     // It's impossible to change output directory using the binaries DSL.
                     // See https://youtrack.jetbrains.com/issue/KT-29395
