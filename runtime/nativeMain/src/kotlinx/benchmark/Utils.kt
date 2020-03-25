@@ -36,7 +36,7 @@ actual fun String.readConfigFile(): String = buildString {
                 val buffer = allocArray<ByteVar>(bufferLength)
                 val line = fgets(buffer, bufferLength, file)?.toKString()
                 if (line == null || line.isEmpty()) break
-                appendln(line)
+                appendLine(line)
             }
         }
 

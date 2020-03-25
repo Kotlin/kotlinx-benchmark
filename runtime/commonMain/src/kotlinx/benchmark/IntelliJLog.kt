@@ -103,7 +103,7 @@ private fun ByteArray.encodeBase64(): String {
         repeat(padSize) { result.add(BASE64_PAD) }
     }
 
-    return String(result.toCharArray())
+    return result.toCharArray().concatToString()
 }
 
 expect fun String.toByteArrayUtf8(): ByteArray
