@@ -3,7 +3,11 @@
 [![Download](https://api.bintray.com/packages/kotlin/kotlinx/kotlinx.benchmark/images/download.svg) ](https://bintray.com/kotlin/kotlinx/kotlinx.benchmark/_latestVersion)
 
 **kotlinx.benchmark** is a toolkit for running benchmarks for multiplatform code written in Kotlin 
-and running on all supported targets: JVM, JavaScript and Native. 
+and running on the next supported targets: JVM, JavaScript.
+
+Technically it can be run on Native target, but current implementation doesn't allow to get right measurements in many 
+cases for native benchmarks, so it isn't recommended to use this library for native benchmarks yet. 
+See [issue](https://github.com/Kotlin/kotlinx-benchmark/issues/24) for more information.
 
 If you're familiar with [JMH](https://openjdk.java.net/projects/code-tools/jmh/), it is very similar and uses it under 
 the hoods to run benchmarks on JVM.   
