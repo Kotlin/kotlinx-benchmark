@@ -30,8 +30,8 @@ private fun Project.createJsBenchmarkCompileTask(target: JsBenchmarkTarget): Kot
         sourceSet.dependencies {
             implementation(compilation.compileDependencyFiles)
             implementation(compilation.output.allOutputs)
-            implementation(npm("benchmark"))
-            runtimeOnly(npm("source-map-support"))
+            implementation(npm("benchmark", "*"))
+            runtimeOnly(npm("source-map-support", "*"))
         }
         compileKotlinTask.apply {
             group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
