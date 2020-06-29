@@ -91,7 +91,7 @@ fun Project.build(platform: String) = platform(platform, "Build") {
             name = "Build and Test $platform Binaries"
             jdkHome = "%env.$jdk%"
             jvmArgs = "-Xmx1g"
-            tasks = "clean publishToBuildLocal check"
+            tasks = "clean publishToBuildLocal check ${fastBenchmarkTasks(platform).joinToString(separator = " ")}"
             // --continue is needed to run tests for all targets even if one target fails
             gradleParams = "--info --stacktrace -P$versionSuffixParameter=SNAPSHOT -P$teamcitySuffixParameter=%build.counter% --continue"
             buildFile = ""
@@ -101,6 +101,16 @@ fun Project.build(platform: String) = platform(platform, "Build") {
 
     // What files to publish as build artifacts
     artifactRules = "+:build/maven=>maven\n+:build/api=>api"
+}
+
+fun fastBenchmarkTasks(platform: String): List<String> {
+    val nativeFastBenchmark = when(platform) {
+        "Mac OS X" -> "macosX64FastBenchmark"
+        "Linux" -> "linuxX64FastBenchmark"
+        "Windows" -> "mingwX64FastBenchmark"
+        else -> throw IllegalArgumentException("Unknown platform: $platform")
+    }
+    return listOf("jsFastBenchmark", "jvmFastBenchmark", nativeFastBenchmark)
 }
 
 fun BuildType.dependsOn(build: BuildType, configure: Dependency.() -> Unit) =
