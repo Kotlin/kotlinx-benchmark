@@ -14,8 +14,9 @@ the hoods to run benchmarks on JVM.
 
 # Requirements
 
-Gradle 5.1 or newer
-Kotlin 1.3.40 or newer
+Gradle 6.0 or newer
+
+Kotlin 1.4.0 or newer
 
 # Gradle plugin
 
@@ -34,7 +35,7 @@ Use plugin in `build.gradle`:
 
 ```groovy
 plugins {
-    id 'kotlinx.benchmark' version "0.2.0-dev-2"
+    id 'kotlinx.benchmark' version "0.2.0-dev-20"
 }
 ```
 
@@ -47,7 +48,7 @@ buildscript {
         maven { url 'https://dl.bintray.com/kotlin/kotlinx' }
     }
     dependencies {
-        classpath "org.jetbrains.kotlinx:kotlinx.benchmark.gradle:0.2.0-dev-2"
+        classpath "org.jetbrains.kotlinx:kotlinx.benchmark.gradle:0.2.0-dev-20"
     }
 }
  
@@ -67,6 +68,14 @@ kotlin {
 
 For Kotlin/JVM code, add `allopen` plugin to make JMH happy. Alternatively, make all benchmark classes and methods `open`.
 
+For example, if you annotated each of your benchmark classes with `@State(Scope.Benchmark)`:
+```kotlin
+@State(Scope.Benchmark)
+class Benchmark {
+    …
+}
+```
+and added the following code to your `build.gradle`:
 ```groovy
 plugins {
     id 'org.jetbrains.kotlin.plugin.allopen'
@@ -76,6 +85,7 @@ allOpen {
     annotation("org.openjdk.jmh.annotations.State")
 }
 ```
+then you don't have to make benchmark classes and methods `open`. 
 
 # Runtime Library
 
@@ -86,9 +96,21 @@ repositories {
     maven { url 'https://dl.bintray.com/kotlin/kotlinx' }
 }
 
-dependencies {
-    implementation "org.jetbrains.kotlinx:kotlinx.benchmark.runtime" version "0.2.0"
+kotlin {
+    sourceSets {
+        commonMain {
+             dependencies {
+                 implementation("org.jetbrains.kotlinx:kotlinx.benchmark.runtime:0.2.0-dev-20")
+             }
+        }
+    }
 }
+```
+
+To use the library in a JVM-only project add the platform to the artifact name, e.g.:
+
+```groovy
+implementation("org.jetbrains.kotlinx:kotlinx.benchmark.runtime-jvm:0.2.0-dev-20")
 ```
 
 # Configuration
@@ -216,3 +238,8 @@ benchmark {
     }
 }
 ```
+
+# Examples
+
+The project contains [examples](https://github.com/Kotlin/kotlinx-benchmark/tree/master/examples) subproject that demonstrates using the library.
+ 
