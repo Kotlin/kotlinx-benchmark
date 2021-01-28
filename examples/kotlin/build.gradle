@@ -33,7 +33,6 @@ compileTestKotlin {
 // Propagate dependencies from main sourceSet
 // You can add "+ sourceSets.test.output" to include test output as well
 dependencies {
-    api group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlin_version
     implementation(project(":kotlinx.benchmark.runtime"))
     benchmarksCompile sourceSets.main.output + sourceSets.main.runtimeClasspath 
 }

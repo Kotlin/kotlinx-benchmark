@@ -46,9 +46,6 @@ kotlin {
 
     sourceSets {
         commonMain {
-            dependencies {
-                implementation 'org.jetbrains.kotlin:kotlin-stdlib-common'
-            }
         }
         commonTest {
             dependencies {
@@ -58,7 +55,6 @@ kotlin {
         }
         jvmMain {
             dependencies {
-                implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
                 compileOnly "org.openjdk.jmh:jmh-core:$jmhVersion"
             }
         }
@@ -69,11 +65,7 @@ kotlin {
                 implementation "org.openjdk.jmh:jmh-core:$jmhVersion"
             }
         }
-        jsMain {
-            dependencies {
-                implementation 'org.jetbrains.kotlin:kotlin-stdlib-js'
-            }
-        }
+        jsMain {}
         jsTest {
             dependencies {
                 implementation 'org.jetbrains.kotlin:kotlin-test-js'

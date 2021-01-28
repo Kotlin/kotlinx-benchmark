@@ -4,6 +4,8 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.*
 import org.gradle.workers.IsolationMode
+import org.gradle.workers.WorkAction
+import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkerExecutor
 import org.jetbrains.kotlin.builtins.DefaultBuiltIns
 import org.jetbrains.kotlin.config.ApiVersion
@@ -48,46 +50,43 @@ open class NativeSourceGeneratorTask
 
     @TaskAction
     fun generate() {
-        workerExecutor.submit(NativeSourceGeneratorWorker::class.java) { config ->
-            config.isolationMode = IsolationMode.CLASSLOADER
-            //config.classpath = runtimeClasspath
-            config.params(
-                title,
-                nativeTarget,
-                inputClassesDirs.files,
-                inputDependencies.files,
-                outputSourcesDir,
-                outputResourcesDir
-            )
+        val workQueue = workerExecutor.classLoaderIsolation()
+        workQueue.submit(NativeSourceGeneratorWorker::class.java) { parameters ->
+            parameters.title = title
+            parameters.target = nativeTarget
+            parameters.inputClassesDirs = inputClassesDirs.files
+            parameters.inputDependencies = inputDependencies.files
+            parameters.outputSourcesDir = outputSourcesDir
+            parameters.outputResourcesDir = outputResourcesDir
         }
-        workerExecutor.await()
+        workQueue.await()
     }
 }
 
 private val Builtins = DefaultBuiltIns.Instance
 private val NativeFactories = KlibMetadataFactories( { Builtins }, NullFlexibleTypeDeserializer)
 
-class NativeSourceGeneratorWorker
-@Inject constructor(
-    private val title: String,
-    private val target: String,
-    private val inputClassesDirs: Set<File>,
-    private val inputDependencies: Set<File>,
-    private val outputSourcesDir: File,
-    private val outputResourcesDir: File
-) : Runnable {
-    override fun run() {
-        cleanup(outputSourcesDir)
-        cleanup(outputResourcesDir)
+interface NativeSourceGeneratorWorkerParameters: WorkParameters {
+    var title: String
+    var target: String
+    var inputClassesDirs: Set<File>
+    var inputDependencies: Set<File>
+    var outputSourcesDir: File
+    var outputResourcesDir: File
+}
 
-        inputClassesDirs
+abstract class NativeSourceGeneratorWorker : WorkAction<NativeSourceGeneratorWorkerParameters> {
+    override fun execute() {
+        cleanup(parameters.outputSourcesDir)
+        cleanup(parameters.outputResourcesDir)
+        parameters.inputClassesDirs
             .filter { it.exists() && it.name.endsWith(KLIB_FILE_EXTENSION_WITH_DOT) }
             .forEach { lib ->
-                val module = createModuleDescriptor(target, lib, inputDependencies)
+                val module = createModuleDescriptor(parameters.target, lib, parameters.inputDependencies)
                 val generator = SuiteSourceGenerator(
-                    title,
+                        parameters.title,
                     module,
-                    outputSourcesDir,
+                        parameters.outputSourcesDir,
                     Platform.NATIVE
                 )
                 generator.generate()
@@ -105,7 +104,7 @@ class NativeSourceGeneratorWorker
             override fun warning(message: String) {}
             override fun fatal(message: String) = kotlin.error("e: $message")
         }
-        val pathResolver = SeveralKlibComponentResolver(dependencyPaths.map { it.canonicalPath }, listOf(KotlinAbiVersion.CURRENT), logger)
+        val pathResolver = SeveralKlibComponentResolver(dependencyPaths.map { it.canonicalPath }, logger)
         val libraryResolver = pathResolver.libraryResolver()
 
         val factory = NativeFactories.DefaultDeserializedDescriptorFactory
@@ -144,10 +143,9 @@ class NativeSourceGeneratorWorker
 
     private class SeveralKlibComponentResolver(
         klibFiles: List<String>,
-        knownAbiVersions: List<KotlinAbiVersion>?,
         logger: Logger
     ) : KotlinLibraryProperResolverWithAttributes<KotlinLibrary>(
-        emptyList(), klibFiles, knownAbiVersions, emptyList(),
+        emptyList(), klibFiles,
         null, null, false, logger, listOf(KLIB_INTEROP_IR_PROVIDER_IDENTIFIER)
     ) {
         override fun libraryComponentBuilder(

@@ -41,7 +41,6 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation 'org.jetbrains.kotlin:kotlin-stdlib-common'
                 implementation project(":kotlinx.benchmark.runtime")
             }
         }
@@ -51,22 +50,14 @@ kotlin {
                 implementation 'org.jetbrains.kotlin:kotlin-test-annotations-common'
             }
         }
-        jvmMain {
-            dependencies {
-                implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
-            }
-        }
+        jvmMain {}
         jvmTest {
             dependencies {
                 implementation 'org.jetbrains.kotlin:kotlin-test'
                 implementation 'org.jetbrains.kotlin:kotlin-test-junit'
             }
         }
-        jsMain {
-            dependencies {
-                implementation 'org.jetbrains.kotlin:kotlin-stdlib-js'
-            }
-        }
+        jsMain {}
         jsTest {
             dependencies {
                 implementation 'org.jetbrains.kotlin:kotlin-test-js'

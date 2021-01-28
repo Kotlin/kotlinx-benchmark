@@ -67,6 +67,8 @@ private fun Project.createNativeBenchmarkCompileTask(target: NativeBenchmarkTarg
     benchmarkCompilation.apply {
         val sourceSet = kotlinSourceSets.single()
         sourceSet.resources.setSrcDirs(files())
+        // TODO: check if there are other ways to set compiler options.
+        this.kotlinOptions.freeCompilerArgs = compilation.kotlinOptions.freeCompilerArgs
         sourceSet.kotlin.setSrcDirs(files("$benchmarkBuildDir/sources"))
         sourceSet.dependencies {
             implementation(compilation.compileDependencyFiles)
@@ -79,15 +81,12 @@ private fun Project.createNativeBenchmarkCompileTask(target: NativeBenchmarkTarg
             // The release build type is already optimized and non-debuggable.
             executable(benchmarkCompilation.name, listOf(RELEASE)) {
                 this.compilation = benchmarkCompilation
+                this.outputDirectory = file("$benchmarkBuildDir/classes")
                 // A link task's name is linkReleaseExecutable<Target>.
                 linkTask.apply {
                     group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
                     description = "Compile Native benchmark source files for '${compilationTarget.name}'"
                     dependsOn(generateSourceTaskName(target))
-
-                    // It's impossible to change output directory using the binaries DSL.
-                    // See https://youtrack.jetbrains.com/issue/KT-29395
-                    destinationDir = file("$benchmarkBuildDir/classes")
                 }
                 linkTask.onlyIf { compilation.compileKotlinTask.enabled }
                 tasks.getByName(BenchmarksPlugin.ASSEMBLE_BENCHMARKS_TASKNAME).dependsOn(linkTask)

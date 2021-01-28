@@ -16,7 +16,7 @@ the hoods to run benchmarks on JVM.
 
 Gradle 6.0 or newer
 
-Kotlin 1.4.0 or newer
+Kotlin 1.4.30 or newer
 
 # Gradle plugin
 

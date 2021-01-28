@@ -21,7 +21,6 @@ configure<AllOpenExtension> {
 }
 
 dependencies {
-    implementation(kotlin("stdlib-jdk8"))
     implementation(project(":kotlinx.benchmark.runtime"))
 }
 

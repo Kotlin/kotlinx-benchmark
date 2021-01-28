@@ -13,9 +13,6 @@ compileTestKotlin {
 
 dependencies {
     compile group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlin_version
-    compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib', version: kotlin_version
-    compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk7', version: kotlin_version
-    compile group: 'org.jetbrains.kotlin', name: 'kotlin-stdlib-jdk8', version: kotlin_version
 
     testCompile group: 'org.jetbrains.kotlin', name: 'kotlin-test-junit', version: kotlin_version
     testCompile group: 'junit', name: 'junit', version: junit_version
