@@ -80,7 +80,6 @@ abstract class NativeSourceGeneratorWorker : WorkAction<NativeSourceGeneratorWor
         cleanup(parameters.outputSourcesDir)
         cleanup(parameters.outputResourcesDir)
         parameters.inputClassesDirs
-        parameters.inputClassesDirs
             .filter { it.exists() && it.name.endsWith(KLIB_FILE_EXTENSION_WITH_DOT) }
             .forEach { lib ->
                 val module = createModuleDescriptor(parameters.target, lib, parameters.inputDependencies)
