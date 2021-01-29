@@ -68,6 +68,10 @@ class RunnerConfiguration(config: String) {
         "mode"
     ) { Mode.valueOf(it) }
 
+    val iterationMode = singleValueOrNull(
+        "iterationMode"
+    ) { IterationMode.valueOf(it) }
+
 
     private fun parseTimeUnit(text: String) = when (text) {
         BenchmarkTimeUnit.SECONDS.name, "s", "sec" -> BenchmarkTimeUnit.SECONDS
@@ -88,7 +92,8 @@ warmups: $warmups
 iterationTime: $iterationTime            
 iterationTimeUnit: $iterationTimeUnit            
 outputTimeUnit: $outputTimeUnit            
-mode: $mode            
+mode: $mode
+iterationMode: $iterationMode
 """
     }
 }

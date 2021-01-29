@@ -269,7 +269,7 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
 
                         val hasABlackholeParameter = fn.valueParameters.singleOrNull()?.type.toString() == "Blackhole"
                         if (hasABlackholeParameter) {
-                            println("WARNING: Blackhole works correctly only on JVM")
+                            println("WARNING: Blackhole works incorrectly on JS")
 
                             addStatement(
                                 "descriptor.add(%T(%S, descriptor, %N(%T::%N, %T())))",
