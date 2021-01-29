@@ -94,6 +94,7 @@ fun writeParameters(
         config.iterationTimeUnit?.let { appendln("iterationTimeUnit:$it") }
         config.outputTimeUnit?.let { appendln("outputTimeUnit:$it") }
         config.mode?.let { appendln("mode:$it") }
+        config.iterationMode?.let { appendln("iterationMode:$it") }
 
         config.includes.forEach {
             appendln("include:$it")

@@ -24,6 +24,10 @@ expect enum class Mode {
     Throughput, AverageTime
 }
 
+enum class IterationMode {
+    Internal, External
+}
+
 @Target(AnnotationTarget.CLASS)
 expect annotation class OutputTimeUnit(val value: BenchmarkTimeUnit)
 
@@ -45,6 +49,13 @@ fun BenchmarkTimeUnit.toText() = when (this) {
 fun Mode.toText() = when (this) {
     Mode.Throughput -> "thrpt"
     Mode.AverageTime -> "avgt"
+    else -> throw UnsupportedOperationException("$this is not supported")
+}
+
+@Suppress("REDUNDANT_ELSE_IN_WHEN")
+fun IterationMode.toText() = when (this) {
+    IterationMode.External -> "external"
+    IterationMode.Internal -> "internal"
     else -> throw UnsupportedOperationException("$this is not supported")
 }
 
