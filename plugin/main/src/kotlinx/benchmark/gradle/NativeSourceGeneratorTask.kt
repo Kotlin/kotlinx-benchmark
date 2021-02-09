@@ -84,9 +84,9 @@ abstract class NativeSourceGeneratorWorker : WorkAction<NativeSourceGeneratorWor
             .forEach { lib ->
                 val module = createModuleDescriptor(parameters.target, lib, parameters.inputDependencies)
                 val generator = SuiteSourceGenerator(
-                        parameters.title,
+                    parameters.title,
                     module,
-                        parameters.outputSourcesDir,
+                    parameters.outputSourcesDir,
                     Platform.NATIVE
                 )
                 generator.generate()

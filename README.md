@@ -59,7 +59,7 @@ For Kotlin/JS specify building `nodejs` flavour:
 
 ```groovy
 kotlin {
-    js {
+    js(IR) {
         nodejs()
         …
     }   
