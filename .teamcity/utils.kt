@@ -9,8 +9,9 @@ const val versionSuffixParameter = "versionSuffix"
 const val teamcitySuffixParameter = "teamcitySuffix"
 const val releaseVersionParameter = "releaseVersion"
 
-const val bintrayUserName = "orangy"
-const val bintrayToken = "credentialsJSON:9a48193c-d16d-46c7-8751-2fb434b09e07"
+const val bintrayUserName = "%env.BINTRAY_USER%"
+const val bintrayToken = "%env.BINTRAY_API_KEY%"
+const val libraryStagingRepoDescription = "kotlinx.benchmark"
 
 val platforms = Platform.values()
 const val jdk = "JDK_18_x64"
@@ -36,6 +37,8 @@ const val BUILD_CONFIGURE_VERSION_ID = "Build_Version"
 const val BUILD_ALL_ID = "Build_All"
 const val DEPLOY_CONFIGURE_VERSION_ID = "Deploy_Configure"
 const val DEPLOY_PUBLISH_ID = "Deploy_Publish"
+
+val BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID = AbsoluteId("KotlinTools_CreateSonatypeStagingRepository")
 
 class KnownBuilds(private val project: Project) {
     private fun buildWithId(id: String): BuildType {
@@ -103,12 +106,12 @@ fun BuildType.commonConfigure() {
     }
 }
 
-fun BuildType.dependsOn(build: BuildType, configure: Dependency.() -> Unit) =
+fun BuildType.dependsOn(build: IdOwner, configure: Dependency.() -> Unit) =
         apply {
             dependencies.dependency(build, configure)
         }
 
-fun BuildType.dependsOnSnapshot(build: BuildType, onFailure: FailureAction = FailureAction.FAIL_TO_START, configure: SnapshotDependency.() -> Unit = {}) = apply {
+fun BuildType.dependsOnSnapshot(build: IdOwner, onFailure: FailureAction = FailureAction.FAIL_TO_START, configure: SnapshotDependency.() -> Unit = {}) = apply {
     dependencies.dependency(build) {
         snapshot {
             configure()

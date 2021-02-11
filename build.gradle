@@ -16,21 +16,14 @@ apply plugin: 'kotlinx.team.infra'
 
 infra {
     teamcity {
-        bintrayUser = "orangy"
-        bintrayToken = "credentialsJSON:9a48193c-d16d-46c7-8751-2fb434b09e07"
+        libraryStagingRepoDescription = project.name
     }
 
     publishing {
         include(":kotlinx.benchmark.runtime")
 
-        bintray {
-            organization = 'kotlin'
-            repository = 'kotlinx'
-            library = 'kotlinx.benchmark'
-
-            username = findProperty('bintrayUser')
-            password = findProperty('bintrayApiKey')
-        }
+        libraryRepoUrl = "https://github.com/Kotlin/kotlinx-benchmark"
+        sonatype {}
     }
 }
 

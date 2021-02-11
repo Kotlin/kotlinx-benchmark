@@ -20,17 +20,14 @@ apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'kotlinx.team.infra'
 
 infra {
+    teamcity {
+        libraryStagingRepoDescription = project.name
+    }
     publishing {
         include(":")
 
-        bintray {
-            organization = 'kotlin'
-            repository = 'kotlinx'
-            library = 'kotlinx.benchmark'
-
-            username = findProperty('bintrayUser')
-            password = findProperty('bintrayApiKey')
-        }
+        libraryRepoUrl = "https://github.com/Kotlin/kotlinx-benchmark"
+        sonatype {}
     }
 }
 
