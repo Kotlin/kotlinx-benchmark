@@ -4,7 +4,9 @@ import org.gradle.api.*
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.konan.target.*
-import java.io.*
+import java.io.File
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.createTempFile
 
 fun Project.processNativeCompilation(target: NativeBenchmarkTarget) {
     val compilation = target.compilation
@@ -14,6 +16,8 @@ fun Project.processNativeCompilation(target: NativeBenchmarkTarget) {
     }
     
     project.logger.info("Configuring benchmarks for '${target.name}' using Kotlin/Native")
+    
+    configureMultiplatformNativeCompilation(target, compilation)
 
     createNativeBenchmarkGenerateSourceTask(target)
 
@@ -114,28 +118,140 @@ fun Project.createNativeBenchmarkExecTask(
         onlyIf { linkTask.enabled }
 
         val reportsDir = benchmarkReportsDir(config, target)
-        val reportFile = reportsDir.resolve("${target.name}.${config.reportFileExt()}")
+        reportFile = reportsDir.resolve("${target.name}.json")
 
         val executableFile = linkTask.outputFile.get()
         executable = executableFile.absolutePath
-        if (target.workingDir != null)
-            workingDir = File(target.workingDir)
+        this.config = config
+        this.workingDir = target.workingDir?.let { File(it) }
 
         onlyIf { executableFile.exists() }
+        configDir = file(project.buildDir.resolve(target.extension.configsDir).resolve(config.name))
+        configDir.mkdirs()
+
+        val ideaActive = (extensions.extraProperties.get("idea.internal.test") as? String)?.toBoolean() ?: false
+        configFile = writeParameters(target.name, reportFile, if (ideaActive) "xml" else "text", config)
 
         dependsOn(linkTask)
         doFirst {
-            val ideaActive = (extensions.extraProperties.get("idea.internal.test") as? String)?.toBoolean() ?: false
-            args(writeParameters(target.name, reportFile, if (ideaActive) "xml" else "text", config))
             reportsDir.mkdirs()
             logger.lifecycle("Running '${config.name}' benchmarks for '${target.name}'")
         }
     }
 }
 
-open class NativeBenchmarkExec : Exec() {
+open class NativeBenchmarkExec() : DefaultTask() {
 /*
     @Option(option = "filter", description = "Configures the filter for benchmarks to run.")
     var filter: String? = null
 */
+    @Input
+    lateinit var executable: String
+
+    var workingDir: File? = null
+
+    @Input
+    lateinit var configFile: File
+
+    @Input
+    lateinit var config: BenchmarkConfiguration
+
+    @Input
+    lateinit var reportFile: File
+
+    @Input
+    lateinit var configDir: File
+
+    private fun execute(args: Collection<String>) {
+        project.exec {
+            it.executable = executable
+            it.args(args)
+            if (workingDir != null)
+                it.workingDir = workingDir
+        }
+    }
+
+    @ExperimentalPathApi
+    @TaskAction
+    fun run() {
+        // Get full list of running benchmarks
+        execute(listOf(configFile.absolutePath, "--list", configDir.absolutePath))
+        val detailedConfigFiles = project.fileTree(configDir).files.sortedBy { it.absolutePath }
+        val jsonReportParts = mutableListOf<File>()
+
+        detailedConfigFiles.forEach { runConfig ->
+            val runConfigPath = runConfig.absolutePath
+            val lines = runConfig.readLines()
+            require(lines.size > 1) { "Wrong detailed configuration format" }
+            val currentConfigDescription = lines[1]
+
+            // Execute benchmark
+            if (config.iterationMode == "internal") {
+                val jsonFile = createTempFile("bench", ".json").toFile()
+                jsonReportParts.add(jsonFile)
+                execute(listOf(configFile.absolutePath, "--internal", runConfigPath, jsonFile.absolutePath))
+            } else {
+                val iterations = currentConfigDescription.substringAfter("iterations=")
+                    .substringBefore(',').toInt()
+                val warmups = currentConfigDescription.substringAfter("warmups=")
+                    .substringBefore(',').toInt()
+                // Warm up
+                var exceptionDuringExecution = false
+                for(i in 0 until warmups) {
+                    val textResult = createTempFile("bench", ".txt").toFile()
+                    execute(listOf(configFile.absolutePath, "--warmup", runConfigPath, i.toString(), textResult.absolutePath))
+                    val result = textResult.readLines().getOrNull(0)
+                    if (result == "null") {
+                        exceptionDuringExecution = true
+                        break
+                    }
+                }
+                // Execution
+                val iterationResults = mutableListOf<Double>()
+                var iteration = 0
+                while (!exceptionDuringExecution && iteration in 0 until iterations) {
+                    val textResult = createTempFile("bench", ".txt").toFile()
+                    execute(listOf(configFile.absolutePath, runConfigPath, iteration.toString(), textResult.absolutePath))
+                    val result = textResult.readLines()[0]
+                    if (result == "null")
+                        exceptionDuringExecution = true
+                    iterationResults.add(result.toDouble())
+                    iteration++
+                }
+                // Store results
+                if (iterationResults.size == iterations) {
+                    val samplesFile = createTempFile("bench_results").toFile()
+                    samplesFile.printWriter().use { out ->
+                        out.write(iterationResults.joinToString { it.toString() })
+                    }
+                    execute(listOf(configFile.absolutePath, runConfigPath, samplesFile.absolutePath))
+                    jsonReportParts.add(samplesFile)
+                }
+            }
+        }
+        // Complete
+        execute(listOf(configFile.absolutePath, "--complete"))
+        // Merge reports
+        val fullResults = jsonReportParts.map {
+            it.readText()
+        }.joinToString(",", prefix = "[", postfix = "\n]")
+        reportFile.printWriter().use {
+            it.print(fullResults)
+        }
+    }
+}
+
+private fun Project.configureMultiplatformNativeCompilation(
+    target: NativeBenchmarkTarget,
+    compilation: KotlinNativeCompilation
+) {
+    val konanTarget = compilation.target.konanTarget
+
+    // Add runtime library as an implementation dependency to the specified compilation
+    val runtime =
+        dependencies.create("${BenchmarksPlugin.RUNTIME_DEPENDENCY_BASE}-${konanTarget.presetName}:${target.extension.version}")
+
+    compilation.dependencies {
+        //implementation(runtime)
+    }
 }

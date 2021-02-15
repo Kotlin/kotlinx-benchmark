@@ -13,6 +13,7 @@ fun Project.benchmark(configure: Action<BenchmarksExtension>) {
 open class BenchmarksExtension(val project: Project) {
     var buildDir: String = "benchmarks"
     var reportsDir: String = "reports/benchmarks"
+    var configsDir: String = "configs"
 
     val version = BenchmarksPlugin.PLUGIN_VERSION
 

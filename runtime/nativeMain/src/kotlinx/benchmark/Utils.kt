@@ -1,5 +1,6 @@
 package kotlinx.benchmark
 
+import kotlinx.benchmark.native.NativeExecutor
 import kotlinx.cinterop.*
 import platform.posix.*
 
@@ -26,8 +27,17 @@ actual fun saveReport(reportFile: String, report: String) {
     fclose(file)
 }
 
-actual fun String.readConfigFile(): String = buildString {
-    val file = fopen(this@readConfigFile, "rb")
+internal fun writeFile(filePath: String, text: String) {
+    val file = fopen(filePath, "w")
+    try {
+        if (fputs(text, file) == EOF) throw Error("File write error")
+    } finally {
+        fclose(file)
+    }
+}
+
+actual fun String.readFile(): String = buildString {
+    val file = fopen(this@readFile, "rb")
     try {
         memScoped {
             while (true) {
@@ -42,4 +52,19 @@ actual fun String.readConfigFile(): String = buildString {
     } finally {
         fclose(file)
     }
+}
+
+internal fun String.parseBenchmarkConfig(): NativeExecutor.BenchmarkRun {
+    fun String.getElement(name: String) =
+        if (startsWith(name)) {
+            substringAfter("$name: ")
+        } else throw NoSuchElementException("Parameter `$name` is required.")
+
+    val content = readFile()
+    val lines = content.lines().filter { it.isNotEmpty() }
+    require(lines.size == 3, { "Wrong fromat of detailed benchmark configuration file. "})
+    val name = lines[0].getElement("benchmark")
+    val configuration = BenchmarkConfiguration.parse(lines[1].getElement("configuration"))
+    val parameters = lines[2].getElement("parameters").parseMap()
+    return NativeExecutor.BenchmarkRun(name, configuration, parameters)
 }

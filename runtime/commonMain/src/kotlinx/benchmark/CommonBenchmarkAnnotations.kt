@@ -45,6 +45,14 @@ fun BenchmarkTimeUnit.toText() = when (this) {
     else -> throw UnsupportedOperationException("$this is not supported")
 }
 
+fun String.toMode() =
+    when (this) {
+        "thrpt" -> Mode.Throughput
+        "avgt" -> Mode.AverageTime
+        else -> throw UnsupportedOperationException("$this is not supported")
+    }
+
+
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
 fun Mode.toText() = when (this) {
     Mode.Throughput -> "thrpt"

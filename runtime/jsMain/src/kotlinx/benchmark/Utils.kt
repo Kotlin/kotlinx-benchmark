@@ -14,6 +14,6 @@ actual fun saveReport(reportFile: String, report: String) {
     fs.writeFile(reportFile, report) { err -> if (err != null) throw err }
 }
 
-actual fun String.readConfigFile(): String {
+actual fun String.readFile(): String {
     return fs.readFileSync(this, "utf8")
 }
