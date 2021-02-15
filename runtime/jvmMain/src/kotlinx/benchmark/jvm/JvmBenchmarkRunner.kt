@@ -13,7 +13,7 @@ import java.util.concurrent.*
 
 
 fun main(args: Array<String>) {
-    val config = RunnerConfiguration(args[0].readConfigFile())
+    val config = RunnerConfiguration(args[0].readFile())
 
     val jmhOptions = OptionsBuilder()
     config.iterations?.let { jmhOptions.measurementIterations(it) }

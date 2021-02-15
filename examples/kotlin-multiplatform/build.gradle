@@ -94,10 +94,11 @@ benchmark {
         fast { // --> jvmFastBenchmark
             include("Common")
             exclude("long")
-            iterations = 1
+            iterations = 10
             iterationTime = 300 // time in ms per iteration
             iterationTimeUnit = "ms" // time in ms per iteration
             advanced("forks", 1)
+            iterationMode = "internal"
         }
 
         csv {

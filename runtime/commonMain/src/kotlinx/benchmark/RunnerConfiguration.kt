@@ -70,17 +70,7 @@ class RunnerConfiguration(config: String) {
 
     val iterationMode = singleValueOrNull(
         "iterationMode"
-    ) { IterationMode.valueOf(it) }
-
-
-    private fun parseTimeUnit(text: String) = when (text) {
-        BenchmarkTimeUnit.SECONDS.name, "s", "sec" -> BenchmarkTimeUnit.SECONDS
-        BenchmarkTimeUnit.MICROSECONDS.name, "us", "micros" -> BenchmarkTimeUnit.MICROSECONDS
-        BenchmarkTimeUnit.MILLISECONDS.name, "ms", "millis" -> BenchmarkTimeUnit.MILLISECONDS
-        BenchmarkTimeUnit.NANOSECONDS.name, "ns", "nanos" -> BenchmarkTimeUnit.NANOSECONDS
-        BenchmarkTimeUnit.MINUTES.name, "m", "min" -> BenchmarkTimeUnit.MINUTES
-        else -> throw UnsupportedOperationException("Unknown time unit: $text")
-    }
+    ) { IterationMode.valueOf(it.capitalize()) }
 
     override fun toString(): String {
         return """$name -> $reportFile ($traceFormat, $reportFormat)
@@ -98,4 +88,13 @@ iterationMode: $iterationMode
     }
 }
 
-expect fun String.readConfigFile(): String
+internal fun parseTimeUnit(text: String) = when (text) {
+    BenchmarkTimeUnit.SECONDS.name, "s", "sec" -> BenchmarkTimeUnit.SECONDS
+    BenchmarkTimeUnit.MICROSECONDS.name, "us", "micros" -> BenchmarkTimeUnit.MICROSECONDS
+    BenchmarkTimeUnit.MILLISECONDS.name, "ms", "millis" -> BenchmarkTimeUnit.MILLISECONDS
+    BenchmarkTimeUnit.NANOSECONDS.name, "ns", "nanos" -> BenchmarkTimeUnit.NANOSECONDS
+    BenchmarkTimeUnit.MINUTES.name, "m", "min" -> BenchmarkTimeUnit.MINUTES
+    else -> throw UnsupportedOperationException("Unknown time unit: $text")
+}
+
+expect fun String.readFile(): String

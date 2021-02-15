@@ -11,6 +11,6 @@ actual fun saveReport(reportFile: String, report: String) {
     File(reportFile).writeText(report)
 }
 
-actual fun String.readConfigFile(): String {
+actual fun String.readFile(): String {
     return File(this).readText()
 }
