@@ -1,8 +1,6 @@
 buildscript {
     repositories {
-    	maven { url 'https://dl.bintray.com/kotlin/kotlin-dev' }
         mavenCentral()
-        jcenter()
         maven { url 'https://dl.bintray.com/kotlin/kotlinx' }
     }
     dependencies {
@@ -31,9 +29,7 @@ infra {
 }
 
 repositories {
-	maven { url 'https://dl.bintray.com/kotlin/kotlin-dev' }
     mavenCentral()
-    jcenter()
     gradlePluginPortal()
 }
 
