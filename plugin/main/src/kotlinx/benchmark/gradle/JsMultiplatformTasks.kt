@@ -7,8 +7,6 @@ fun Project.processJsCompilation(target: JsBenchmarkTarget) {
     project.logger.info("Configuring benchmarks for '${target.name}' using Kotlin/JS")
     val compilation = target.compilation
 
-    configureMultiplatformJsCompilation(target)
-
     createJsBenchmarkGenerateSourceTask(target, compilation)
 
     val benchmarkCompilation = createJsBenchmarkCompileTask(target)
@@ -64,14 +62,5 @@ private fun Project.createJsBenchmarkGenerateSourceTask(
         inputDependencies = compilationOutput.compileDependencyFiles
         outputResourcesDir = file("$benchmarkBuildDir/resources")
         outputSourcesDir = file("$benchmarkBuildDir/sources")
-    }
-}
-
-private fun Project.configureMultiplatformJsCompilation(target: JsBenchmarkTarget) {
-    // Add runtime library as an implementation dependency to the specified compilation
-    val runtime = dependencies.create("${BenchmarksPlugin.RUNTIME_DEPENDENCY_BASE}-js:${target.extension.version}")
-
-    target.compilation.dependencies {
-        //implementation(runtime)
     }
 }

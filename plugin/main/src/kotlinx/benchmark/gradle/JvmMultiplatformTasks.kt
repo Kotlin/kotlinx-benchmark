@@ -27,11 +27,7 @@ private fun Project.configureMultiplatformJvmCompilation(target: KotlinJvmBenchm
     // Add JMH core library as an implementation dependency to the specified compilation
     val jmhCore = dependencies.create("${BenchmarksPlugin.JMH_CORE_DEPENDENCY}:${target.jmhVersion}")
 
-    // Add runtime library as an implementation dependency to the specified compilation
-    val runtime = dependencies.create("${BenchmarksPlugin.RUNTIME_DEPENDENCY_BASE}-jvm:${target.extension.version}")
-
     target.compilation.dependencies {
         implementation(jmhCore)
-        //implementation(runtime)
     }
 }

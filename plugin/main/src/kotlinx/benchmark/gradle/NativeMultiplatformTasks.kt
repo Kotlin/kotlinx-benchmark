@@ -14,8 +14,6 @@ fun Project.processNativeCompilation(target: NativeBenchmarkTarget) {
     }
     
     project.logger.info("Configuring benchmarks for '${target.name}' using Kotlin/Native")
-    
-    configureMultiplatformNativeCompilation(target, compilation)
 
     createNativeBenchmarkGenerateSourceTask(target)
 
@@ -140,19 +138,4 @@ open class NativeBenchmarkExec : Exec() {
     @Option(option = "filter", description = "Configures the filter for benchmarks to run.")
     var filter: String? = null
 */
-}
-
-private fun Project.configureMultiplatformNativeCompilation(
-    target: NativeBenchmarkTarget,
-    compilation: KotlinNativeCompilation
-) {
-    val konanTarget = compilation.target.konanTarget
-
-    // Add runtime library as an implementation dependency to the specified compilation
-    val runtime =
-        dependencies.create("${BenchmarksPlugin.RUNTIME_DEPENDENCY_BASE}-${konanTarget.presetName}:${target.extension.version}")
-
-    compilation.dependencies {
-        //implementation(runtime)
-    }
 }
