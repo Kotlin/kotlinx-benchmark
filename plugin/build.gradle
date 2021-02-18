@@ -12,6 +12,8 @@ buildscript {
 
 plugins {
     id 'java-gradle-plugin'
+    id 'maven-publish'
+    id 'com.gradle.plugin-publish' version '0.12.0'
 }
 
 apply plugin: 'org.jetbrains.kotlin.jvm'
@@ -31,6 +33,12 @@ infra {
 repositories {
     mavenCentral()
     gradlePluginPortal()
+}
+
+pluginBundle {
+    website = 'https://github.com/Kotlin/kotlinx-benchmark'
+    vcsUrl = 'https://github.com/Kotlin/kotlinx-benchmark.git'
+    tags = ['benchmarking', 'multiplatform', 'kotlin']
 }
 
 gradlePlugin {
