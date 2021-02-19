@@ -27,7 +27,6 @@ infra {
         include(":")
 
         libraryRepoUrl = "https://github.com/Kotlin/kotlinx-benchmark"
-        sonatype {}
     }
 }
 
