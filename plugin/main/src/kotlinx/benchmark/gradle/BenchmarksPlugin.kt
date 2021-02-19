@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.gradle.plugin.*
 @Suppress("unused")
 class BenchmarksPlugin : Plugin<Project> {
     companion object {
-        const val PLUGIN_ID = "kotlinx.benchmark"
+        const val PLUGIN_ID = "org.jetbrains.kotlinx.benchmark"
         const val PLUGIN_VERSION = "0.2.0"
 
         const val BENCHMARKS_TASK_GROUP = "benchmark"

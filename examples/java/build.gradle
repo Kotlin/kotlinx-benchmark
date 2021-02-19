@@ -1,7 +1,17 @@
+buildscript {
+    repositories {
+        mavenLocal()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlinx:benchmark:0.2.0"
+    }
+}
+
 plugins {
     id 'java'
-    id 'kotlinx.benchmark' version '0.2.0' 
 }
+
+apply plugin: 'org.jetbrains.kotlinx.benchmark'
 
 dependencies {
     implementation(project(":kotlinx.benchmark.runtime"))

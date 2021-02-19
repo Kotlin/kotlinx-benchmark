@@ -41,8 +41,10 @@ repositories {
 gradlePlugin {
     plugins {
         benchmarkPlugin {
-            id = "kotlinx.benchmark"
+            id = "org.jetbrains.kotlinx.benchmark"
             implementationClass = "kotlinx.benchmark.gradle.BenchmarksPlugin"
+            displayName = "Gradle plugin for benchmarking"
+            description = "Toolkit for running benchmarks for multiplatform Kotlin code."
         }
     }
 }
