@@ -10,16 +10,12 @@ pluginManagement {
 
 enableFeaturePreview('GRADLE_METADATA')
 
-rootProject.name = 'kotlinx.benchmark'
+rootProject.name = 'kotlinx-benchmark'
 
-includeBuild("plugin") {
-    dependencySubstitution {
-        substitute module('org.jetbrains.kotlinx:benchmark') with project(':')
-    }
-}
+includeBuild("plugin")
 
 include "runtime"
-project(":runtime").name = 'kotlinx.benchmark.runtime'
+project(":runtime").name = 'kotlinx-benchmark-runtime'
 
 include "examples"
 include "examples:kotlin-multiplatform"

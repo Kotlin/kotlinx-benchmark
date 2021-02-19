@@ -1,9 +1,6 @@
 buildscript {
-    repositories {
-        mavenLocal()
-    }
     dependencies {
-        classpath "org.jetbrains.kotlinx:benchmark:0.2.0"
+        classpath "org.jetbrains.kotlinx:kotlinx-benchmark-plugin:0.2.0"
     }
 }
 
@@ -14,7 +11,7 @@ plugins {
 apply plugin: 'org.jetbrains.kotlinx.benchmark'
 
 dependencies {
-    implementation(project(":kotlinx.benchmark.runtime"))
+    implementation(project(":kotlinx-benchmark-runtime"))
 }
 
 benchmark {

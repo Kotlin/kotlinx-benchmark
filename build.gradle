@@ -20,7 +20,7 @@ infra {
     }
 
     publishing {
-        include(":kotlinx.benchmark.runtime")
+        include(":kotlinx-benchmark-runtime")
 
         libraryRepoUrl = "https://github.com/Kotlin/kotlinx-benchmark"
         sonatype {}
@@ -29,6 +29,6 @@ infra {
 
 afterEvaluate {
     gradle.includedBuilds.forEach { included ->
-        project(":kotlinx.benchmark.runtime").tasks.named("publishToMavenLocal") { dependsOn(included.task(":publishToMavenLocal")) }
+        project(":kotlinx-benchmark-runtime").tasks.named("publishToMavenLocal") { dependsOn(included.task(":publishToMavenLocal")) }
     }
 }

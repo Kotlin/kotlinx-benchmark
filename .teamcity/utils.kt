@@ -11,7 +11,7 @@ const val releaseVersionParameter = "releaseVersion"
 
 const val bintrayUserName = "%env.BINTRAY_USER%"
 const val bintrayToken = "%env.BINTRAY_API_KEY%"
-const val libraryStagingRepoDescription = "kotlinx.benchmark"
+const val libraryStagingRepoDescription = "kotlinx-benchmark"
 
 val platforms = Platform.values()
 const val jdk = "JDK_18_x64"

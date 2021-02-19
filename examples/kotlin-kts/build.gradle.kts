@@ -21,7 +21,7 @@ configure<AllOpenExtension> {
 }
 
 dependencies {
-    implementation(project(":kotlinx.benchmark.runtime"))
+    implementation(project(":kotlinx-benchmark-runtime"))
 }
 
 tasks.withType<KotlinCompile> {

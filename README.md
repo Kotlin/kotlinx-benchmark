@@ -100,7 +100,7 @@ kotlin {
     sourceSets {
         commonMain {
              dependencies {
-                 implementation("org.jetbrains.kotlinx:kotlinx.benchmark.runtime:0.2.0-dev-20")
+                 implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.2.0-dev-20")
              }
         }
     }
@@ -110,7 +110,7 @@ kotlin {
 To use the library in a JVM-only project add the platform to the artifact name, e.g.:
 
 ```groovy
-implementation("org.jetbrains.kotlinx:kotlinx.benchmark.runtime-jvm:0.2.0-dev-20")
+implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime-jvm:0.2.0-dev-20")
 ```
 
 # Configuration
