@@ -5,7 +5,7 @@ class RunnerConfiguration(config: String) {
     private val values = config.lines().groupBy({
         it.substringBefore(":")
     }, { it.substringAfter(":", "") })
-    
+
 /*
     init {
         println("Config:")
@@ -15,10 +15,11 @@ class RunnerConfiguration(config: String) {
         println(values)
     }
 */
-    
+
     val name = singleValue("name")
     val reportFile = singleValue("reportFile")
     val traceFormat = singleValue("traceFormat")
+    val reportFormat = singleValue("reportFormat", "json")
 
     val params = mapValues(
         "param", "="
@@ -45,9 +46,13 @@ class RunnerConfiguration(config: String) {
         val values = values[name] ?: return null
         return values.single()
     }
+
     private fun singleValue(name: String): String {
-        val values = values[name] ?: throw NoSuchElementException("Parameter `$name` is required.")
-        return values.single()
+        return singleValueOrNull(name) ?: throw NoSuchElementException("Parameter `$name` is required.")
+    }
+
+    private fun singleValue(name: String, default: String): String {
+        return singleValueOrNull(name) ?: default
     }
 
     private fun mapValues(name: String, delimiter: String): Map<String, List<String>> {
@@ -74,7 +79,7 @@ class RunnerConfiguration(config: String) {
     }
 
     override fun toString(): String {
-        return """$name -> $reportFile ($traceFormat)
+        return """$name -> $reportFile ($traceFormat, $reportFormat)
 params: ${params.entries.joinToString(prefix = "{", postfix = "}") { "${it.key}: ${it.value}" }}
 include: $include
 exclude: $exclude

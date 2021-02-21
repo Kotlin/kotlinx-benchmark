@@ -168,7 +168,8 @@ Available configuration options:
 * `mode` – "thrpt" for measuring operations per time, or "avgt" for measuring time per operation
 * `include("…")` – regular expression to include benchmarks with fully qualified names matching it, as a substring
 * `exclude("…")` – regular expression to exclude benchmarks with fully qualified names matching it, as a substring
-* `param("name", "value1", "value2")` – specify a parameter for a public mutable property `name` annotated with `@Param`
+* `param("name", "value1", "value2")` – specify a parameter for a public mutable property `name` annotated with `@Param`
+* `reportFormat` – format of report, can be `json`(default), `csv`, `scsv` or `text`
   
 Time units can be NANOSECONDS, MICROSECONDS, MILLISECONDS, SECONDS, MINUTES, or their short variants such as "ms" or "ns".  
   

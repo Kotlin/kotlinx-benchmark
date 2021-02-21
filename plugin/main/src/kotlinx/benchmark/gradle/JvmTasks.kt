@@ -99,7 +99,7 @@ fun Project.createJvmBenchmarkExecTask(
 
         val benchmarkBuildDir = benchmarkBuildDir(target)
         val reportsDir = benchmarkReportsDir(config, target)
-        val reportFile = reportsDir.resolve("${target.name}.json")
+        val reportFile = reportsDir.resolve("${target.name}.${config.reportFileExt()}")
         main = "kotlinx.benchmark.jvm.JvmBenchmarkRunnerKt"
 
         if (target.workingDir != null)

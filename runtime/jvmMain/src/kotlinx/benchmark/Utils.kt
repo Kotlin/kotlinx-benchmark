@@ -2,15 +2,13 @@ package kotlinx.benchmark
 
 import java.io.*
 
-actual fun Double.format(precision: Int): String {
-    return "%,.0${precision}f".format(this) //text.replace(Regex("\\B(?=(\\d{3})+(?!\\d))"), ",")
+actual fun Double.format(precision: Int, useGrouping: Boolean): String {
+    return if (useGrouping) "%,.0${precision}f".format(this)
+    else "%.0${precision}f".format(this)
 }
 
-actual fun saveReport(reportFile: String?, results: Collection<ReportBenchmarkResult>) {
-    if (reportFile == null)
-        return
-
-    File(reportFile).writeText(formatJson(results))
+actual fun saveReport(reportFile: String, report: String) {
+    File(reportFile).writeText(report)
 }
 
 actual fun String.readConfigFile(): String {

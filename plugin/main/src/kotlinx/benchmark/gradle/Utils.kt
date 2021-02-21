@@ -82,6 +82,7 @@ fun writeParameters(
         appendln("name:$name")
         appendln("reportFile:$reportFile")
         appendln("traceFormat:$format")
+        config.reportFormat?.let { appendln("reportFormat:$it") }
         config.iterations?.let { appendln("iterations:$it") }
         config.warmups?.let { appendln("warmups:$it") }
         config.iterationTime?.let { appendln("iterationTime:$it") }

@@ -2,7 +2,7 @@ package kotlinx.benchmark
 
 abstract class BenchmarkProgress {
     abstract fun startSuite(suite: String)
-    abstract fun endSuite(suite: String)
+    abstract fun endSuite(suite: String, summary: String)
 
     abstract fun startBenchmark(suite: String, benchmark: String)
     abstract fun endBenchmark(suite: String, benchmark: String, status: FinishStatus, message: String)
@@ -36,10 +36,11 @@ class IntelliJBenchmarkProgress : BenchmarkProgress() {
         println(ijSuiteStart(rootId, suite))
     }
 
-    override fun endSuite(suite: String) {
+    override fun endSuite(suite: String, summary: String) {
         if (currentClass != "") {
             println(ijSuiteFinish(suite, currentClass, currentStatus))
         }
+        println(ijLogOutput(rootId, suite, "$suite summary:\n$summary\n"))
         println(ijSuiteFinish(rootId, suite, suiteStatus))
         println(ijSuiteFinish("", rootId, suiteStatus))
     }
@@ -85,8 +86,10 @@ class ConsoleBenchmarkProgress : BenchmarkProgress() {
 
     }
 
-    override fun endSuite(suite: String) {
+    override fun endSuite(suite: String, summary: String) {
         println()
+        println("$suite summary:")
+        println(summary)
     }
 
     override fun startBenchmark(suite: String, benchmark: String) {

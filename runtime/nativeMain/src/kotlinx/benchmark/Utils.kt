@@ -3,10 +3,12 @@ package kotlinx.benchmark
 import kotlinx.cinterop.*
 import platform.posix.*
 
-actual fun Double.format(precision: Int): String {
+actual fun Double.format(precision: Int, useGrouping: Boolean): String {
     val longPart = toLong()
     val fractional = this - longPart
-    val thousands = longPart.toString().replace(Regex("\\B(?=(\\d{3})+(?!\\d))"), ",")
+    val thousands =
+        if (useGrouping) longPart.toString().replace(Regex("\\B(?=(\\d{3})+(?!\\d))"), ",")
+        else longPart.toString()
     if (precision == 0)
         return thousands
 
@@ -18,12 +20,9 @@ actual fun Double.format(precision: Int): String {
     }
 }
 
-actual fun saveReport(reportFile: String?, results: Collection<ReportBenchmarkResult>) {
-    if (reportFile == null)
-        return
-
+actual fun saveReport(reportFile: String, report: String) {
     val file = fopen(reportFile, "w")
-    fputs(formatJson(results), file)
+    fputs(report, file)
     fclose(file)
 }
 

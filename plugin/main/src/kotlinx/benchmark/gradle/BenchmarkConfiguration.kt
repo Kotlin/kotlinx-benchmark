@@ -10,6 +10,7 @@ open class BenchmarkConfiguration(val extension: BenchmarksExtension, val name: 
     var iterationTimeUnit: String? = null
     var mode: String? = null
     var outputTimeUnit: String? = null
+    var reportFormat: String? = null
 
     var includes: MutableList<String> = mutableListOf()
     var excludes: MutableList<String> = mutableListOf()
@@ -32,9 +33,10 @@ open class BenchmarkConfiguration(val extension: BenchmarksExtension, val name: 
     fun advanced(name: String, value: Any?) {
         advanced[name] = value
     }
-    
+
     fun capitalizedName() = if (name == "main") "" else name.capitalize()
     fun prefixName(suffix: String) = if (name == "main") suffix else name + suffix.capitalize()
+    fun reportFileExt(): String = reportFormat?.toLowerCase() ?: "json"
 }
 
 open class BenchmarkTarget(val extension: BenchmarksExtension, val name: String) {
