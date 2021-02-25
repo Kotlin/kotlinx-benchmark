@@ -2,6 +2,14 @@
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0)
 [![Download](https://api.bintray.com/packages/kotlin/kotlinx/kotlinx.benchmark/images/download.svg) ](https://bintray.com/kotlin/kotlinx/kotlinx.benchmark/_latestVersion)
 
+
+> **_NOTE:_** &nbsp; The latest version of the library changes how the plugin and runtime library dependencies are declared:
+> * The library runtime is published to Maven Central and no longer published to Bintray.
+> * The Gradle plugin is published to Gradle Plugin Portal
+> * The Gradle plugin id has changed to `org.jetbrains.kotlinx.benchmark`
+> * The library runtime artifact id has changed to `kotlinx-benchmark-runtime`
+
+
 **kotlinx.benchmark** is a toolkit for running benchmarks for multiplatform code written in Kotlin 
 and running on the next supported targets: JVM, JavaScript.
 
@@ -14,45 +22,18 @@ the hoods to run benchmarks on JVM.
 
 # Requirements
 
-Gradle 6.0 or newer
+Gradle 6.8 or newer
 
 Kotlin 1.4.30 or newer
 
 # Gradle plugin
 
-Add repository in `settings.gradle` to enable bintray repository for plugin lookup
-
-```groovy
-pluginManagement {
-    repositories {
-        maven { url 'https://dl.bintray.com/kotlin/kotlinx' }
-        gradlePluginPortal()
-    }
-}
-```
-
 Use plugin in `build.gradle`:
 
 ```groovy
 plugins {
-    id 'kotlinx.benchmark' version "0.2.0-dev-20"
+    id 'org.jetbrains.kotlinx.benchmark' version '0.3.0'
 }
-```
-
-Alternatively, you can use build script dependencies and "apply plugin" syntax:
-
-```groovy
-buildscript {
-    repositories {
-        …
-        maven { url 'https://dl.bintray.com/kotlin/kotlinx' }
-    }
-    dependencies {
-        classpath "org.jetbrains.kotlinx:kotlinx.benchmark.gradle:0.2.0-dev-20"
-    }
-}
- 
-apply plugin: 'kotlinx.benchmark'
 ```
 
 For Kotlin/JS specify building `nodejs` flavour:
@@ -89,28 +70,26 @@ then you don't have to make benchmark classes and methods `open`.
 
 # Runtime Library
 
-You need a runtime library with annotations and code that will run benchmarks on JavaScript and Native platforms.
+You need a runtime library with annotations and code that will run benchmarks.
 
+Enable Maven Central for dependencies lookup:
 ```groovy
 repositories {
-    maven { url 'https://dl.bintray.com/kotlin/kotlinx' }
+    mavenCentral()
 }
+```
 
+Add the runtime to dependencies of the platform source set, e.g.:
+```  
 kotlin {
     sourceSets {
         commonMain {
              dependencies {
-                 implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.2.0-dev-20")
+                 implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.3.0")
              }
         }
     }
 }
-```
-
-To use the library in a JVM-only project add the platform to the artifact name, e.g.:
-
-```groovy
-implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime-jvm:0.2.0-dev-20")
 ```
 
 # Configuration
