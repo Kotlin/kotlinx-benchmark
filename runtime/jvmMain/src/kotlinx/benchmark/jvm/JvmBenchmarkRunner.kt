@@ -79,10 +79,10 @@ class JmhOutputFormat(private val reporter: BenchmarkProgress, private val suite
 
     override fun endRun(result: Collection<RunResult>) {
         val summary = ByteArrayOutputStream().apply {
-            PrintStream(this, true, Charsets.UTF_8).use {
+            PrintStream(this, true, "UTF-8").use {
                 ResultFormatFactory.getInstance(ResultFormatType.TEXT, it).writeOut(result)
             }
-        }.toString(Charsets.UTF_8)
+        }.toString("UTF-8")
         reporter.endSuite(suiteName, summary)
     }
 
