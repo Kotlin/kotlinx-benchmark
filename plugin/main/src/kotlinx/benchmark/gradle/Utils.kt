@@ -77,6 +77,7 @@ fun writeParameters(
     format: String,
     config: BenchmarkConfiguration
 ): File {
+    validateConfig(config)
     val file = createTempFile("benchmarks")
     file.writeText(buildString {
         appendln("name:$name")
@@ -106,3 +107,11 @@ fun writeParameters(
     return file
 }
 
+private fun validateConfig(config: BenchmarkConfiguration) {
+    config.reportFormat?.let {
+        require(it.toLowerCase() in setOf("json", "csv", "scsv", "text")) {
+            "Report format '$it' is not supported."
+        }
+    }
+
+}

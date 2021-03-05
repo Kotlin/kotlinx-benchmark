@@ -125,11 +125,11 @@ private class CsvBenchmarkReportFormatter(val delimiter: String) : BenchmarkRepo
         appendEscaped("Threads").append(delimiter)
         appendEscaped("Samples").append(delimiter)
         appendEscaped("Score").append(delimiter)
-        appendEscaped("Score Error (99.9%)").append(delimiter) //TODO
+        appendEscaped("Score Error (99.9%)").append(delimiter)
         appendEscaped("Unit")
         params.forEach {
             append(delimiter)
-            append("Param: $it")
+            appendEscaped("Param: $it")
         }
         append("\r\n")
     }

@@ -99,6 +99,15 @@ benchmark {
             iterationTimeUnit = "ms" // time in ms per iteration
             advanced("forks", 1)
         }
+
+        csv {
+            include("Common")
+            exclude("long")
+            iterations = 1
+            iterationTime = 300
+            iterationTimeUnit = "ms"
+            reportFormat = "csv" // csv report format
+        }
     }
 
     // Setup configurations
