@@ -86,12 +86,16 @@ class ReportBenchmarksStatistics(values: DoubleArray) {
     }
 }
 
-expect fun Double.format(precision: Int): String
+expect fun Double.format(precision: Int, useGrouping: Boolean = true): String
 
 fun Double.formatSignificant(precision: Int): String {
     val d = (precision - ceil(log10(this)).toInt()).coerceAtLeast(0) // display 4 significant digits
     return format(d)
 }
+
+private val zeroThreshold = 1.0 / 10.0.pow(3) / 2 // from jmh
+fun Double.isNaNOrZero(): Boolean = isNaN() || isApproximateZero()
+fun Double.isApproximateZero(): Boolean = this < zeroThreshold
 
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
 fun Double.nanosToText(mode: Mode, unit: BenchmarkTimeUnit): String {

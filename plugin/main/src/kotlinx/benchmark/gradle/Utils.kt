@@ -77,11 +77,13 @@ fun writeParameters(
     format: String,
     config: BenchmarkConfiguration
 ): File {
+    validateConfig(config)
     val file = createTempFile("benchmarks")
     file.writeText(buildString {
         appendln("name:$name")
         appendln("reportFile:$reportFile")
         appendln("traceFormat:$format")
+        config.reportFormat?.let { appendln("reportFormat:$it") }
         config.iterations?.let { appendln("iterations:$it") }
         config.warmups?.let { appendln("warmups:$it") }
         config.iterationTime?.let { appendln("iterationTime:$it") }
@@ -105,3 +107,11 @@ fun writeParameters(
     return file
 }
 
+private fun validateConfig(config: BenchmarkConfiguration) {
+    config.reportFormat?.let {
+        require(it.toLowerCase() in setOf("json", "csv", "scsv", "text")) {
+            "Report format '$it' is not supported."
+        }
+    }
+
+}

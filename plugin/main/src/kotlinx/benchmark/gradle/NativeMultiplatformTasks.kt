@@ -114,7 +114,7 @@ fun Project.createNativeBenchmarkExecTask(
         onlyIf { linkTask.enabled }
 
         val reportsDir = benchmarkReportsDir(config, target)
-        val reportFile = reportsDir.resolve("${target.name}.json")
+        val reportFile = reportsDir.resolve("${target.name}.${config.reportFileExt()}")
 
         val executableFile = linkTask.outputFile.get()
         executable = executableFile.absolutePath

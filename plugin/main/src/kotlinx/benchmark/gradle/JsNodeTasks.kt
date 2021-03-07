@@ -20,7 +20,7 @@ fun Project.createJsBenchmarkExecTask(
         extensions.extraProperties.set("idea.internal.test", System.getProperty("idea.active"))
 
         val reportsDir = benchmarkReportsDir(config, target)
-        val reportFile = reportsDir.resolve("${target.name}.json")
+        val reportFile = reportsDir.resolve("${target.name}.${config.reportFileExt()}")
 
         val executableFile = compilation.compileKotlinTask.outputFile
         args("-r", "source-map-support/register")

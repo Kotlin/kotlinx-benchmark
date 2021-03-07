@@ -45,16 +45,17 @@ fun main(args: Array<String>) {
     val jvmArgs = runtimeMXBean.inputArguments
     when {
         jvmArgs.any { it.contains("libasyncProfiler") } -> jmhOptions.forks(0)
-        config.forks == null -> jmhOptions.forks(1) 
-        config.forks > 0 -> jmhOptions.forks(config.forks) 
+        config.forks == null -> jmhOptions.forks(1)
+        config.forks > 0 -> jmhOptions.forks(config.forks)
     }
 
+    val reportFormat = ResultFormatType.valueOf(config.reportFormat.toUpperCase())
     val reporter = BenchmarkProgress.create(config.traceFormat)
     val output = JmhOutputFormat(reporter, config.name)
     try {
         val runner = Runner(jmhOptions.build(), output)
         val results = runner.run()
-        val resultFormat = ResultFormatFactory.getInstance(ResultFormatType.JSON, PrintStream(File(config.reportFile)))
+        val resultFormat = ResultFormatFactory.getInstance(reportFormat, PrintStream(File(config.reportFile)))
         resultFormat.writeOut(results)
     } catch (e: Exception) {
         e.printStackTrace()
@@ -77,7 +78,12 @@ class JmhOutputFormat(private val reporter: BenchmarkProgress, private val suite
     }
 
     override fun endRun(result: Collection<RunResult>) {
-        reporter.endSuite(suiteName)
+        val summary = ByteArrayOutputStream().apply {
+            PrintStream(this, true, "UTF-8").use {
+                ResultFormatFactory.getInstance(ResultFormatType.TEXT, it).writeOut(result)
+            }
+        }.toString("UTF-8")
+        reporter.endSuite(suiteName, summary)
     }
 
     override fun startBenchmark(benchParams: BenchmarkParams) {

@@ -5,6 +5,8 @@ abstract class SuiteExecutor(val executionName: String, arguments: Array<out Str
 
     val reporter = BenchmarkProgress.create(config.traceFormat)
 
+    private val reportFormatter = BenchmarkReportFormatter.create(config.reportFormat)
+
     private val results = mutableListOf<ReportBenchmarkResult>()
 
     private val suites = mutableListOf<SuiteDescriptor<*>>()
@@ -32,8 +34,9 @@ abstract class SuiteExecutor(val executionName: String, arguments: Array<out Str
         }
 
         run(config, reporter, benchmarks) {
-            reporter.endSuite(executionName)
-            saveReport(config.reportFile, results)
+            val summary = TextBenchmarkReportFormatter.format(results)
+            reporter.endSuite(executionName, summary)
+            saveReport(config.reportFile, reportFormatter.format(results))
         }
     }
 
