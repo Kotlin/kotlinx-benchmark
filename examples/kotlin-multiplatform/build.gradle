@@ -24,10 +24,12 @@ kotlin {
         }
     }
 
-    js {
-        nodejs {
-            
-        }
+    js('jsIr', IR) {
+        nodejs()
+    }
+
+    js('jsLegacy', LEGACY) {
+        nodejs()
     }
 
     sourceSets.all {
@@ -57,11 +59,19 @@ kotlin {
                 implementation 'org.jetbrains.kotlin:kotlin-test-junit'
             }
         }
-        jsMain {}
+        jsMain {
+            dependsOn commonMain
+        }
         jsTest {
             dependencies {
                 implementation 'org.jetbrains.kotlin:kotlin-test-js'
             }
+        }
+        jsIrMain {
+            dependsOn jsMain
+        }
+        jsLegacyMain {
+            dependsOn jsMain
         }
 
         nativeMain {
@@ -78,14 +88,14 @@ benchmark {
         main { // --> jvmBenchmark/jsBenchmark + benchmark
             iterations = 5 // number of iterations
             iterationTime = 300
-            iterationTimeUnit = "ms"
+            iterationTimeUnit = "millis" //TODO js ir can't parse it
             advanced("forks", 3)
         }
 
         params {
             iterations = 5 // number of iterations
             iterationTime = 300
-            iterationTimeUnit = "ms"
+            iterationTimeUnit = "millis"
             include("ParamBenchmark")
             param("data", 5, 1, 8)
             param("unused", 6, 9)
@@ -96,7 +106,7 @@ benchmark {
             exclude("long")
             iterations = 1
             iterationTime = 300 // time in ms per iteration
-            iterationTimeUnit = "ms" // time in ms per iteration
+            iterationTimeUnit = "millis" // time in ms per iteration
             advanced("forks", 1)
         }
 
@@ -105,7 +115,7 @@ benchmark {
             exclude("long")
             iterations = 1
             iterationTime = 300
-            iterationTimeUnit = "ms"
+            iterationTimeUnit = "millis"
             reportFormat = "csv" // csv report format
         }
     }
@@ -116,7 +126,8 @@ benchmark {
         register("jvm") {
             jmhVersion = "1.21"
         }
-        register("js")
+        register("jsIr")
+        register("jsLegacy")
         register("native")
         register("macosX64")
         register("linuxX64")
