@@ -16,8 +16,6 @@ fun Project.processNativeCompilation(target: NativeBenchmarkTarget) {
     }
     
     project.logger.info("Configuring benchmarks for '${target.name}' using Kotlin/Native")
-    
-    configureMultiplatformNativeCompilation(target, compilation)
 
     createNativeBenchmarkGenerateSourceTask(target)
 
@@ -126,8 +124,8 @@ fun Project.createNativeBenchmarkExecTask(
         this.workingDir = target.workingDir?.let { File(it) }
 
         onlyIf { executableFile.exists() }
-        configDir = file(project.buildDir.resolve(target.extension.configsDir).resolve(config.name))
-        configDir.mkdirs()
+        benchsDescriptionDir = file(project.buildDir.resolve(target.extension.benchsDescriptionDir).resolve(config.name))
+        benchsDescriptionDir.mkdirs()
 
         val ideaActive = (extensions.extraProperties.get("idea.internal.test") as? String)?.toBoolean() ?: false
         configFile = writeParameters(target.name, reportFile, if (ideaActive) "xml" else "text", config)
@@ -160,7 +158,7 @@ open class NativeBenchmarkExec() : DefaultTask() {
     lateinit var reportFile: File
 
     @Input
-    lateinit var configDir: File
+    lateinit var benchsDescriptionDir: File
 
     private fun execute(args: Collection<String>) {
         project.exec {
@@ -175,8 +173,8 @@ open class NativeBenchmarkExec() : DefaultTask() {
     @TaskAction
     fun run() {
         // Get full list of running benchmarks
-        execute(listOf(configFile.absolutePath, "--list", configDir.absolutePath))
-        val detailedConfigFiles = project.fileTree(configDir).files.sortedBy { it.absolutePath }
+        execute(listOf(configFile.absolutePath, "--list", benchsDescriptionDir.absolutePath))
+        val detailedConfigFiles = project.fileTree(benchsDescriptionDir).files.sortedBy { it.absolutePath }
         val jsonReportParts = mutableListOf<File>()
 
         detailedConfigFiles.forEach { runConfig ->
@@ -186,7 +184,7 @@ open class NativeBenchmarkExec() : DefaultTask() {
             val currentConfigDescription = lines[1]
 
             // Execute benchmark
-            if (config.iterationMode == "internal") {
+            if (config.nativeIterationMode == "internal") {
                 val jsonFile = createTempFile("bench", ".json").toFile()
                 jsonReportParts.add(jsonFile)
                 execute(listOf(configFile.absolutePath, "--internal", runConfigPath, jsonFile.absolutePath))
@@ -238,20 +236,5 @@ open class NativeBenchmarkExec() : DefaultTask() {
         reportFile.printWriter().use {
             it.print(fullResults)
         }
-    }
-}
-
-private fun Project.configureMultiplatformNativeCompilation(
-    target: NativeBenchmarkTarget,
-    compilation: KotlinNativeCompilation
-) {
-    val konanTarget = compilation.target.konanTarget
-
-    // Add runtime library as an implementation dependency to the specified compilation
-    val runtime =
-        dependencies.create("${BenchmarksPlugin.RUNTIME_DEPENDENCY_BASE}-${konanTarget.presetName}:${target.extension.version}")
-
-    compilation.dependencies {
-        //implementation(runtime)
     }
 }

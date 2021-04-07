@@ -146,7 +146,7 @@ Available configuration options:
 * `iterationTimeUnit` – time unit for `iterationTime` (default is seconds)
 * `outputTimeUnit` – time unit for results output
 * `mode` – "thrpt" for measuring operations per time, or "avgt" for measuring time per operation
-* `iterationMode` – "external" for iterating in gradle in order to get correct Kotlin/Native runtime input in measurement,
+* `nativeIterationMode` – "external" for iterating in gradle in order to get correct Kotlin/Native runtime input in measurement,
  "internal" can be used if it's known that measured code have no calls in K/N runtime that can influence on measurement unrepeatedly.
 * `include("…")` – regular expression to include benchmarks with fully qualified names matching it, as a substring
 * `exclude("…")` – regular expression to exclude benchmarks with fully qualified names matching it, as a substring

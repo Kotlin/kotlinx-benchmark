@@ -29,6 +29,7 @@ internal object TextBenchmarkReportFormatter : BenchmarkReportFormatter() {
         val paramLengths = paramNames.associateWith { paramName ->
             max(paramName.length + 2, results.mapNotNull { it.params[paramName] }.maxOf { it.length }) + padding
         }
+
         val modeLength = columnLength("Mode") { it.config.mode.toText() } + padding
         val samplesLength = columnLength("Cnt") { it.values.size.toString() } + padding
         val scopeLength = columnLength("Score") { it.score.format(3, useGrouping = false) } + padding
@@ -156,12 +157,12 @@ private class CsvBenchmarkReportFormatter(val delimiter: String) : BenchmarkRepo
 
 }
 
-private object JsonBenchmarkReportFormatter : BenchmarkReportFormatter() {
+object JsonBenchmarkReportFormatter : BenchmarkReportFormatter() {
 
     override fun format(results: Collection<ReportBenchmarkResult>): String =
         results.joinToString(",", prefix = "[", postfix = "\n]", transform = this::format)
 
-    private fun format(result: ReportBenchmarkResult): String =
+    fun format(result: ReportBenchmarkResult): String =
         """
   {
     "benchmark" : "${result.benchmark.name}",
@@ -173,6 +174,7 @@ private object JsonBenchmarkReportFormatter : BenchmarkReportFormatter() {
     "params" : {
           ${result.params.entries.joinToString(separator = ",\n          ") { "\"${it.key}\" : \"${it.value}\"" }}
     },
+    "nativeIterationMode" : "${result.config.nativeIterationMode.toText()}",
     "primaryMetric" : {
        "score": ${result.score},
        "scoreError": ${result.error},

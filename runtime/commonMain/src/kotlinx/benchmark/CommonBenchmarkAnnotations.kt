@@ -24,7 +24,7 @@ expect enum class Mode {
     Throughput, AverageTime
 }
 
-enum class IterationMode {
+enum class NativeIterationMode {
     Internal, External
 }
 
@@ -61,9 +61,9 @@ fun Mode.toText() = when (this) {
 }
 
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
-fun IterationMode.toText() = when (this) {
-    IterationMode.External -> "external"
-    IterationMode.Internal -> "internal"
+fun NativeIterationMode.toText() = when (this) {
+    NativeIterationMode.External -> "external"
+    NativeIterationMode.Internal -> "internal"
     else -> throw UnsupportedOperationException("$this is not supported")
 }
 

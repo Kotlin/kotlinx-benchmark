@@ -7,7 +7,7 @@ class BenchmarkConfiguration private constructor(
     val iterationTimeUnit: BenchmarkTimeUnit,
     val outputTimeUnit: BenchmarkTimeUnit,
     val mode: Mode,
-    val iterationMode: IterationMode) {
+    val nativeIterationMode: NativeIterationMode) {
 
     constructor(runner: RunnerConfiguration, suite: SuiteDescriptor<*>) : this(
         runner.iterations ?: suite.iterations,
@@ -16,13 +16,13 @@ class BenchmarkConfiguration private constructor(
         runner.iterationTimeUnit ?: suite.iterationTime.timeUnit,
         runner.outputTimeUnit ?: suite.outputTimeUnit,
         runner.mode ?: suite.mode,
-        runner.iterationMode ?: IterationMode.External
+        runner.nativeIterationMode ?: NativeIterationMode.External
     )
 
     override fun toString() =
         "iterations=$iterations, warmups=$warmups, iterationTime=$iterationTime, " +
                 "iterationTimeUnit=${iterationTimeUnit.toText()}, outputTimeUnit=${outputTimeUnit.toText()}, " +
-                "mode=${mode.toText()}, iterationMode=${iterationMode.toText()}"
+                "mode=${mode.toText()}, nativeIterationMode=${nativeIterationMode.toText()}"
 
     companion object {
         fun parse(description: String): BenchmarkConfiguration {
@@ -38,7 +38,7 @@ class BenchmarkConfiguration private constructor(
                 parseTimeUnit(getParameterValue("iterationTimeUnit")),
                 parseTimeUnit(getParameterValue("outputTimeUnit")),
                 getParameterValue("mode").toMode(),
-                IterationMode.valueOf(getParameterValue("iterationMode").capitalize())
+                NativeIterationMode.valueOf(getParameterValue("nativeIterationMode").capitalize())
             )
         }
     }
