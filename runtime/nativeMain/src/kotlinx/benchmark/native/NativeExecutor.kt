@@ -86,7 +86,7 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
         benchmark.suite.setup(instance)
 
         var exception: Throwable? = null
-        val iterations = if (benchmarkRun.config.iterationMode == IterationMode.External) 1 else benchmarkRun.config.iterations
+        val iterations = if (benchmarkRun.config.nativeIterationMode == NativeIterationMode.External) 1 else benchmarkRun.config.iterations
         val samples = try {
             // Execute warmup
             val cycles = warmup(suite.name, benchmarkRun.config, instance, benchmark)
@@ -136,7 +136,7 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
             message
         )
         result(result)
-        fileName?.let { writeFile(it, formatJson(result)) }
+        fileName?.let { writeFile(it, JsonBenchmarkReportFormatter.format(result)) }
     }
 
     fun storeResults(benchmarks: List<BenchmarkDescriptor<Any?>>) {
@@ -201,7 +201,7 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
         currentIteration: Int? = null
     ): Int {
         var iterations = 0
-        val warmupIterations = if (config.iterationMode == IterationMode.External) 1 else config.warmups
+        val warmupIterations = if (config.nativeIterationMode == NativeIterationMode.External) 1 else config.warmups
         repeat(warmupIterations) { iteration ->
             val benchmarkNanos = config.iterationTime * config.iterationTimeUnit.toMultiplier()
             val executeFunction = benchmark.function
@@ -219,7 +219,7 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
             val metric = time.toDouble() / iterations // TODO: metric
             val sample = metric.nanosToText(config.mode, config.outputTimeUnit)
             val iterationNumber = currentIteration ?: iteration
-            if (config.iterationMode == IterationMode.Internal || currentIteration != null)
+            if (config.nativeIterationMode == NativeIterationMode.Internal || currentIteration != null)
                 reporter.output(name, benchmark.name, "Warm-up #$iterationNumber: $sample")
         }
         return iterations

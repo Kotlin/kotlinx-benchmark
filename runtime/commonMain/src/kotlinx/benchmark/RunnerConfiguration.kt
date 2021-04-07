@@ -68,9 +68,9 @@ class RunnerConfiguration(config: String) {
         "mode"
     ) { Mode.valueOf(it) }
 
-    val iterationMode = singleValueOrNull(
-        "iterationMode"
-    ) { IterationMode.valueOf(it.capitalize()) }
+    val nativeIterationMode = singleValueOrNull(
+        "nativeIterationMode"
+    ) { NativeIterationMode.valueOf(it.capitalize()) }
 
     override fun toString(): String {
         return """$name -> $reportFile ($traceFormat, $reportFormat)
@@ -83,7 +83,7 @@ iterationTime: $iterationTime
 iterationTimeUnit: $iterationTimeUnit            
 outputTimeUnit: $outputTimeUnit            
 mode: $mode
-iterationMode: $iterationMode
+nativeIterationMode: $nativeIterationMode
 """
     }
 }
