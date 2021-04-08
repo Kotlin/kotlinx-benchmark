@@ -72,7 +72,8 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
         reporter.startBenchmark(executionName, id)
         val samples = run(benchmark, benchmarkRun)
         if (samples != null) {
-            saveBenchmarkResults(benchmark, benchmarkRun, samples, resultsFile)
+            writeFile(resultsFile, samples.joinToString())
+            saveBenchmarkResults(benchmark, benchmarkRun, samples)
         }
     }
 
@@ -107,16 +108,17 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
         } finally {
             benchmark.suite.teardown(instance)
         }
-        exception?.let {
+        if (exception != null) {
             val error = exception.toString()
             val stacktrace = exception.stacktrace()
             reporter.endBenchmarkException(executionName, id, error, stacktrace)
             return null
-        } ?: return samples
+        }
+        return samples
     }
 
     private fun saveBenchmarkResults(benchmark: BenchmarkDescriptor<Any?>, benchmarkRun: BenchmarkRun,
-                              samples: DoubleArray, fileName: String? = null) {
+                              samples: DoubleArray) {
         val id = id(benchmark.name, benchmarkRun.parameters)
         val result = ReportBenchmarksStatistics.createResult(benchmark, benchmarkRun.parameters, benchmarkRun.config, samples)
         val message = with(result) {
@@ -136,15 +138,20 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
             message
         )
         result(result)
-        fileName?.let { writeFile(it, JsonBenchmarkReportFormatter.format(result)) }
     }
 
-    fun storeResults(benchmarks: List<BenchmarkDescriptor<Any?>>) {
-        val (configFileName, fileName) = additionalArguments
-        val benchmarkRun = configFileName.parseBenchmarkConfig()
-        val benchmark = benchmarks.getBenchmark(benchmarkRun.benchmarkName)
-        val samples = fileName.readFile().split(", ").map { it.toDouble() }.toDoubleArray()
-        saveBenchmarkResults(benchmark, benchmarkRun, samples, fileName)
+    private fun storeResults(benchmarks: List<BenchmarkDescriptor<Any?>>, complete: () -> Unit) {
+        val (_, resultsFileName) = additionalArguments
+        resultsFileName.readFile().split("\n").filter { it.isNotEmpty() }.forEach {
+            val (configFileName, samplesList) = it.split(": ")
+            val samples = samplesList.split(", ").map { it.toDouble() }.toDoubleArray()
+            val benchmarkRun = configFileName.parseBenchmarkConfig()
+            val benchmark = benchmarks.getBenchmark(benchmarkRun.benchmarkName)
+            val result = ReportBenchmarksStatistics.createResult(benchmark, benchmarkRun.parameters,
+                benchmarkRun.config, samples)
+            result(result)
+        }
+        complete()
     }
 
     override fun run(
@@ -154,18 +161,24 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
         start: () -> Unit,
         complete: () -> Unit
     ) {
-        when(additionalArguments.size) {
-            1 -> complete()
-            2 -> when (additionalArguments.first()) {
-                "--list" -> outputBenchmarks(runnerConfiguration, benchmarks, start)
-                else -> storeResults(benchmarks)
-            }
-            3 -> when (additionalArguments.first()) {
-                "--internal" -> runBenchmark(benchmarks)
-                else -> runBenchmarkIteration(benchmarks)
-            }
-            4 -> runBenchmarkWarmup(benchmarks)
+        val knownActions = mapOf(
+            "--list" to 2,
+            "--store-results" to 2,
+            "--internal" to 3,
+            "--iteration" to 4,
+            "--warmup" to 5
+        )
 
+        val action = additionalArguments.first()
+        if (action !in knownActions.keys)
+            throw NoSuchElementException("Action $action isn't found in the list of possible actions ${knownActions.keys}.")
+        require(knownActions[action] == additionalArguments.size)
+        when (action) {
+            "--list" -> outputBenchmarks(runnerConfiguration, benchmarks, start)
+            "--store-results" -> storeResults(benchmarks, complete)
+            "--internal" -> runBenchmark(benchmarks)
+            "--iteration" -> runBenchmarkIteration(benchmarks)
+            "--warmup" -> runBenchmarkWarmup(benchmarks)
         }
     }
     
