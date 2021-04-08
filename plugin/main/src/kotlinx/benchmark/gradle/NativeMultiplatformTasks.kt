@@ -176,6 +176,7 @@ open class NativeBenchmarkExec() : DefaultTask() {
         execute(listOf(configFile.absolutePath, "--list", benchsDescriptionDir.absolutePath))
         val detailedConfigFiles = project.fileTree(benchsDescriptionDir).files.sortedBy { it.absolutePath }
         val jsonReportParts = mutableListOf<File>()
+        val runResults = mutableMapOf<String, String>()
 
         detailedConfigFiles.forEach { runConfig ->
             val runConfigPath = runConfig.absolutePath
@@ -185,9 +186,11 @@ open class NativeBenchmarkExec() : DefaultTask() {
 
             // Execute benchmark
             if (config.nativeIterationMode == "internal") {
-                val jsonFile = createTempFile("bench", ".json").toFile()
-                jsonReportParts.add(jsonFile)
-                execute(listOf(configFile.absolutePath, "--internal", runConfigPath, jsonFile.absolutePath))
+                val suiteResultsFile = createTempFile("bench", ".txt").toFile()
+                execute(listOf(configFile.absolutePath, "--internal", runConfigPath, suiteResultsFile.absolutePath))
+                val suiteResults = suiteResultsFile.readText()
+                if (suiteResults.isNotEmpty())
+                    runResults[runConfigPath] = suiteResults
             } else {
                 val iterations = currentConfigDescription.substringAfter("iterations=")
                     .substringBefore(',').toInt()
@@ -209,7 +212,7 @@ open class NativeBenchmarkExec() : DefaultTask() {
                 var iteration = 0
                 while (!exceptionDuringExecution && iteration in 0 until iterations) {
                     val textResult = createTempFile("bench", ".txt").toFile()
-                    execute(listOf(configFile.absolutePath, runConfigPath, iteration.toString(), textResult.absolutePath))
+                    execute(listOf(configFile.absolutePath, "--iteration", runConfigPath, iteration.toString(), textResult.absolutePath))
                     val result = textResult.readLines()[0]
                     if (result == "null")
                         exceptionDuringExecution = true
@@ -218,23 +221,15 @@ open class NativeBenchmarkExec() : DefaultTask() {
                 }
                 // Store results
                 if (iterationResults.size == iterations) {
-                    val samplesFile = createTempFile("bench_results").toFile()
-                    samplesFile.printWriter().use { out ->
-                        out.write(iterationResults.joinToString { it.toString() })
-                    }
-                    execute(listOf(configFile.absolutePath, runConfigPath, samplesFile.absolutePath))
-                    jsonReportParts.add(samplesFile)
+                    runResults[runConfigPath] = iterationResults.joinToString()
                 }
             }
         }
-        // Complete
-        execute(listOf(configFile.absolutePath, "--complete"))
-        // Merge reports
-        val fullResults = jsonReportParts.map {
-            it.readText()
-        }.joinToString(",", prefix = "[", postfix = "\n]")
-        reportFile.printWriter().use {
-            it.print(fullResults)
+        // Merge results
+        val samplesFile = createTempFile("bench_results").toFile()
+        samplesFile.printWriter().use { out ->
+            out.write(runResults.toList().joinToString("\n") { "${it.first}: ${it.second}"})
         }
+        execute(listOf(configFile.absolutePath, "--store-results", samplesFile.absolutePath))
     }
 }
