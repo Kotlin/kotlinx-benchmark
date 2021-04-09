@@ -198,8 +198,9 @@ open class NativeBenchmarkExec() : DefaultTask() {
                     .substringBefore(',').toInt()
                 // Warm up
                 var exceptionDuringExecution = false
-                for(i in 0 until warmups) {
-                    val textResult = createTempFile("bench", ".txt").toFile()
+                var textResult: File? = null
+                for (i in 0 until warmups) {
+                    textResult = createTempFile("bench", ".txt").toFile()
                     execute(listOf(configFile.absolutePath, "--warmup", runConfigPath, i.toString(), textResult.absolutePath))
                     val result = textResult.readLines().getOrNull(0)
                     if (result == "null") {
@@ -207,12 +208,17 @@ open class NativeBenchmarkExec() : DefaultTask() {
                         break
                     }
                 }
+                // Get cycles number
+                val cycles = if (!exceptionDuringExecution && textResult != null) textResult.readText() else "1"
                 // Execution
                 val iterationResults = mutableListOf<Double>()
                 var iteration = 0
                 while (!exceptionDuringExecution && iteration in 0 until iterations) {
                     val textResult = createTempFile("bench", ".txt").toFile()
-                    execute(listOf(configFile.absolutePath, "--iteration", runConfigPath, iteration.toString(), textResult.absolutePath))
+                    execute(
+                        listOf(configFile.absolutePath, "--iteration", runConfigPath, iteration.toString(),
+                            cycles, textResult.absolutePath)
+                    )
                     val result = textResult.readLines()[0]
                     if (result == "null")
                         exceptionDuringExecution = true
@@ -221,6 +227,13 @@ open class NativeBenchmarkExec() : DefaultTask() {
                 }
                 // Store results
                 if (iterationResults.size == iterations) {
+                    val iterationsResultsFile = createTempFile("bench_results").toFile()
+                    iterationsResultsFile.printWriter().use { out ->
+                        out.write(iterationResults.joinToString { it.toString() })
+                    }
+                    execute(
+                        listOf(configFile.absolutePath, "--end-run", runConfigPath, iterationsResultsFile.absolutePath)
+                    )
                     runResults[runConfigPath] = iterationResults.joinToString()
                 }
             }

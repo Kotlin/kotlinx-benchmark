@@ -34,10 +34,10 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
         ?: throw NoSuchElementException("Benchmark $name wasn't found.")
 
     private fun runBenchmarkIteration(benchmarks: List<BenchmarkDescriptor<Any?>>) {
-        val (configFileName, iteration, resultsFile) = additionalArguments
+        val (_, configFileName, iteration, cycles, resultsFile) = additionalArguments
         val benchmarkRun = configFileName.parseBenchmarkConfig()
         val benchmark = benchmarks.getBenchmark(benchmarkRun.benchmarkName)
-        val samples = run(benchmark, benchmarkRun, iteration.toInt())
+        val samples = run(benchmark, benchmarkRun, iteration.toInt(), cycles.toInt())
         writeFile(resultsFile, samples?.let{ it[0].toString() } ?: "null")
     }
 
@@ -46,14 +46,18 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
         val benchmarkRun = configFileName.parseBenchmarkConfig()
         val benchmark = benchmarks.getBenchmark(benchmarkRun.benchmarkName)
         val id = id(benchmark.name, benchmarkRun.parameters)
-        if (iteration.toInt() == 0) {
-            reporter.startBenchmark(executionName, id)
-        }
+
         val instance = benchmark.suite.factory() // TODO: should we create instance per bench or per suite?
         benchmark.suite.parametrize(instance, benchmarkRun.parameters)
         benchmark.suite.setup(instance)
+
+        if (iteration.toInt() == 0) {
+            reporter.startBenchmark(executionName, id)
+        }
         try {
-            warmup(benchmark.suite.name, benchmarkRun.config, benchmark.suite.factory(), benchmark, iteration.toInt())
+            val iterations = warmup(benchmark.suite.name, benchmarkRun.config, instance,
+                benchmark, iteration.toInt())
+            writeFile(resultsFile, iterations.toString())
         } catch (e: Throwable) {
             val error = e.toString()
             val stacktrace = e.stacktrace()
@@ -77,8 +81,16 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
         }
     }
 
+    private fun endExternalBenchmarksRun(benchmarks: List<BenchmarkDescriptor<Any?>>) {
+        val (_, configFileName, samplesFile) = additionalArguments
+        val samples = samplesFile.readFile().split(", ").map { it.toDouble() }.toDoubleArray()
+        val benchmarkRun = configFileName.parseBenchmarkConfig()
+        val benchmark = benchmarks.getBenchmark(benchmarkRun.benchmarkName)
+        saveBenchmarkResults(benchmark, benchmarkRun, samples)
+    }
+
     fun run(benchmark: BenchmarkDescriptor<Any?>, benchmarkRun: BenchmarkRun,
-            externalIterationNumber: Int? = null): DoubleArray?  {
+            externalIterationNumber: Int? = null, externalCyclesNumber: Int? = null): DoubleArray?  {
         val id = id(benchmark.name, benchmarkRun.parameters)
         val suite = benchmark.suite
 
@@ -90,7 +102,7 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
         val iterations = if (benchmarkRun.config.nativeIterationMode == NativeIterationMode.External) 1 else benchmarkRun.config.iterations
         val samples = try {
             // Execute warmup
-            val cycles = warmup(suite.name, benchmarkRun.config, instance, benchmark)
+            val cycles = externalCyclesNumber ?: warmup(suite.name, benchmarkRun.config, instance, benchmark)
             DoubleArray(iterations) { iteration ->
                 val nanosecondsPerOperation = measure(instance, benchmark, cycles)
                 val text = nanosecondsPerOperation.nanosToText(benchmarkRun.config.mode, benchmarkRun.config.outputTimeUnit)
@@ -164,9 +176,10 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
         val knownActions = mapOf(
             "--list" to 2,
             "--store-results" to 2,
+            "--end-run" to 3,
             "--internal" to 3,
-            "--iteration" to 4,
-            "--warmup" to 5
+            "--iteration" to 5,
+            "--warmup" to 4
         )
 
         val action = additionalArguments.first()
@@ -179,6 +192,7 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
             "--internal" -> runBenchmark(benchmarks)
             "--iteration" -> runBenchmarkIteration(benchmarks)
             "--warmup" -> runBenchmarkWarmup(benchmarks)
+            "--end-run" -> endExternalBenchmarksRun(benchmarks)
         }
     }
     
