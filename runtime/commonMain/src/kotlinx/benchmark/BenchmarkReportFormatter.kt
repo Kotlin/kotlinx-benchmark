@@ -157,12 +157,12 @@ private class CsvBenchmarkReportFormatter(val delimiter: String) : BenchmarkRepo
 
 }
 
-object JsonBenchmarkReportFormatter : BenchmarkReportFormatter() {
+private object JsonBenchmarkReportFormatter : BenchmarkReportFormatter() {
 
     override fun format(results: Collection<ReportBenchmarkResult>): String =
         results.joinToString(",", prefix = "[", postfix = "\n]", transform = this::format)
 
-    fun format(result: ReportBenchmarkResult): String =
+    private fun format(result: ReportBenchmarkResult): String =
         """
   {
     "benchmark" : "${result.benchmark.name}",
@@ -175,6 +175,7 @@ object JsonBenchmarkReportFormatter : BenchmarkReportFormatter() {
           ${result.params.entries.joinToString(separator = ",\n          ") { "\"${it.key}\" : \"${it.value}\"" }}
     },
     "nativeIterationMode" : "${result.config.nativeIterationMode.toText()}",
+    "nativeGCCollectMode" : "${result.config.nativeGCCollectMode.toText()}",
     "primaryMetric" : {
        "score": ${result.score},
        "scoreError": ${result.error},

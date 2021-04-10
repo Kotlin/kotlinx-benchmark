@@ -72,6 +72,10 @@ class RunnerConfiguration(config: String) {
         "nativeIterationMode"
     ) { NativeIterationMode.valueOf(it.capitalize()) }
 
+    val nativeGCCollectMode = singleValueOrNull(
+        "nativeGCCollectMode"
+    ) { NativeGCCollectMode.valueOf(it.capitalize()) }
+
     override fun toString(): String {
         return """$name -> $reportFile ($traceFormat, $reportFormat)
 params: ${params.entries.joinToString(prefix = "{", postfix = "}") { "${it.key}: ${it.value}" }}
@@ -84,6 +88,7 @@ iterationTimeUnit: $iterationTimeUnit
 outputTimeUnit: $outputTimeUnit            
 mode: $mode
 nativeIterationMode: $nativeIterationMode
+nativeGCCollectMode: $nativeGCCollectMode
 """
     }
 }

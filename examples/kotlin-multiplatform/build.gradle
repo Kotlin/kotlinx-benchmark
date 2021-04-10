@@ -99,6 +99,7 @@ benchmark {
             iterationTimeUnit = "ms" // time in ms per iteration
             advanced("forks", 1)
             nativeIterationMode = "internal"
+            nativeGCCollectMode = "iteration"
         }
 
         csv {
