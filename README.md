@@ -148,6 +148,9 @@ Available configuration options:
 * `mode` – "thrpt" for measuring operations per time, or "avgt" for measuring time per operation
 * `nativeIterationMode` – "external" for iterating in gradle in order to get correct Kotlin/Native runtime input in measurement,
  "internal" can be used if it's known that measured code have no calls in K/N runtime that can influence on measurement unrepeatedly.
+* `nativeGCCollectMode`  – "iteration" to collect garbage after each measuring iteration, 
+  "auto"(default) for collecting garbage at the moments choosen by K/N compiler, time for each iteration could be very 
+  different then because of unpredictable call of GC.
 * `include("…")` – regular expression to include benchmarks with fully qualified names matching it, as a substring
 * `exclude("…")` – regular expression to exclude benchmarks with fully qualified names matching it, as a substring
 * `param("name", "value1", "value2")` – specify a parameter for a public mutable property `name` annotated with `@Param`

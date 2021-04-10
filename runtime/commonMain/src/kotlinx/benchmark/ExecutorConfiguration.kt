@@ -7,7 +7,8 @@ class BenchmarkConfiguration private constructor(
     val iterationTimeUnit: BenchmarkTimeUnit,
     val outputTimeUnit: BenchmarkTimeUnit,
     val mode: Mode,
-    val nativeIterationMode: NativeIterationMode) {
+    val nativeIterationMode: NativeIterationMode,
+    val nativeGCCollectMode: NativeGCCollectMode) {
 
     constructor(runner: RunnerConfiguration, suite: SuiteDescriptor<*>) : this(
         runner.iterations ?: suite.iterations,
@@ -16,13 +17,15 @@ class BenchmarkConfiguration private constructor(
         runner.iterationTimeUnit ?: suite.iterationTime.timeUnit,
         runner.outputTimeUnit ?: suite.outputTimeUnit,
         runner.mode ?: suite.mode,
-        runner.nativeIterationMode ?: NativeIterationMode.External
+        runner.nativeIterationMode ?: NativeIterationMode.External,
+        runner.nativeGCCollectMode ?: NativeGCCollectMode.Auto
     )
 
     override fun toString() =
         "iterations=$iterations, warmups=$warmups, iterationTime=$iterationTime, " +
                 "iterationTimeUnit=${iterationTimeUnit.toText()}, outputTimeUnit=${outputTimeUnit.toText()}, " +
-                "mode=${mode.toText()}, nativeIterationMode=${nativeIterationMode.toText()}"
+                "mode=${mode.toText()}, nativeIterationMode=${nativeIterationMode.toText()}, " +
+                "nativeGCCollectMode=${nativeGCCollectMode.toText()}"
 
     companion object {
         fun parse(description: String): BenchmarkConfiguration {
@@ -38,7 +41,8 @@ class BenchmarkConfiguration private constructor(
                 parseTimeUnit(getParameterValue("iterationTimeUnit")),
                 parseTimeUnit(getParameterValue("outputTimeUnit")),
                 getParameterValue("mode").toMode(),
-                NativeIterationMode.valueOf(getParameterValue("nativeIterationMode").capitalize())
+                NativeIterationMode.valueOf(getParameterValue("nativeIterationMode").capitalize()),
+                NativeGCCollectMode.valueOf(getParameterValue("nativeGCCollectMode").capitalize())
             )
         }
     }

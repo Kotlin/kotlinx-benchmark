@@ -104,7 +104,7 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
             // Execute warmup
             val cycles = externalCyclesNumber ?: warmup(suite.name, benchmarkRun.config, instance, benchmark)
             DoubleArray(iterations) { iteration ->
-                val nanosecondsPerOperation = measure(instance, benchmark, cycles)
+                val nanosecondsPerOperation = measure(instance, benchmark, cycles, benchmarkRun.config.nativeGCCollectMode)
                 val text = nanosecondsPerOperation.nanosToText(benchmarkRun.config.mode, benchmarkRun.config.outputTimeUnit)
                 val iterationNumber = externalIterationNumber ?: iteration
                 reporter.output(
@@ -204,7 +204,8 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
     private fun <T> measure(
         instance: T,
         benchmark: BenchmarkDescriptor<T>,
-        cycles: Int
+        cycles: Int,
+        nativeGCCollectMode: NativeGCCollectMode
     ): Double {
         val executeFunction = benchmark.function
         var counter = cycles
@@ -214,7 +215,8 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
             @Suppress("UNUSED_VARIABLE")
             val result = instance.executeFunction() // ignore result for now, but might need to consume it somehow
         }
-        GC.collect()
+        if (nativeGCCollectMode == NativeGCCollectMode.Iteration)
+            GC.collect()
         val endTime = getTimeNanos()
         val time = endTime - startTime
         return time.toDouble() / cycles
@@ -241,7 +243,8 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
                 endTime = getTimeNanos()
                 iterations++
             }
-            GC.collect()
+            if (config.nativeGCCollectMode == NativeGCCollectMode.Iteration)
+                GC.collect()
             val time = endTime - startTime
             val metric = time.toDouble() / iterations // TODO: metric
             val sample = metric.nanosToText(config.mode, config.outputTimeUnit)
