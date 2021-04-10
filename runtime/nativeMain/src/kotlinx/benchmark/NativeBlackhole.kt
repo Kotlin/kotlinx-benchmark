@@ -1,37 +1,34 @@
 package kotlinx.benchmark
 
+import kotlinx.cinterop.pin
+
+
 actual class Blackhole {
-    @ThreadLocal
-    companion object {
-        var consumer = 0
-    }
     actual fun consume(obj: Any?) {
-        // hashCode now is implemented as taking address of object, so it's suitable now.
-        // If implementation is changed `Blackhole` should be reimplemented.
-        consumer += obj.hashCode()
+        obj?.pin()
     }
     actual fun consume(bool: Boolean) {
-        consumer += bool.hashCode()
+        bool.pin()
     }
     actual fun consume(c: Char) {
-        consumer += c.hashCode()
+        c.pin()
     }
     actual fun consume(b: Byte) {
-        consumer += b.hashCode()
+        b.pin()
     }
     actual fun consume(s: Short) {
-        consumer += s.hashCode()
+        s.pin()
     }
     actual fun consume(i: Int) {
-        consumer += i.hashCode()
+        i.pin()
     }
     actual fun consume(l: Long) {
-        consumer += l.hashCode()
+        l.pin()
     }
     actual fun consume(f: Float) {
-        consumer += f.hashCode()
+        f.pin()
     }
     actual fun consume(d: Double) {
-        consumer += d.hashCode()
+        d.pin()
     }
 }
