@@ -1,7 +1,7 @@
 buildscript {
     repositories {
+        maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/maven' }
         gradlePluginPortal()
-        maven { url 'https://dl.bintray.com/kotlin/kotlinx' }
     }
 
     dependencies {

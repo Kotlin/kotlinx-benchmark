@@ -1,7 +1,7 @@
 buildscript {
     repositories {
+        maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/maven' }
         mavenCentral()
-        maven { url 'https://dl.bintray.com/kotlin/kotlinx' }
     }
     dependencies {
         classpath "kotlinx.team:kotlinx.team.infra:$infra_version"
