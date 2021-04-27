@@ -106,7 +106,7 @@ fun Project.createNativeBenchmarkExecTask(
     ) {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Executes benchmark for '${target.name}'"
-        extensions.extraProperties.set("idea.internal.test", System.getProperty("idea.active"))
+        extensions.extraProperties.set("idea.internal.test", project.getSystemProperty("idea.active"))
 
         val binary =
             benchmarkCompilation.target.binaries.getExecutable(benchmarkCompilation.name, NativeBuildType.RELEASE)
