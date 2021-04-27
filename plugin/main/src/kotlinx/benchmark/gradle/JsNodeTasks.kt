@@ -17,7 +17,7 @@ fun Project.createJsBenchmarkExecTask(
 
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Executes benchmark for '${target.name}'"
-        extensions.extraProperties.set("idea.internal.test", System.getProperty("idea.active"))
+        extensions.extraProperties.set("idea.internal.test", project.getSystemProperty("idea.active"))
 
         val reportsDir = benchmarkReportsDir(config, target)
         val reportFile = reportsDir.resolve("${target.name}.${config.reportFileExt()}")

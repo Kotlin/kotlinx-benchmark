@@ -1,11 +1,15 @@
 package kotlinx.benchmark.gradle
 
-import groovy.lang.*
-import org.gradle.api.*
-import org.gradle.api.tasks.*
-import java.io.*
-import java.time.*
-import java.time.format.*
+import groovy.lang.Closure
+import org.gradle.api.Action
+import org.gradle.api.Project
+import org.gradle.api.Task
+import org.gradle.api.invocation.Gradle
+import org.gradle.api.tasks.TaskProvider
+import org.gradle.util.GradleVersion
+import java.io.File
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 fun cleanup(file: File) {
     if (file.exists()) {
@@ -114,4 +118,21 @@ private fun validateConfig(config: BenchmarkConfiguration) {
         }
     }
 
+}
+
+internal val Gradle.isConfigurationCacheAvailable
+    get() = try {
+        val startParameters = gradle.startParameter
+        startParameters.javaClass.getMethod("isConfigurationCache")
+            .invoke(startParameters) as? Boolean
+    } catch (_: Exception) {
+        null
+    } ?: false
+
+internal fun Project.getSystemProperty(key: String): String? {
+    return if (gradle.isConfigurationCacheAvailable) {
+        providers.systemProperty(key).forUseAtConfigurationTime().orNull
+    } else {
+        System.getProperty(key)
+    }
 }
