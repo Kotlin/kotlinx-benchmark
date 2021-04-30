@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.3.1
+
+- Support report format selection: json(default), csv/scsv or text [#34](https://github.com/Kotlin/kotlinx-benchmark/issues/34)
+- Fix Gradle configuration cache problems
+
 ## 0.3.0
 
 - Require the minimum Kotlin version of 1.4.30
