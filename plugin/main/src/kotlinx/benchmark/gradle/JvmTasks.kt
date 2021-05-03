@@ -31,7 +31,9 @@ fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, compileCla
         dependsOn("${target.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}")
         conventionMapping.map("classifier") { "JMH" }
         manifest.attributes["Main-Class"] = "org.openjdk.jmh.Main"
-
+        
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        
         from(project.provider {
             compileClasspath.map {
                 when {
