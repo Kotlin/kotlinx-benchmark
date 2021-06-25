@@ -1,0 +1,48 @@
+kotlin {
+    jvm {
+        compilations.all {
+            kotlinOptions.jvmTarget = '1.8'
+        }
+    }
+
+    js {
+        nodejs()
+    }
+
+    if (org.jetbrains.kotlin.konan.target.HostManager.hostIsLinux) linuxX64('native')
+    if (org.jetbrains.kotlin.konan.target.HostManager.hostIsMingw) mingwX64('native')
+    if (org.jetbrains.kotlin.konan.target.HostManager.hostIsMac) macosX64('native')
+
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation(benchmarkRuntimeMetadata)
+            }
+        }
+        jvmMain {
+            dependencies {
+                implementation(benchmarkRuntimeJvm)
+            }
+        }
+        jsMain {
+            dependencies {
+                implementation(benchmarkRuntimeJs)
+            }
+        }
+        nativeMain {
+            dependsOn commonMain
+            dependencies {
+                implementation(benchmarkRuntimeNative)
+                implementation(benchmarkRuntimeNativeMetadata)
+            }
+        }
+    }
+}
+
+benchmark {
+    targets {
+        register("jvm")
+        register("js")
+        register("native")
+    }
+}

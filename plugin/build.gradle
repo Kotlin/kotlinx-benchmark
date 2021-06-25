@@ -82,10 +82,30 @@ dependencies {
     testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
     testImplementation gradleTestKit()
     testImplementation "junit:junit:$junit_version"
-    
+
 /*
     // This is needed for test to get it on classpath and run
     runtime "org.jetbrains.kotlin:kotlin-allopen:$kotlin_version"
     runtime "org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlin_version"
 */
+}
+
+// comfiguration of classpathes for plugin integration tests
+
+configurations {
+    testPluginClasspath
+}
+
+dependencies {
+    testPluginClasspath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+}
+
+task createClasspathManifest {
+    def outputDir = file("$buildDir/$name")
+    outputs.dir outputDir
+
+    doLast {
+        outputDir.mkdirs()
+        file("$outputDir/plugin-classpath.txt").text = (sourceSets.main.runtimeClasspath + configurations.testPluginClasspath).join("\n")
+    }
 }
