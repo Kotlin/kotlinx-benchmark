@@ -54,7 +54,6 @@ val createClasspathManifest by tasks.registering {
     dependsOn(artifactsTask("jvm"))
     dependsOn(artifactsTask("js"))
     dependsOn(artifactsTask("metadata"))
-    dependsOn(artifactsTask("${nativeTargetName}Metadata"))
     dependsOn(artifactsTaskNativeKlibs())
 
     val outputDir = file("$buildDir/$name")
@@ -66,7 +65,6 @@ val createClasspathManifest by tasks.registering {
             resolve("runtime-metadata.txt").writeText(artifactsTask("metadata").archiveFilePath)
             resolve("runtime-jvm.txt").writeText(artifactsTask("jvm").archiveFilePath)
             resolve("runtime-js.txt").writeText(artifactsTask("js").archiveFilePath)
-            resolve("runtime-native-metadata.txt").writeText(artifactsTask("${nativeTargetName}Metadata").archiveFilePath)
             resolve("runtime-native.txt").writeText(artifactsTaskNativeKlibs().klibs())
         }
     }

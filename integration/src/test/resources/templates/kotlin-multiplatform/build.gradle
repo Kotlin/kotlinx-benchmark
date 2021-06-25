@@ -33,7 +33,6 @@ kotlin {
             dependsOn commonMain
             dependencies {
                 implementation(benchmarkRuntimeNative)
-                implementation(benchmarkRuntimeNativeMetadata)
             }
         }
     }
