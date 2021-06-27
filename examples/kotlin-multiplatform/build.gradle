@@ -1,7 +1,7 @@
 plugins {
     id 'org.jetbrains.kotlin.multiplatform'
     id 'org.jetbrains.kotlin.plugin.allopen' version "1.4.0"
-    id 'org.jetbrains.kotlinx.benchmark' version "0.3.1"
+    id 'org.jetbrains.kotlinx.benchmark' version "0.3.2"
 }
 
 // how to apply plugin to a specific source set?

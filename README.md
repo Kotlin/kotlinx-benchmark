@@ -34,7 +34,7 @@ Use plugin in `build.gradle`:
 
 ```groovy
 plugins {
-    id 'org.jetbrains.kotlinx.benchmark' version '0.3.1'
+    id 'org.jetbrains.kotlinx.benchmark' version '0.3.2'
 }
 ```
 
@@ -87,7 +87,7 @@ kotlin {
     sourceSets {
         commonMain {
              dependencies {
-                 implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.3.1")
+                 implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.3.2")
              }
         }
     }
