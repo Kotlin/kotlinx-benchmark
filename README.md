@@ -5,11 +5,14 @@
 [![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v?label=Gradle%20Plugin&metadataUrl=https://plugins.gradle.org/m2/org/jetbrains/kotlinx/kotlinx-benchmark-plugin/maven-metadata.xml)](https://plugins.gradle.org/plugin/org.jetbrains.kotlinx.benchmark)
 
 
-> **_NOTE:_** &nbsp; The latest version of the library changes how the plugin and runtime library dependencies are declared:
+> **_NOTE:_** &nbsp; Starting from version 0.3.0 of the library:
 > * The library runtime is published to Maven Central and no longer published to Bintray.
 > * The Gradle plugin is published to Gradle Plugin Portal
 > * The Gradle plugin id has changed to `org.jetbrains.kotlinx.benchmark`
 > * The library runtime artifact id has changed to `kotlinx-benchmark-runtime`
+
+> **_NOTE:_** &nbsp; When Kotlin 1.5.0 or newer is used make sure the `kotlin-gradle-plugin` is pulled from Maven Central, 
+> not Gradle Plugin Portal. For more information: https://github.com/Kotlin/kotlinx-benchmark/issues/42
 
 
 **kotlinx.benchmark** is a toolkit for running benchmarks for multiplatform code written in Kotlin 
