@@ -21,6 +21,11 @@ class JsExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<o
 
         benchmarks.forEach { benchmark ->
             val suite = benchmark.suite
+
+            if (suite.hasInvocationFixture) {
+                throw UnsupportedOperationException("Fixture methods with `Invocation` level are not supported")
+            }
+
             val config = BenchmarkConfiguration(runnerConfiguration, suite)
             val jsDescriptor = benchmark as JsBenchmarkDescriptor
 
@@ -63,7 +68,8 @@ class JsExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<o
 
                 jsBenchmark.on("start") { event ->
                     reporter.startBenchmark(executionName, id)
-                    suite.setup(instance)
+                    suite.trialSetup(instance)
+                    suite.iterationSetup(instance)
                 }
                 var iteration = 0
                 jsBenchmark.on("cycle") { event ->
@@ -76,9 +82,12 @@ class JsExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<o
                         id,
                         "Iteration #${iteration++}: $sample"
                     )
+                    suite.iterationTearDown(instance)
+                    suite.iterationSetup(instance)
                 }
                 jsBenchmark.on("complete") { event ->
-                    suite.teardown(instance)
+                    suite.iterationTearDown(instance)
+                    suite.trialTearDown(instance)
                     val stats = event.target.stats
                     val samples = stats.sample
                         .unsafeCast<DoubleArray>()

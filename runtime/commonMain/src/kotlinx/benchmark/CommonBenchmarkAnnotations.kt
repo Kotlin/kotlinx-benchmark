@@ -1,11 +1,14 @@
 package kotlinx.benchmark
 
 @Target(AnnotationTarget.FUNCTION)
+expect annotation class Setup(val value: Level = Level.Trial)
 
-expect annotation class Setup()
+expect enum class Level {
+    Trial, Iteration, Invocation
+}
 
 @Target(AnnotationTarget.FUNCTION)
-expect annotation class TearDown()
+expect annotation class TearDown(val value: Level = Level.Trial)
 
 @Target(AnnotationTarget.FUNCTION)
 expect annotation class Benchmark()

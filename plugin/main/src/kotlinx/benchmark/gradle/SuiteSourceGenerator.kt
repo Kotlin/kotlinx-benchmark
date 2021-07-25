@@ -18,8 +18,11 @@ enum class Platform {
 
 class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val output: File, val platform: Platform) {
     companion object {
-        val setupFunctionName = "setUp"
-        val teardownFunctionName = "tearDown"
+        val fixtureFunctionLevels = listOf("Invocation", "Iteration", "Trial")
+        val defaultFixtureFunctionLevel = "Trial"
+        val setupFunctionSuffix = "Setup"
+        val teardownFunctionSuffix = "TearDown"
+
         val parametersFunctionName = "parametrize"
         val bindBlackholeFunctionName = "bind"
 
@@ -139,31 +142,41 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
         val benchmarkFunctions =
             functions.filter { it.annotations.any { it.fqName.toString() == benchmarkAnnotationFQN } }
 
-        val setupFunctions = functions
-            .filter { it.annotations.any { it.fqName.toString() == setupAnnotationFQN } }
+        val levelToSetupFunctions = fixtureFunctionLevels.associateWith { level ->
+            functions.filterFixtureFunctions(setupAnnotationFQN, level, level == defaultFixtureFunctionLevel, false)
+        }
 
-        val teardownFunctions = functions
-            .filter { it.annotations.any { it.fqName.toString() == teardownAnnotationFQN } }.reversed()
+        val levelToTeardownFunctions = fixtureFunctionLevels.associateWith { level ->
+            functions.filterFixtureFunctions(teardownAnnotationFQN, level, level == defaultFixtureFunctionLevel, true)
+        }
 
         val file = FileSpec.builder(benchmarkPackageName, benchmarkName).apply {
             declareObject(benchmarkClass) {
                 addAnnotation(suppressUnusedParameter)
 
-                function(setupFunctionName) {
-                    addModifiers(KModifier.PRIVATE)
-                    addParameter("instance", originalClass)
-                    for (fn in setupFunctions) {
-                        val functionName = fn.name.toString()
-                        addStatement("instance.%N()", functionName)
+                for ((level, setupFunctions) in levelToSetupFunctions) {
+                    val setupFunctionName = setupFunctionName(level)
+
+                    function(setupFunctionName) {
+                        addModifiers(KModifier.PRIVATE)
+                        addParameter("instance", originalClass)
+                        for (fn in setupFunctions) {
+                            val functionName = fn.name.toString()
+                            addStatement("instance.%N()", functionName)
+                        }
                     }
                 }
 
-                function(teardownFunctionName) {
-                    addModifiers(KModifier.PRIVATE)
-                    addParameter("instance", originalClass)
-                    for (fn in teardownFunctions) {
-                        val functionName = fn.name.toString()
-                        addStatement("instance.%N()", functionName)
+                for ((level, teardownFunctions) in levelToTeardownFunctions) {
+                    val teardownFunctionName = teardownFunctionName(level)
+
+                    function(teardownFunctionName) {
+                        addModifiers(KModifier.PRIVATE)
+                        addParameter("instance", originalClass)
+                        for (fn in teardownFunctions) {
+                            val functionName = fn.name.toString()
+                            addStatement("instance.%N()", functionName)
+                        }
                     }
                 }
 
@@ -226,14 +239,26 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
                 function("describe") {
                     returns(suiteDescriptorType.parameterizedBy(originalClass))
                     addCode(
-                        "«val descriptor = %T(name = %S, factory = ::%T, setup = ::%N, teardown = ::%N, parametrize = ::%N",
+                        "«val descriptor = %T(name = %S, factory = ::%T",
                         suiteDescriptorType,
                         originalName,
-                        originalClass,
-                        setupFunctionName,
-                        teardownFunctionName,
-                        parametersFunctionName
+                        originalClass
                     )
+
+                    val hasInvocationFixture = listOf(levelToSetupFunctions, levelToTeardownFunctions).any {
+                        it.getValue("Invocation").isNotEmpty()
+                    }
+                    val setupFunctions = fixtureFunctionLevels.joinToString(separator = ", ") { level ->
+                        val functionName = setupFunctionName(level)
+                        "$functionName = ::$functionName"
+                    }
+                    val teardownFunctions = fixtureFunctionLevels.joinToString(separator = ", ") { level ->
+                        val functionName = teardownFunctionName(level)
+                        "$functionName = ::$functionName"
+                    }
+                    addCode(", hasInvocationFixture = $hasInvocationFixture, $setupFunctions, $teardownFunctions")
+
+                    addCode(", parametrize = ::%N", parametersFunctionName)
 
                     val params =
                         parameterProperties.joinToString(prefix = "listOf(", postfix = ")") { "\"${it.name}\"" }
@@ -299,6 +324,26 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
 
         file.writeTo(output)
     }
+
+    private fun setupFunctionName(level: String) = fixtureFunctionName(level, setupFunctionSuffix)
+
+    private fun teardownFunctionName(level: String) = fixtureFunctionName(level, teardownFunctionSuffix)
+
+    private fun fixtureFunctionName(level: String, suffix: String) = level.decapitalize() + suffix
+}
+
+private fun List<FunctionDescriptor>.filterFixtureFunctions(
+    annotationFQN: String,
+    level: String,
+    isDefaultLevel: Boolean,
+    reversed: Boolean
+): List<FunctionDescriptor> {
+    return let { if (reversed) it.reversed() else it }
+        .filter {
+            val annotation = it.annotations.firstOrNull { it.fqName.toString() == annotationFQN } ?: return@filter false
+            val levelValue = annotation.argumentValue("value") as? EnumValue
+            return@filter levelValue?.enumEntryName?.toString()?.let { it == level } ?: isDefaultLevel
+        }
 }
 
 inline fun codeBlock(builderAction: CodeBlock.Builder.() -> Unit): CodeBlock {
