@@ -9,7 +9,6 @@ open class BenchmarkConfiguration(val extension: BenchmarksExtension, val name: 
     var iterationTime: Long? = null
     var iterationTimeUnit: String? = null
     var mode: String? = null
-    var nativeIterationMode: String? = null // TODO: where should warning about K/N specific of this parameter be shown?
     var nativeGCCollectMode: String? = null
     var outputTimeUnit: String? = null
     var reportFormat: String? = null
@@ -35,6 +34,9 @@ open class BenchmarkConfiguration(val extension: BenchmarksExtension, val name: 
     fun advanced(name: String, value: Any?) {
         advanced[name] = value
     }
+
+    val nativeIterationMode: String?
+        get() = advanced["nativeIterationMode"] as? String
 
     fun capitalizedName() = if (name == "main") "" else name.capitalize()
     fun prefixName(suffix: String) = if (name == "main") suffix else name + suffix.capitalize()
