@@ -209,7 +209,8 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
     ): Double {
         val executeFunction = benchmark.function
         var counter = cycles
-        GC.collect()
+        if (nativeGCCollectMode == NativeGCCollectMode.Iteration)
+            GC.collect()
         val startTime = getTimeNanos()
         while (counter-- > 0) {
             @Suppress("UNUSED_VARIABLE")
@@ -234,7 +235,8 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
         repeat(warmupIterations) { iteration ->
             val benchmarkNanos = config.iterationTime * config.iterationTimeUnit.toMultiplier()
             val executeFunction = benchmark.function
-            GC.collect()
+            if (config.nativeGCCollectMode == NativeGCCollectMode.Iteration)
+                GC.collect()
             val startTime = getTimeNanos()
             var endTime = startTime
             iterations = 0

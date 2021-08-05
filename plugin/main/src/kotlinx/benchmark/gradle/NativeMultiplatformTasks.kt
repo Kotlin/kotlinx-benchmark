@@ -116,7 +116,7 @@ fun Project.createNativeBenchmarkExecTask(
         onlyIf { linkTask.enabled }
 
         val reportsDir = benchmarkReportsDir(config, target)
-        reportFile = reportsDir.resolve("${target.name}.json")
+        reportFile = reportsDir.resolve("${target.name}.${config.reportFileExt()}")
 
         val executableFile = linkTask.outputFile.get()
         executable = executableFile.absolutePath
@@ -175,7 +175,6 @@ open class NativeBenchmarkExec() : DefaultTask() {
         // Get full list of running benchmarks
         execute(listOf(configFile.absolutePath, "--list", benchsDescriptionDir.absolutePath))
         val detailedConfigFiles = project.fileTree(benchsDescriptionDir).files.sortedBy { it.absolutePath }
-        val jsonReportParts = mutableListOf<File>()
         val runResults = mutableMapOf<String, String>()
 
         detailedConfigFiles.forEach { runConfig ->

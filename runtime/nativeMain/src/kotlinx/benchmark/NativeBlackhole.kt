@@ -1,11 +1,11 @@
 package kotlinx.benchmark
 
 import kotlinx.cinterop.pin
-import kotlin.experimental.xor
+/*import kotlin.experimental.xor
 import kotlin.math.ulp
 import kotlin.native.ref.WeakReference
 import kotlin.random.Random
-import kotlin.system.getTimeNanos
+import kotlin.system.getTimeNanos*/
 
 actual class Blackhole {
     actual fun consume(obj: Any?) {
