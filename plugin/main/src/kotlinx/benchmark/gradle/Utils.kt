@@ -94,7 +94,6 @@ fun writeParameters(
         config.iterationTimeUnit?.let { appendln("iterationTimeUnit:$it") }
         config.outputTimeUnit?.let { appendln("outputTimeUnit:$it") }
         config.mode?.let { appendln("mode:$it") }
-        config.nativeIterationMode?.let { appendln("nativeIterationMode:$it") }
         config.nativeGCCollectMode?.let { appendln("nativeGCCollectMode:$it") }
 
         config.includes.forEach {
