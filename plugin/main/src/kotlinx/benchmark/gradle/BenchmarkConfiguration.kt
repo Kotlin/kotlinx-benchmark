@@ -9,7 +9,6 @@ open class BenchmarkConfiguration(val extension: BenchmarksExtension, val name: 
     var iterationTime: Long? = null
     var iterationTimeUnit: String? = null
     var mode: String? = null
-    var nativeGCCollectMode: String? = null
     var outputTimeUnit: String? = null
     var reportFormat: String? = null
 
