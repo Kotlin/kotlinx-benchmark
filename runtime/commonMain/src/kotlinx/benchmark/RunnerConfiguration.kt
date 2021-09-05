@@ -70,11 +70,11 @@ class RunnerConfiguration(config: String) {
 
     val nativeIterationMode = singleValueOrNull(
         "nativeIterationMode"
-    ) { NativeIterationMode.valueOf(it.capitalize()) }
+    ) { NativeIterationMode.valueOf(it.replaceFirstChar { firstChar -> firstChar.uppercaseChar() }) }
 
     val nativeGCCollectMode = singleValueOrNull(
         "nativeGCCollectMode"
-    ) { NativeGCCollectMode.valueOf(it.capitalize()) }
+    ) { NativeGCCollectMode.valueOf(it.replaceFirstChar { firstChar -> firstChar.uppercaseChar() }) }
 
     override fun toString(): String {
         return """$name -> $reportFile ($traceFormat, $reportFormat)

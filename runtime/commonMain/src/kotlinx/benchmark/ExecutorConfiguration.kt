@@ -41,8 +41,8 @@ class BenchmarkConfiguration private constructor(
                 parseTimeUnit(getParameterValue("iterationTimeUnit")),
                 parseTimeUnit(getParameterValue("outputTimeUnit")),
                 getParameterValue("mode").toMode(),
-                NativeIterationMode.valueOf(getParameterValue("nativeIterationMode").capitalize()),
-                NativeGCCollectMode.valueOf(getParameterValue("nativeGCCollectMode").capitalize())
+                NativeIterationMode.valueOf(getParameterValue("nativeIterationMode").replaceFirstChar { it.uppercaseChar() }),
+                NativeGCCollectMode.valueOf(getParameterValue("nativeGCCollectMode").replaceFirstChar { it.uppercaseChar() })
             )
         }
     }

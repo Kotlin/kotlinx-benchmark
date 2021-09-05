@@ -37,7 +37,7 @@ class ReportBenchmarksStatistics(values: DoubleArray) {
         else -> values[values.lastIndex]
     }
 
-    fun mean(): Double = values.sumByDouble { it } / size
+    fun mean(): Double = values.sumOf { it } / size
 
     fun standardDeviation(): Double {
         // two-pass algorithm for variance, avoids numeric overflow
@@ -45,7 +45,7 @@ class ReportBenchmarksStatistics(values: DoubleArray) {
             return 0.0
 
         val mean = mean()
-        val sum = values.sumByDouble { (it - mean).let { it * it } }
+        val sum = values.sumOf { (it - mean).let { it * it } }
         val variance = sum / values.lastIndex
         return sqrt(variance)
     }
