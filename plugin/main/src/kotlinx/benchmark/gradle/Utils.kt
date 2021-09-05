@@ -105,28 +105,28 @@ fun writeParameters(
     validateConfig(config)
     val file = createTempFile("benchmarks")
     file.writeText(buildString {
-        appendln("name:$name")
-        appendln("reportFile:$reportFile")
-        appendln("traceFormat:$format")
-        config.reportFormat?.let { appendln("reportFormat:$it") }
-        config.iterations?.let { appendln("iterations:$it") }
-        config.warmups?.let { appendln("warmups:$it") }
-        config.iterationTime?.let { appendln("iterationTime:$it") }
-        config.iterationTimeUnit?.let { appendln("iterationTimeUnit:$it") }
-        config.outputTimeUnit?.let { appendln("outputTimeUnit:$it") }
-        config.mode?.let { appendln("mode:$it") }
+        appendLine("name:$name")
+        appendLine("reportFile:$reportFile")
+        appendLine("traceFormat:$format")
+        config.reportFormat?.let { appendLine("reportFormat:$it") }
+        config.iterations?.let { appendLine("iterations:$it") }
+        config.warmups?.let { appendLine("warmups:$it") }
+        config.iterationTime?.let { appendLine("iterationTime:$it") }
+        config.iterationTimeUnit?.let { appendLine("iterationTimeUnit:$it") }
+        config.outputTimeUnit?.let { appendLine("outputTimeUnit:$it") }
+        config.mode?.let { appendLine("mode:$it") }
 
         config.includes.forEach {
-            appendln("include:$it")
+            appendLine("include:$it")
         }
         config.excludes.forEach {
-            appendln("exclude:$it")
+            appendLine("exclude:$it")
         }
         config.params.forEach { (param, values) ->
-            values.forEach { value -> appendln("param:$param=$value") }
+            values.forEach { value -> appendLine("param:$param=$value") }
         }
         config.advanced.forEach { (param, value) ->
-            appendln("$param:$value")
+            appendLine("$param:$value")
         }
     })
     return file

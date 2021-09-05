@@ -6,7 +6,7 @@ sealed class BenchmarkReportFormatter {
     abstract fun format(results: Collection<ReportBenchmarkResult>): String
 
     companion object {
-        fun create(format: String): BenchmarkReportFormatter = when (format.toLowerCase()) {
+        fun create(format: String): BenchmarkReportFormatter = when (format.lowercase()) {
             "json" -> JsonBenchmarkReportFormatter
             "csv" -> CsvBenchmarkReportFormatter(",")
             "scsv" -> CsvBenchmarkReportFormatter(";")
@@ -96,9 +96,9 @@ internal object TextBenchmarkReportFormatter : BenchmarkReportFormatter() {
             val names = s.split(".")
             if (first) {
                 first = false
-                names.takeWhile { it.toLowerCase() == it }
+                names.takeWhile { it.lowercase() == it }
             } else {
-                val common = prefix.zip(names).takeWhile { (p, n) -> p == n && n.toLowerCase() == n }
+                val common = prefix.zip(names).takeWhile { (p, n) -> p == n && n.lowercase() == n }
                 if (prefix.size != common.size) prefixCut = true
                 prefix.take(common.size)
             }

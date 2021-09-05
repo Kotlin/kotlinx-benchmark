@@ -49,7 +49,7 @@ fun main(args: Array<String>) {
         config.forks > 0 -> jmhOptions.forks(config.forks)
     }
 
-    val reportFormat = ResultFormatType.valueOf(config.reportFormat.toUpperCase())
+    val reportFormat = ResultFormatType.valueOf(config.reportFormat.uppercase())
     val reporter = BenchmarkProgress.create(config.traceFormat)
     val output = JmhOutputFormat(reporter, config.name)
     try {

@@ -38,8 +38,8 @@ class BenchmarksPlugin : Plugin<Project> {
         val kotlinClass = tryGetClass<KotlinBasePluginWrapper>("org.jetbrains.kotlin.gradle.plugin.KotlinBasePluginWrapper")
         if (kotlinClass != null) {
             plugins.findPlugin(kotlinClass)?.run {
-                logger.info("Detected Kotlin plugin version '$kotlinPluginVersion'")
-                if (VersionNumber.parse(kotlinPluginVersion) < VersionNumber(1, 5, 30, null))
+                logger.info("Detected Kotlin plugin version '${project.getKotlinPluginVersion()}'")
+                if (VersionNumber.parse(project.getKotlinPluginVersion()) < VersionNumber(1, 5, 30, null))
                     logger.error("JetBrains Gradle Benchmarks plugin requires Kotlin version 1.5.30 or higher")
             }
         }
