@@ -55,10 +55,10 @@ internal fun ijBenchmarkFinishException(
     append("<test id='$id' parentId='$parent'>")
     append("<result resultType='FAILURE' startTime='$startTime' endTime='$endTime'>")
     append("<errorMsg>")
-    append("<![CDATA[${error.toByteArrayUtf8().encodeBase64()}]]>")
+    append("<![CDATA[${error.encodeToByteArray().encodeBase64()}]]>")
     append("</errorMsg>")
     append("<stackTrace>")
-    append("<![CDATA[${stacktrace.toByteArrayUtf8().encodeBase64()}]]>")
+    append("<![CDATA[${stacktrace.encodeToByteArray().encodeBase64()}]]>")
     append("</stackTrace>")
     append("</result>")
     append("</test>")
@@ -71,7 +71,7 @@ internal fun ijLogOutput(parent: String, id: String, info: String) = buildString
     append("<event type='onOutput'>")
     append("<test id='$id' parentId='$parent'>")
     append("<event destination='StdOut'>")
-    append("<![CDATA[${info.toByteArrayUtf8().encodeBase64()}]]>")
+    append("<![CDATA[${info.encodeToByteArray().encodeBase64()}]]>")
     append("</event>")
     append("</test>")
     append("</event>")
@@ -105,5 +105,3 @@ private fun ByteArray.encodeBase64(): String {
 
     return result.toCharArray().concatToString()
 }
-
-expect fun String.toByteArrayUtf8(): ByteArray
