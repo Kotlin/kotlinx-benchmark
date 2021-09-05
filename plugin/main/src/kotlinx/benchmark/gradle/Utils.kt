@@ -75,6 +75,22 @@ fun <T> Any.tryGetClass(className: String): Class<T>? {
     }
 }
 
+fun Task.setupReporting(target: BenchmarkTarget, config: BenchmarkConfiguration): File {
+    extensions.extraProperties.set("idea.internal.test", project.getSystemProperty("idea.active"))
+    val reportsDir = project.benchmarkReportsDir(config, target)
+    val reportFile = reportsDir.resolve("${target.name}.${config.reportFileExt()}")
+    doFirst {
+        reportsDir.mkdirs()
+        logger.lifecycle("Running '${config.name}' benchmarks for '${target.name}'")
+    }
+    return reportFile
+}
+
+fun Task.traceFormat(): String {
+    val ideaActive = project.getSystemProperty("idea.active").toBoolean()
+    return if (ideaActive) "xml" else "text"
+}
+
 fun writeParameters(
     name: String,
     reportFile: File,

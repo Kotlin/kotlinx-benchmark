@@ -95,11 +95,8 @@ fun Project.createJvmBenchmarkExecTask(
     ) {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Execute benchmark for '${target.name}'"
-        extensions.extraProperties.set("idea.internal.test", project.getSystemProperty("idea.active"))
 
         val benchmarkBuildDir = benchmarkBuildDir(target)
-        val reportsDir = benchmarkReportsDir(config, target)
-        val reportFile = reportsDir.resolve("${target.name}.${config.reportFileExt()}")
         main = "kotlinx.benchmark.jvm.JvmBenchmarkRunnerKt"
 
         if (target.workingDir != null)
@@ -113,11 +110,8 @@ fun Project.createJvmBenchmarkExecTask(
 
 
         dependsOn("${target.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}")
-        doFirst {
-            val ideaActive = (extensions.extraProperties.get("idea.internal.test") as? String)?.toBoolean() ?: false
-            args(writeParameters(target.name, reportFile, if (ideaActive) "xml" else "text", config))
-            reportsDir.mkdirs()
-            logger.lifecycle("Running '${config.name}' benchmarks for '${target.name}'")
-        }
+
+        val reportFile = setupReporting(target, config)
+        args(writeParameters(target.name, reportFile, traceFormat(), config))
     }
 }
