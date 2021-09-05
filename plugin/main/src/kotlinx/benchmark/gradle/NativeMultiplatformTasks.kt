@@ -108,15 +108,11 @@ fun Project.createNativeBenchmarkExecTask(
     ) {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Executes benchmark for '${target.name}'"
-        extensions.extraProperties.set("idea.internal.test", project.getSystemProperty("idea.active"))
 
         val binary =
             benchmarkCompilation.target.binaries.getExecutable(benchmarkCompilation.name, NativeBuildType.RELEASE)
         val linkTask = binary.linkTask
         onlyIf { linkTask.enabled }
-
-        val reportsDir = benchmarkReportsDir(config, target)
-        reportFile = reportsDir.resolve("${target.name}.${config.reportFileExt()}")
 
         val executableFile = linkTask.outputFile.get()
         executable = executableFile.absolutePath
@@ -126,14 +122,13 @@ fun Project.createNativeBenchmarkExecTask(
         onlyIf { executableFile.exists() }
         benchsDescriptionDir = file(project.buildDir.resolve(target.extension.benchsDescriptionDir).resolve(config.name))
 
-        val ideaActive = (extensions.extraProperties.get("idea.internal.test") as? String)?.toBoolean() ?: false
-        configFile = writeParameters(target.name, reportFile, if (ideaActive) "xml" else "text", config)
-
         dependsOn(linkTask)
+
+        reportFile = setupReporting(target, config)
+        configFile = writeParameters(target.name, reportFile, traceFormat(), config)
+
         doFirst {
-            reportsDir.mkdirs()
             benchsDescriptionDir.mkdirs()
-            logger.lifecycle("Running '${config.name}' benchmarks for '${target.name}'")
         }
     }
 }

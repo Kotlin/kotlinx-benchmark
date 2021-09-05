@@ -17,10 +17,6 @@ fun Project.createJsBenchmarkExecTask(
 
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Executes benchmark for '${target.name}'"
-        extensions.extraProperties.set("idea.internal.test", project.getSystemProperty("idea.active"))
-
-        val reportsDir = benchmarkReportsDir(config, target)
-        val reportFile = reportsDir.resolve("${target.name}.${config.reportFileExt()}")
 
         val executableFile = compilation.compileKotlinTask.outputFile
         args("-r", "source-map-support/register")
@@ -28,14 +24,9 @@ fun Project.createJsBenchmarkExecTask(
         workingDir = compilation.npmProject.dir
 
         onlyIf { executableFile.exists() }
-        
 
-        doFirst {
-            val ideaActive = (extensions.extraProperties.get("idea.internal.test") as? String)?.toBoolean() ?: false
-            args(writeParameters(target.name, reportFile, if (ideaActive) "xml" else "text", config))
-            reportsDir.mkdirs()
-            logger.lifecycle("Running '${config.name}' benchmarks for '${target.name}'")
-        }
+        val reportFile = setupReporting(target, config)
+        args(writeParameters(target.name, reportFile, traceFormat(), config))
     }
 
     tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(task)
