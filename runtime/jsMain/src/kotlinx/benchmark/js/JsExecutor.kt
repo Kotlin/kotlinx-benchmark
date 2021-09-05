@@ -62,7 +62,7 @@ class JsExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<o
                 jsBenchmark.options.async = asynchronous
                 jsBenchmark.options.defer = asynchronous
 
-                jsBenchmark.on("start") { event ->
+                jsBenchmark.on("start") { _ ->
                     reporter.startBenchmark(executionName, id)
                     suite.setup(instance)
                 }

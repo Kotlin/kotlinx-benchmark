@@ -37,7 +37,7 @@ class JsAsyncBenchmarks {
     @Benchmark
     fun promiseDelayedBaseline(): Promise<Double> {
         // Score of this benchmark cannot be greater than 10 ops/sec
-        return Promise { resolve, reject ->
+        return Promise { resolve, _ ->
             setTimeout({
                 resolve(data)
             }, 100)
