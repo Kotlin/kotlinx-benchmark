@@ -15,6 +15,7 @@ class JsExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<o
         start: () -> Unit,
         complete: () -> Unit
     ) {
+        start()
         val jsSuite: dynamic = benchmarkJs.Suite()
         jsSuite.on("complete") {
             complete()
