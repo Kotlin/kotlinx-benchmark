@@ -10,7 +10,6 @@ class JsExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<o
 
     override fun run(
         runnerConfiguration: RunnerConfiguration,
-        reporter: BenchmarkProgress,
         benchmarks: List<BenchmarkDescriptor<Any?>>,
         start: () -> Unit,
         complete: () -> Unit

@@ -168,7 +168,6 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
 
     override fun run(
         runnerConfiguration: RunnerConfiguration,
-        reporter: BenchmarkProgress,
         benchmarks: List<BenchmarkDescriptor<Any?>>,
         start: () -> Unit,
         complete: () -> Unit

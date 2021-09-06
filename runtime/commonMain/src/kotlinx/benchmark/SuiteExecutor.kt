@@ -34,7 +34,7 @@ abstract class SuiteExecutor(val executionName: String, arguments: Array<out Str
                 } as List<BenchmarkDescriptor<Any?>>
         }
 
-        run(config, reporter, benchmarks, { reporter.startSuite(executionName) }) {
+        run(config, benchmarks, { reporter.startSuite(executionName) }) {
             val summary = TextBenchmarkReportFormatter.format(results)
             reporter.endSuite(executionName, summary)
             saveReport(config.reportFile, reportFormatter.format(results))
@@ -47,7 +47,6 @@ abstract class SuiteExecutor(val executionName: String, arguments: Array<out Str
 
     abstract fun run(
         runnerConfiguration: RunnerConfiguration,
-        reporter: BenchmarkProgress,
         benchmarks: List<BenchmarkDescriptor<Any?>>,
         start: () -> Unit,
         complete: () -> Unit
