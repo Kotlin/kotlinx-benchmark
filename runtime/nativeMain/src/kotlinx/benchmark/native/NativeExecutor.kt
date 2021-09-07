@@ -4,7 +4,13 @@ import kotlinx.benchmark.*
 import kotlin.native.internal.GC
 import kotlin.system.*
 
-class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name, args) {
+class NativeExecutor(
+    name: String,
+    args: Array<out String>
+) : SuiteExecutor(name, args[0], { NativeIntelliJBenchmarkProgress(args[2]) }) {
+
+    private val action = args[1]
+    private val additionalArguments = args.drop(3)
 
     data class BenchmarkRun(val benchmarkName: String, val config: BenchmarkConfiguration,
                             val parameters: Map<String, String>)
@@ -23,7 +29,7 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
                     appendLine("configuration: $config")
                     appendLine("parameters: $params")
                 }
-                val fileName = "${additionalArguments[1]}/${suite.name}_${it.name}_$parametersId.txt"
+                val fileName = "${additionalArguments[0]}/${suite.name}_${it.name}_$parametersId.txt"
                 writeFile(fileName, benchmarkRunConfig)
                 parametersId++
             }
@@ -34,7 +40,7 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
         ?: throw NoSuchElementException("Benchmark $name wasn't found.")
 
     private fun runBenchmarkIteration(benchmarks: List<BenchmarkDescriptor<Any?>>) {
-        val (_, configFileName, iteration, cycles, resultsFile) = additionalArguments
+        val (configFileName, iteration, cycles, resultsFile) = additionalArguments
         val benchmarkRun = configFileName.parseBenchmarkConfig()
         val benchmark = benchmarks.getBenchmark(benchmarkRun.benchmarkName)
         val samples = run(benchmark, benchmarkRun, iteration.toInt(), cycles.toInt())
@@ -42,7 +48,7 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
     }
 
     private fun runBenchmarkWarmup(benchmarks: List<BenchmarkDescriptor<Any?>>) {
-        val (_, configFileName, iteration, resultsFile) = additionalArguments
+        val (configFileName, iteration, resultsFile) = additionalArguments
         val benchmarkRun = configFileName.parseBenchmarkConfig()
         val benchmark = benchmarks.getBenchmark(benchmarkRun.benchmarkName)
         val id = id(benchmark.name, benchmarkRun.parameters)
@@ -69,7 +75,7 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
     }
 
     private fun runBenchmark(benchmarks: List<BenchmarkDescriptor<Any?>>) {
-        val (_, configFileName, resultsFile) = additionalArguments
+        val (configFileName, resultsFile) = additionalArguments
         val benchmarkRun = configFileName.parseBenchmarkConfig()
         val benchmark = benchmarks.getBenchmark(benchmarkRun.benchmarkName)
         val id = id(benchmark.name, benchmarkRun.parameters)
@@ -82,7 +88,7 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
     }
 
     private fun endExternalBenchmarksRun(benchmarks: List<BenchmarkDescriptor<Any?>>) {
-        val (_, configFileName, samplesFile) = additionalArguments
+        val (configFileName, samplesFile) = additionalArguments
         val samples = samplesFile.readFile().split(", ").map { it.toDouble() }.toDoubleArray()
         val benchmarkRun = configFileName.parseBenchmarkConfig()
         val benchmark = benchmarks.getBenchmark(benchmarkRun.benchmarkName)
@@ -153,8 +159,7 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
     }
 
     private fun storeResults(benchmarks: List<BenchmarkDescriptor<Any?>>, complete: () -> Unit) {
-        val (_, resultsFileName) = additionalArguments
-        resultsFileName.readFile().split("\n").filter { it.isNotEmpty() }.forEach {
+        additionalArguments[0].readFile().lines().forEach {
             val (configFileName, samplesList) = it.split(": ")
             val samples = samplesList.split(", ").map { it.toDouble() }.toDoubleArray()
             val benchmarkRun = configFileName.parseBenchmarkConfig()
@@ -172,19 +177,6 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
         start: () -> Unit,
         complete: () -> Unit
     ) {
-        val knownActions = mapOf(
-            "--list" to 2,
-            "--store-results" to 2,
-            "--end-run" to 3,
-            "--internal" to 3,
-            "--iteration" to 5,
-            "--warmup" to 4
-        )
-
-        val action = additionalArguments.first()
-        if (action !in knownActions.keys)
-            throw NoSuchElementException("Action $action isn't found in the list of possible actions ${knownActions.keys}.")
-        require(knownActions[action] == additionalArguments.size)
         when (action) {
             "--list" -> outputBenchmarks(runnerConfiguration, benchmarks, start)
             "--store-results" -> storeResults(benchmarks, complete)
@@ -192,6 +184,7 @@ class NativeExecutor(name: String, args: Array<out String>) : SuiteExecutor(name
             "--iteration" -> runBenchmarkIteration(benchmarks)
             "--warmup" -> runBenchmarkWarmup(benchmarks)
             "--end-run" -> endExternalBenchmarksRun(benchmarks)
+            else -> throw IllegalArgumentException("Unknown action: $action.")
         }
     }
     

@@ -6,10 +6,12 @@ import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.invocation.Gradle
 import org.gradle.api.tasks.TaskProvider
-import org.gradle.util.GradleVersion
 import java.io.File
+import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.io.path.ExperimentalPathApi
+import kotlin.io.path.invariantSeparatorsPath
 
 fun cleanup(file: File) {
     if (file.exists()) {
@@ -90,6 +92,9 @@ fun Task.traceFormat(): String {
     val ideaActive = project.getSystemProperty("idea.active").toBoolean()
     return if (ideaActive) "xml" else "text"
 }
+
+@OptIn(ExperimentalPathApi::class)
+val Path.absolutePath: String get() = toAbsolutePath().invariantSeparatorsPath
 
 fun writeParameters(
     name: String,
