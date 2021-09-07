@@ -5,8 +5,8 @@ import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.konan.target.*
 import java.io.File
-import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.createTempFile
+import java.nio.file.Path
+import kotlin.io.path.*
 
 fun Project.processNativeCompilation(target: NativeBenchmarkTarget) {
     val compilation = target.compilation
@@ -97,6 +97,7 @@ private fun Project.createNativeBenchmarkCompileTask(target: NativeBenchmarkTarg
     return benchmarkCompilation
 }
 
+@OptIn(ExperimentalPathApi::class)
 fun Project.createNativeBenchmarkExecTask(
     config: BenchmarkConfiguration,
     target: NativeBenchmarkTarget,
@@ -118,6 +119,7 @@ fun Project.createNativeBenchmarkExecTask(
         executable = executableFile.absolutePath
         this.config = config
         this.workingDir = target.workingDir?.let { File(it) }
+        this.benchProgressPath = createTempFile("bench", ".txt").absolutePath
 
         onlyIf { executableFile.exists() }
         benchsDescriptionDir = file(project.buildDir.resolve(target.extension.benchsDescriptionDir).resolve(config.name))
@@ -155,6 +157,9 @@ open class NativeBenchmarkExec() : DefaultTask() {
     @Input
     lateinit var benchsDescriptionDir: File
 
+    @Input
+    lateinit var benchProgressPath: String
+
     private fun execute(args: Collection<String>) {
         project.exec {
             it.executable = executable
@@ -164,11 +169,11 @@ open class NativeBenchmarkExec() : DefaultTask() {
         }
     }
 
-    @ExperimentalPathApi
+    @OptIn(ExperimentalPathApi::class)
     @TaskAction
     fun run() {
         // Get full list of running benchmarks
-        execute(listOf(configFile.absolutePath, "--list", benchsDescriptionDir.absolutePath))
+        execute(listOf(configFile.absolutePath, "--list", benchProgressPath, benchsDescriptionDir.absolutePath))
         val detailedConfigFiles = project.fileTree(benchsDescriptionDir).files.sortedBy { it.absolutePath }
         val runResults = mutableMapOf<String, String>()
 
@@ -180,8 +185,8 @@ open class NativeBenchmarkExec() : DefaultTask() {
 
             // Execute benchmark
             if (config.nativeIterationMode == "internal") {
-                val suiteResultsFile = createTempFile("bench", ".txt").toFile()
-                execute(listOf(configFile.absolutePath, "--internal", runConfigPath, suiteResultsFile.absolutePath))
+                val suiteResultsFile = createTempFile("bench", ".txt")
+                execute(listOf(configFile.absolutePath, "--internal", benchProgressPath, runConfigPath, suiteResultsFile.absolutePath))
                 val suiteResults = suiteResultsFile.readText()
                 if (suiteResults.isNotEmpty())
                     runResults[runConfigPath] = suiteResults
@@ -192,10 +197,10 @@ open class NativeBenchmarkExec() : DefaultTask() {
                     .substringBefore(',').toInt()
                 // Warm up
                 var exceptionDuringExecution = false
-                var textResult: File? = null
+                var textResult: Path? = null
                 for (i in 0 until warmups) {
-                    textResult = createTempFile("bench", ".txt").toFile()
-                    execute(listOf(configFile.absolutePath, "--warmup", runConfigPath, i.toString(), textResult.absolutePath))
+                    textResult = createTempFile("bench", ".txt")
+                    execute(listOf(configFile.absolutePath, "--warmup", benchProgressPath, runConfigPath, i.toString(), textResult.absolutePath))
                     val result = textResult.readLines().getOrNull(0)
                     if (result == "null") {
                         exceptionDuringExecution = true
@@ -208,9 +213,9 @@ open class NativeBenchmarkExec() : DefaultTask() {
                 val iterationResults = mutableListOf<Double>()
                 var iteration = 0
                 while (!exceptionDuringExecution && iteration in 0 until iterations) {
-                    val textResult = createTempFile("bench", ".txt").toFile()
+                    textResult = createTempFile("bench", ".txt")
                     execute(
-                        listOf(configFile.absolutePath, "--iteration", runConfigPath, iteration.toString(),
+                        listOf(configFile.absolutePath, "--iteration", benchProgressPath, runConfigPath, iteration.toString(),
                             cycles, textResult.absolutePath)
                     )
                     val result = textResult.readLines()[0]
@@ -221,22 +226,22 @@ open class NativeBenchmarkExec() : DefaultTask() {
                 }
                 // Store results
                 if (iterationResults.size == iterations) {
-                    val iterationsResultsFile = createTempFile("bench_results").toFile()
-                    iterationsResultsFile.printWriter().use { out ->
+                    val iterationsResultsFile = createTempFile("bench_results")
+                    iterationsResultsFile.bufferedWriter().use { out ->
                         out.write(iterationResults.joinToString { it.toString() })
                     }
                     execute(
-                        listOf(configFile.absolutePath, "--end-run", runConfigPath, iterationsResultsFile.absolutePath)
+                        listOf(configFile.absolutePath, "--end-run", benchProgressPath, runConfigPath, iterationsResultsFile.absolutePath)
                     )
                     runResults[runConfigPath] = iterationResults.joinToString()
                 }
             }
         }
         // Merge results
-        val samplesFile = createTempFile("bench_results").toFile()
-        samplesFile.printWriter().use { out ->
+        val samplesFile = createTempFile("bench_results")
+        samplesFile.bufferedWriter().use { out ->
             out.write(runResults.toList().joinToString("\n") { "${it.first}: ${it.second}"})
         }
-        execute(listOf(configFile.absolutePath, "--store-results", samplesFile.absolutePath))
+        execute(listOf(configFile.absolutePath, "--store-results", benchProgressPath, samplesFile.absolutePath))
     }
 }

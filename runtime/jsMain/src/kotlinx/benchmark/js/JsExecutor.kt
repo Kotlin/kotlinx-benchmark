@@ -4,7 +4,7 @@ import kotlinx.benchmark.*
 import kotlin.js.Promise
 
 class JsExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<out String>) :
-    SuiteExecutor(name, (process["argv"] as Array<String>).drop(2).toTypedArray()) {
+    SuiteExecutor(name, (process["argv"] as Array<String>)[2]) {
     
     private val benchmarkJs: dynamic = require("benchmark")
 

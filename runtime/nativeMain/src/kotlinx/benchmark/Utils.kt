@@ -43,9 +43,9 @@ actual fun String.readFile(): String = buildString {
             while (true) {
                 val bufferLength = 64 * 1024
                 val buffer = allocArray<ByteVar>(bufferLength)
-                val line = fgets(buffer, bufferLength, file)?.toKString()
+                val line = fgets(buffer, bufferLength, file)?.toKString() // newline symbol is included
                 if (line == null || line.isEmpty()) break
-                appendLine(line)
+                append(line)
             }
         }
 

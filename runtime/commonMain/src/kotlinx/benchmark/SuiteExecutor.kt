@@ -1,11 +1,13 @@
 package kotlinx.benchmark
 
-abstract class SuiteExecutor(val executionName: String, arguments: Array<out String>) {
-    private val config = RunnerConfiguration(arguments.first().readFile())
+abstract class SuiteExecutor(
+    val executionName: String,
+    configPath: String,
+    xmlReporter: (() -> BenchmarkProgress)? = null
+) {
+    private val config = RunnerConfiguration(configPath.readFile())
 
-    protected val additionalArguments = arguments.drop(1)
-
-    val reporter = BenchmarkProgress.create(config.traceFormat)
+    val reporter = BenchmarkProgress.create(config.traceFormat, xmlReporter)
 
     private val reportFormatter = BenchmarkReportFormatter.create(config.reportFormat)
 

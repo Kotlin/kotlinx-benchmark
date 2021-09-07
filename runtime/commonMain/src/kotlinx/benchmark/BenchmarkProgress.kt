@@ -10,9 +10,9 @@ abstract class BenchmarkProgress {
     abstract fun output(suite: String, benchmark: String, message: String)
 
     companion object {
-        fun create(format: String) = when (format) {
+        fun create(format: String, xml: (() -> BenchmarkProgress)? = null) = when (format) {
             "xml" -> {
-                IntelliJBenchmarkProgress()
+                xml?.invoke() ?: IntelliJBenchmarkProgress()
             }
             "text" -> {
                 ConsoleBenchmarkProgress()
@@ -27,7 +27,7 @@ abstract class BenchmarkProgress {
     }
 }
 
-class IntelliJBenchmarkProgress : BenchmarkProgress() {
+open class IntelliJBenchmarkProgress : BenchmarkProgress() {
     private val rootId = "[root]"
 
     override fun startSuite(suite: String) {
@@ -45,9 +45,9 @@ class IntelliJBenchmarkProgress : BenchmarkProgress() {
         println(ijSuiteFinish("", rootId, suiteStatus))
     }
 
-    private var currentClass = ""
-    private var currentStatus = FinishStatus.Success
-    private var suiteStatus = FinishStatus.Success
+    protected var currentClass = ""
+    protected var currentStatus = FinishStatus.Success
+    protected var suiteStatus = FinishStatus.Success
 
     override fun startBenchmark(suite: String, benchmark: String) {
         val methodName = benchmark.substringAfterLast('.')
