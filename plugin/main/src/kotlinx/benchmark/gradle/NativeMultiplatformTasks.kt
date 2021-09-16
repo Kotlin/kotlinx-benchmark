@@ -125,7 +125,6 @@ fun Project.createNativeBenchmarkExecTask(
 
         onlyIf { executableFile.exists() }
         benchsDescriptionDir = file(project.buildDir.resolve(target.extension.benchsDescriptionDir).resolve(config.name))
-        benchsDescriptionDir.mkdirs()
 
         val ideaActive = (extensions.extraProperties.get("idea.internal.test") as? String)?.toBoolean() ?: false
         configFile = writeParameters(target.name, reportFile, if (ideaActive) "xml" else "text", config)
@@ -133,6 +132,7 @@ fun Project.createNativeBenchmarkExecTask(
         dependsOn(linkTask)
         doFirst {
             reportsDir.mkdirs()
+            benchsDescriptionDir.mkdirs()
             logger.lifecycle("Running '${config.name}' benchmarks for '${target.name}'")
         }
     }
