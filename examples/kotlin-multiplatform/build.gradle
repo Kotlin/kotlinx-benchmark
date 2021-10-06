@@ -10,12 +10,6 @@ allOpen {
 }
 
 kotlin {
-    infra {
-        target('macosX64')
-        target('linuxX64')
-        target('mingwX64')
-    }
-
     jvm {
         compilations.all {
             kotlinOptions {
@@ -25,16 +19,16 @@ kotlin {
     }
 
     js {
-        nodejs {
-            
-        }
+        nodejs { }
     }
+
+    macosX64 { }
+    linuxX64 { }
+    mingwX64 { }
 
     sourceSets.all {
         languageSettings {
             progressiveMode = true
-            useExperimentalAnnotation("kotlin.Experimental")
-            useExperimentalAnnotation('kotlin.ExperimentalUnsignedTypes')
         }
     }
 
@@ -44,30 +38,17 @@ kotlin {
                 implementation project(":kotlinx-benchmark-runtime")
             }
         }
-        commonTest {
-            dependencies {
-                implementation 'org.jetbrains.kotlin:kotlin-test-common'
-                implementation 'org.jetbrains.kotlin:kotlin-test-annotations-common'
-            }
-        }
+
         jvmMain {}
-        jvmTest {
-            dependencies {
-                implementation 'org.jetbrains.kotlin:kotlin-test'
-                implementation 'org.jetbrains.kotlin:kotlin-test-junit'
-            }
-        }
+
         jsMain {}
-        jsTest {
-            dependencies {
-                implementation 'org.jetbrains.kotlin:kotlin-test-js'
-            }
-        }
 
         nativeMain {
-            dependsOn commonMain
-            dependencies {
-            }
+            dependsOn(commonMain)
+
+            macosX64Main.dependsOn(it)
+            linuxX64Main.dependsOn(it)
+            mingwX64Main.dependsOn(it)
         }
     }
 }
@@ -119,7 +100,6 @@ benchmark {
             jmhVersion = "1.21"
         }
         register("js")
-        register("native")
         register("macosX64")
         register("linuxX64")
         register("mingwX64")
