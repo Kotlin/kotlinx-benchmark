@@ -97,6 +97,11 @@ class NativeExecutor(
 
     fun run(benchmark: BenchmarkDescriptor<Any?>, benchmarkRun: BenchmarkRun,
             externalIterationNumber: Int? = null, externalCyclesNumber: Int? = null): DoubleArray?  {
+
+        require((externalIterationNumber == null) == (externalCyclesNumber == null))
+        require(benchmarkRun.config.nativeIterationMode == NativeIterationMode.External && externalIterationNumber != null
+                || benchmarkRun.config.nativeIterationMode == NativeIterationMode.Internal && externalIterationNumber == null)
+
         val id = id(benchmark.name, benchmarkRun.parameters)
         val suite = benchmark.suite
 
@@ -222,11 +227,15 @@ class NativeExecutor(
         benchmark: BenchmarkDescriptor<T>,
         currentIteration: Int? = null
     ): Int {
+        require(config.nativeIterationMode == NativeIterationMode.External && currentIteration != null
+                || config.nativeIterationMode == NativeIterationMode.Internal && currentIteration == null)
+
         var iterations = 0
         val warmupIterations = if (config.nativeIterationMode == NativeIterationMode.External) 1 else config.warmups
         repeat(warmupIterations) { iteration ->
             val benchmarkNanos = config.iterationTime * config.iterationTimeUnit.toMultiplier()
             val executeFunction = benchmark.function
+
             if (config.nativeGCCollectMode == NativeGCCollectMode.Iteration)
                 GC.collect()
             val startTime = getTimeNanos()
@@ -239,12 +248,12 @@ class NativeExecutor(
             }
             if (config.nativeGCCollectMode == NativeGCCollectMode.Iteration)
                 GC.collect()
+
             val time = endTime - startTime
             val metric = time.toDouble() / iterations // TODO: metric
             val sample = metric.nanosToText(config.mode, config.outputTimeUnit)
             val iterationNumber = currentIteration ?: iteration
-            if (config.nativeIterationMode == NativeIterationMode.Internal || currentIteration != null)
-                reporter.output(name, benchmark.name, "Warm-up #$iterationNumber: $sample")
+            reporter.output(name, benchmark.name, "Warm-up #$iterationNumber: $sample")
         }
         return iterations
     }

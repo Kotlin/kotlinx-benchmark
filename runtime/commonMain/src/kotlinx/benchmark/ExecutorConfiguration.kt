@@ -17,7 +17,7 @@ class BenchmarkConfiguration private constructor(
         runner.iterationTimeUnit ?: suite.iterationTime.timeUnit,
         runner.outputTimeUnit ?: suite.outputTimeUnit,
         runner.mode ?: suite.mode,
-        runner.nativeIterationMode ?: NativeIterationMode.External,
+        runner.nativeIterationMode ?: NativeIterationMode.Internal,
         runner.nativeGCCollectMode ?: NativeGCCollectMode.Auto
     )
 
