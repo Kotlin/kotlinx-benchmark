@@ -145,12 +145,16 @@ Available configuration options:
 * `iterationTime` – time to run each iteration (measuring and warmup)
 * `iterationTimeUnit` – time unit for `iterationTime` (default is seconds)
 * `outputTimeUnit` – time unit for results output
-* `mode` – "thrpt" for measuring operations per time, or "avgt" for measuring time per operation
-* `nativeIterationMode` – "external" for iterating in gradle in order to get correct Kotlin/Native runtime input in measurement,
- "internal" can be used if it's known that measured code have no calls in K/N runtime that can influence on measurement unrepeatedly.
-* `nativeGCCollectMode`  – "iteration" to collect garbage after each measuring iteration, 
-  "auto"(default) for collecting garbage at the moments choosen by K/N compiler, time for each iteration could be very 
-  different then because of unpredictable call of GC.
+* `mode`
+  - "thrpt" (default) – measures number of benchmark function invocations per time
+  - "avgt" – measures time per benchmark function invocation
+* `nativeIterationMode`
+  - "internal" (default) – executes all iterations of a benchmark in the same process (one binary execution)
+  - "external" – executes each iteration of a benchmark in a separate process, measures in cold Kotlin/Native runtime environment
+* `nativeGCCollectMode`
+  - "auto" (default) – collects garbage at the moments choosen by K/N compiler, time for each iteration can be very
+    different because of unpredictable GC calls.
+  - "iteration" – collects garbage after each measuring iteration
 * `include("…")` – regular expression to include benchmarks with fully qualified names matching it, as a substring
 * `exclude("…")` – regular expression to exclude benchmarks with fully qualified names matching it, as a substring
 * `param("name", "value1", "value2")` – specify a parameter for a public mutable property `name` annotated with `@Param`
