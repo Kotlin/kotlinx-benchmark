@@ -116,3 +116,18 @@ task createClasspathManifest {
         file("$outputDir/plugin-classpath.txt").text = (sourceSets.main.runtimeClasspath + configurations.testPluginClasspath).join("\n")
     }
 }
+
+
+// publish to Space repository
+publishing {
+    repositories {
+        maven {
+            name = "space"
+            url = "https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/dev"
+            credentials {
+                username = project.findProperty("space.user")
+                password = project.findProperty("space.token")
+            }
+        }
+    }
+}
