@@ -13,6 +13,11 @@ fun Project.additionalConfiguration() {
     platforms.forEach { platform ->
         val gradleBuild = knownBuilds.buildOn(platform).steps.items.single() as GradleBuildStep
         gradleBuild.tasks += " " + "fastBenchmark"
+
+        knownBuilds.deployOn(platform).params {
+            param("system.space.user", "abduqodiri.qurbonzoda")
+            password("system.space.token", "credentialsJSON:7aa03210-1f86-452e-b786-920f8a321b7d")
+        }
     }
 
     deployPlugin()
