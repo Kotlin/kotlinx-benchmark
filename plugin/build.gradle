@@ -66,7 +66,10 @@ sourceSets {
 }
 
 compileKotlin {
-    kotlinOptions.freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+    kotlinOptions {
+        freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+        apiVersion = "1.4" // the version of Kotlin embedded in Gradle
+    }
 }
 
 dependencies {
