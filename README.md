@@ -151,10 +151,7 @@ Available configuration options:
 * `nativeFork`
   - "perBenchmark" (default) – executes all iterations of a benchmark in the same process (one binary execution)
   - "perIteration" – executes each iteration of a benchmark in a separate process, measures in cold Kotlin/Native runtime environment
-* `nativeGCCollectMode`
-  - "auto" (default) – collects garbage at the moments choosen by K/N compiler, time for each iteration can be very
-    different because of unpredictable GC calls.
-  - "iteration" – collects garbage after each measuring iteration
+* `nativeGCAfterIteration` – when set to `true`, additionally collects garbage after each measuring iteration (default is `false`).
 * `include("…")` – regular expression to include benchmarks with fully qualified names matching it, as a substring
 * `exclude("…")` – regular expression to exclude benchmarks with fully qualified names matching it, as a substring
 * `param("name", "value1", "value2")` – specify a parameter for a public mutable property `name` annotated with `@Param`
