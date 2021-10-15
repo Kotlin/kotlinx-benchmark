@@ -148,9 +148,9 @@ Available configuration options:
 * `mode`
   - "thrpt" (default) – measures number of benchmark function invocations per time
   - "avgt" – measures time per benchmark function invocation
-* `nativeIterationMode`
-  - "internal" (default) – executes all iterations of a benchmark in the same process (one binary execution)
-  - "external" – executes each iteration of a benchmark in a separate process, measures in cold Kotlin/Native runtime environment
+* `nativeFork`
+  - "perBenchmark" (default) – executes all iterations of a benchmark in the same process (one binary execution)
+  - "perIteration" – executes each iteration of a benchmark in a separate process, measures in cold Kotlin/Native runtime environment
 * `nativeGCCollectMode`
   - "auto" (default) – collects garbage at the moments choosen by K/N compiler, time for each iteration can be very
     different because of unpredictable GC calls.

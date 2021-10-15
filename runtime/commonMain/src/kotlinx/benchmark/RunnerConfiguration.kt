@@ -68,9 +68,9 @@ class RunnerConfiguration(config: String) {
         "mode"
     ) { Mode.valueOf(it) }
 
-    val nativeIterationMode = singleValueOrNull(
-        "nativeIterationMode"
-    ) { NativeIterationMode.valueOf(it.replaceFirstChar { firstChar -> firstChar.uppercaseChar() }) }
+    val nativeFork = singleValueOrNull(
+        "nativeFork"
+    ) { NativeFork.valueOf(it.replaceFirstChar { firstChar -> firstChar.uppercaseChar() }) }
 
     val nativeGCCollectMode = singleValueOrNull(
         "nativeGCCollectMode"
@@ -87,7 +87,7 @@ iterationTime: $iterationTime
 iterationTimeUnit: $iterationTimeUnit            
 outputTimeUnit: $outputTimeUnit            
 mode: $mode
-nativeIterationMode: $nativeIterationMode
+nativeFork: $nativeFork
 nativeGCCollectMode: $nativeGCCollectMode
 """
     }

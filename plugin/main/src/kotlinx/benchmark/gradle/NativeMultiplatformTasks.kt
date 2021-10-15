@@ -177,7 +177,7 @@ open class NativeBenchmarkExec() : DefaultTask() {
         val detailedConfigFiles = project.fileTree(benchsDescriptionDir).files.sortedBy { it.absolutePath }
         val runResults = mutableMapOf<String, String>()
 
-        val isInternalIterationMode = config.nativeIterationMode.let { it == null || it == "internal" }
+        val forkPerBenchmark = config.nativeFork.let { it == null || it == "perBenchmark" }
 
         detailedConfigFiles.forEach { runConfig ->
             val runConfigPath = runConfig.absolutePath
@@ -186,9 +186,9 @@ open class NativeBenchmarkExec() : DefaultTask() {
             val currentConfigDescription = lines[1]
 
             // Execute benchmark
-            if (isInternalIterationMode) {
+            if (forkPerBenchmark) {
                 val suiteResultsFile = createTempFile("bench", ".txt")
-                execute(listOf(configFile.absolutePath, "--internal", benchProgressPath, runConfigPath, suiteResultsFile.absolutePath))
+                execute(listOf(configFile.absolutePath, "--benchmark", benchProgressPath, runConfigPath, suiteResultsFile.absolutePath))
                 val suiteResults = suiteResultsFile.readText()
                 if (suiteResults.isNotEmpty())
                     runResults[runConfigPath] = suiteResults

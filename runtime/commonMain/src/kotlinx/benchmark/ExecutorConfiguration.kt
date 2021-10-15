@@ -7,7 +7,7 @@ class BenchmarkConfiguration private constructor(
     val iterationTimeUnit: BenchmarkTimeUnit,
     val outputTimeUnit: BenchmarkTimeUnit,
     val mode: Mode,
-    val nativeIterationMode: NativeIterationMode,
+    val nativeFork: NativeFork,
     val nativeGCCollectMode: NativeGCCollectMode) {
 
     constructor(runner: RunnerConfiguration, suite: SuiteDescriptor<*>) : this(
@@ -17,14 +17,14 @@ class BenchmarkConfiguration private constructor(
         runner.iterationTimeUnit ?: suite.iterationTime.timeUnit,
         runner.outputTimeUnit ?: suite.outputTimeUnit,
         runner.mode ?: suite.mode,
-        runner.nativeIterationMode ?: NativeIterationMode.Internal,
+        runner.nativeFork ?: NativeFork.PerBenchmark,
         runner.nativeGCCollectMode ?: NativeGCCollectMode.Auto
     )
 
     override fun toString() =
         "iterations=$iterations, warmups=$warmups, iterationTime=$iterationTime, " +
                 "iterationTimeUnit=${iterationTimeUnit.toText()}, outputTimeUnit=${outputTimeUnit.toText()}, " +
-                "mode=${mode.toText()}, nativeIterationMode=${nativeIterationMode.toText()}, " +
+                "mode=${mode.toText()}, nativeFork=${nativeFork.toText()}, " +
                 "nativeGCCollectMode=${nativeGCCollectMode.toText()}"
 
     companion object {
@@ -41,7 +41,7 @@ class BenchmarkConfiguration private constructor(
                 parseTimeUnit(getParameterValue("iterationTimeUnit")),
                 parseTimeUnit(getParameterValue("outputTimeUnit")),
                 getParameterValue("mode").toMode(),
-                NativeIterationMode.valueOf(getParameterValue("nativeIterationMode").replaceFirstChar { it.uppercaseChar() }),
+                NativeFork.valueOf(getParameterValue("nativeFork").replaceFirstChar { it.uppercaseChar() }),
                 NativeGCCollectMode.valueOf(getParameterValue("nativeGCCollectMode").replaceFirstChar { it.uppercaseChar() })
             )
         }

@@ -24,8 +24,8 @@ expect enum class Mode {
     Throughput, AverageTime
 }
 
-enum class NativeIterationMode {
-    Internal, External
+enum class NativeFork {
+    PerBenchmark, PerIteration
 }
 
 enum class NativeGCCollectMode {
@@ -65,9 +65,9 @@ fun Mode.toText() = when (this) {
 }
 
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
-fun NativeIterationMode.toText() = when (this) {
-    NativeIterationMode.External -> "external"
-    NativeIterationMode.Internal -> "internal"
+fun NativeFork.toText() = when (this) {
+    NativeFork.PerIteration -> "perIteration"
+    NativeFork.PerBenchmark -> "perBenchmark"
     else -> throw UnsupportedOperationException("$this is not supported")
 }
 
