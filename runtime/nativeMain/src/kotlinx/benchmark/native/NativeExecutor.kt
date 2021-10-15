@@ -87,7 +87,7 @@ class NativeExecutor(
         }
     }
 
-    private fun endExternalBenchmarksRun(benchmarks: List<BenchmarkDescriptor<Any?>>) {
+    private fun endForkedIterationsRun(benchmarks: List<BenchmarkDescriptor<Any?>>) {
         val (configFileName, samplesFile) = additionalArguments
         val samples = samplesFile.readFile().split(", ").map { it.toDouble() }.toDoubleArray()
         val benchmarkRun = configFileName.parseBenchmarkConfig()
@@ -95,12 +95,20 @@ class NativeExecutor(
         saveBenchmarkResults(benchmark, benchmarkRun, samples)
     }
 
-    fun run(benchmark: BenchmarkDescriptor<Any?>, benchmarkRun: BenchmarkRun,
-            externalIterationNumber: Int? = null, externalCyclesNumber: Int? = null): DoubleArray?  {
+    fun run(
+        benchmark: BenchmarkDescriptor<Any?>,
+        benchmarkRun: BenchmarkRun,
+        currentIteration: Int? = null,
+        cyclesPerIteration: Int? = null
+    ): DoubleArray?  {
 
-        require((externalIterationNumber == null) == (externalCyclesNumber == null))
-        require(benchmarkRun.config.nativeIterationMode == NativeIterationMode.External && externalIterationNumber != null
-                || benchmarkRun.config.nativeIterationMode == NativeIterationMode.Internal && externalIterationNumber == null)
+        require((currentIteration == null) == (cyclesPerIteration == null)) {
+            "Current iteration number must be provided if and only if the number of cycles per iteration is provided"
+        }
+        require(benchmarkRun.config.nativeFork == NativeFork.PerIteration && currentIteration != null
+                || benchmarkRun.config.nativeFork == NativeFork.PerBenchmark && currentIteration == null) {
+            "Fork must be per benchmark or current iteration number must be provided, but not both at the same time"
+        }
 
         val id = id(benchmark.name, benchmarkRun.parameters)
         val suite = benchmark.suite
@@ -110,14 +118,14 @@ class NativeExecutor(
         benchmark.suite.setup(instance)
 
         var exception: Throwable? = null
-        val iterations = if (benchmarkRun.config.nativeIterationMode == NativeIterationMode.External) 1 else benchmarkRun.config.iterations
+        val iterations = if (benchmarkRun.config.nativeFork == NativeFork.PerIteration) 1 else benchmarkRun.config.iterations
         val samples = try {
             // Execute warmup
-            val cycles = externalCyclesNumber ?: warmup(suite.name, benchmarkRun.config, instance, benchmark)
+            val cycles = cyclesPerIteration ?: warmup(suite.name, benchmarkRun.config, instance, benchmark)
             DoubleArray(iterations) { iteration ->
                 val nanosecondsPerOperation = measure(instance, benchmark, cycles, benchmarkRun.config.nativeGCCollectMode)
                 val text = nanosecondsPerOperation.nanosToText(benchmarkRun.config.mode, benchmarkRun.config.outputTimeUnit)
-                val iterationNumber = externalIterationNumber ?: iteration
+                val iterationNumber = currentIteration ?: iteration
                 reporter.output(
                     executionName,
                     id,
@@ -185,10 +193,10 @@ class NativeExecutor(
         when (action) {
             "--list" -> outputBenchmarks(runnerConfiguration, benchmarks, start)
             "--store-results" -> storeResults(benchmarks, complete)
-            "--internal" -> runBenchmark(benchmarks)
+            "--benchmark" -> runBenchmark(benchmarks)
             "--iteration" -> runBenchmarkIteration(benchmarks)
             "--warmup" -> runBenchmarkWarmup(benchmarks)
-            "--end-run" -> endExternalBenchmarksRun(benchmarks)
+            "--end-run" -> endForkedIterationsRun(benchmarks)
             else -> throw IllegalArgumentException("Unknown action: $action.")
         }
     }
@@ -227,11 +235,13 @@ class NativeExecutor(
         benchmark: BenchmarkDescriptor<T>,
         currentIteration: Int? = null
     ): Int {
-        require(config.nativeIterationMode == NativeIterationMode.External && currentIteration != null
-                || config.nativeIterationMode == NativeIterationMode.Internal && currentIteration == null)
+        require(config.nativeFork == NativeFork.PerIteration && currentIteration != null
+                || config.nativeFork == NativeFork.PerBenchmark && currentIteration == null) {
+            "Fork must be per benchmark or current iteration number must be provided, but not both at the same time"
+        }
 
         var iterations = 0
-        val warmupIterations = if (config.nativeIterationMode == NativeIterationMode.External) 1 else config.warmups
+        val warmupIterations = if (config.nativeFork == NativeFork.PerIteration) 1 else config.warmups
         repeat(warmupIterations) { iteration ->
             val benchmarkNanos = config.iterationTime * config.iterationTimeUnit.toMultiplier()
             val executeFunction = benchmark.function

@@ -34,8 +34,8 @@ open class BenchmarkConfiguration(val extension: BenchmarksExtension, val name: 
         advanced[name] = value
     }
 
-    val nativeIterationMode: String?
-        get() = advanced["nativeIterationMode"] as? String
+    val nativeFork: String?
+        get() = advanced["nativeFork"] as? String
 
     fun capitalizedName() = if (name == "main") "" else name.capitalize()
     fun prefixName(suffix: String) = if (name == "main") suffix else name + suffix.capitalize()
