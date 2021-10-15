@@ -130,6 +130,7 @@ fun Project.createNativeBenchmarkExecTask(
         configFile = writeParameters(target.name, reportFile, traceFormat(), config)
 
         doFirst {
+            benchsDescriptionDir.deleteRecursively()
             benchsDescriptionDir.mkdirs()
         }
     }
