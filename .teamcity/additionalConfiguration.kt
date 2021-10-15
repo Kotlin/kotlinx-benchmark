@@ -12,16 +12,10 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.gradle
 fun Project.additionalConfiguration() {
     platforms.forEach { platform ->
         val gradleBuild = knownBuilds.buildOn(platform).steps.items.single() as GradleBuildStep
-        gradleBuild.tasks += " " + fastBenchmarkTasks(platform)
+        gradleBuild.tasks += " " + "fastBenchmark"
     }
 
     deployPlugin()
-}
-
-fun fastBenchmarkTasks(platform: Platform): String {
-    return listOf(
-        "js", "jvm", platform.nativeTaskPrefix()
-    ).joinToString(separator = " ", transform = { "${it}FastBenchmark" })
 }
 
 const val gradlePublishKey = "gradle.publish.key"
