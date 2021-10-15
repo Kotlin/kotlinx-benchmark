@@ -58,11 +58,11 @@ kotlin {
 // Configure benchmark
 benchmark {
     configurations {
-        main { // --> jvmBenchmark/jsBenchmark + benchmark
+        main { // --> jvmBenchmark, jsBenchmark, <native target>Benchmark, benchmark
             iterations = 5 // number of iterations
             iterationTime = 300
             iterationTimeUnit = "ms"
-            advanced("forks", 3)
+            advanced("jvmForks", 3)
         }
 
         params {
@@ -74,14 +74,12 @@ benchmark {
             param("unused", 6, 9)
         }
 
-        fast { // --> jvmFastBenchmark
+        fast { // --> jvmFastBenchmark, jsFastBenchmark, <native target>FastBenchmark, fastBenchmark
             include("Common")
             exclude("long")
             iterations = 5
             iterationTime = 300 // time in ms per iteration
             iterationTimeUnit = "ms" // time in ms per iteration
-            advanced("forks", 1)
-            advanced("nativeFork", "perIteration")
             advanced("nativeGCAfterIteration", "true")
         }
 
@@ -92,6 +90,15 @@ benchmark {
             iterationTime = 300
             iterationTimeUnit = "ms"
             reportFormat = "csv" // csv report format
+        }
+
+        fork {
+            include("CommonBenchmark")
+            iterations = 5
+            iterationTime = 300
+            iterationTimeUnit = "ms"
+            advanced("jvmForks", "definedByJmh") // see README.md for possible "jvmForks" values
+            advanced("nativeFork", "perIteration") // see README.md for possible "nativeFork" values
         }
     }
 
