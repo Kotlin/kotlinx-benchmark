@@ -43,10 +43,18 @@ fun main(args: Array<String>) {
 
     val runtimeMXBean = ManagementFactory.getRuntimeMXBean()
     val jvmArgs = runtimeMXBean.inputArguments
-    when {
-        jvmArgs.any { it.contains("libasyncProfiler") } -> jmhOptions.forks(0)
-        config.forks == null -> jmhOptions.forks(1)
-        config.forks > 0 -> jmhOptions.forks(config.forks)
+    if (jvmArgs.any { it.contains("libasyncProfiler") }) {
+        jmhOptions.forks(0)
+    } else {
+        when (config.jvmForks) {
+            null -> jmhOptions.forks(1)
+            "definedByJmh" -> { /* do not override */ }
+            else -> {
+                val forks = config.jvmForks.toIntOrNull()?.takeIf { it >= 0 }
+                    ?: throw IllegalArgumentException("jvmForks: expected a non-negative integer or \"definedByJmh\" string literal")
+                jmhOptions.forks(forks)
+            }
+        }
     }
 
     val reportFormat = ResultFormatType.valueOf(config.reportFormat.uppercase())

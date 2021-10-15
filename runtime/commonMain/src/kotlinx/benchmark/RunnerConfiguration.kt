@@ -10,7 +10,7 @@ class RunnerConfiguration(config: String) {
     init {
         println("Config:")
         println(config)
-        
+
         println("Values:")
         println(values)
     }
@@ -33,7 +33,13 @@ class RunnerConfiguration(config: String) {
     val iterationTime = singleValueOrNull("iterationTime") { it.toLong() }
     val iterationTimeUnit = singleValueOrNull("iterationTimeUnit") { parseTimeUnit(it) }
 
-    val forks = singleValueOrNull("forks") { it.toInt() }
+    val jvmForks = singleValueOrNull("jvmForks").let { forks ->
+        val legacy = singleValueOrNull("forks")
+        if (legacy != null) {
+            println("""Deprecation warning: configuration option "forks" was renamed to "jvmForks"""")
+        }
+        forks ?: legacy
+    }
 
     val outputTimeUnit = singleValueOrNull(
         "outputTimeUnit"

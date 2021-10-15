@@ -148,14 +148,20 @@ Available configuration options:
 * `mode`
   - "thrpt" (default) – measures number of benchmark function invocations per time
   - "avgt" – measures time per benchmark function invocation
-* `nativeFork`
-  - "perBenchmark" (default) – executes all iterations of a benchmark in the same process (one binary execution)
-  - "perIteration" – executes each iteration of a benchmark in a separate process, measures in cold Kotlin/Native runtime environment
-* `nativeGCAfterIteration` – when set to `true`, additionally collects garbage after each measuring iteration (default is `false`).
 * `include("…")` – regular expression to include benchmarks with fully qualified names matching it, as a substring
 * `exclude("…")` – regular expression to exclude benchmarks with fully qualified names matching it, as a substring
 * `param("name", "value1", "value2")` – specify a parameter for a public mutable property `name` annotated with `@Param`
 * `reportFormat` – format of report, can be `json`(default), `csv`, `scsv` or `text`
+* There are also some advanced platform-specific settings that can be configured using `advanced("…", …)` function, 
+  where the first argument is the name of the configuration parameter, and the second is its value. Valid options:
+  * (Kotlin/Native) `nativeFork`
+    - "perBenchmark" (default) – executes all iterations of a benchmark in the same process (one binary execution)
+    - "perIteration" – executes each iteration of a benchmark in a separate process, measures in cold Kotlin/Native runtime environment
+  * (Kotlin/Native) `nativeGCAfterIteration` – when set to `true`, additionally collects garbage after each measuring iteration (default is `false`).
+  * (Kotlin/JVM) `jvmForks` – number of times harness should fork (default is `1`)
+    - a non-negative integer value – the amount to use for all benchmarks included in this configuration, zero means "no fork"
+    - "definedByJmh" – let the underlying JMH determine, which uses the amount specified in [`@Fork` annotation](https://javadoc.io/static/org.openjdk.jmh/jmh-core/1.21/org/openjdk/jmh/annotations/Fork.html) defined for the benchmark function or its enclosing class,
+      or [Defaults.MEASUREMENT_FORKS (`5`)](https://javadoc.io/static/org.openjdk.jmh/jmh-core/1.21/org/openjdk/jmh/runner/Defaults.html#MEASUREMENT_FORKS) if it is not specified by `@Fork`.
   
 Time units can be NANOSECONDS, MICROSECONDS, MILLISECONDS, SECONDS, MINUTES, or their short variants such as "ms" or "ns".  
   
