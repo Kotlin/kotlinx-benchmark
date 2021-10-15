@@ -21,7 +21,7 @@ internal object TextBenchmarkReportFormatter : BenchmarkReportFormatter() {
 
     override fun format(results: Collection<ReportBenchmarkResult>): String {
         fun columnLength(column: String, selector: (ReportBenchmarkResult) -> String): Int =
-            max(column.length, results.maxOf { selector(it).length })
+            max(column.length, results.maxOfOrNull { selector(it).length } ?: 0)
 
         val shortNames = denseBenchmarkNames(results.map { it.benchmark.name })
         val nameLength = columnLength("Benchmark") { shortNames[it.benchmark.name]!! }

@@ -172,7 +172,8 @@ class NativeExecutor(
     }
 
     private fun storeResults(benchmarks: List<BenchmarkDescriptor<Any?>>, complete: () -> Unit) {
-        additionalArguments[0].readFile().lines().forEach {
+        val resultsContent = additionalArguments[0].readFile()
+        resultsContent.takeIf(String::isNotEmpty)?.lines()?.forEach {
             val (configFileName, samplesList) = it.split(": ")
             val samples = samplesList.split(", ").map { it.toDouble() }.toDoubleArray()
             val benchmarkRun = configFileName.parseBenchmarkConfig()
