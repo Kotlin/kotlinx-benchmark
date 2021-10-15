@@ -28,10 +28,6 @@ enum class NativeFork {
     PerBenchmark, PerIteration
 }
 
-enum class NativeGCCollectMode {
-    Auto, Iteration
-}
-
 @Target(AnnotationTarget.CLASS)
 expect annotation class OutputTimeUnit(val value: BenchmarkTimeUnit)
 
@@ -68,13 +64,6 @@ fun Mode.toText() = when (this) {
 fun NativeFork.toText() = when (this) {
     NativeFork.PerIteration -> "perIteration"
     NativeFork.PerBenchmark -> "perBenchmark"
-    else -> throw UnsupportedOperationException("$this is not supported")
-}
-
-@Suppress("REDUNDANT_ELSE_IN_WHEN")
-fun NativeGCCollectMode.toText() = when (this) {
-    NativeGCCollectMode.Auto -> "auto"
-    NativeGCCollectMode.Iteration -> "iteration"
     else -> throw UnsupportedOperationException("$this is not supported")
 }
 

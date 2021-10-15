@@ -8,7 +8,7 @@ class BenchmarkConfiguration private constructor(
     val outputTimeUnit: BenchmarkTimeUnit,
     val mode: Mode,
     val nativeFork: NativeFork,
-    val nativeGCCollectMode: NativeGCCollectMode) {
+    val nativeGCAfterIteration: Boolean) {
 
     constructor(runner: RunnerConfiguration, suite: SuiteDescriptor<*>) : this(
         runner.iterations ?: suite.iterations,
@@ -18,14 +18,14 @@ class BenchmarkConfiguration private constructor(
         runner.outputTimeUnit ?: suite.outputTimeUnit,
         runner.mode ?: suite.mode,
         runner.nativeFork ?: NativeFork.PerBenchmark,
-        runner.nativeGCCollectMode ?: NativeGCCollectMode.Auto
+        runner.nativeGCAfterIteration ?: false
     )
 
     override fun toString() =
         "iterations=$iterations, warmups=$warmups, iterationTime=$iterationTime, " +
                 "iterationTimeUnit=${iterationTimeUnit.toText()}, outputTimeUnit=${outputTimeUnit.toText()}, " +
                 "mode=${mode.toText()}, nativeFork=${nativeFork.toText()}, " +
-                "nativeGCCollectMode=${nativeGCCollectMode.toText()}"
+                "nativeGCAfterIteration=$nativeGCAfterIteration"
 
     companion object {
         fun parse(description: String): BenchmarkConfiguration {
@@ -42,7 +42,7 @@ class BenchmarkConfiguration private constructor(
                 parseTimeUnit(getParameterValue("outputTimeUnit")),
                 getParameterValue("mode").toMode(),
                 NativeFork.valueOf(getParameterValue("nativeFork").replaceFirstChar { it.uppercaseChar() }),
-                NativeGCCollectMode.valueOf(getParameterValue("nativeGCCollectMode").replaceFirstChar { it.uppercaseChar() })
+                getParameterValue("nativeGCAfterIteration").toBooleanStrict()
             )
         }
     }

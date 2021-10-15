@@ -72,9 +72,7 @@ class RunnerConfiguration(config: String) {
         "nativeFork"
     ) { NativeFork.valueOf(it.replaceFirstChar { firstChar -> firstChar.uppercaseChar() }) }
 
-    val nativeGCCollectMode = singleValueOrNull(
-        "nativeGCCollectMode"
-    ) { NativeGCCollectMode.valueOf(it.replaceFirstChar { firstChar -> firstChar.uppercaseChar() }) }
+    val nativeGCAfterIteration = singleValueOrNull("nativeGCAfterIteration") { it.toBooleanStrict() }
 
     override fun toString(): String {
         return """$name -> $reportFile ($traceFormat, $reportFormat)
@@ -88,7 +86,7 @@ iterationTimeUnit: $iterationTimeUnit
 outputTimeUnit: $outputTimeUnit            
 mode: $mode
 nativeFork: $nativeFork
-nativeGCCollectMode: $nativeGCCollectMode
+nativeGCAfterIteration: $nativeGCAfterIteration
 """
     }
 }

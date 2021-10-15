@@ -123,7 +123,7 @@ class NativeExecutor(
             // Execute warmup
             val cycles = cyclesPerIteration ?: warmup(suite.name, benchmarkRun.config, instance, benchmark)
             DoubleArray(iterations) { iteration ->
-                val nanosecondsPerOperation = measure(instance, benchmark, cycles, benchmarkRun.config.nativeGCCollectMode)
+                val nanosecondsPerOperation = measure(instance, benchmark, cycles, benchmarkRun.config.nativeGCAfterIteration)
                 val text = nanosecondsPerOperation.nanosToText(benchmarkRun.config.mode, benchmarkRun.config.outputTimeUnit)
                 val iterationNumber = currentIteration ?: iteration
                 reporter.output(
@@ -210,18 +210,18 @@ class NativeExecutor(
         instance: T,
         benchmark: BenchmarkDescriptor<T>,
         cycles: Int,
-        nativeGCCollectMode: NativeGCCollectMode
+        nativeGCAfterIteration: Boolean
     ): Double {
         val executeFunction = benchmark.function
         var counter = cycles
-        if (nativeGCCollectMode == NativeGCCollectMode.Iteration)
+        if (nativeGCAfterIteration)
             GC.collect()
         val startTime = getTimeNanos()
         while (counter-- > 0) {
             @Suppress("UNUSED_VARIABLE")
             val result = instance.executeFunction() // ignore result for now, but might need to consume it somehow
         }
-        if (nativeGCCollectMode == NativeGCCollectMode.Iteration)
+        if (nativeGCAfterIteration)
             GC.collect()
         val endTime = getTimeNanos()
         val time = endTime - startTime
@@ -246,7 +246,7 @@ class NativeExecutor(
             val benchmarkNanos = config.iterationTime * config.iterationTimeUnit.toMultiplier()
             val executeFunction = benchmark.function
 
-            if (config.nativeGCCollectMode == NativeGCCollectMode.Iteration)
+            if (config.nativeGCAfterIteration)
                 GC.collect()
             val startTime = getTimeNanos()
             var endTime = startTime
@@ -256,7 +256,7 @@ class NativeExecutor(
                 endTime = getTimeNanos()
                 iterations++
             }
-            if (config.nativeGCCollectMode == NativeGCCollectMode.Iteration)
+            if (config.nativeGCAfterIteration)
                 GC.collect()
 
             val time = endTime - startTime

@@ -175,7 +175,7 @@ private object JsonBenchmarkReportFormatter : BenchmarkReportFormatter() {
           ${result.params.entries.joinToString(separator = ",\n          ") { "\"${it.key}\" : \"${it.value}\"" }}
     },
     "nativeFork" : "${result.config.nativeFork.toText()}",
-    "nativeGCCollectMode" : "${result.config.nativeGCCollectMode.toText()}",
+    "nativeGCAfterIteration" : "${result.config.nativeGCAfterIteration}",
     "primaryMetric" : {
        "score": ${result.score},
        "scoreError": ${result.error},
