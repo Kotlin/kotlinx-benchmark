@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.konan.target.KonanTarget
+import org.jetbrains.kotlin.konan.target.HostManager
+
 kotlin {
     jvm {
         compilations.all {
@@ -9,9 +12,10 @@ kotlin {
         nodejs()
     }
 
-    if (org.jetbrains.kotlin.konan.target.HostManager.hostIsLinux) linuxX64('native')
-    if (org.jetbrains.kotlin.konan.target.HostManager.hostIsMingw) mingwX64('native')
-    if (org.jetbrains.kotlin.konan.target.HostManager.hostIsMac) macosX64('native')
+    if (HostManager.hostIsLinux) linuxX64('native')
+    if (HostManager.hostIsMingw) mingwX64('native')
+    if (HostManager.host == KonanTarget.MACOS_X64.INSTANCE) macosX64('native')
+    if (HostManager.host == KonanTarget.MACOS_ARM64.INSTANCE) macosArm64('native')
 
     sourceSets {
         commonMain {
@@ -30,7 +34,7 @@ kotlin {
             }
         }
         nativeMain {
-            dependsOn commonMain
+            dependsOn(commonMain)
             dependencies {
                 implementation(benchmarkRuntimeNative)
             }

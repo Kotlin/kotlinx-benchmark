@@ -1,4 +1,3 @@
-import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.konan.target.*
 
 plugins {
@@ -33,7 +32,8 @@ val nativeTargetName
         project.getSystemProperty("idea.active") == "true" -> "native"
         HostManager.hostIsLinux -> "linuxX64"
         HostManager.hostIsMingw -> "mingwX64"
-        HostManager.hostIsMac -> "macosX64"
+        HostManager.host == KonanTarget.MACOS_X64 -> "macosX64"
+        HostManager.host == KonanTarget.MACOS_ARM64 -> "macosArm64"
         else -> error("Unknown host: ${HostManager.host}")
     }
 
