@@ -23,6 +23,7 @@ kotlin {
     }
 
     macosX64 { }
+    macosArm64 { }
     linuxX64 { }
     mingwX64 { }
 
@@ -47,6 +48,7 @@ kotlin {
             dependsOn(commonMain)
 
             macosX64Main.dependsOn(it)
+            macosArm64Main.dependsOn(it)
             linuxX64Main.dependsOn(it)
             mingwX64Main.dependsOn(it)
         }
@@ -101,6 +103,7 @@ benchmark {
         }
         register("js")
         register("macosX64")
+        register("macosArm64")
         register("linuxX64")
         register("mingwX64")
     }
