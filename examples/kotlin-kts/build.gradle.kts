@@ -4,10 +4,11 @@ import kotlinx.benchmark.gradle.*
 import org.jetbrains.kotlin.allopen.gradle.*
 import org.jetbrains.kotlin.gradle.tasks.*
 
+
 plugins {
     java
     kotlin("jvm")
-    kotlin("plugin.allopen") version "1.7.0-dev-2601"
+    kotlin("plugin.allopen") version "1.7.0-dev-3190"
     id("org.jetbrains.kotlinx.benchmark") version "0.4.2"
 }
 
