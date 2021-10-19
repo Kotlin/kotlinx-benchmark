@@ -51,9 +51,22 @@ infra {
     }
 }
 
+if (build_snapshot_train) {
+    repositories {
+        mavenLocal()
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+    }
+}
+
+println "Using Kotlin $kotlin_version for project ${project.name}"
+
 repositories {
     mavenCentral()
     gradlePluginPortal()
+
+    // Future replacement for kotlin-dev, with cache redirector
+    maven { url "https://cache-redirector.jetbrains.com/maven.pkg.jetbrains.space/kotlin/p/kotlin/dev" }
+    maven { url "https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev" }
 }
 
 pluginBundle {
