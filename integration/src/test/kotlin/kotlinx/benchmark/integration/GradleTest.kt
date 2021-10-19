@@ -26,6 +26,10 @@ abstract class GradleTest {
         templates.resolve(name).copyRecursively(rootProjectDir)
         file("build.gradle").modify(builder::build)
         file("settings.gradle").writeText("") // empty settings file
+        val kotlinDevUrl = System.getProperty("kotlin_repo_url")
+        if (!kotlinDevUrl.isNullOrBlank()) {
+            file("gradle.properties").appendText("\nkotlin_repo_url=$kotlinDevUrl")
+        }
         return Runner(rootProjectDir, print)
     }
 }

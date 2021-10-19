@@ -47,6 +47,13 @@ kotlin {
     }
 }
 
+repositories {
+    def kotlinDevUrl = rootProject.properties["kotlin_repo_url"]
+    if (kotlinDevUrl != null) {
+        maven { url = kotlinDevUrl }
+    }
+}
+
 benchmark {
     targets {
         register("jvm")
