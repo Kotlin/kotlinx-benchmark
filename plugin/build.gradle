@@ -1,7 +1,11 @@
 buildscript {
+    ext.kotlinDevUrl = rootProject.properties["kotlin_repo_url"]
     repositories {
         maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/maven' }
         mavenCentral()
+        if (kotlinDevUrl != null) {
+            maven { url = kotlinDevUrl }
+        }
     }
     dependencies {
         classpath "kotlinx.team:kotlinx.team.infra:$infra_version"
@@ -30,9 +34,15 @@ infra {
     }
 }
 
+logger.info("Using Kotlin $kotlin_version for project ${project.name}")
+
 repositories {
     mavenCentral()
     gradlePluginPortal()
+
+    if (kotlinDevUrl != null) {
+        maven { url = kotlinDevUrl }
+    }
 }
 
 pluginBundle {
