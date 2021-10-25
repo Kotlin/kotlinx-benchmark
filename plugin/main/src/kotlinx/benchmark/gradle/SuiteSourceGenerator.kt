@@ -208,15 +208,15 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
                     val annotation = it.annotations.findAnnotation(FqName(paramAnnotationFQN))!!
                     val constant = annotation.argumentValue("value") 
                         ?: error("@Param annotation should have at least one default value")
-                    val values = constant.value as? List<String>
+                    val values = constant.value as? List<StringValue>
                         ?: error("@Param annotation should have at least one default value")
                     values
                 })
                 
                 val defaultParametersString = defaultParameters.entries
-                    .joinToString(prefix = "mapOf(", postfix = ")") {  
-                        "\"${it.key}\" to " + it.value.joinToString(prefix = "listOf(", postfix = ")")
-                        
+                    .joinToString(prefix = "mapOf(", postfix = ")") { (key, value) ->
+                        "\"${key}\" to ${value.joinToString(prefix = "listOf(", postfix = ")") { "\"${it.value.replace("\"", "\\\"")}\"" }}"
+
                     }
 
                 val timeUnitClass = ClassName.bestGuess(timeUnitFQN)
