@@ -66,6 +66,9 @@ allprojects {
             mavenLocal()
             maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
         }
+
+        def deployVersion = properties['DeployVersion']
+        if (deployVersion != null) version = deployVersion
     }
 
     println "Using Kotlin $kotlin_version for project $it"
