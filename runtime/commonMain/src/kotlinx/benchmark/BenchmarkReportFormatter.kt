@@ -121,40 +121,40 @@ private class CsvBenchmarkReportFormatter(val delimiter: String) : BenchmarkRepo
     }
 
     private fun StringBuilder.appendHeader(params: Set<String>) {
-        appendEscaped("Benchmark").append(delimiter)
-        appendEscaped("Mode").append(delimiter)
-        appendEscaped("Threads").append(delimiter)
-        appendEscaped("Samples").append(delimiter)
-        appendEscaped("Score").append(delimiter)
-        appendEscaped("Score Error (99.9%)").append(delimiter)
-        appendEscaped("Unit")
+        append("Benchmark".quote()).append(delimiter)
+        append("Mode".quote()).append(delimiter)
+        append("Threads".quote()).append(delimiter)
+        append("Samples".quote()).append(delimiter)
+        append("Score".quote()).append(delimiter)
+        append("Score Error (99.9%)".quote()).append(delimiter)
+        append("Unit".quote())
         params.forEach {
             append(delimiter)
-            appendEscaped("Param: $it")
+            append("Param: ${it.escape()}")
         }
         append("\r\n")
     }
 
     private fun StringBuilder.appendResult(params: Set<String>, result: ReportBenchmarkResult) {
-        appendEscaped(result.benchmark.name).append(delimiter)
-        appendEscaped(result.config.mode.toText()).append(delimiter)
+        append(result.benchmark.name.escape().quote()).append(delimiter)
+        append(result.config.mode.toText().quote()).append(delimiter)
         append(1).append(delimiter)
         append(result.values.size).append(delimiter)
         append(result.score.format(6, useGrouping = false)).append(delimiter)
         append(result.error.format(6, useGrouping = false)).append(delimiter)
-        appendEscaped(unitText(result.config.mode, result.config.outputTimeUnit))
+        append(unitText(result.config.mode, result.config.outputTimeUnit).quote())
         params.forEach {
             append(delimiter)
             result.params[it]?.let { param ->
-                appendEscaped(param)
+                append(param.escape().quote())
             }
         }
         append("\r\n")
     }
 
-    private fun StringBuilder.appendEscaped(value: String): StringBuilder =
-        append("\"").append(value.replace("\"", "\"\"")).append("\"")
+    private fun String.escape() = this.replace("\"", "\"\"")
 
+    private fun String.quote() = "\"$this\""
 }
 
 private object JsonBenchmarkReportFormatter : BenchmarkReportFormatter() {
@@ -165,14 +165,14 @@ private object JsonBenchmarkReportFormatter : BenchmarkReportFormatter() {
     private fun format(result: ReportBenchmarkResult): String =
         """
   {
-    "benchmark" : "${result.benchmark.name}",
+    "benchmark" : "${result.benchmark.name.escape()}",
     "mode" : "${result.config.mode.toText()}",
     "warmupIterations" : ${result.config.warmups},
     "warmupTime" : "${result.config.iterationTime} ${result.config.iterationTimeUnit.toText()}",
     "measurementIterations" : ${result.config.iterations},
     "measurementTime" : "${result.config.iterationTime} ${result.config.iterationTimeUnit.toText()}",
     "params" : {
-          ${result.params.entries.joinToString(separator = ",\n          ") { "\"${it.key}\" : \"${it.value}\"" }}
+          ${result.params.entries.joinToString(separator = ",\n          ") { "\"${it.key.escape()}\" : \"${it.value.escape()}\"" }}
     },
     "nativeFork" : "${result.config.nativeFork.toText()}",
     "nativeGCAfterIteration" : "${result.config.nativeGCAfterIteration}",
@@ -201,4 +201,21 @@ private object JsonBenchmarkReportFormatter : BenchmarkReportFormatter() {
     }
   }"""
 
+    private fun String.escape(): String = buildString {
+        this@escape.forEach { char ->
+            when (char) {
+                '"', '\\', '/' -> append("\\").append(char)
+                '\t' -> append("\\t")
+                '\b' -> append("\\b")
+                '\n' -> append("\\n")
+                '\r' -> append("\\r")
+                '\u000C' -> append("\\f")
+                else -> if (char <= 0x1F.toChar()) {
+                    append("\\u00${char.code.toString(16)}")
+                } else {
+                    append(char)
+                }
+            }
+        }
+    }
 }
