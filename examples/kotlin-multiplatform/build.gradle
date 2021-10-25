@@ -80,7 +80,7 @@ benchmark {
             iterations = 5
             iterationTime = 300 // time in ms per iteration
             iterationTimeUnit = "ms" // time in ms per iteration
-            advanced("nativeGCAfterIteration", "true")
+            advanced("nativeGCAfterIteration", true)
         }
 
         csv {
