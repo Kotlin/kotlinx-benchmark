@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.konan.target.HostManager
+import org.jetbrains.kotlin.konan.target.KonanTarget
+
 plugins {
     id 'org.jetbrains.kotlin.multiplatform'
     id 'org.jetbrains.kotlin.plugin.allopen' version "1.6.0"
@@ -13,10 +16,10 @@ kotlin {
     jvm()
     js('jsIr', IR) { nodejs() }
     js { nodejs() }
-    macosX64 {}
-    macosArm64 {}
-    linuxX64 {}
-    mingwX64 {}
+    if (HostManager.host == KonanTarget.MACOS_X64.INSTANCE) macosX64('native')
+    if (HostManager.host == KonanTarget.MACOS_ARM64.INSTANCE) macosArm64('native')
+    if (HostManager.hostIsLinux) linuxX64('native')
+    if (HostManager.hostIsMingw) mingwX64('native')
 
     sourceSets.all {
         languageSettings {
@@ -39,11 +42,6 @@ kotlin {
 
         nativeMain {
             dependsOn(commonMain)
-
-            macosX64Main.dependsOn(it)
-            macosArm64Main.dependsOn(it)
-            linuxX64Main.dependsOn(it)
-            mingwX64Main.dependsOn(it)
         }
     }
 }
@@ -103,10 +101,7 @@ benchmark {
         }
         register("jsIr")
         register("js")
-        register("macosX64")
-        register("macosArm64")
-        register("linuxX64")
-        register("mingwX64")
+        register("native")
     }
 }
 
