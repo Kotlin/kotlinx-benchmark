@@ -29,7 +29,7 @@ fun Project.getSystemProperty(key: String): String? {
 
 val nativeTargetName
     get() = when {
-        project.getSystemProperty("idea.active") == "true" -> "native"
+        project.getSystemProperty("idea.active") == "true" -> if (HostManager.hostIsMac) "darwin" else "native"
         HostManager.hostIsLinux -> "linuxX64"
         HostManager.hostIsMingw -> "mingwX64"
         HostManager.host == KonanTarget.MACOS_X64 -> "macosX64"
