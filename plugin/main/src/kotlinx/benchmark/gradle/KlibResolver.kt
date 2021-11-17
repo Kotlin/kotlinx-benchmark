@@ -47,7 +47,8 @@ internal fun KlibResolver.createModuleDescriptor(
         storageManager,
         DefaultBuiltIns.Instance,
         LanguageVersionSettingsImpl.DEFAULT,
-        null,
+        emptySet(),
+        emptySet(),
         emptyList()
     )
 
