@@ -43,8 +43,7 @@ fun Project.deployPlugin() = BuildType {
     }
 
     dependsOnSnapshot(this@deployPlugin.knownBuilds.buildAll)
-    if (!build_snapshot_up = true)
-        buildNumberPattern = this@deployPlugin.knownBuilds.buildVersion.depParamRefs.buildNumber.ref
+    buildNumberPattern = this@deployPlugin.knownBuilds.buildVersion.depParamRefs.buildNumber.ref
 
     type = BuildTypeSettings.Type.DEPLOYMENT
     enablePersonalBuilds = false
