@@ -94,8 +94,7 @@ fun Project.buildAll(versionBuild: BuildType) = BuildType {
     type = BuildTypeSettings.Type.COMPOSITE
 
     dependsOnSnapshot(versionBuild)
-    if (!build_snapshot_up = true)
-        buildNumberPattern = versionBuild.depParamRefs.buildNumber.ref
+    buildNumberPattern = versionBuild.depParamRefs.buildNumber.ref
 
     triggers {
         vcs {
@@ -171,8 +170,7 @@ fun Project.deployPublish(configureBuild: BuildType) = BuildType {
     this.name = "Deploy (Publish)"
     type = BuildTypeSettings.Type.COMPOSITE
     dependsOnSnapshot(configureBuild)
-    if (!build_snapshot_up = true)
-        buildNumberPattern = configureBuild.depParamRefs.buildNumber.ref
+    buildNumberPattern = configureBuild.depParamRefs.buildNumber.ref
     params {
         // Tell configuration build how to get release version parameter from this build
         // "dev" is the default and means publishing is not releasing to public
