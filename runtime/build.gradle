@@ -83,16 +83,17 @@ kotlin {
     }
 }
 
-
-// publish to Space repository
-publishing {
-    repositories {
-        maven {
-            name = "space"
-            url = "https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/dev"
-            credentials {
-                username = project.findProperty("space.user")
-                password = project.findProperty("space.token")
+if (project.findProperty("publication_repository") == "space") {
+    // publish to Space repository
+    publishing {
+        repositories {
+            maven {
+                name = "space"
+                url = "https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/dev"
+                credentials {
+                    username = project.findProperty("space.user")
+                    password = project.findProperty("space.token")
+                }
             }
         }
     }
