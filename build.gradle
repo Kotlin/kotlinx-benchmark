@@ -21,7 +21,10 @@ infra {
         include(":kotlinx-benchmark-runtime")
 
         libraryRepoUrl = "https://github.com/Kotlin/kotlinx-benchmark"
-        sonatype {}
+
+        if (project.findProperty("publication_repository") == "sonatype") {
+            sonatype {}
+        }
     }
 }
 

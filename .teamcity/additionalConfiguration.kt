@@ -5,6 +5,7 @@
 
 import jetbrains.buildServer.configs.kotlin.v2019_2.BuildType
 import jetbrains.buildServer.configs.kotlin.v2019_2.BuildTypeSettings
+import jetbrains.buildServer.configs.kotlin.v2019_2.ParameterDisplay
 import jetbrains.buildServer.configs.kotlin.v2019_2.Project
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.GradleBuildStep
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.gradle
@@ -14,6 +15,9 @@ fun Project.additionalConfiguration() {
         val gradleBuild = knownBuilds.buildOn(platform).steps.items.single() as GradleBuildStep
         gradleBuild.tasks += " " + "fastBenchmark"
 
+        knownBuilds.deployPublish.params {
+            select("reverse.dep.*.system.publication_repository", "space", display = ParameterDisplay.PROMPT, label = "Publication Repository", options = listOf("space", "sonatype"))
+        }
         knownBuilds.deployOn(platform).params {
             param("system.space.user", "abduqodiri.qurbonzoda")
             password("system.space.token", "credentialsJSON:7aa03210-1f86-452e-b786-920f8a321b7d")
