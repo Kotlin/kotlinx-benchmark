@@ -11,9 +11,6 @@
 > * The Gradle plugin id has changed to `org.jetbrains.kotlinx.benchmark`
 > * The library runtime artifact id has changed to `kotlinx-benchmark-runtime`
 
-> **_NOTE:_** &nbsp; When Kotlin 1.5.0 until 1.5.30 is used make sure the `kotlin-gradle-plugin` is pulled from Maven Central, 
-> not Gradle Plugin Portal. For more information: https://github.com/Kotlin/kotlinx-benchmark/issues/42
-
 
 **kotlinx.benchmark** is a toolkit for running benchmarks for multiplatform code written in Kotlin 
 and running on the next supported targets: JVM, JavaScript.
@@ -25,7 +22,7 @@ the hoods to run benchmarks on JVM.
 
 Gradle 6.8 or newer
 
-Kotlin 1.5.30 or newer
+Kotlin 1.6.0 or newer
 
 # Gradle plugin
 
