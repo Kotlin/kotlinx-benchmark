@@ -8,6 +8,7 @@ class ReportFormatTest : GradleTest() {
     @Test
     fun testReportFormatFileNames() {
         val formats = listOf(null, "json", "csv", "scsv", "text")
+        val targets = listOf("jsIr", "jsLegacy", "jvm", "native")
 
         val runner = project("kotlin-multiplatform", true) {
             formats.forEach { format ->
@@ -20,13 +21,13 @@ class ReportFormatTest : GradleTest() {
             }
         }
 
-        formats.forEach {
-            val name = it ?: "jsonDefault"
-            val ext = it ?: "json"
+        formats.forEach { format ->
+            val name = format ?: "jsonDefault"
+            val ext = format ?: "json"
             runner.run("${name}Benchmark")
             val reports = reports(name)
-            assertEquals(3, reports.size)
-            assertEquals(setOf("js.$ext", "jvm.$ext", "native.$ext"), reports.map(File::getName).toSet())
+            assertEquals(targets.size, reports.size)
+            assertEquals(targets.map { "$it.$ext" }.toSet(), reports.map(File::getName).toSet())
         }
     }
 }

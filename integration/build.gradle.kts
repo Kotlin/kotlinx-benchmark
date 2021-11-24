@@ -52,7 +52,8 @@ fun IncludedBuild.classpath() = projectDir.resolve("build/createClasspathManifes
 val createClasspathManifest by tasks.registering {
     dependsOn(plugin.task(":createClasspathManifest"))
     dependsOn(artifactsTask("jvm"))
-    dependsOn(artifactsTask("js"))
+    dependsOn(artifactsTask("jsIr"))
+    dependsOn(artifactsTask("jsLegacy"))
     dependsOn(artifactsTask("metadata"))
     dependsOn(artifactsTaskNativeKlibs())
 
@@ -64,7 +65,8 @@ val createClasspathManifest by tasks.registering {
             resolve("plugin-classpath.txt").writeText(plugin.classpath().resolve("plugin-classpath.txt").readText())
             resolve("runtime-metadata.txt").writeText(artifactsTask("metadata").archiveFilePath)
             resolve("runtime-jvm.txt").writeText(artifactsTask("jvm").archiveFilePath)
-            resolve("runtime-js.txt").writeText(artifactsTask("js").archiveFilePath)
+            resolve("runtime-jsIr.txt").writeText(artifactsTask("jsIr").archiveFilePath)
+            resolve("runtime-jsLegacy.txt").writeText(artifactsTask("jsLegacy").archiveFilePath)
             resolve("runtime-native.txt").writeText(artifactsTaskNativeKlibs().klibs())
         }
     }

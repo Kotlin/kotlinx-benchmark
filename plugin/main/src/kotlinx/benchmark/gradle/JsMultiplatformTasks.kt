@@ -2,6 +2,8 @@ package kotlinx.benchmark.gradle
 
 import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.targets.js.dsl.*
+import org.jetbrains.kotlin.gradle.targets.js.ir.*
 
 fun Project.processJsCompilation(target: JsBenchmarkTarget) {
     project.logger.info("Configuring benchmarks for '${target.name}' using Kotlin/JS")
@@ -20,6 +22,11 @@ private fun Project.createJsBenchmarkCompileTask(target: JsBenchmarkTarget): Kot
     val benchmarkBuildDir = benchmarkBuildDir(target)
     val benchmarkCompilation =
         compilation.target.compilations.create(BenchmarksPlugin.BENCHMARK_COMPILATION_NAME) as KotlinJsCompilation
+
+    (compilation.target as KotlinJsTargetDsl).apply {
+        //force to create executable: required for IR, do nothing on Legacy
+        binaries.executable(benchmarkCompilation)
+    }
 
     benchmarkCompilation.apply {
         val sourceSet = kotlinSourceSets.single()
@@ -58,6 +65,7 @@ private fun Project.createJsBenchmarkGenerateSourceTask(
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Generate JS source files for '${target.name}'"
         title = target.name
+        ir = target.compilation is KotlinJsIrCompilation
         inputClassesDirs = compilationOutput.output.allOutputs
         inputDependencies = compilationOutput.compileDependencyFiles
         outputResourcesDir = file("$benchmarkBuildDir/resources")
