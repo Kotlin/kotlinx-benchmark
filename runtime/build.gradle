@@ -29,17 +29,8 @@ kotlin {
         }
     }
 
-    jvm {
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = '1.8'
-            }
-        }
-    }
-
-    js {
-        nodejs()
-    }
+    jvm()
+    js(BOTH) { nodejs() }
 
     sourceSets.all {
         kotlin.srcDirs = ["$it.name/src"]
@@ -50,12 +41,9 @@ kotlin {
     }
 
     sourceSets {
-        commonMain {
-        }
         commonTest {
             dependencies {
-                implementation 'org.jetbrains.kotlin:kotlin-test-common'
-                implementation 'org.jetbrains.kotlin:kotlin-test-annotations-common'
+                implementation 'org.jetbrains.kotlin:kotlin-test'
             }
         }
         jvmMain {
@@ -65,18 +53,9 @@ kotlin {
         }
         jvmTest {
             dependencies {
-                implementation 'org.jetbrains.kotlin:kotlin-test'
-                implementation 'org.jetbrains.kotlin:kotlin-test-junit'
                 implementation "org.openjdk.jmh:jmh-core:$jmhVersion"
             }
         }
-        jsMain {}
-        jsTest {
-            dependencies {
-                implementation 'org.jetbrains.kotlin:kotlin-test-js'
-            }
-        }
-
         nativeMain {
             dependsOn(commonMain)
         }

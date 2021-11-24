@@ -10,22 +10,13 @@ allOpen {
 }
 
 kotlin {
-    jvm {
-        compilations.all {
-            kotlinOptions {
-                jvmTarget = '1.8'
-            }
-        }
-    }
-
-    js {
-        nodejs { }
-    }
-
-    macosX64 { }
-    macosArm64 { }
-    linuxX64 { }
-    mingwX64 { }
+    jvm()
+    js('jsIr', IR) { nodejs() }
+    js('jsLegacy', LEGACY) { nodejs() }
+    macosX64 {}
+    macosArm64 {}
+    linuxX64 {}
+    mingwX64 {}
 
     sourceSets.all {
         languageSettings {
@@ -42,7 +33,12 @@ kotlin {
 
         jvmMain {}
 
-        jsMain {}
+        jsMain {
+            dependsOn(commonMain)
+
+            jsIrMain.dependsOn(it)
+            jsLegacyMain.dependsOn(it)
+        }
 
         nativeMain {
             dependsOn(commonMain)
@@ -108,7 +104,8 @@ benchmark {
         register("jvm") {
             jmhVersion = "1.21"
         }
-        register("js")
+        register("jsIr")
+        register("jsLegacy")
         register("macosX64")
         register("macosArm64")
         register("linuxX64")

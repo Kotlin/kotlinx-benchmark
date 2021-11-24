@@ -4,7 +4,6 @@ import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.workers.*
-import org.jetbrains.kotlin.builtins.*
 import org.jetbrains.kotlin.config.*
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.descriptors.impl.*
@@ -25,6 +24,9 @@ open class JsSourceGeneratorTask
     @Input
     lateinit var title: String
 
+    @Input
+    var ir: Boolean = false
+
     @InputFiles
     @PathSensitive(PathSensitivity.RELATIVE)
     lateinit var inputClassesDirs: FileCollection
@@ -44,22 +46,10 @@ open class JsSourceGeneratorTask
         cleanup(outputSourcesDir)
         cleanup(outputResourcesDir)
 
-        inputClassesDirs.files.forEach { lib ->
+        inputClassesDirs.files.forEach { lib: File ->
             generateSources(lib)
         }
     }
-
-    private fun load(lib: File): List<ModuleDescriptor> {
-        val configuration = CompilerConfiguration()
-        val languageVersionSettings = configuration.languageVersionSettings
-        val storageManager = LockBasedStorageManager("Inspect")
-
-        val dependencies = inputDependencies.flatMap {
-            loadDescriptors(it, languageVersionSettings, storageManager)
-        }
-        return loadDescriptors(lib, languageVersionSettings, storageManager, dependencies)
-    }
-
 
     private fun generateSources(lib: File) {
         val modules = load(lib)
@@ -74,42 +64,61 @@ open class JsSourceGeneratorTask
         }
     }
 
+    private fun load(lib: File): List<ModuleDescriptor> {
+        val storageManager = LockBasedStorageManager("Inspect")
+        return if (ir) {
+            loadIr(lib, storageManager)
+        } else {
+            loadLegacy(lib, storageManager)
+        }
+    }
+
+    private fun loadIr(lib: File, storageManager: StorageManager): List<ModuleDescriptor> {
+        //skip processing of empty dirs (fail if not to do it)
+        if (lib.listFiles() == null) return emptyList()
+        val dependencies = inputDependencies.files.filterNot { it.extension == "js" }.toSet()
+        val module = KlibResolver.JS.createModuleDescriptor(lib, dependencies, storageManager)
+        return listOf(module)
+    }
+
+    private fun loadLegacy(lib: File, storageManager: StorageManager): List<ModuleDescriptor> {
+        val dependencies = inputDependencies.flatMap {
+            loadDescriptors(it, storageManager)
+        }
+        return loadDescriptors(lib, storageManager, dependencies)
+    }
+
     private fun loadDescriptors(
         lib: File,
-        languageVersionSettings: LanguageVersionSettings,
-        storageManager: LockBasedStorageManager,
+        storageManager: StorageManager,
         dependencies: List<ModuleDescriptorImpl> = listOf()
-    ): List<ModuleDescriptorImpl> {
-        val modules = KotlinJavascriptMetadataUtils.loadMetadata(lib)
-        val builtIns = org.jetbrains.kotlin.js.resolve.JsPlatformAnalyzerServices.builtIns
-        return modules.map { metadata ->
-            val skipCheck = languageVersionSettings.getFlag(AnalysisFlags.skipMetadataVersionCheck)
-            assert(metadata.version.isCompatible() || skipCheck) {
-                "Expected JS metadata version " + JsMetadataVersion.INSTANCE + ", but actual metadata version is " + metadata.version
-            }
-
-            val module = ModuleDescriptorImpl(
-                Name.special("<" + metadata.moduleName + ">"),
-                storageManager,
-                builtIns
-            )
-            val (header, body) = KotlinJavascriptSerializationUtil.readModuleAsProto(
-                metadata.body,
-                metadata.version
-            )
-            val provider = createKotlinJavascriptPackageFragmentProvider(
-                storageManager,
-                module,
-                header,
-                body,
-                metadata.version,
-                CompilerDeserializationConfiguration(languageVersionSettings),
-                LookupTracker.DO_NOTHING
-            )
-            module.setDependencies(listOf(module, builtIns.builtInsModule) + dependencies)
-            module.initialize(provider)
-            module
+    ): List<ModuleDescriptorImpl> = KotlinJavascriptMetadataUtils.loadMetadata(lib).map { metadata ->
+        val skipCheck = LanguageVersionSettingsImpl.DEFAULT.getFlag(AnalysisFlags.skipMetadataVersionCheck)
+        assert(metadata.version.isCompatible() || skipCheck) {
+            "Expected JS metadata version " + JsMetadataVersion.INSTANCE + ", but actual metadata version is " + metadata.version
         }
+
+        val module = ModuleDescriptorImpl(
+            Name.special("<" + metadata.moduleName + ">"),
+            storageManager,
+            JsPlatformAnalyzerServices.builtIns
+        )
+        val (header, body) = KotlinJavascriptSerializationUtil.readModuleAsProto(
+            metadata.body,
+            metadata.version
+        )
+        val provider = createKotlinJavascriptPackageFragmentProvider(
+            storageManager,
+            module,
+            header,
+            body,
+            metadata.version,
+            CompilerDeserializationConfiguration(LanguageVersionSettingsImpl.DEFAULT),
+            LookupTracker.DO_NOTHING
+        )
+        module.setDependencies(listOf(module, JsPlatformAnalyzerServices.builtIns.builtInsModule) + dependencies)
+        module.initialize(provider)
+        module
     }
 
 }
