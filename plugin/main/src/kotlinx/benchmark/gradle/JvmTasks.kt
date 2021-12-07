@@ -32,13 +32,21 @@ fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, compileCla
         conventionMapping.map("classifier") { "JMH" }
         manifest.attributes["Main-Class"] = "org.openjdk.jmh.Main"
         
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+        duplicatesStrategy = DuplicatesStrategy.WARN
         
         from(project.provider {
             compileClasspath.map {
                 when {
                     it.isDirectory -> it
-                    it.exists() -> zipTree(it)
+                    it.exists() -> zipTree(it).let { tree ->
+                        if (it.name.startsWith("kotlin-stdlib-jdk")) {
+                            tree.filter { file ->
+                                !(file.toString().contains("META-INF") && file.name in listOf("module-info.class", "MANIFEST.MF"))
+                            }
+                        } else {
+                            tree
+                        }
+                    }
                     else -> files()
                 }
             }
