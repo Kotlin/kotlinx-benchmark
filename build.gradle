@@ -28,6 +28,11 @@ infra {
     }
 }
 
+// https://youtrack.jetbrains.com/issue/KT-48410
+repositories {
+    mavenCentral()
+}
+
 afterEvaluate {
     gradle.includedBuilds.forEach { included ->
         project(":kotlinx-benchmark-runtime").tasks.named("publishToMavenLocal") { dependsOn(included.task(":publishToMavenLocal")) }
