@@ -72,7 +72,7 @@ class RunnerConfiguration(config: String) {
 
     val mode = singleValueOrNull(
         "mode"
-    ) { Mode.valueOf(it) }
+    ) { it.toMode() }
 
     val nativeFork = singleValueOrNull(
         "nativeFork"
