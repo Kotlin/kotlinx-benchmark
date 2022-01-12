@@ -11,12 +11,9 @@
 > * The Gradle plugin id has changed to `org.jetbrains.kotlinx.benchmark`
 > * The library runtime artifact id has changed to `kotlinx-benchmark-runtime`
 
-> **_NOTE:_** &nbsp; When Kotlin 1.5.0 until 1.5.30 is used make sure the `kotlin-gradle-plugin` is pulled from Maven Central, 
-> not Gradle Plugin Portal. For more information: https://github.com/Kotlin/kotlinx-benchmark/issues/42
-
 
 **kotlinx.benchmark** is a toolkit for running benchmarks for multiplatform code written in Kotlin 
-and running on the next supported targets: JVM, JavaScript.
+and running on the following supported targets: JVM, JavaScript and Native.
 
 If you're familiar with [JMH](https://openjdk.java.net/projects/code-tools/jmh/), it is very similar and uses it under 
 the hoods to run benchmarks on JVM.   
@@ -33,7 +30,7 @@ Use plugin in `build.gradle`:
 
 ```groovy
 plugins {
-    id 'org.jetbrains.kotlinx.benchmark' version '0.3.1'
+    id 'org.jetbrains.kotlinx.benchmark' version '0.4.1'
 }
 ```
 
@@ -86,7 +83,7 @@ kotlin {
     sourceSets {
         commonMain {
              dependencies {
-                 implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.3.1")
+                 implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.1")
              }
         }
     }
@@ -180,7 +177,7 @@ benchmark {
             warmups = 5 // number of warmup iterations
             iterations = 3 // number of iterations
             iterationTime = 500 // time in seconds per iteration
-            iterationTimeUnit = "ms" // time unity for iterationTime, default is seconds
+            iterationTimeUnit = "ms" // time unit for iterationTime, default is seconds
         }   
     }
     
