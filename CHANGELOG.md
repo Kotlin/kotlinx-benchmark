@@ -1,5 +1,22 @@
 # CHANGELOG
 
+## 0.4.1
+
+- Require the minimum Kotlin version of 1.6.0
+
+## 0.4.0
+
+- Require the minimum Kotlin version of 1.5.30
+- Add support for other Apple Kotlin/Native targets
+- Improve Kotlin/Native support [#24](https://github.com/Kotlin/kotlinx-benchmark/issues/24)
+  - Benchmark each method in its own process, previously all methods where benchmarked in the same process
+  - Introduce `nativeFork` advanced configuration option with the following values:
+    - "perBenchmark" (default) – executes all iterations of a benchmark in the same process (one binary execution)
+    - "perIteration" – executes each iteration of a benchmark in a separate process, measures in cold Kotlin/Native runtime environment
+  - Introduce `nativeGCAfterIteration` advanced configuration option that when set to `true`, additionally collects garbage after each measuring iteration (default is `false`)
+- Rename "forks" configuration option to "jvmForks" and provide an option to not override fork value defined in `@Fork`
+- Fix a failure due to the strict DuplicatesStrategy [#39](https://github.com/Kotlin/kotlinx-benchmark/issues/39)
+
 ## 0.3.1
 
 - Support report format selection: json(default), csv/scsv or text [#34](https://github.com/Kotlin/kotlinx-benchmark/issues/34)
