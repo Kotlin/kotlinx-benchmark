@@ -10,8 +10,6 @@ import java.io.File
 import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import kotlin.io.path.ExperimentalPathApi
-import kotlin.io.path.invariantSeparatorsPath
 
 fun cleanup(file: File) {
     if (file.exists()) {
@@ -93,8 +91,7 @@ fun Task.traceFormat(): String {
     return if (ideaActive) "xml" else "text"
 }
 
-@OptIn(ExperimentalPathApi::class)
-val Path.absolutePath: String get() = toAbsolutePath().invariantSeparatorsPath
+val Path.absolutePath: String get() = toAbsolutePath().toFile().invariantSeparatorsPath
 
 fun writeParameters(
     name: String,
