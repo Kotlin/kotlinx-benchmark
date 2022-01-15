@@ -115,16 +115,17 @@ fun Project.createNativeBenchmarkExecTask(
         val linkTask = binary.linkTask
         onlyIf { linkTask.enabled }
 
+        dependsOn(linkTask)
+
         val executableFile = linkTask.outputFile.get()
-        executable = executableFile.absolutePath
-        this.config = config
-        this.workingDir = target.workingDir?.let { File(it) }
+        onlyIf { executableFile.exists() }
+
+        this.executable = executableFile
+        this.nativeFork = config.nativeFork
+        this.workingDir = target.workingDir
         this.benchProgressPath = createTempFile("bench", ".txt").absolutePath
 
-        onlyIf { executableFile.exists() }
         benchsDescriptionDir = file(project.buildDir.resolve(target.extension.benchsDescriptionDir).resolve(config.name))
-
-        dependsOn(linkTask)
 
         reportFile = setupReporting(target, config)
         configFile = writeParameters(target.name, reportFile, traceFormat(), config)
@@ -141,32 +142,36 @@ open class NativeBenchmarkExec() : DefaultTask() {
     @Option(option = "filter", description = "Configures the filter for benchmarks to run.")
     var filter: String? = null
 */
-    @Input
-    lateinit var executable: String
-
-    var workingDir: File? = null
+    @InputFile
+    lateinit var executable: File
 
     @Input
+    @Optional
+    var workingDir: String? = null
+
+    @InputFile
     lateinit var configFile: File
 
     @Input
-    lateinit var config: BenchmarkConfiguration
+    @Optional
+    var nativeFork: String? = null
 
-    @Input
+    @OutputFile
     lateinit var reportFile: File
 
-    @Input
+    @Internal
     lateinit var benchsDescriptionDir: File
 
-    @Input
+    @Internal
     lateinit var benchProgressPath: String
 
     private fun execute(args: Collection<String>) {
         project.exec {
-            it.executable = executable
+            it.executable = executable.absolutePath
             it.args(args)
-            if (workingDir != null)
-                it.workingDir = workingDir
+            workingDir?.let { dir ->
+                it.workingDir = File(dir)
+            }
         }
     }
 
@@ -178,7 +183,7 @@ open class NativeBenchmarkExec() : DefaultTask() {
         val detailedConfigFiles = project.fileTree(benchsDescriptionDir).files.sortedBy { it.absolutePath }
         val runResults = mutableMapOf<String, String>()
 
-        val forkPerBenchmark = config.nativeFork.let { it == null || it == "perBenchmark" }
+        val forkPerBenchmark = nativeFork.let { it == null || it == "perBenchmark" }
 
         detailedConfigFiles.forEach { runConfig ->
             val runConfigPath = runConfig.absolutePath
