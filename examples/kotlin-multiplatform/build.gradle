@@ -12,7 +12,7 @@ allOpen {
 kotlin {
     jvm()
     js('jsIr', IR) { nodejs() }
-    js('jsLegacy', LEGACY) { nodejs() }
+    js { nodejs() }
     macosX64 {}
     macosArm64 {}
     linuxX64 {}
@@ -34,10 +34,7 @@ kotlin {
         jvmMain {}
 
         jsMain {
-            dependsOn(commonMain)
-
             jsIrMain.dependsOn(it)
-            jsLegacyMain.dependsOn(it)
         }
 
         nativeMain {
@@ -105,7 +102,7 @@ benchmark {
             jmhVersion = "1.21"
         }
         register("jsIr")
-        register("jsLegacy")
+        register("js")
         register("macosX64")
         register("macosArm64")
         register("linuxX64")

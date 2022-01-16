@@ -66,7 +66,7 @@ val createClasspathManifest by tasks.registering {
             resolve("runtime-metadata.txt").writeText(artifactsTask("metadata").archiveFilePath)
             resolve("runtime-jvm.txt").writeText(artifactsTask("jvm").archiveFilePath)
             resolve("runtime-jsIr.txt").writeText(artifactsTask("jsIr").archiveFilePath)
-            resolve("runtime-jsLegacy.txt").writeText(artifactsTask("jsLegacy").archiveFilePath)
+            resolve("runtime-js.txt").writeText(artifactsTask("jsLegacy").archiveFilePath)
             resolve("runtime-native.txt").writeText(artifactsTaskNativeKlibs().klibs())
         }
     }

@@ -42,7 +42,7 @@ private val buildScript = run {
     def benchmarkRuntimeMetadata = files(${readFileList("runtime-metadata.txt")})
     def benchmarkRuntimeJvm = files(${readFileList("runtime-jvm.txt")})
     def benchmarkRuntimeJsIr = files(${readFileList("runtime-jsIr.txt")})
-    def benchmarkRuntimeJsLegacy = files(${readFileList("runtime-jsLegacy.txt")})
+    def benchmarkRuntimeJs = files(${readFileList("runtime-js.txt")})
     def benchmarkRuntimeNative = files(${readFileList("runtime-native.txt")})
     """.trimIndent()
 }
