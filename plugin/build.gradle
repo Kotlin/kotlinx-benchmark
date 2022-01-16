@@ -73,14 +73,14 @@ compileKotlin {
 }
 
 dependencies {
-    compile group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlin_version
+    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlin_version
 
-    compile 'com.squareup:kotlinpoet:1.3.0'
-    compile "org.openjdk.jmh:jmh-core:$jmhVersion"
+    implementation 'com.squareup:kotlinpoet:1.3.0'
+    implementation "org.openjdk.jmh:jmh-core:$jmhVersion"
 
-    compile group: 'org.jetbrains.kotlin', name: 'kotlin-util-klib-metadata', version: kotlin_version
-    compile group: 'org.jetbrains.kotlin', name: 'kotlin-util-klib', version: kotlin_version
-    compile group: 'org.jetbrains.kotlin', name: 'kotlin-util-io', version: kotlin_version
+    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-util-klib-metadata', version: kotlin_version
+    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-util-klib', version: kotlin_version
+    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-util-io', version: kotlin_version
     
     compileOnly group: 'org.jetbrains.kotlin.multiplatform', name: 'org.jetbrains.kotlin.multiplatform.gradle.plugin', version: kotlin_version
     compileOnly "org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlin_version"
