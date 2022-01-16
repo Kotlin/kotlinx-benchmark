@@ -8,7 +8,7 @@ class ReportFormatTest : GradleTest() {
     @Test
     fun testReportFormatFileNames() {
         val formats = listOf(null, "json", "csv", "scsv", "text")
-        val targets = listOf("jsIr", "jsLegacy", "jvm", "native")
+        val targets = listOf("jsIr", "js", "jvm", "native")
 
         val runner = project("kotlin-multiplatform", true) {
             formats.forEach { format ->

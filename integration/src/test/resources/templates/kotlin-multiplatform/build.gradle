@@ -4,7 +4,7 @@ import org.jetbrains.kotlin.konan.target.HostManager
 kotlin {
     jvm()
     js('jsIr', IR) { nodejs() }
-    js('jsLegacy', LEGACY) { nodejs() }
+    js { nodejs() }
 
     if (HostManager.hostIsLinux) linuxX64('native')
     if (HostManager.hostIsMingw) mingwX64('native')
@@ -27,9 +27,9 @@ kotlin {
                 implementation(benchmarkRuntimeJsIr)
             }
         }
-        jsLegacyMain {
+        jsMain {
             dependencies {
-                implementation(benchmarkRuntimeJsLegacy)
+                implementation(benchmarkRuntimeJs)
             }
         }
         nativeMain {
@@ -45,7 +45,7 @@ benchmark {
     targets {
         register("jvm")
         register("jsIr")
-        register("jsLegacy")
+        register("js")
         register("native")
     }
 }
