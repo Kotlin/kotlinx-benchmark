@@ -215,8 +215,7 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
                 
                 val defaultParametersString = defaultParameters.entries
                     .joinToString(prefix = "mapOf(", postfix = ")") { (key, value) ->
-                        "\"${key}\" to ${value.joinToString(prefix = "listOf(", postfix = ")") { "\"${it.value.replace("\"", "\\\"")}\"" }}"
-
+                        "\"${key}\" to ${value.joinToString(prefix = "listOf(", postfix = ")") { "\"\"\"${it.value}\"\"\"" }}"
                     }
 
                 val timeUnitClass = ClassName.bestGuess(timeUnitFQN)
