@@ -47,8 +47,8 @@ fun BenchmarkTimeUnit.toText() = when (this) {
 
 fun String.toMode() =
     when (this) {
-        "thrpt" -> Mode.Throughput
-        "avgt" -> Mode.AverageTime
+        "thrpt", "Throughput" -> Mode.Throughput
+        "avgt", "AverageTime" -> Mode.AverageTime
         else -> throw UnsupportedOperationException("$this is not supported")
     }
 
