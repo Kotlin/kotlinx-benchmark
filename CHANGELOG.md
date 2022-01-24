@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.4.2
+
+- Support JS IR backend
+- Support Gradle 7.0 and newer [#67](https://github.com/Kotlin/kotlinx-benchmark/issues/67)
+- Make `mode` configuration parameter work with values considered valid in README.MD
+- Support benchmark @Param values containing spaces [#62](https://github.com/Kotlin/kotlinx-benchmark/issues/62)
+
 ## 0.4.1
 
 - Require the minimum Kotlin version of 1.6.0
