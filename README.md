@@ -16,8 +16,12 @@
 **kotlinx.benchmark** is a toolkit for running benchmarks for multiplatform code written in Kotlin 
 and running on the following supported targets: JVM, JavaScript and Native.
 
-If you're familiar with [JMH](https://openjdk.java.net/projects/code-tools/jmh/), it is very similar and uses it under 
-the hoods to run benchmarks on JVM.   
+Both Legacy and IR backends are supported for JS, however `kotlin.js.compiler=both` or `js(BOTH)` target declaration won't work.
+You should declare each targeted backend separately. See build script of the [kotlin-multiplatform example project](https://github.com/Kotlin/kotlinx-benchmark/tree/master/examples/kotlin-multiplatform).
+
+On JVM [JMH](https://openjdk.java.net/projects/code-tools/jmh/) is used under the hoods to run benchmarks.
+This library has a very similar way of defining benchmark methods. Thus, using this library you can run your JMH-based 
+Kotlin/JVM benchmarks on other platforms with minimum modifications, if any at all. 
 
 # Requirements
 
@@ -31,7 +35,7 @@ Use plugin in `build.gradle`:
 
 ```groovy
 plugins {
-    id 'org.jetbrains.kotlinx.benchmark' version '0.4.1'
+    id 'org.jetbrains.kotlinx.benchmark' version '0.4.2'
 }
 ```
 
@@ -84,7 +88,7 @@ kotlin {
     sourceSets {
         commonMain {
              dependencies {
-                 implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.1")
+                 implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.2")
              }
         }
     }
