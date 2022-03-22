@@ -49,7 +49,8 @@ internal fun KlibResolver.createModuleDescriptor(
         LanguageVersionSettingsImpl.DEFAULT,
         emptySet(),
         emptySet(),
-        emptyList()
+        emptyList(),
+        isForMetadataCompilation = false
     )
 
     val dependenciesDescriptors = dependenciesResolved.resolvedDescriptors
