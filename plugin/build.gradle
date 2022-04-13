@@ -157,7 +157,7 @@ if (build_snapshot_train) {
     if (deployVersion != null) version = deployVersion
 }
 
-// comfiguration of classpathes for plugin integration tests
+// configuration of classpath for plugin integration tests
 
 configurations {
     testPluginClasspath {
