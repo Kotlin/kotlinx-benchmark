@@ -156,10 +156,21 @@ if (build_snapshot_train) {
     if (deployVersion != null) version = deployVersion
 }
 
-// comfiguration of classpathes for plugin integration tests
+// configuration of classpath for plugin integration tests
 
 configurations {
-    testPluginClasspath
+    testPluginClasspath {
+        attributes {
+            attribute(
+                    Usage.USAGE_ATTRIBUTE,
+                    project.objects.named(Usage.class, Usage.JAVA_RUNTIME)
+            )
+            attribute(
+                    Category.CATEGORY_ATTRIBUTE,
+                    project.objects.named(Category.class, Category.LIBRARY)
+            )
+        }
+    }
 }
 
 dependencies {
