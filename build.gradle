@@ -26,6 +26,7 @@ buildscript {
 
         // Future replacement for kotlin-dev, with cache redirector
         maven { url "https://cache-redirector.jetbrains.com/maven.pkg.jetbrains.space/kotlin/p/kotlin/dev" }
+        maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlin/bootstrap' }
         maven { url "https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev" }
     }
 
@@ -81,6 +82,15 @@ allprojects {
     repositories {
         // Future replacement for kotlin-dev, with cache redirector
         maven { url "https://cache-redirector.jetbrains.com/maven.pkg.jetbrains.space/kotlin/p/kotlin/dev" }
+        maven { url "https://maven.pkg.jetbrains.space/kotlin/p/kotlin/bootstrap" }
         maven { url "https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev" }
     }
 }
+
+tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile) {
+    kotlinOptions {
+        freeCompilerArgs += listOf("-Xuse-fir=true", "-Xallow-unstable-dependencies")
+    }
+}
+
+

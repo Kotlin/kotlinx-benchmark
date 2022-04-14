@@ -8,7 +8,7 @@ import org.jetbrains.kotlin.gradle.tasks.*
 plugins {
     java
     kotlin("jvm")
-    kotlin("plugin.allopen") version "1.7.0-dev-3190"
+    kotlin("plugin.allopen") version "1.7.20-dev-52"
     id("org.jetbrains.kotlinx.benchmark") version "0.4.2"
 }
 
@@ -28,6 +28,7 @@ dependencies {
 tasks.withType<KotlinCompile> {
     kotlinOptions {
         jvmTarget = "1.8"
+        freeCompilerArgs += listOf("-Xuse-fir=true", "-Xallow-unstable-dependencies")
     }
 }
 
@@ -36,7 +37,7 @@ benchmark {
         named("main") {
             iterationTime = 5
             iterationTimeUnit = "sec"
-            
+
         }
     }
     targets {

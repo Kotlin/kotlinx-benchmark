@@ -97,3 +97,9 @@ if (build_snapshot_train) {
     def deployVersion = properties['DeployVersion']
     if (deployVersion != null) version = deployVersion
 }
+
+tasks.withType(org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile) {
+    kotlinOptions {
+        freeCompilerArgs += "-Xuse-fir=true"
+    }
+}

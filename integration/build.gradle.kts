@@ -78,3 +78,9 @@ dependencies {
 
     testImplementation(kotlin("test-junit"))
 }
+
+tasks.withType<org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile> {
+    kotlinOptions {
+        freeCompilerArgs += "-Xuse-fir=true"
+    }
+}
