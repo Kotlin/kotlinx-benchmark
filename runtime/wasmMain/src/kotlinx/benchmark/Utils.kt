@@ -1,12 +1,9 @@
 package kotlinx.benchmark
 
-actual fun Double.format(precision: Int, useGrouping: Boolean): String {
-    val options = js("{maximumFractionDigits:2, minimumFractionDigits:2, useGrouping:true}")
-    options.minimumFractionDigits = precision
-    options.maximumFractionDigits = precision
-    options.useGrouping = useGrouping
-    return this.asDynamic().toLocaleString(undefined, options) as String
-}
+@JsFun("(d, precision, useGrouping) => d.toLocaleString(undefined, { maximumFractionDigits: precision, minimumFractionDigits: precision, useGrouping: useGrouping } )")
+private external fun format(d: Double, precision: Int, useGrouping: Boolean): String
+
+actual fun Double.format(precision: Int, useGrouping: Boolean): String = format(this, precision, useGrouping)
 
 actual fun String.writeFile(text: String): Unit = jsEngineSupport.writeFile(this, text)
 
@@ -20,8 +17,8 @@ internal abstract class JsEngineSupport {
     abstract fun arguments(): Array<out String>
 }
 
-internal fun isD8(): Boolean =
-    js("typeof d8 !== 'undefined'") as Boolean
+@JsFun("() => typeof d8 !== 'undefined'")
+internal external fun isD8(): Boolean
 
 internal val jsEngineSupport: JsEngineSupport by lazy {
     if (isD8()) D8EngineSupport else NodeJsEngineSupport

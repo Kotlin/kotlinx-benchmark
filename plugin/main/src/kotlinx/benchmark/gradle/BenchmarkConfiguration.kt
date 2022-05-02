@@ -2,6 +2,7 @@ package kotlinx.benchmark.gradle
 
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrCompilation
 
 open class BenchmarkConfiguration(val extension: BenchmarksExtension, val name: String) {
     var iterations: Int? = null
@@ -50,7 +51,7 @@ abstract class JvmBenchmarkTarget(
     extension: BenchmarksExtension,
     name: String
 ) : BenchmarkTarget(extension, name) {
-    var jmhVersion = (extension.project.findProperty("benchmarks_jmh_version") as? String) ?: "1.21"
+    var jmhVersion: String = (extension.project.findProperty("benchmarks_jmh_version") as? String) ?: "1.21"
 }
 
 class JavaBenchmarkTarget(
@@ -65,18 +66,27 @@ open class KotlinJvmBenchmarkTarget(
     val compilation: KotlinJvmCompilation
 ) : JvmBenchmarkTarget(extension, name)
 
+enum class JsBenchmarksExecutor {
+    BenchmarkJs,
+    BuiltIn
+}
+
 class JsBenchmarkTarget(
     extension: BenchmarksExtension,
     name: String,
     val compilation: KotlinJsCompilation
 ) : BenchmarkTarget(extension, name) {
-
+    var jsBenchmarksExecutor: JsBenchmarksExecutor = JsBenchmarksExecutor.BenchmarkJs
 }
+
+class WasmBenchmarkTarget(
+    extension: BenchmarksExtension,
+    name: String,
+    val compilation: KotlinJsIrCompilation
+) : BenchmarkTarget(extension, name)
 
 class NativeBenchmarkTarget(
     extension: BenchmarksExtension,
     name: String,
     val compilation: KotlinNativeCompilation
-) : BenchmarkTarget(extension, name) {
-
-}
+) : BenchmarkTarget(extension, name)

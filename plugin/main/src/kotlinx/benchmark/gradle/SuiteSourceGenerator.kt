@@ -12,8 +12,27 @@ import org.jetbrains.kotlin.resolve.scopes.*
 import org.jetbrains.kotlin.types.*
 import java.io.*
 
-enum class Platform {
-    JS, NATIVE
+enum class Platform(val executorClass: String, val suiteDescriptorClass: String, val benchmarkDescriptorClass: String) {
+    JsBuiltIn(
+        executorClass = "kotlinx.benchmark.js.JsSimpleExecutor",
+        suiteDescriptorClass = "kotlinx.benchmark.SuiteDescriptor",
+        benchmarkDescriptorClass = "kotlinx.benchmark.js.JsBenchmarkDescriptor",
+    ),
+    JsBenchmarkJs(
+        executorClass = "kotlinx.benchmark.js.JsExecutor",
+        suiteDescriptorClass = "kotlinx.benchmark.SuiteDescriptor",
+        benchmarkDescriptorClass = "kotlinx.benchmark.js.JsBenchmarkDescriptor",
+    ),
+    NativeBuiltIn(
+        executorClass = "kotlinx.benchmark.native.NativeExecutor",
+        suiteDescriptorClass = "kotlinx.benchmark.SuiteDescriptor",
+        benchmarkDescriptorClass = "kotlinx.benchmark.native.NativeBenchmarkDescriptor",
+    ),
+    WasmBuiltIn(
+        executorClass = "kotlinx.benchmark.wasm.WasmExecutor",
+        suiteDescriptorClass = "kotlinx.benchmark.SuiteDescriptor",
+        benchmarkDescriptorClass = "kotlinx.benchmark.wasm.WasmBenchmarkDescriptor",
+    )
 }
 
 class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val output: File, val platform: Platform) {
@@ -44,20 +63,9 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
         val suppressUnusedParameter = AnnotationSpec.builder(Suppress::class).addMember("\"UNUSED_PARAMETER\"").build()
     }
 
-    private val executorType = when (platform) {
-        Platform.JS -> ClassName.bestGuess("kotlinx.benchmark.js.JsExecutor")
-        Platform.NATIVE -> ClassName.bestGuess("kotlinx.benchmark.native.NativeExecutor")
-    }
-
-    private val suiteDescriptorType = when (platform) {
-        Platform.JS -> ClassName.bestGuess("kotlinx.benchmark.SuiteDescriptor")
-        Platform.NATIVE -> ClassName.bestGuess("kotlinx.benchmark.SuiteDescriptor")
-    }
-
-    private val benchmarkDescriptorType = when (platform) {
-        Platform.JS -> ClassName.bestGuess("kotlinx.benchmark.js.JsBenchmarkDescriptor")
-        Platform.NATIVE -> ClassName.bestGuess("kotlinx.benchmark.native.NativeBenchmarkDescriptor")
-    }
+    private val executorType = ClassName.bestGuess(platform.executorClass)
+    private val suiteDescriptorType = ClassName.bestGuess(platform.suiteDescriptorClass)
+    private val benchmarkDescriptorType = ClassName.bestGuess(platform.benchmarkDescriptorClass)
 
     val benchmarks = mutableListOf<ClassName>()
 

@@ -12,8 +12,9 @@ fun Project.processJsCompilation(target: JsBenchmarkTarget) {
     createJsBenchmarkGenerateSourceTask(target, compilation)
 
     val benchmarkCompilation = createJsBenchmarkCompileTask(target)
+
     target.extension.configurations.forEach {
-        createJsBenchmarkExecTask(it, target, benchmarkCompilation)
+        createJsEngineBenchmarkExecTask(it, target, benchmarkCompilation)
     }
 }
 
@@ -66,6 +67,7 @@ private fun Project.createJsBenchmarkGenerateSourceTask(
         description = "Generate JS source files for '${target.name}'"
         title = target.name
         ir = target.compilation is KotlinJsIrCompilation
+        useBenchmarkJs = target.jsBenchmarksExecutor == JsBenchmarksExecutor.BenchmarkJs
         inputClassesDirs = compilationOutput.output.allOutputs
         inputDependencies = compilationOutput.compileDependencyFiles
         outputResourcesDir = file("$benchmarkBuildDir/resources")

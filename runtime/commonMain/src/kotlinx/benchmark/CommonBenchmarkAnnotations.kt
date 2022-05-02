@@ -1,7 +1,6 @@
 package kotlinx.benchmark
 
 @Target(AnnotationTarget.FUNCTION)
-
 expect annotation class Setup()
 
 @Target(AnnotationTarget.FUNCTION)

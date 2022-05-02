@@ -79,6 +79,7 @@ class BenchmarksPlugin : Plugin<Project> {
                 is JavaBenchmarkTarget -> processJavaSourceSet(config)
                 is KotlinJvmBenchmarkTarget -> processJvmCompilation(config)
                 is JsBenchmarkTarget -> processJsCompilation(config)
+                is WasmBenchmarkTarget -> processWasmCompilation(config)
                 is NativeBenchmarkTarget -> processNativeCompilation(config)
             }
         }
