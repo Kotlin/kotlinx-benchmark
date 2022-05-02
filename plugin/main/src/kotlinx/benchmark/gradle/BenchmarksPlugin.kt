@@ -30,8 +30,8 @@ class BenchmarksPlugin : Plugin<Project> {
         // DO NOT use properties of an extension immediately, it will not contain any user-specified data
         val extension = extensions.create(BENCHMARK_EXTENSION_NAME, BenchmarksExtension::class.java, project)
 
-        if (GradleVersion.current() < GradleVersion.version("6.8")) {
-            logger.error("JetBrains Gradle Benchmarks plugin requires Gradle version 6.8 or higher")
+        if (GradleVersion.current() < GradleVersion.version("7.0")) {
+            logger.error("JetBrains Gradle Benchmarks plugin requires Gradle version 7.0 or higher")
             return // TODO: Do we need to fail build at this point or just ignore benchmarks?
         }
 
@@ -39,8 +39,8 @@ class BenchmarksPlugin : Plugin<Project> {
         if (kotlinClass != null) {
             plugins.findPlugin(kotlinClass)?.run {
                 logger.info("Detected Kotlin plugin version '${project.getKotlinPluginVersion()}'")
-                if (VersionNumber.parse(project.getKotlinPluginVersion()) < VersionNumber(1, 7, 0, null))
-                    logger.error("JetBrains Gradle Benchmarks plugin requires Kotlin version 1.7.0 or higher")
+                if (VersionNumber.parse(project.getKotlinPluginVersion()) < VersionNumber(1, 7, 20, null))
+                    logger.error("JetBrains Gradle Benchmarks plugin requires Kotlin version 1.7.20 or higher")
             }
         }
 
