@@ -31,6 +31,7 @@ kotlin {
 
     jvm()
     js(BOTH) { nodejs() }
+    wasm { d8() }
 
     sourceSets.all {
         kotlin.srcDirs = ["$it.name/src"]

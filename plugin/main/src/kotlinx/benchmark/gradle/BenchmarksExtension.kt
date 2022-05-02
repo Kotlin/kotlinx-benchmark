@@ -4,7 +4,9 @@ import groovy.lang.*
 import org.gradle.api.*
 import org.gradle.api.plugins.*
 import org.jetbrains.kotlin.gradle.dsl.*
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrCompilation
 
 fun Project.benchmark(configure: Action<BenchmarksExtension>) {
     configure.execute(extensions.getByType(BenchmarksExtension::class.java))
@@ -58,7 +60,12 @@ open class BenchmarksExtension(val project: Project) {
                             KotlinJvmBenchmarkTarget(this, name, compilation)
                         }
                         is KotlinJsCompilation -> {
-                            JsBenchmarkTarget(this, name, compilation)
+                            if (compilation.target.platformType != KotlinPlatformType.wasm) {
+                                JsBenchmarkTarget(this, name, compilation)
+                            } else {
+                                check(compilation is KotlinJsIrCompilation)
+                                WasmBenchmarkTarget(this, name, compilation)
+                            }
                         }
                         is KotlinNativeCompilation -> {
                             NativeBenchmarkTarget(this, name, compilation)

@@ -12,16 +12,10 @@ import javax.inject.Inject
 
 @Suppress("UnstableApiUsage")
 @CacheableTask
-open class JsSourceGeneratorTask
+open class WasmSourceGeneratorTask
 @Inject constructor(private val workerExecutor: WorkerExecutor) : DefaultTask() {
     @Input
     lateinit var title: String
-
-    @Input
-    var ir: Boolean = false
-
-    @Input
-    var useBenchmarkJs: Boolean = true
 
     @InputFiles
     @PathSensitive(PathSensitivity.RELATIVE)
@@ -48,24 +42,15 @@ open class JsSourceGeneratorTask
     }
 
     private fun generateSources(lib: File) {
-        val modules = load(lib)
+        val modules = loadIr(lib, LockBasedStorageManager("Inspect"))
         modules.forEach { module ->
             val generator = SuiteSourceGenerator(
                 title,
                 module,
                 outputSourcesDir,
-                if (useBenchmarkJs) Platform.JsBenchmarkJs else Platform.JsBuiltIn
+                Platform.WasmBuiltIn
             )
             generator.generate()
-        }
-    }
-
-    private fun load(lib: File): List<ModuleDescriptor> {
-        val storageManager = LockBasedStorageManager("Inspect")
-        return if (ir) {
-            loadIr(lib, storageManager)
-        } else {
-            loadLegacy(lib, storageManager)
         }
     }
 
@@ -75,13 +60,6 @@ open class JsSourceGeneratorTask
         val dependencies = inputDependencies.files.filterNot { it.extension == "js" }.toSet()
         val module = KlibResolver.JS.createModuleDescriptor(lib, dependencies, storageManager)
         return listOf(module)
-    }
-
-    private fun loadLegacy(lib: File, storageManager: StorageManager): List<ModuleDescriptor> {
-        val dependencies = inputDependencies.flatMap {
-            loadJsDescriptors(it, storageManager)
-        }
-        return loadJsDescriptors(lib, storageManager, dependencies)
     }
 }
 

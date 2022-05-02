@@ -16,6 +16,7 @@ kotlin {
     jvm()
     js('jsIr', IR) { nodejs() }
     js { nodejs() }
+    wasm { d8() }
     if (HostManager.host == KonanTarget.MACOS_X64.INSTANCE) macosX64('native')
     if (HostManager.host == KonanTarget.MACOS_ARM64.INSTANCE) macosArm64('native')
     if (HostManager.hostIsLinux) linuxX64('native')
@@ -35,6 +36,8 @@ kotlin {
         }
 
         jvmMain {}
+
+        wasmMain {}
 
         jsMain {
             jsIrMain.dependsOn(it)
@@ -101,6 +104,7 @@ benchmark {
         }
         register("jsIr")
         register("js")
+        register("wasm")
         register("native")
     }
 }

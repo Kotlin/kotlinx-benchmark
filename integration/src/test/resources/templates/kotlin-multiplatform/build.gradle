@@ -5,6 +5,7 @@ kotlin {
     jvm()
     js('jsIr', IR) { nodejs() }
     js { nodejs() }
+    wasm { d8() }
 
     if (HostManager.hostIsLinux) linuxX64('native')
     if (HostManager.hostIsMingw) mingwX64('native')
@@ -32,6 +33,11 @@ kotlin {
                 implementation(benchmarkRuntimeJs)
             }
         }
+        wasmMain {
+            dependencies {
+                implementation(benchmarkRuntimeWasm)
+            }
+        }
         nativeMain {
             dependsOn(commonMain)
             dependencies {
@@ -46,6 +52,7 @@ benchmark {
         register("jvm")
         register("jsIr")
         register("js")
+        register("wasm")
         register("native")
     }
 }
