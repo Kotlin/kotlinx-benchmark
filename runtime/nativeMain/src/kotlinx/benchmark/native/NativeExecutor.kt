@@ -30,7 +30,7 @@ class NativeExecutor(
                     appendLine("parameters: $params")
                 }
                 val fileName = "${additionalArguments[0]}/${suite.name}_${it.name}_$parametersId.txt"
-                writeFile(fileName, benchmarkRunConfig)
+                fileName.writeFile(benchmarkRunConfig)
                 parametersId++
             }
         }
@@ -44,7 +44,7 @@ class NativeExecutor(
         val benchmarkRun = configFileName.parseBenchmarkConfig()
         val benchmark = benchmarks.getBenchmark(benchmarkRun.benchmarkName)
         val samples = run(benchmark, benchmarkRun, iteration.toInt(), cycles.toInt())
-        writeFile(resultsFile, samples?.let{ it[0].toString() } ?: "null")
+        resultsFile.writeFile(samples?.let{ it[0].toString() } ?: "null")
     }
 
     private fun runBenchmarkWarmup(benchmarks: List<BenchmarkDescriptor<Any?>>) {
@@ -63,12 +63,12 @@ class NativeExecutor(
         try {
             val iterations = warmup(benchmark.suite.name, benchmarkRun.config, instance,
                 benchmark, iteration.toInt())
-            writeFile(resultsFile, iterations.toString())
+            resultsFile.writeFile(iterations.toString())
         } catch (e: Throwable) {
             val error = e.toString()
             val stacktrace = e.stacktrace()
             reporter.endBenchmarkException(executionName, id, error, stacktrace)
-            writeFile(resultsFile, "null")
+            resultsFile.writeFile("null")
         } finally {
             benchmark.suite.teardown(instance)
         }
@@ -82,7 +82,7 @@ class NativeExecutor(
         reporter.startBenchmark(executionName, id)
         val samples = run(benchmark, benchmarkRun)
         if (samples != null) {
-            writeFile(resultsFile, samples.joinToString())
+            resultsFile.writeFile(samples.joinToString())
             saveBenchmarkResults(benchmark, benchmarkRun, samples)
         }
     }

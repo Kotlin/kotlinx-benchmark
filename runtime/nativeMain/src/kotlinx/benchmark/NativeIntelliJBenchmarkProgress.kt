@@ -21,7 +21,7 @@ class NativeIntelliJBenchmarkProgress(
     }
 
     private fun encode() {
-        writeFile(benchProgressPath, listOf(currentClass, currentStatus, suiteStatus).joinToString(separator = "\n"))
+        benchProgressPath.writeFile(listOf(currentClass, currentStatus, suiteStatus).joinToString(separator = "\n"))
     }
 
     private fun decode() {

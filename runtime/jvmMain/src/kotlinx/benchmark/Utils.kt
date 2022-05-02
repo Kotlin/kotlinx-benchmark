@@ -7,10 +7,10 @@ actual fun Double.format(precision: Int, useGrouping: Boolean): String {
     else "%.0${precision}f".format(this)
 }
 
-actual fun saveReport(reportFile: String, report: String) {
-    File(reportFile).writeText(report)
-}
-
 actual fun String.readFile(): String {
     return File(this).readText()
+}
+
+actual fun String.writeFile(text: String) {
+    File(this).writeText(text)
 }

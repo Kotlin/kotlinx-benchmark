@@ -10,8 +10,8 @@ actual fun Double.format(precision: Int, useGrouping: Boolean): String {
 
 private val fs = kotlinx.benchmark.js.require("fs")
 
-actual fun saveReport(reportFile: String, report: String) {
-    fs.writeFile(reportFile, report) { err -> if (err != null) throw err }
+actual fun String.writeFile(text: String) {
+    fs.writeFileSync(this, text)
 }
 
 actual fun String.readFile(): String {
