@@ -21,14 +21,8 @@ actual fun Double.format(precision: Int, useGrouping: Boolean): String {
     }
 }
 
-actual fun saveReport(reportFile: String, report: String) {
-    val file = fopen(reportFile, "w")
-    fputs(report, file)
-    fclose(file)
-}
-
-internal fun writeFile(filePath: String, text: String) {
-    val file = fopen(filePath, "w")
+actual fun String.writeFile(text: String) {
+    val file = fopen(this, "w")
     try {
         if (fputs(text, file) == EOF) throw Error("File write error")
     } finally {
@@ -48,7 +42,6 @@ actual fun String.readFile(): String = buildString {
                 append(line)
             }
         }
-
     } finally {
         fclose(file)
     }

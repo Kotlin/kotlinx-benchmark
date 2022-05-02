@@ -105,5 +105,3 @@ internal fun parseTimeUnit(text: String) = when (text) {
     BenchmarkTimeUnit.MINUTES.name, "m", "min" -> BenchmarkTimeUnit.MINUTES
     else -> throw UnsupportedOperationException("Unknown time unit: $text")
 }
-
-expect fun String.readFile(): String

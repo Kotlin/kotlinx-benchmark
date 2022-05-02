@@ -39,7 +39,7 @@ abstract class SuiteExecutor(
         run(config, benchmarks, { reporter.startSuite(executionName) }) {
             val summary = TextBenchmarkReportFormatter.format(results)
             reporter.endSuite(executionName, summary)
-            saveReport(config.reportFile, reportFormatter.format(results))
+            config.reportFile.writeFile(reportFormatter.format(results))
         }
     }
 
@@ -103,4 +103,3 @@ fun runWithParameters(
         }
     }
 }
-
