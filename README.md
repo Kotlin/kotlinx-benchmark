@@ -26,9 +26,9 @@ Kotlin/JVM benchmarks on other platforms with minimum modifications, if any at a
 
 # Requirements
 
-Gradle 6.8 or newer
+Gradle 7.0 or newer
 
-Kotlin 1.7.0 or newer
+Kotlin 1.7.20 or newer
 
 # Gradle plugin
 
@@ -108,6 +108,7 @@ benchmark {
         register("jvm") 
         register("js")
         register("native")
+        register("wasm") // Experimental
     }
 }
 ```
@@ -165,7 +166,8 @@ Available configuration options:
     - a non-negative integer value – the amount to use for all benchmarks included in this configuration, zero means "no fork"
     - "definedByJmh" – let the underlying JMH determine, which uses the amount specified in [`@Fork` annotation](https://javadoc.io/static/org.openjdk.jmh/jmh-core/1.21/org/openjdk/jmh/annotations/Fork.html) defined for the benchmark function or its enclosing class,
       or [Defaults.MEASUREMENT_FORKS (`5`)](https://javadoc.io/static/org.openjdk.jmh/jmh-core/1.21/org/openjdk/jmh/runner/Defaults.html#MEASUREMENT_FORKS) if it is not specified by `@Fork`.
-  
+  * (Kotlin/Js and Wasm) `jsUseBridge` – when `false` disables to generate special benchmark bridges to prevent inlining optimisations (only for `BuiltIn` benchmark executors).
+
 Time units can be NANOSECONDS, MICROSECONDS, MILLISECONDS, SECONDS, MINUTES, or their short variants such as "ms" or "ns".  
   
 Example: 
@@ -196,8 +198,12 @@ benchmark {
         register("js") {
             // Note, that benchmarks.js uses a different approach of minTime & maxTime and run benchmarks
             // until results are stable. We estimate minTime as iterationTime and maxTime as iterationTime*iterations
+            //
+            // You can configure benchmark executor - benchmarkJs or buildIn (works only for JsIr backend) with the next line:
+            // jsBenchmarksExecutor = JsBenchmarksExecutor.BuiltIn
         }
         register("native")
+        register("wasm") // Experimental
     }
 }
 ```  
