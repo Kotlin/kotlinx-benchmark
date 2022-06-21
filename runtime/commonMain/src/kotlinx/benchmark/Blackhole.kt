@@ -11,3 +11,5 @@ expect class Blackhole {
     fun consume(f: Float)
     fun consume(d: Double)
 }
+
+expect fun Blackhole.flush()

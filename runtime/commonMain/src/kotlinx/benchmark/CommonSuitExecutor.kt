@@ -31,6 +31,7 @@ abstract class CommonSuitExecutor(
             doubleArrayOf()
         } finally {
             benchmark.suite.teardown(instance)
+            benchmark.blackhole.flush()
         }
         if (exception != null) {
             val error = exception.toString()
@@ -73,20 +74,6 @@ abstract class CommonSuitExecutor(
         complete()
     }
 
-    @OptIn(ExperimentalTime::class)
-    private fun <T> measure(instance: T, benchmark: BenchmarkDescriptor<T>, cycles: Int): Double {
-        val executeFunction = benchmark.function
-        var counter = cycles
-
-        val time = TimeSource.Monotonic.measureTime {
-            while (counter-- > 0) {
-                instance.executeFunction()
-            }
-        }
-
-        return time.inWholeNanoseconds.toDouble() / cycles
-    }
-
     @Suppress("REDUNDANT_ELSE_IN_WHEN")
     private val BenchmarkTimeUnit.asDurationTimeUnit: DurationUnit get() = when(this) {
         BenchmarkTimeUnit.NANOSECONDS -> DurationUnit.NANOSECONDS
@@ -98,23 +85,32 @@ abstract class CommonSuitExecutor(
     }
 
     @OptIn(ExperimentalTime::class)
-    private fun <T> warmup(benchmark: BenchmarkDescriptor<T>, configuration: BenchmarkConfiguration, instance: T): Int {
+    private inline fun measure(cycles: Int, payload: () -> Unit): Double {
+        var counter = cycles
+        val time = TimeSource.Monotonic.measureTime {
+            while (counter-- > 0) {
+                payload()
+            }
+        }
+        return time.inWholeNanoseconds.toDouble() / cycles
+    }
+
+    @OptIn(ExperimentalTime::class)
+    private inline fun <T> measureWarmup(benchmark: BenchmarkDescriptor<T>, configuration: BenchmarkConfiguration, payload: () -> Unit): Int {
         var iterations = 0
         val benchmarkIterationTimeAsDuration =
             configuration.iterationTime.toDuration(configuration.iterationTimeUnit.asDurationTimeUnit)
 
-        val executeFunction = benchmark.function
         var currentIteration = 0
-        val warmups = configuration.warmups
 
         val timeSource: TimeSource = TimeSource.Monotonic
-        while(currentIteration < warmups) {
+        while(currentIteration < configuration.warmups) {
             iterations = 0
             var elapsedTime: Duration
             val startTime = timeSource.markNow()
             val maxTime = startTime + benchmarkIterationTimeAsDuration
             do {
-                instance.executeFunction()
+                payload()
                 elapsedTime = startTime.elapsedNow()
                 iterations++
             } while (maxTime.hasNotPassedNow())
@@ -125,6 +121,42 @@ abstract class CommonSuitExecutor(
             currentIteration++
         }
         return iterations
+    }
+
+    private fun <T> warmup(benchmark: BenchmarkDescriptor<T>, configuration: BenchmarkConfiguration, instance: T): Int = when(benchmark) {
+        is BenchmarkDescriptorWithBlackholeParameter -> {
+            val blackhole = benchmark.blackhole
+            val delegate = benchmark.function
+            measureWarmup(benchmark, configuration) {
+                blackhole.consume(instance.delegate(blackhole))
+            }
+        }
+        is BenchmarkDescriptorWithNoBlackholeParameter -> {
+            val blackhole = benchmark.blackhole
+            val delegate = benchmark.function
+            measureWarmup(benchmark, configuration) {
+                blackhole.consume(instance.delegate())
+            }
+        }
+        else -> error("Unexpected ${benchmark::class.simpleName}")
+    }
+
+    private fun <T> measure(instance: T, benchmark: BenchmarkDescriptor<T>, cycles: Int): Double = when(benchmark) {
+        is BenchmarkDescriptorWithBlackholeParameter -> {
+            val blackhole = benchmark.blackhole
+            val delegate = benchmark.function
+            measure(cycles) {
+                blackhole.consume(instance.delegate(blackhole))
+            }
+        }
+        is BenchmarkDescriptorWithNoBlackholeParameter -> {
+            val blackhole = benchmark.blackhole
+            val delegate = benchmark.function
+            measure(cycles) {
+                blackhole.consume(instance.delegate())
+            }
+        }
+        else -> error("Unexpected ${benchmark::class.simpleName}")
     }
 }
 
