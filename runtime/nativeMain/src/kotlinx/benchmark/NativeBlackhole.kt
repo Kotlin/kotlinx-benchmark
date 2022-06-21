@@ -2,7 +2,6 @@ package kotlinx.benchmark
 
 import kotlinx.cinterop.pin
 
-
 actual class Blackhole {
     actual fun consume(obj: Any?) {
         obj?.pin()
@@ -32,3 +31,5 @@ actual class Blackhole {
         d.pin()
     }
 }
+
+actual fun Blackhole.flush() = Unit

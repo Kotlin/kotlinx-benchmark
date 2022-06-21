@@ -27,27 +27,50 @@ class JsExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<o
         benchmarks.forEach { benchmark ->
             val suite = benchmark.suite
             val config = BenchmarkConfiguration(runnerConfiguration, suite)
-            val jsDescriptor = benchmark as JsBenchmarkDescriptor
+            val isAsync = when (benchmark) {
+                is JsBenchmarkDescriptorWithNoBlackholeParameter -> benchmark.async
+                is JsBenchmarkDescriptorWithBlackholeParameter -> benchmark.async
+                else -> error("Unexpected ${benchmark::class.simpleName}")
+            }
 
             runWithParameters(suite.parameters, runnerConfiguration.params, suite.defaultParameters) { params ->
                 val id = id(benchmark.name, params)
 
-                @Suppress("UNCHECKED_CAST")
-                val function = benchmark.function
                 val instance = suite.factory() // TODO: should we create instance per bench or per suite?
                 suite.parametrize(instance, params)
 
-                val asynchronous = if (jsDescriptor.async) {
-                    @Suppress("UNCHECKED_CAST")
-                    val promiseFunction = function as Any?.() -> Promise<*>
-
-                    jsSuite.add(benchmark.name) { deferred: Promise<Unit> ->
+                val asynchronous = if (isAsync) {
+                    when(benchmark) {
                         // Mind asDynamic: this is **not** a regular promise
-                        instance.promiseFunction().then { (deferred.asDynamic()).resolve() }
+                        is JsBenchmarkDescriptorWithNoBlackholeParameter -> {
+                            @Suppress("UNCHECKED_CAST")
+                            val promiseFunction = benchmark.function as Any?.() -> Promise<*>
+                            jsSuite.add(benchmark.name) { deferred: Promise<Unit> ->
+                                instance.promiseFunction().then { (deferred.asDynamic()).resolve() }
+                            }
+                        }
+                        is JsBenchmarkDescriptorWithBlackholeParameter -> {
+                            @Suppress("UNCHECKED_CAST")
+                            val promiseFunction = benchmark.function as Any?.(Blackhole) -> Promise<*>
+                            jsSuite.add(benchmark.name) { deferred: Promise<Unit> ->
+                                instance.promiseFunction(benchmark.blackhole).then { (deferred.asDynamic()).resolve() }
+                            }
+                        }
+                        else -> error("Unexpected ${benchmark::class.simpleName}")
                     }
                     true
                 } else {
-                    jsSuite.add(benchmark.name) { instance.function() }
+                    when(benchmark) {
+                        is JsBenchmarkDescriptorWithNoBlackholeParameter -> {
+                            val function = benchmark.function
+                            jsSuite.add(benchmark.name) { instance.function() }
+                        }
+                        is JsBenchmarkDescriptorWithBlackholeParameter -> {
+                            val function = benchmark.function
+                            jsSuite.add(benchmark.name) { instance.function(benchmark.blackhole) }
+                        }
+                        else -> error("Unexpected ${benchmark::class.simpleName}")
+                    }
                     false
                 }
 
@@ -84,6 +107,7 @@ class JsExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<o
                 }
                 jsBenchmark.on("complete") { event ->
                     suite.teardown(instance)
+                    benchmark.blackhole.flush()
                     val stats = event.target.stats
                     val samples = stats.sample
                         .unsafeCast<DoubleArray>()

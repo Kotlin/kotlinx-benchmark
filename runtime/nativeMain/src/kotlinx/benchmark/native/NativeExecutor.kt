@@ -71,6 +71,7 @@ class NativeExecutor(
             resultsFile.writeFile("null")
         } finally {
             benchmark.suite.teardown(instance)
+            benchmark.blackhole.flush()
         }
     }
 
@@ -138,6 +139,7 @@ class NativeExecutor(
             doubleArrayOf()
         } finally {
             benchmark.suite.teardown(instance)
+            benchmark.blackhole.flush()
         }
         if (exception != null) {
             val error = exception.toString()
@@ -207,20 +209,17 @@ class NativeExecutor(
         return getStackTrace().joinToString("\n") + "\nCause: ${nested.message}\n" + nested.stacktrace()
     }
 
-    private fun <T> measure(
-        instance: T,
-        benchmark: BenchmarkDescriptor<T>,
+    private inline fun measure(
         cycles: Int,
-        nativeGCAfterIteration: Boolean
+        nativeGCAfterIteration: Boolean,
+        body: () -> Unit,
     ): Double {
-        val executeFunction = benchmark.function
         var counter = cycles
         if (nativeGCAfterIteration)
             GC.collect()
         val startTime = getTimeNanos()
         while (counter-- > 0) {
-            @Suppress("UNUSED_VARIABLE")
-            val result = instance.executeFunction() // ignore result for now, but might need to consume it somehow
+            body()
         }
         if (nativeGCAfterIteration)
             GC.collect()
@@ -229,12 +228,12 @@ class NativeExecutor(
         return time.toDouble() / cycles
     }
 
-    private fun <T> warmup(
+    private inline fun <T> measureWarmup(
         name: String,
         config: BenchmarkConfiguration,
-        instance: T,
         benchmark: BenchmarkDescriptor<T>,
-        currentIteration: Int? = null
+        currentIteration: Int?,
+        body: () -> Unit
     ): Int {
         require(config.nativeFork == NativeFork.PerIteration && currentIteration != null
                 || config.nativeFork == NativeFork.PerBenchmark && currentIteration == null) {
@@ -245,7 +244,6 @@ class NativeExecutor(
         val warmupIterations = if (config.nativeFork == NativeFork.PerIteration) 1 else config.warmups
         repeat(warmupIterations) { iteration ->
             val benchmarkNanos = config.iterationTime * config.iterationTimeUnit.toMultiplier()
-            val executeFunction = benchmark.function
 
             if (config.nativeGCAfterIteration)
                 GC.collect()
@@ -253,7 +251,7 @@ class NativeExecutor(
             var endTime = startTime
             iterations = 0
             while (endTime - startTime < benchmarkNanos) {
-                instance.executeFunction()
+                body()
                 endTime = getTimeNanos()
                 iterations++
             }
@@ -267,6 +265,53 @@ class NativeExecutor(
             reporter.output(name, benchmark.name, "Warm-up #$iterationNumber: $sample")
         }
         return iterations
+    }
+
+    private fun <T> warmup(
+        name: String,
+        config: BenchmarkConfiguration,
+        instance: T,
+        benchmark: BenchmarkDescriptor<T>,
+        currentIteration: Int? = null
+    ): Int = when(benchmark) {
+        is BenchmarkDescriptorWithBlackholeParameter -> {
+            val blackhole = benchmark.blackhole
+            val delegate = benchmark.function
+            measureWarmup(name, config, benchmark, currentIteration) {
+                blackhole.consume(instance.delegate(blackhole))
+            }
+        }
+        is BenchmarkDescriptorWithNoBlackholeParameter -> {
+            val blackhole = benchmark.blackhole
+            val delegate = benchmark.function
+            measureWarmup(name, config, benchmark, currentIteration) {
+                blackhole.consume(instance.delegate())
+            }
+        }
+        else -> error("Unexpected ${benchmark::class.simpleName}")
+    }
+
+    private fun <T> measure(
+        instance: T,
+        benchmark: BenchmarkDescriptor<T>,
+        cycles: Int,
+        nativeGCAfterIteration: Boolean,
+    ): Double = when(benchmark) {
+        is BenchmarkDescriptorWithBlackholeParameter -> {
+            val blackhole = benchmark.blackhole
+            val delegate = benchmark.function
+            measure(cycles, nativeGCAfterIteration) {
+                blackhole.consume(instance.delegate(blackhole))
+            }
+        }
+        is BenchmarkDescriptorWithNoBlackholeParameter -> {
+            val blackhole = benchmark.blackhole
+            val delegate = benchmark.function
+            measure(cycles, nativeGCAfterIteration) {
+                blackhole.consume(instance.delegate())
+            }
+        }
+        else -> error("Unexpected ${benchmark::class.simpleName}")
     }
 }
 
