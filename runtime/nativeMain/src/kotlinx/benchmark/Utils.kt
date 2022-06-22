@@ -38,7 +38,7 @@ actual fun String.readFile(): String = buildString {
                 val bufferLength = 64 * 1024
                 val buffer = allocArray<ByteVar>(bufferLength)
                 val line = fgets(buffer, bufferLength, file)?.toKString() // newline symbol is included
-                if (line == null || line.isEmpty()) break
+                if (line.isNullOrEmpty()) break
                 append(line)
             }
         }
@@ -55,7 +55,7 @@ internal fun String.parseBenchmarkConfig(): NativeExecutor.BenchmarkRun {
 
     val content = readFile()
     val lines = content.lines().filter { it.isNotEmpty() }
-    require(lines.size == 3, { "Wrong format of detailed benchmark configuration file. "})
+    require(lines.size == 3) { "Wrong format of detailed benchmark configuration file. " }
     val name = lines[0].getElement("benchmark")
     val configuration = BenchmarkConfiguration.parse(lines[1].getElement("configuration"))
     val parameters = lines[2].getElement("parameters").parseMap()

@@ -23,10 +23,6 @@ expect enum class Mode {
     Throughput, AverageTime
 }
 
-enum class NativeFork {
-    PerBenchmark, PerIteration
-}
-
 @Target(AnnotationTarget.CLASS)
 expect annotation class OutputTimeUnit(val value: BenchmarkTimeUnit)
 
@@ -56,13 +52,6 @@ fun String.toMode() =
 fun Mode.toText() = when (this) {
     Mode.Throughput -> "thrpt"
     Mode.AverageTime -> "avgt"
-    else -> throw UnsupportedOperationException("$this is not supported")
-}
-
-@Suppress("REDUNDANT_ELSE_IN_WHEN")
-fun NativeFork.toText() = when (this) {
-    NativeFork.PerIteration -> "perIteration"
-    NativeFork.PerBenchmark -> "perBenchmark"
     else -> throw UnsupportedOperationException("$this is not supported")
 }
 

@@ -123,7 +123,7 @@ fun writeParameters(
             values.forEach { value -> appendLine("param:$param=$value") }
         }
         config.advanced.forEach { (param, value) ->
-            appendLine("$param:$value")
+            appendLine("advanced:$param=$value")
         }
     })
     return file
