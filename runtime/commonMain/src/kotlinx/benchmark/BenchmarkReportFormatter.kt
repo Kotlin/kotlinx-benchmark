@@ -174,8 +174,9 @@ private object JsonBenchmarkReportFormatter : BenchmarkReportFormatter() {
     "params" : {
           ${result.params.entries.joinToString(separator = ",\n          ") { "\"${it.key.escape()}\" : \"${it.value.escape()}\"" }}
     },
-    "nativeFork" : "${result.config.nativeFork.toText()}",
-    "nativeGCAfterIteration" : ${result.config.nativeGCAfterIteration},
+    "advanced" : {
+          ${result.config.advanced.entries.joinToString(separator = ",\n          ") { "\"${it.key.escape()}\" : \"${it.value.escape()}\"" }}
+    },
     "primaryMetric" : {
        "score": ${result.score},
        "scoreError": ${result.error},

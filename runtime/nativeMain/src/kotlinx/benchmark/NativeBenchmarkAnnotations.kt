@@ -17,6 +17,10 @@ actual enum class Mode {
     Throughput, AverageTime
 }
 
+enum class NativeFork {
+    PerBenchmark, PerIteration
+}
+
 @Target(AnnotationTarget.CLASS)
 actual annotation class OutputTimeUnit(actual val value: BenchmarkTimeUnit)
 

@@ -6,16 +6,6 @@ class RunnerConfiguration(config: String) {
         it.substringBefore(":")
     }, { it.substringAfter(":", "") })
 
-/*
-    init {
-        println("Config:")
-        println(config)
-
-        println("Values:")
-        println(values)
-    }
-*/
-
     val name = singleValue("name")
     val reportFile = singleValue("reportFile")
     val traceFormat = singleValue("traceFormat")
@@ -32,14 +22,7 @@ class RunnerConfiguration(config: String) {
     val warmups = singleValueOrNull("warmups") { it.toInt() }
     val iterationTime = singleValueOrNull("iterationTime") { it.toLong() }
     val iterationTimeUnit = singleValueOrNull("iterationTimeUnit") { parseTimeUnit(it) }
-
-    val jvmForks = singleValueOrNull("jvmForks").let { forks ->
-        val legacy = singleValueOrNull("forks")
-        if (legacy != null) {
-            println("""Deprecation warning: configuration option "forks" was renamed to "jvmForks"""")
-        }
-        forks ?: legacy
-    }
+    val advanced = mapSingleValues("advanced", "=")
 
     val outputTimeUnit = singleValueOrNull(
         "outputTimeUnit"
@@ -66,6 +49,13 @@ class RunnerConfiguration(config: String) {
         return values.groupBy({ it.substringBefore(delimiter) }, { it.substringAfter(delimiter) })
     }
 
+    private fun mapSingleValues(name: String, delimiter: String): Map<String, String> = values[name]
+        ?.associate {
+            val splitted = it.split(delimiter)
+            check(splitted.size == 2) { "Parameter name and value format is required for $name." }
+            splitted[0] to splitted[1]
+        } ?: emptyMap()
+
     private fun listValues(name: String): List<String> {
         return this.values[name] ?: emptyList()
     }
@@ -73,12 +63,6 @@ class RunnerConfiguration(config: String) {
     val mode = singleValueOrNull(
         "mode"
     ) { it.toMode() }
-
-    val nativeFork = singleValueOrNull(
-        "nativeFork"
-    ) { NativeFork.valueOf(it.replaceFirstChar { firstChar -> firstChar.uppercaseChar() }) }
-
-    val nativeGCAfterIteration = singleValueOrNull("nativeGCAfterIteration") { it.toBooleanStrict() }
 
     override fun toString(): String {
         return """$name -> $reportFile ($traceFormat, $reportFormat)
@@ -91,8 +75,7 @@ iterationTime: $iterationTime
 iterationTimeUnit: $iterationTimeUnit            
 outputTimeUnit: $outputTimeUnit            
 mode: $mode
-nativeFork: $nativeFork
-nativeGCAfterIteration: $nativeGCAfterIteration
+advanced: $advanced
 """
     }
 }

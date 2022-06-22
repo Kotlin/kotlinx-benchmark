@@ -15,6 +15,15 @@ class NativeExecutor(
     data class BenchmarkRun(val benchmarkName: String, val config: BenchmarkConfiguration,
                             val parameters: Map<String, String>)
 
+    private val BenchmarkConfiguration.nativeFork: NativeFork
+        get() = advanced["nativeFork"]
+            ?.let { NativeFork.values()
+            .firstOrNull { entity -> entity.name.equals(it, ignoreCase = true) } }
+            ?: NativeFork.PerBenchmark
+
+    private val BenchmarkConfiguration.nativeGCAfterIteration: Boolean
+        get() = "true".equals(advanced["nativeGCAfterIteration"], ignoreCase = true)
+
     private fun outputBenchmarks(runnerConfiguration: RunnerConfiguration,
                                  benchmarks: List<BenchmarkDescriptor<Any?>>,
                                  start: () -> Unit) {

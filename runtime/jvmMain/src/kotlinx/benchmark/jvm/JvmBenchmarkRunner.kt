@@ -11,7 +11,6 @@ import java.io.*
 import java.lang.management.*
 import java.util.concurrent.*
 
-
 fun main(args: Array<String>) {
     val config = RunnerConfiguration(args[0].readFile())
 
@@ -46,11 +45,11 @@ fun main(args: Array<String>) {
     if (jvmArgs.any { it.contains("libasyncProfiler") }) {
         jmhOptions.forks(0)
     } else {
-        when (config.jvmForks) {
+        when (val jvmForks = config.advanced["jvmForks"]) {
             null -> jmhOptions.forks(1)
             "definedByJmh" -> { /* do not override */ }
             else -> {
-                val forks = config.jvmForks.toIntOrNull()?.takeIf { it >= 0 }
+                val forks = jvmForks.toIntOrNull()?.takeIf { it >= 0 }
                     ?: throw IllegalArgumentException("jvmForks: expected a non-negative integer or \"definedByJmh\" string literal")
                 jmhOptions.forks(forks)
             }

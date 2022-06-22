@@ -35,9 +35,6 @@ open class BenchmarkConfiguration(val extension: BenchmarksExtension, val name: 
         advanced[name] = value
     }
 
-    val nativeFork: String?
-        get() = advanced["nativeFork"] as? String
-
     fun capitalizedName() = if (name == "main") "" else name.capitalize()
     fun prefixName(suffix: String) = if (name == "main") suffix else name + suffix.capitalize()
     fun reportFileExt(): String = reportFormat?.toLowerCase() ?: "json"

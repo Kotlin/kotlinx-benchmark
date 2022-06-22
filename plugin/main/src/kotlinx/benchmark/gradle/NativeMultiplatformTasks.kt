@@ -121,7 +121,7 @@ fun Project.createNativeBenchmarkExecTask(
         onlyIf { executableFile.exists() }
 
         this.executable = executableFile
-        this.nativeFork = config.nativeFork
+        this.nativeFork = config.advanced["nativeFork"] as? String
         this.workingDir = target.workingDir
         this.benchProgressPath = createTempFile("bench", ".txt").absolutePath
 
