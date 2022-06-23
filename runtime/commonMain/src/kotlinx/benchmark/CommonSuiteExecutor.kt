@@ -1,6 +1,6 @@
 package kotlinx.benchmark
 
-abstract class CommonSuitExecutor(
+abstract class CommonSuiteExecutor(
     executionName: String,
     configPath: String,
     xmlReporter: (() -> BenchmarkProgress)? = null

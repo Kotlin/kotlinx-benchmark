@@ -19,13 +19,13 @@ enum class Platform(
     val benchmarkDescriptorWithBlackholeParameterClass: String
 ) {
     JsBuiltIn(
-        executorClass = "kotlinx.benchmark.js.JsSimpleExecutor",
+        executorClass = "kotlinx.benchmark.js.JsBuiltInExecutor",
         suiteDescriptorClass = "kotlinx.benchmark.SuiteDescriptor",
         benchmarkDescriptorClass = "kotlinx.benchmark.js.JsBenchmarkDescriptorWithNoBlackholeParameter",
         benchmarkDescriptorWithBlackholeParameterClass = "kotlinx.benchmark.js.JsBenchmarkDescriptorWithBlackholeParameter",
     ),
     JsBenchmarkJs(
-        executorClass = "kotlinx.benchmark.js.JsExecutor",
+        executorClass = "kotlinx.benchmark.js.JsBenchmarkExecutor",
         suiteDescriptorClass = "kotlinx.benchmark.SuiteDescriptor",
         benchmarkDescriptorClass = "kotlinx.benchmark.js.JsBenchmarkDescriptorWithNoBlackholeParameter",
         benchmarkDescriptorWithBlackholeParameterClass = "kotlinx.benchmark.js.JsBenchmarkDescriptorWithBlackholeParameter",
@@ -37,7 +37,7 @@ enum class Platform(
         benchmarkDescriptorWithBlackholeParameterClass = "kotlinx.benchmark.BenchmarkDescriptorWithBlackholeParameter",
     ),
     WasmBuiltIn(
-        executorClass = "kotlinx.benchmark.wasm.WasmExecutor",
+        executorClass = "kotlinx.benchmark.wasm.WasmBuiltInExecutor",
         suiteDescriptorClass = "kotlinx.benchmark.SuiteDescriptor",
         benchmarkDescriptorClass = "kotlinx.benchmark.BenchmarkDescriptorWithNoBlackholeParameter",
         benchmarkDescriptorWithBlackholeParameterClass = "kotlinx.benchmark.BenchmarkDescriptorWithBlackholeParameter",
