@@ -1,7 +1,5 @@
 package kotlinx.benchmark
 
-import kotlin.time.*
-
 abstract class CommonSuitExecutor(
     executionName: String,
     configPath: String,
@@ -109,16 +107,15 @@ abstract class CommonSuitExecutor(
         return iterations
     }
 
-    @OptIn(ExperimentalTime::class)
     protected open fun <T> createIterationMeasurer(instance: T, benchmark: BenchmarkDescriptor<T>, configuration: BenchmarkConfiguration): () -> Long = when(benchmark) {
         is BenchmarkDescriptorWithBlackholeParameter -> {
             {
                 val localBlackhole = benchmark.blackhole
                 val localDelegate = benchmark.function
                 val localInstance = instance
-                TimeSource.Monotonic.measureTime {
+                measureTime {
                     localBlackhole.consume(localInstance.localDelegate(localBlackhole))
-                }.inWholeNanoseconds
+                }
             }
         }
         is BenchmarkDescriptorWithNoBlackholeParameter -> {
@@ -126,9 +123,9 @@ abstract class CommonSuitExecutor(
                 val localBlackhole = benchmark.blackhole
                 val localDelegate = benchmark.function
                 val localInstance = instance
-                TimeSource.Monotonic.measureTime {
+                measureTime {
                     localBlackhole.consume(localInstance.localDelegate())
-                }.inWholeNanoseconds
+                }
             }
         }
         else -> error("Unexpected ${benchmark::class.simpleName}")
