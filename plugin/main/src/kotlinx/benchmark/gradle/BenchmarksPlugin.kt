@@ -8,7 +8,7 @@ import org.jetbrains.kotlin.gradle.plugin.*
 class BenchmarksPlugin : Plugin<Project> {
     companion object {
         const val PLUGIN_ID = "org.jetbrains.kotlinx.benchmark"
-        const val PLUGIN_VERSION = "0.4.2"
+        const val PLUGIN_VERSION = "0.4.3"
 
         const val BENCHMARKS_TASK_GROUP = "benchmark"
         const val BENCHMARK_EXTENSION_NAME = "benchmark"
@@ -39,8 +39,8 @@ class BenchmarksPlugin : Plugin<Project> {
         if (kotlinClass != null) {
             plugins.findPlugin(kotlinClass)?.run {
                 logger.info("Detected Kotlin plugin version '${project.getKotlinPluginVersion()}'")
-                if (VersionNumber.parse(project.getKotlinPluginVersion()) < VersionNumber(1, 6, 0, null))
-                    logger.error("JetBrains Gradle Benchmarks plugin requires Kotlin version 1.6.0 or higher")
+                if (VersionNumber.parse(project.getKotlinPluginVersion()) < VersionNumber(1, 7, 0, null))
+                    logger.error("JetBrains Gradle Benchmarks plugin requires Kotlin version 1.7.0 or higher")
             }
         }
 
