@@ -9,10 +9,10 @@ import kotlin.math.sin
 @JsName("Function")
 private external fun functionCtor(params: String, code: String): (dynamic) -> Long
 
-class JsSimpleExecutor(
+class JsBuiltInExecutor(
     name: String,
     @Suppress("UNUSED_PARAMETER") dummy_args: Array<out String>
-) : CommonSuitExecutor(name, jsEngineSupport.arguments()[0]) {
+) : CommonSuiteExecutor(name, jsEngineSupport.arguments()[0]) {
 
     private val BenchmarkConfiguration.jsUseBridge: Boolean
         get() = "true".equals(advanced["jsUseBridge"], ignoreCase = true)
