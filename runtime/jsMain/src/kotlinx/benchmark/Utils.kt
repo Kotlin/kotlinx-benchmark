@@ -1,6 +1,6 @@
 package kotlinx.benchmark
 
-actual fun Double.format(precision: Int, useGrouping: Boolean): String {
+internal actual fun Double.format(precision: Int, useGrouping: Boolean): String {
     val options = js("{maximumFractionDigits:2, minimumFractionDigits:2, useGrouping:true}")
     options.minimumFractionDigits = precision
     options.maximumFractionDigits = precision
@@ -8,9 +8,9 @@ actual fun Double.format(precision: Int, useGrouping: Boolean): String {
     return this.asDynamic().toLocaleString(undefined, options) as String
 }
 
-actual fun String.writeFile(text: String): Unit = jsEngineSupport.writeFile(this, text)
+internal actual fun String.writeFile(text: String): Unit = jsEngineSupport.writeFile(this, text)
 
-actual fun String.readFile(): String = jsEngineSupport.readFile(this)
+internal actual fun String.readFile(): String = jsEngineSupport.readFile(this)
 
 internal abstract class JsEngineSupport {
     abstract fun writeFile(path: String, text: String)
@@ -20,9 +20,13 @@ internal abstract class JsEngineSupport {
     abstract fun arguments(): Array<out String>
 }
 
-internal fun isD8(): Boolean =
+internal val isD8: Boolean by lazy {
     js("typeof d8 !== 'undefined'") as Boolean
+}
 
 internal val jsEngineSupport: JsEngineSupport by lazy {
-    if (isD8()) D8EngineSupport else NodeJsEngineSupport
+    if (isD8) D8EngineSupport else NodeJsEngineSupport
 }
+
+internal actual inline fun measureTime(block: () -> Unit): Long =
+    if (isD8) d8MeasureTime(block) else nodeJsMeasureTime(block)

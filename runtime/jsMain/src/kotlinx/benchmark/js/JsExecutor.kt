@@ -7,7 +7,7 @@ class JsExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<o
     SuiteExecutor(name, jsEngineSupport.arguments()[0]) {
 
     init {
-        check(!isD8()) { "${JsExecutor::class.simpleName} does not supports d8 engine" }
+        check(!isD8) { "${JsExecutor::class.simpleName} does not supports d8 engine" }
     }
 
     private val benchmarkJs: dynamic = require("benchmark")

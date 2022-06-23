@@ -4,7 +4,7 @@ import kotlinx.benchmark.native.NativeExecutor
 import kotlinx.cinterop.*
 import platform.posix.*
 
-actual fun Double.format(precision: Int, useGrouping: Boolean): String {
+internal actual fun Double.format(precision: Int, useGrouping: Boolean): String {
     val longPart = toLong()
     val fractional = this - longPart
     val thousands =
@@ -21,7 +21,7 @@ actual fun Double.format(precision: Int, useGrouping: Boolean): String {
     }
 }
 
-actual fun String.writeFile(text: String) {
+internal actual fun String.writeFile(text: String) {
     val file = fopen(this, "w")
     try {
         if (fputs(text, file) == EOF) throw Error("File write error")
@@ -30,7 +30,7 @@ actual fun String.writeFile(text: String) {
     }
 }
 
-actual fun String.readFile(): String = buildString {
+internal actual fun String.readFile(): String = buildString {
     val file = fopen(this@readFile, "rb")
     try {
         memScoped {
@@ -61,3 +61,5 @@ internal fun String.parseBenchmarkConfig(): NativeExecutor.BenchmarkRun {
     val parameters = lines[2].getElement("parameters").parseMap()
     return NativeExecutor.BenchmarkRun(name, configuration, parameters)
 }
+
+internal actual inline fun measureTime(block: () -> Unit): Long = TODO("Not implemented for this platform")

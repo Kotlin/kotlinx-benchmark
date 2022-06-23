@@ -86,7 +86,7 @@ class ReportBenchmarksStatistics(values: DoubleArray) {
     }
 }
 
-expect fun Double.format(precision: Int, useGrouping: Boolean = true): String
+internal expect fun Double.format(precision: Int, useGrouping: Boolean = true): String
 
 fun Double.formatSignificant(precision: Int): String {
     val d = (precision - ceil(log10(this)).toInt()).coerceAtLeast(0) // display 4 significant digits
