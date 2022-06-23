@@ -19,9 +19,10 @@ abstract class CommonSuitExecutor(
         benchmark.suite.setup(instance)
         var exception: Throwable? = null
         val samples = try {
-            val cycles = warmup(benchmark, configuration, instance)
+            val measurer = createIterationMeasurer(instance, benchmark, configuration)
+            val cycles = warmup(benchmark, configuration, measurer)
             DoubleArray(configuration.iterations) { iteration ->
-                val nanosecondsPerOperation = measure(instance, benchmark, cycles)
+                val nanosecondsPerOperation = measure(cycles, measurer)
                 val text = nanosecondsPerOperation.nanosToText(configuration.mode, configuration.outputTimeUnit)
                 reporter.output(executionName, id, "Iteration #$iteration: $text")
                 nanosecondsPerOperation
@@ -74,48 +75,33 @@ abstract class CommonSuitExecutor(
         complete()
     }
 
-    @Suppress("REDUNDANT_ELSE_IN_WHEN")
-    private val BenchmarkTimeUnit.asDurationTimeUnit: DurationUnit get() = when(this) {
-        BenchmarkTimeUnit.NANOSECONDS -> DurationUnit.NANOSECONDS
-        BenchmarkTimeUnit.MICROSECONDS -> DurationUnit.MICROSECONDS
-        BenchmarkTimeUnit.MILLISECONDS -> DurationUnit.MILLISECONDS
-        BenchmarkTimeUnit.SECONDS -> DurationUnit.SECONDS
-        BenchmarkTimeUnit.MINUTES -> DurationUnit.MINUTES
-        else -> TODO("Implement ${this.name}")
-    }
-
-    @OptIn(ExperimentalTime::class)
-    private inline fun measure(cycles: Int, payload: () -> Unit): Double {
-        var counter = cycles
-        val time = TimeSource.Monotonic.measureTime {
-            while (counter-- > 0) {
-                payload()
-            }
-        }
-        return time.inWholeNanoseconds.toDouble() / cycles
-    }
-
-    @OptIn(ExperimentalTime::class)
-    private inline fun <T> measureWarmup(benchmark: BenchmarkDescriptor<T>, configuration: BenchmarkConfiguration, payload: () -> Unit): Int {
+    private inline fun measure(cycles: Int, measurer: () -> Long): Double {
         var iterations = 0
-        val benchmarkIterationTimeAsDuration =
-            configuration.iterationTime.toDuration(configuration.iterationTimeUnit.asDurationTimeUnit)
+        var elapsedTime = 0L
+        do {
+            val subIterationDuration = measurer()
+            elapsedTime += subIterationDuration
+            iterations++
+        } while (iterations < cycles)
 
+        return elapsedTime.toDouble() / cycles
+    }
+
+    private fun <T> warmup(benchmark: BenchmarkDescriptor<T>, configuration: BenchmarkConfiguration, measurer: () -> Long): Int {
+        var iterations = 0
+        val benchmarkIterationTime = configuration.iterationTime * configuration.iterationTimeUnit.toMultiplier()
         var currentIteration = 0
 
-        val timeSource: TimeSource = TimeSource.Monotonic
         while(currentIteration < configuration.warmups) {
             iterations = 0
-            var elapsedTime: Duration
-            val startTime = timeSource.markNow()
-            val maxTime = startTime + benchmarkIterationTimeAsDuration
+            var elapsedTime = 0L
             do {
-                payload()
-                elapsedTime = startTime.elapsedNow()
+                val subIterationDuration = measurer()
+                elapsedTime += subIterationDuration
                 iterations++
-            } while (maxTime.hasNotPassedNow())
+            } while (elapsedTime < benchmarkIterationTime)
 
-            val metricInNanos = elapsedTime.inWholeNanoseconds.toDouble() / iterations
+            val metricInNanos = elapsedTime.toDouble() / iterations
             val sample = metricInNanos.nanosToText(configuration.mode, configuration.outputTimeUnit)
             reporter.output(executionName, benchmark.name, "Warm-up #$currentIteration: $sample")
             currentIteration++
@@ -123,37 +109,26 @@ abstract class CommonSuitExecutor(
         return iterations
     }
 
-    private fun <T> warmup(benchmark: BenchmarkDescriptor<T>, configuration: BenchmarkConfiguration, instance: T): Int = when(benchmark) {
+    @OptIn(ExperimentalTime::class)
+    protected open fun <T> createIterationMeasurer(instance: T, benchmark: BenchmarkDescriptor<T>, configuration: BenchmarkConfiguration): () -> Long = when(benchmark) {
         is BenchmarkDescriptorWithBlackholeParameter -> {
-            val blackhole = benchmark.blackhole
-            val delegate = benchmark.function
-            measureWarmup(benchmark, configuration) {
-                blackhole.consume(instance.delegate(blackhole))
+            {
+                val localBlackhole = benchmark.blackhole
+                val localDelegate = benchmark.function
+                val localInstance = instance
+                TimeSource.Monotonic.measureTime {
+                    localBlackhole.consume(localInstance.localDelegate(localBlackhole))
+                }.inWholeNanoseconds
             }
         }
         is BenchmarkDescriptorWithNoBlackholeParameter -> {
-            val blackhole = benchmark.blackhole
-            val delegate = benchmark.function
-            measureWarmup(benchmark, configuration) {
-                blackhole.consume(instance.delegate())
-            }
-        }
-        else -> error("Unexpected ${benchmark::class.simpleName}")
-    }
-
-    private fun <T> measure(instance: T, benchmark: BenchmarkDescriptor<T>, cycles: Int): Double = when(benchmark) {
-        is BenchmarkDescriptorWithBlackholeParameter -> {
-            val blackhole = benchmark.blackhole
-            val delegate = benchmark.function
-            measure(cycles) {
-                blackhole.consume(instance.delegate(blackhole))
-            }
-        }
-        is BenchmarkDescriptorWithNoBlackholeParameter -> {
-            val blackhole = benchmark.blackhole
-            val delegate = benchmark.function
-            measure(cycles) {
-                blackhole.consume(instance.delegate())
+            {
+                val localBlackhole = benchmark.blackhole
+                val localDelegate = benchmark.function
+                val localInstance = instance
+                TimeSource.Monotonic.measureTime {
+                    localBlackhole.consume(localInstance.localDelegate())
+                }.inWholeNanoseconds
             }
         }
         else -> error("Unexpected ${benchmark::class.simpleName}")
