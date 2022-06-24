@@ -27,18 +27,13 @@ class JsBenchmarkExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args
         benchmarks.forEach { benchmark ->
             val suite = benchmark.suite
             val config = BenchmarkConfiguration(runnerConfiguration, suite)
-            val isAsync = when (benchmark) {
-                is JsBenchmarkDescriptorWithNoBlackholeParameter -> benchmark.async
-                is JsBenchmarkDescriptorWithBlackholeParameter -> benchmark.async
-                else -> error("Unexpected ${benchmark::class.simpleName}")
-            }
+            val isAsync = benchmark.isAsync
 
             runWithParameters(suite.parameters, runnerConfiguration.params, suite.defaultParameters) { params ->
                 val id = id(benchmark.name, params)
 
                 val instance = suite.factory() // TODO: should we create instance per bench or per suite?
                 suite.parametrize(instance, params)
-
                 val asynchronous = if (isAsync) {
                     when(benchmark) {
                         // Mind asDynamic: this is **not** a regular promise
