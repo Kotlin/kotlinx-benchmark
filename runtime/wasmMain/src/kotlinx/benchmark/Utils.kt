@@ -1,7 +1,5 @@
 package kotlinx.benchmark
 
-import kotlin.time.Duration.Companion.milliseconds
-
 @JsFun("(d, precision, useGrouping) => d.toLocaleString(undefined, { maximumFractionDigits: precision, minimumFractionDigits: precision, useGrouping: useGrouping } )")
 private external fun format(d: Double, precision: Int, useGrouping: Boolean): String
 

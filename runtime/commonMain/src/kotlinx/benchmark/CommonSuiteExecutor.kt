@@ -17,14 +17,10 @@ abstract class CommonSuiteExecutor(
         benchmark.suite.setup(instance)
         var exception: Throwable? = null
         val samples = try {
-            val measurer = createIterationMeasurer(instance, benchmark, configuration)
-            val cycles = warmup(benchmark, configuration, measurer)
-            DoubleArray(configuration.iterations) { iteration ->
-                val nanosecondsPerOperation = measure(cycles, measurer)
-                val text = nanosecondsPerOperation.nanosToText(configuration.mode, configuration.outputTimeUnit)
-                reporter.output(executionName, id, "Iteration #$iteration: $text")
-                nanosecondsPerOperation
-            }
+            val cycles = estimateCycles(instance, benchmark, configuration)
+            val measurer = createIterationMeasurer(instance, benchmark, configuration, cycles)
+            warmup(id, configuration, cycles, measurer)
+            measure(id, configuration, cycles, measurer)
         } catch (e: Throwable) {
             exception = e
             doubleArrayOf()
@@ -73,47 +69,63 @@ abstract class CommonSuiteExecutor(
         complete()
     }
 
-    private inline fun measure(cycles: Int, measurer: () -> Long): Double {
-        var iterations = 0
-        var elapsedTime = 0L
-        do {
-            val subIterationDuration = measurer()
-            elapsedTime += subIterationDuration
-            iterations++
-        } while (iterations < cycles)
-
-        return elapsedTime.toDouble() / cycles
-    }
-
-    private fun <T> warmup(benchmark: BenchmarkDescriptor<T>, configuration: BenchmarkConfiguration, measurer: () -> Long): Int {
-        var iterations = 0
-        val benchmarkIterationTime = configuration.iterationTime * configuration.iterationTimeUnit.toMultiplier()
-        var currentIteration = 0
-
-        while(currentIteration < configuration.warmups) {
-            iterations = 0
+    private fun <T> estimateCycles(
+        instance: T,
+        benchmark: BenchmarkDescriptor<T>,
+        configuration: BenchmarkConfiguration
+    ): Int {
+        val estimator = wrapBenchmarkFunction(instance, benchmark) { body ->
+            var iterations = 0
             var elapsedTime = 0L
+            val benchmarkIterationTime = configuration.iterationTime * configuration.iterationTimeUnit.toMultiplier()
             do {
-                val subIterationDuration = measurer()
+                val subIterationDuration = measureTime(body)
                 elapsedTime += subIterationDuration
                 iterations++
             } while (elapsedTime < benchmarkIterationTime)
-
-            val metricInNanos = elapsedTime.toDouble() / iterations
-            val sample = metricInNanos.nanosToText(configuration.mode, configuration.outputTimeUnit)
-            reporter.output(executionName, benchmark.name, "Warm-up #$currentIteration: $sample")
-            currentIteration++
+            iterations
         }
-        return iterations
+        return estimator()
     }
 
-    protected open fun <T> createIterationMeasurer(instance: T, benchmark: BenchmarkDescriptor<T>, configuration: BenchmarkConfiguration): () -> Long = when(benchmark) {
+    private fun warmup(
+        id: String,
+        configuration: BenchmarkConfiguration,
+        cycles: Int,
+        measurer: () -> Long
+    ) {
+        var currentIteration = 0
+        while(currentIteration < configuration.warmups) {
+            val elapsedTime = measurer()
+            val metricInNanos = elapsedTime.toDouble() / cycles
+            val sample = metricInNanos.nanosToText(configuration.mode, configuration.outputTimeUnit)
+            reporter.output(executionName, id, "Warm-up #$currentIteration: $sample")
+            currentIteration++
+        }
+    }
+
+    private fun measure(
+        id: String,
+        configuration: BenchmarkConfiguration,
+        cycles: Int,
+        measurer: () -> Long
+    ) : DoubleArray = DoubleArray(configuration.iterations) { iteration ->
+        val nanosecondsPerOperation = measurer().toDouble() / cycles
+        val text = nanosecondsPerOperation.nanosToText(configuration.mode, configuration.outputTimeUnit)
+        reporter.output(executionName, id, "Iteration #$iteration: $text")
+        nanosecondsPerOperation
+    }
+
+    private inline fun <T, R> wrapBenchmarkFunction(
+        instance: T,
+        benchmark: BenchmarkDescriptor<T>,
+        crossinline wrapper: (() -> Unit) -> R): () -> R = when(benchmark) {
         is BenchmarkDescriptorWithBlackholeParameter -> {
             {
                 val localBlackhole = benchmark.blackhole
                 val localDelegate = benchmark.function
                 val localInstance = instance
-                measureTime {
+                wrapper {
                     localBlackhole.consume(localInstance.localDelegate(localBlackhole))
                 }
             }
@@ -123,12 +135,26 @@ abstract class CommonSuiteExecutor(
                 val localBlackhole = benchmark.blackhole
                 val localDelegate = benchmark.function
                 val localInstance = instance
-                measureTime {
+                wrapper {
                     localBlackhole.consume(localInstance.localDelegate())
                 }
             }
         }
         else -> error("Unexpected ${benchmark::class.simpleName}")
+    }
+
+    protected open fun <T> createIterationMeasurer(
+        instance: T,
+        benchmark: BenchmarkDescriptor<T>,
+        configuration: BenchmarkConfiguration,
+        cycles: Int
+    ): () -> Long = wrapBenchmarkFunction(instance, benchmark) { payload ->
+        var cycle = cycles
+        measureTime {
+            while(cycle-- > 0) {
+                payload()
+            }
+        }
     }
 }
 
