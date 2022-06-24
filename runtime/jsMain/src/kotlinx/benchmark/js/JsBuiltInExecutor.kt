@@ -14,6 +14,18 @@ class JsBuiltInExecutor(
     private val BenchmarkConfiguration.jsUseBridge: Boolean
         get() = "true".equals(advanced["jsUseBridge"], ignoreCase = true)
 
+    override fun run(
+        runnerConfiguration: RunnerConfiguration,
+        benchmarks: List<BenchmarkDescriptor<Any?>>,
+        start: () -> Unit,
+        complete: () -> Unit
+    ) {
+        if (benchmarks.any { it.isAsync }) {
+            error("${JsBuiltInExecutor::class.simpleName} does not supports async functions")
+        }
+        super.run(runnerConfiguration, benchmarks, start, complete)
+    }
+
     private fun createJsMeasurerBridge(originalMeasurer: () -> Long): () -> Long {
         val bridgeObject = object {
             fun invoke(): Long = originalMeasurer.invoke()

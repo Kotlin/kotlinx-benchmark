@@ -32,3 +32,9 @@ class JsBenchmarkDescriptorWithBlackholeParameter<T>(
         function: T.(Blackhole) -> Promise<*>
     ) : this(name, suite, blackhole, function, true)
 }
+
+internal val BenchmarkDescriptor<*>.isAsync get() = when (this) {
+    is JsBenchmarkDescriptorWithNoBlackholeParameter<*> -> async
+    is JsBenchmarkDescriptorWithBlackholeParameter<*> -> async
+    else -> error("Unexpected ${this::class.simpleName}")
+}
