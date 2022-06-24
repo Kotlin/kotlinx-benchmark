@@ -1,10 +1,7 @@
 package kotlinx.benchmark.js
 
-import kotlinx.benchmark.BenchmarkConfiguration
-import kotlinx.benchmark.BenchmarkDescriptor
-import kotlinx.benchmark.CommonSuitExecutor
+import kotlinx.benchmark.*
 import kotlinx.benchmark.jsEngineSupport
-import kotlin.math.sin
 
 @JsName("Function")
 private external fun functionCtor(params: String, code: String): (dynamic) -> Long
@@ -28,8 +25,13 @@ class JsBuiltInExecutor(
         }
     }
 
-    override fun <T> createIterationMeasurer(instance: T, benchmark: BenchmarkDescriptor<T>, configuration: BenchmarkConfiguration): () -> Long {
-        val measurer = super.createIterationMeasurer(instance, benchmark, configuration)
+    override fun <T> createIterationMeasurer(
+        instance: T,
+        benchmark: BenchmarkDescriptor<T>,
+        configuration: BenchmarkConfiguration,
+        cycles: Int
+    ): () -> Long {
+        val measurer = super.createIterationMeasurer(instance, benchmark, configuration, cycles)
         return if (configuration.jsUseBridge) createJsMeasurerBridge(measurer) else measurer
     }
 }
