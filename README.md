@@ -28,7 +28,7 @@ Kotlin/JVM benchmarks on other platforms with minimum modifications, if any at a
 
 Gradle 6.8 or newer
 
-Kotlin 1.6.0 or newer
+Kotlin 1.7.0 or newer
 
 # Gradle plugin
 
@@ -36,7 +36,7 @@ Use plugin in `build.gradle`:
 
 ```groovy
 plugins {
-    id 'org.jetbrains.kotlinx.benchmark' version '0.4.2'
+    id 'org.jetbrains.kotlinx.benchmark' version '0.4.4'
 }
 ```
 
@@ -89,7 +89,7 @@ kotlin {
     sourceSets {
         commonMain {
              dependencies {
-                 implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.2")
+                 implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.4")
              }
         }
     }

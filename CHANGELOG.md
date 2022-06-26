@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 0.4.4
+
+- Require the minimum Kotlin version of 1.7.0
+
+## 0.4.3
+
+- Require the minimum Kotlin version of 1.6.20
+
 ## 0.4.2
 
 - Support JS IR backend
