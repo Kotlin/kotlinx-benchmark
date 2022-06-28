@@ -62,4 +62,4 @@ internal fun String.parseBenchmarkConfig(): NativeExecutor.BenchmarkRun {
     return NativeExecutor.BenchmarkRun(name, configuration, parameters)
 }
 
-internal actual inline fun measureTime(block: () -> Unit): Long = TODO("Not implemented for this platform")
+internal actual inline fun measureNanoseconds(block: () -> Unit): Long = TODO("Not implemented for this platform")

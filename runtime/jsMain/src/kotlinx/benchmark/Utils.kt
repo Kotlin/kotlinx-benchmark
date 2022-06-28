@@ -28,5 +28,5 @@ internal val jsEngineSupport: JsEngineSupport by lazy {
     if (isD8) D8EngineSupport else NodeJsEngineSupport
 }
 
-internal actual inline fun measureTime(block: () -> Unit): Long =
+internal actual inline fun measureNanoseconds(block: () -> Unit): Long =
     if (isD8) d8MeasureTime(block) else nodeJsMeasureTime(block)

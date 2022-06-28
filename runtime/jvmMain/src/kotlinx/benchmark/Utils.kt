@@ -15,4 +15,4 @@ internal actual fun String.writeFile(text: String) {
     File(this).writeText(text)
 }
 
-internal actual inline fun measureTime(block: () -> Unit): Long = TODO("Not implemented for this platform")
+internal actual inline fun measureNanoseconds(block: () -> Unit): Long = TODO("Not implemented for this platform")

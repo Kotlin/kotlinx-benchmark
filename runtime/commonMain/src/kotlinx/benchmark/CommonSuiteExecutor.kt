@@ -79,7 +79,7 @@ abstract class CommonSuiteExecutor(
             var elapsedTime = 0L
             val benchmarkIterationTime = configuration.iterationTime * configuration.iterationTimeUnit.toMultiplier()
             do {
-                val subIterationDuration = measureTime(body)
+                val subIterationDuration = measureNanoseconds(body)
                 elapsedTime += subIterationDuration
                 iterations++
             } while (elapsedTime < benchmarkIterationTime)
@@ -150,7 +150,7 @@ abstract class CommonSuiteExecutor(
         cycles: Int
     ): () -> Long = wrapBenchmarkFunction(instance, benchmark) { payload ->
         var cycle = cycles
-        measureTime {
+        measureNanoseconds {
             while(cycle-- > 0) {
                 payload()
             }
