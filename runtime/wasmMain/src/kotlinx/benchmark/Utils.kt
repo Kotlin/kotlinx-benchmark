@@ -30,5 +30,5 @@ internal val jsEngineSupport: JsEngineSupport by lazy {
 
 internal external interface ExternalInterfaceType
 
-internal actual inline fun measureTime(block: () -> Unit): Long =
+internal actual inline fun measureNanoseconds(block: () -> Unit): Long =
     if (isD8) d8MeasureTime(block) else nodeJsMeasureTime(block)
