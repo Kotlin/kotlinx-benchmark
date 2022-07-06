@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.KonanTarget
+import kotlinx.benchmark.gradle.JsBenchmarksExecutor
 
 plugins {
     id 'org.jetbrains.kotlin.multiplatform'
@@ -16,6 +17,7 @@ kotlin {
     jvm()
     js('jsIr', IR) { nodejs() }
     js { nodejs() }
+    js('jsIrBuiltIn', IR) { nodejs() }
     wasm { d8() }
     if (HostManager.host == KonanTarget.MACOS_X64.INSTANCE) macosX64('native')
     if (HostManager.host == KonanTarget.MACOS_ARM64.INSTANCE) macosArm64('native')
@@ -57,6 +59,7 @@ benchmark {
             iterationTime = 300
             iterationTimeUnit = "ms"
             advanced("jvmForks", 3)
+            advanced("jsUseBridge", true)
         }
 
         params {
@@ -104,8 +107,10 @@ benchmark {
         }
         register("jsIr")
         register("js")
+        register("jsIrBuiltIn") {
+            jsBenchmarksExecutor = JsBenchmarksExecutor.BuiltIn
+        }
         register("wasm")
         register("native")
     }
 }
-
