@@ -8,6 +8,8 @@ private external fun d8ReadFile(path: String): String
 @JsFun("() => globalThis.arguments.join(' ')")
 private external fun d8Arguments(): String
 
+private const val maxStringLength = 65_536 / 4
+
 internal object D8EngineSupport : JsEngineSupport() {
     override fun writeFile(path: String, text: String) {
         //WORKAROUND: D8 cannot write into files, this format will be parsed on gradle plugin side
@@ -15,7 +17,15 @@ internal object D8EngineSupport : JsEngineSupport() {
             print("<FILE:$path><ENDFILE>")
         } else {
             print("<FILE:$path>")
-            print(text)
+            //TODO("Workaround for kotlin/wasm issue in 1.7.20 and below. This should be removed for kotlin 1.8.0 or above")
+            var srcStartIndex = 0
+            var srcEndIndex = srcStartIndex + maxStringLength
+            while (srcEndIndex < text.length) {
+                print(text.substring(srcStartIndex, srcEndIndex))
+                srcStartIndex = srcEndIndex
+                srcEndIndex += maxStringLength
+            }
+            print(text.substring(srcStartIndex))
             print("<ENDFILE>")
         }
     }
