@@ -4,6 +4,7 @@ import groovy.lang.*
 import org.gradle.api.*
 import org.gradle.api.plugins.*
 import org.jetbrains.kotlin.gradle.dsl.*
+import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 
 fun Project.benchmark(configure: Action<BenchmarksExtension>) {
@@ -47,9 +48,8 @@ open class BenchmarksExtension(val project: Project) {
 
             when {
                 multiplatform != null -> {
-                    val compilations = multiplatform.targets.flatMap { it.compilations }
-                    val compilation = compilations.singleOrNull { it.apiConfigurationName.removeSuffix("Api") == name }
-                    when (compilation) {
+                    val target = multiplatform.targets.findByName(name)
+                    when (val compilation = target?.compilations?.findByName(KotlinCompilation.MAIN_COMPILATION_NAME)) {
                         null -> {
                             project.logger.warn("Warning: Cannot find a benchmark compilation '$name', ignoring.")
                             BenchmarkTarget(this, name) // ignore
@@ -71,8 +71,7 @@ open class BenchmarksExtension(val project: Project) {
 
                 }
                 javaConvention != null -> {
-                    val sourceSet = javaConvention.sourceSets.findByName(name)
-                    when (sourceSet) {
+                    when (val sourceSet = javaConvention.sourceSets.findByName(name)) {
                         null -> {
                             project.logger.warn("Warning: Cannot find a benchmark sourceSet '$name', ignoring.")
                             BenchmarkTarget(this, name) // ignore
