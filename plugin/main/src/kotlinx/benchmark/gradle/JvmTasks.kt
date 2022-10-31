@@ -29,7 +29,7 @@ fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, compileCla
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Build JAR for JMH compiled files for '${target.name}'"
         dependsOn("${target.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}")
-        conventionMapping.map("classifier") { "JMH" }
+        archiveClassifier.set("JMH")
         manifest.attributes["Main-Class"] = "org.openjdk.jmh.Main"
         
         duplicatesStrategy = DuplicatesStrategy.WARN
@@ -66,7 +66,6 @@ fun Project.createJmhGenerationRuntimeConfiguration(name: String, jmhVersion: St
         description = "JMH Generator Runtime Configuration for '$name'"
 
         val dependencies = this@createJmhGenerationRuntimeConfiguration.dependencies
-        @Suppress("UnstableApiUsage")
         (defaultDependencies {
             it.add(dependencies.create("${BenchmarksPlugin.JMH_GENERATOR_DEPENDENCY}$jmhVersion"))
         })
