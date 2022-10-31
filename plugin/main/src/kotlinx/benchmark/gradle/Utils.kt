@@ -69,6 +69,7 @@ fun <T> Any.closureOf(action: T.() -> Unit): Closure<Any?> =
 fun <T> Any.tryGetClass(className: String): Class<T>? {
     val classLoader = javaClass.classLoader
     return try {
+        @Suppress("UNCHECKED_CAST")
         Class.forName(className, false, classLoader) as Class<T>
     } catch (e: ClassNotFoundException) {
         null
