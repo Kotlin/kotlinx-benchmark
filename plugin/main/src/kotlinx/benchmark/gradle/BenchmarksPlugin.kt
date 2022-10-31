@@ -35,13 +35,9 @@ class BenchmarksPlugin : Plugin<Project> {
             return // TODO: Do we need to fail build at this point or just ignore benchmarks?
         }
 
-        val kotlinClass = tryGetClass<KotlinBasePluginWrapper>("org.jetbrains.kotlin.gradle.plugin.KotlinBasePluginWrapper")
-        if (kotlinClass != null) {
-            plugins.findPlugin(kotlinClass)?.run {
-                logger.info("Detected Kotlin plugin version '${project.getKotlinPluginVersion()}'")
-                if (VersionNumber.parse(project.getKotlinPluginVersion()) < VersionNumber(1, 7, 20, null))
-                    logger.error("JetBrains Gradle Benchmarks plugin requires Kotlin version 1.7.20 or higher")
-            }
+        logger.info("Detected Kotlin plugin version '${project.getKotlinPluginVersion()}'")
+        if (!getKotlinVersion().isAtLeast(1, 7, 20)) {
+            logger.error("JetBrains Gradle Benchmarks plugin requires Kotlin version 1.7.20 or higher")
         }
 
         // Create empty task that will depend on all benchmark building tasks to build all benchmarks in a project
@@ -83,4 +79,14 @@ class BenchmarksPlugin : Plugin<Project> {
             }
         }
     }
+}
+
+private fun Project.getKotlinVersion(): KotlinVersion {
+    val kotlinVersion = getKotlinPluginVersion()
+    val (major, minor) = kotlinVersion
+        .split('.')
+        .take(2)
+        .map { it.toInt() }
+    val patch = kotlinVersion.substringAfterLast('.').substringBefore('-').toInt()
+    return KotlinVersion(major, minor, patch)
 }
