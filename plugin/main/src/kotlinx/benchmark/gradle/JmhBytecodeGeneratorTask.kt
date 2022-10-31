@@ -31,11 +31,15 @@ open class JmhBytecodeGeneratorTask
     
     @TaskAction
     fun generate() {
-        workerExecutor.submit(JmhBytecodeGeneratorWorker::class.java) { config ->
-            config.isolationMode = IsolationMode.PROCESS
-            config.classpath = runtimeClasspath
-            config.params(inputClassesDirs.files, inputCompileClasspath.files, outputSourcesDir, outputResourcesDir)
+        val workQueue = workerExecutor.processIsolation { workerSpec ->
+            workerSpec.classpath.setFrom(runtimeClasspath.files)
         }
-        workerExecutor.await()
+        workQueue.submit(JmhBytecodeGeneratorWorker::class.java) { workParameters ->
+            workParameters.inputClasses.setFrom(inputClassesDirs.files)
+            workParameters.inputClasspath.setFrom(inputCompileClasspath.files)
+            workParameters.outputSourceDirectory.set(outputSourcesDir)
+            workParameters.outputResourceDirectory.set(outputResourcesDir)
+        }
+        workQueue.await()
     }
 }
