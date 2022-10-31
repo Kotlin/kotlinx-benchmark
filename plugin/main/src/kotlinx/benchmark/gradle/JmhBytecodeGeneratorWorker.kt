@@ -15,6 +15,10 @@
  */
 package kotlinx.benchmark.gradle
 
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.workers.WorkAction
+import org.gradle.workers.WorkParameters
 import org.openjdk.jmh.annotations.*
 import org.openjdk.jmh.generators.core.*
 import org.openjdk.jmh.generators.reflection.*
@@ -22,25 +26,21 @@ import org.openjdk.jmh.util.*
 import java.io.*
 import java.net.*
 import java.util.*
-import javax.inject.*
 
-class JmhBytecodeGeneratorWorker
-@Inject constructor(
-    private val inputClasses: Set<File>,
-    private val inputClasspath: Set<File>,
-    private val outputSourceDirectory: File,
-    private val outputResourceDirectory: File
-) : Runnable {
+abstract class JmhBytecodeGeneratorWorker : WorkAction<JmhBytecodeGeneratorWorkParameters> {
 
     companion object {
         private const val classSuffix = ".class"
     }
 
-    override fun run() {
+    private val outputSourceDirectory: File get() = parameters.outputSourceDirectory.get().asFile
+    private val outputResourceDirectory: File get() = parameters.outputResourceDirectory.get().asFile
+
+    override fun execute() {
         cleanup(outputSourceDirectory)
         cleanup(outputResourceDirectory)
 
-        val urls = (inputClasses + inputClasspath).map { it.toURI().toURL() }.toTypedArray()
+        val urls = (parameters.inputClasses + parameters.inputClasspath).map { it.toURI().toURL() }.toTypedArray()
 
         // Include compiled bytecode on classpath, in case we need to
         // resolve the cross-class dependencies
@@ -75,7 +75,7 @@ class JmhBytecodeGeneratorWorker
         val destination = FileSystemDestination(outputResourceDirectory, outputSourceDirectory)
 
         val allFiles = HashMap<File, Collection<File>>(urls.size)
-        for (directory in inputClasses) {
+        for (directory in parameters.inputClasses) {
             val classes = FileUtils.getClasses(directory)
             allFiles[directory] = classes
         }
@@ -109,4 +109,12 @@ class JmhBytecodeGeneratorWorker
             throw RuntimeException("Generation of JMH bytecode failed with " + errCount + "errors:\n" + sb)
         }
     }
+}
+
+
+interface JmhBytecodeGeneratorWorkParameters : WorkParameters {
+    val inputClasses: ConfigurableFileCollection
+    val inputClasspath: ConfigurableFileCollection
+    val outputSourceDirectory: DirectoryProperty
+    val outputResourceDirectory: DirectoryProperty
 }
