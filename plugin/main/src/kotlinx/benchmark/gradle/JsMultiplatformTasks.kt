@@ -30,14 +30,21 @@ private fun Project.createJsBenchmarkCompileTask(target: JsBenchmarkTarget): Kot
 
     benchmarkCompilation.apply {
         val sourceSet = kotlinSourceSets.single()
+
         sourceSet.kotlin.setSrcDirs(files("$benchmarkBuildDir/sources"))
         sourceSet.resources.setSrcDirs(files())
+
         sourceSet.dependencies {
-            implementation(compilation.compileDependencyFiles)
             implementation(compilation.output.allOutputs)
             implementation(npm("benchmark", "*"))
             runtimeOnly(npm("source-map-support", "*"))
         }
+        project.configurations.let {
+            it.getByName(sourceSet.implementationConfigurationName).extendsFrom(
+                it.getByName(compilation.compileDependencyConfigurationName)
+            )
+        }
+
         compileKotlinTask.apply {
             group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
             description = "Compile JS benchmark source files for '${target.name}'"

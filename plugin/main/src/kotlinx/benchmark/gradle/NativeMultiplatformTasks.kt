@@ -66,14 +66,21 @@ private fun Project.createNativeBenchmarkCompileTask(target: NativeBenchmarkTarg
 
     benchmarkCompilation.apply {
         val sourceSet = kotlinSourceSets.single()
+
         sourceSet.resources.setSrcDirs(files())
-        // TODO: check if there are other ways to set compiler options.
-        this.kotlinOptions.freeCompilerArgs = compilation.kotlinOptions.freeCompilerArgs
         sourceSet.kotlin.setSrcDirs(files("$benchmarkBuildDir/sources"))
+
         sourceSet.dependencies {
-            implementation(compilation.compileDependencyFiles)
             implementation(compilation.output.allOutputs)
         }
+        project.configurations.let {
+            it.getByName(sourceSet.implementationConfigurationName).extendsFrom(
+                it.getByName(compilation.compileDependencyConfigurationName)
+            )
+        }
+
+        // TODO: check if there are other ways to set compiler options.
+        this.kotlinOptions.freeCompilerArgs = compilation.kotlinOptions.freeCompilerArgs
     }
 
     compilationTarget.apply {
