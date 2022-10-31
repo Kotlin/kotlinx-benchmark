@@ -19,7 +19,7 @@ fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, compileCla
         dependsOn("${target.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}")
         classpath = compileClasspath
         source = fileTree("$benchmarkBuildDir/sources")
-        destinationDir = file("$benchmarkBuildDir/classes")
+        destinationDirectory.set(file("$benchmarkBuildDir/classes"))
     }
 
     task<Jar>(
@@ -107,7 +107,7 @@ fun Project.createJvmBenchmarkExecTask(
         description = "Execute benchmark for '${target.name}'"
 
         val benchmarkBuildDir = benchmarkBuildDir(target)
-        main = "kotlinx.benchmark.jvm.JvmBenchmarkRunnerKt"
+        mainClass.set("kotlinx.benchmark.jvm.JvmBenchmarkRunnerKt")
 
         if (target.workingDir != null)
             workingDir = File(target.workingDir)
