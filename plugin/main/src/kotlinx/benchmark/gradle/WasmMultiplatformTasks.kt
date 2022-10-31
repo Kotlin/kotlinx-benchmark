@@ -32,9 +32,14 @@ private fun Project.createWasmBenchmarkCompileTask(target: WasmBenchmarkTarget):
         with(kotlinSourceSets.single()) {
             kotlin.setSrcDirs(files("$benchmarkBuildDir/sources"))
             resources.setSrcDirs(files())
+
             dependencies {
-                implementation(compilation.compileDependencyFiles)
                 implementation(compilation.output.allOutputs)
+            }
+            project.configurations.let {
+                it.getByName(this.implementationConfigurationName).extendsFrom(
+                    it.getByName(compilation.compileDependencyConfigurationName)
+                )
             }
         }
         compileKotlinTask.apply {
