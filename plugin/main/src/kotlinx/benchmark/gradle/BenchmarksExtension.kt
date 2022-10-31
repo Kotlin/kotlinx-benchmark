@@ -37,7 +37,7 @@ open class BenchmarksExtension(val project: Project) {
         project.container(BenchmarkTarget::class.java) { name ->
             val multiplatformClass = tryGetClass<KotlinMultiplatformExtension>("org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension")
             val multiplatform = multiplatformClass?.let { project.extensions.findByType(it) }
-            val javaConvention = project.convention.findPlugin(JavaPluginConvention::class.java)
+            val javaExtension = project.extensions.findByType(JavaPluginExtension::class.java)
 
             // Factory function which is called when a given registration is materialized
             // Subscribing to NDOC (configurations.all) will cause every registration to eagerly materialize
@@ -70,8 +70,8 @@ open class BenchmarksExtension(val project: Project) {
                     }
 
                 }
-                javaConvention != null -> {
-                    val sourceSet = javaConvention.sourceSets.findByName(name)
+                javaExtension != null -> {
+                    val sourceSet = javaExtension.sourceSets.findByName(name)
                     when (sourceSet) {
                         null -> {
                             project.logger.warn("Warning: Cannot find a benchmark sourceSet '$name', ignoring.")
