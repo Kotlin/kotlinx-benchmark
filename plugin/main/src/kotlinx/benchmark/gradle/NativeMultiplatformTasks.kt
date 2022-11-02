@@ -55,7 +55,7 @@ private fun Project.createNativeBenchmarkCompileTask(target: NativeBenchmarkTarg
     val benchmarkBuildDir = benchmarkBuildDir(target)
     val compilationTarget = compilation.target
     val benchmarkCompilation =
-        compilationTarget.compilations.create(BenchmarksPlugin.BENCHMARK_COMPILATION_NAME) as KotlinNativeCompilation
+        compilationTarget.compilations.create(target.name + BenchmarksPlugin.BENCHMARK_COMPILATION_SUFFIX) as KotlinNativeCompilation
 
     // In the previous version of this method a compileTask was changed to build an executable instead of klib.
     // Currently it's impossible to change task output kind and an executable is always produced by

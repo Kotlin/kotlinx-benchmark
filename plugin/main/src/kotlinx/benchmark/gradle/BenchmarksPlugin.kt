@@ -16,7 +16,7 @@ class BenchmarksPlugin : Plugin<Project> {
         const val BENCHMARK_COMPILE_SUFFIX = "BenchmarkCompile"
         const val BENCHMARK_JAR_SUFFIX = "BenchmarkJar"
         const val BENCHMARK_EXEC_SUFFIX = "Benchmark"
-        const val BENCHMARK_COMPILATION_NAME = "benchmark"
+        const val BENCHMARK_COMPILATION_SUFFIX = "Benchmark"
 
         const val JMH_CORE_DEPENDENCY = "org.openjdk.jmh:jmh-core"
         const val JMH_GENERATOR_DEPENDENCY = "org.openjdk.jmh:jmh-generator-bytecode:"
