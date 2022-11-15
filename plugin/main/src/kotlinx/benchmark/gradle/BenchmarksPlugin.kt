@@ -2,7 +2,6 @@ package kotlinx.benchmark.gradle
 
 import org.gradle.api.*
 import org.gradle.util.*
-import org.jetbrains.kotlin.gradle.plugin.*
 
 @Suppress("unused")
 class BenchmarksPlugin : Plugin<Project> {
@@ -35,9 +34,11 @@ class BenchmarksPlugin : Plugin<Project> {
             return // TODO: Do we need to fail build at this point or just ignore benchmarks?
         }
 
-        logger.info("Detected Kotlin plugin version '${project.getKotlinPluginVersion()}'")
-        if (!getKotlinVersion().isAtLeast(1, 7, 20)) {
-            logger.error("JetBrains Gradle Benchmarks plugin requires Kotlin version 1.7.20 or higher")
+        plugins.withType(org.jetbrains.kotlin.gradle.plugin.KotlinBasePlugin::class.java) { kotlinPlugin ->
+            logger.info("Detected Kotlin plugin version '${kotlinPlugin.pluginVersion}'")
+            if (!getKotlinVersion(kotlinPlugin.pluginVersion).isAtLeast(1, 7, 20)) {
+                logger.error("JetBrains Gradle Benchmarks plugin requires Kotlin version 1.7.20 or higher")
+            }
         }
 
         // Create empty task that will depend on all benchmark building tasks to build all benchmarks in a project
@@ -82,8 +83,7 @@ class BenchmarksPlugin : Plugin<Project> {
     }
 }
 
-private fun Project.getKotlinVersion(): KotlinVersion {
-    val kotlinVersion = getKotlinPluginVersion()
+private fun getKotlinVersion(kotlinVersion: String): KotlinVersion {
     val (major, minor) = kotlinVersion
         .split('.')
         .take(2)
