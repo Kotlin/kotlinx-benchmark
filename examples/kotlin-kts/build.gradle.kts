@@ -9,7 +9,7 @@ plugins {
     java
     kotlin("jvm")
     kotlin("plugin.allopen") version "1.7.20"
-    id("org.jetbrains.kotlinx.benchmark") version "0.4.5"
+    id("org.jetbrains.kotlinx.benchmark") version "0.4.6"
 }
 
 sourceSets.all {
