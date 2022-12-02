@@ -48,6 +48,7 @@ internal fun KlibResolver.createModuleDescriptor(
         LanguageVersionSettingsImpl.DEFAULT,
         emptySet(),
         emptySet(),
+        emptySet(),
         emptyList(),
         isForMetadataCompilation = false
     )
