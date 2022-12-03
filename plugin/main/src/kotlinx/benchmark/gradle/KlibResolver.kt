@@ -9,7 +9,7 @@ import org.jetbrains.kotlin.konan.library.*
 import org.jetbrains.kotlin.library.*
 import org.jetbrains.kotlin.library.impl.*
 import org.jetbrains.kotlin.library.metadata.*
-import org.jetbrains.kotlin.library.resolver.impl.*
+import org.jetbrains.kotlin.library.metadata.resolver.impl.*
 import org.jetbrains.kotlin.storage.*
 import org.jetbrains.kotlin.util.*
 import java.io.*
