@@ -80,3 +80,7 @@ dependencies {
 
     testImplementation(kotlin("test-junit"))
 }
+
+tasks.test {
+    systemProperty("kotlin_repo_url", rootProject.properties["kotlin_repo_url"])
+}

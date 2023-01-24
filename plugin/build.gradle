@@ -20,13 +20,13 @@ buildscript {
         }
     }
 
+    ext.kotlinDevUrl = rootProject.properties["kotlin_repo_url"]
     repositories {
         maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/maven' }
         mavenCentral()
-
-        // Future replacement for kotlin-dev, with cache redirector
-        maven { url "https://cache-redirector.jetbrains.com/maven.pkg.jetbrains.space/kotlin/p/kotlin/dev" }
-        maven { url "https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev" }
+        if (kotlinDevUrl != null) {
+            maven { url = kotlinDevUrl }
+        }
     }
     dependencies {
         classpath "kotlinx.team:kotlinx.team.infra:$infra_version"
@@ -64,15 +64,15 @@ if (build_snapshot_train) {
     }
 }
 
-println "Using Kotlin $kotlin_version for project ${project.name}"
+logger.info("Using Kotlin $kotlin_version for project ${project.name}")
 
 repositories {
     mavenCentral()
     gradlePluginPortal()
 
-    // Future replacement for kotlin-dev, with cache redirector
-    maven { url "https://cache-redirector.jetbrains.com/maven.pkg.jetbrains.space/kotlin/p/kotlin/dev" }
-    maven { url "https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev" }
+    if (kotlinDevUrl != null) {
+        maven { url = kotlinDevUrl }
+    }
 }
 
 pluginBundle {

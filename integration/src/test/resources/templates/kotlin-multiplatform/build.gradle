@@ -48,9 +48,10 @@ kotlin {
 }
 
 repositories {
-    // Future replacement for kotlin-dev, with cache redirector
-    maven { url "https://cache-redirector.jetbrains.com/maven.pkg.jetbrains.space/kotlin/p/kotlin/dev" }
-    maven { url "https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev" }
+    def kotlinDevUrl = rootProject.properties["kotlin_repo_url"]
+    if (kotlinDevUrl != null) {
+        maven { url = kotlinDevUrl }
+    }
 }
 
 benchmark {
