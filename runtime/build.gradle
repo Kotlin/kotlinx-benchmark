@@ -30,7 +30,7 @@ kotlin {
     }
 
     jvm()
-    js(BOTH) { nodejs() }
+    js("jsIr", IR) { nodejs() }
     wasm { d8() }
 
     sourceSets.all {
@@ -56,6 +56,9 @@ kotlin {
             dependencies {
                 implementation "org.openjdk.jmh:jmh-core:$jmhVersion"
             }
+        }
+        jsMain {
+            jsIrMain.dependsOn(it)
         }
         nativeMain {
             dependsOn(commonMain)
