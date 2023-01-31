@@ -16,7 +16,6 @@ allOpen {
 kotlin {
     jvm()
     js('jsIr', IR) { nodejs() }
-    js { nodejs() }
     js('jsIrBuiltIn', IR) { nodejs() }
     wasm { d8() }
     if (HostManager.host == KonanTarget.MACOS_X64.INSTANCE) macosX64('native')
@@ -43,6 +42,7 @@ kotlin {
 
         jsMain {
             jsIrMain.dependsOn(it)
+            jsIrBuiltInMain.dependsOn(it)
         }
 
         nativeMain {
@@ -106,7 +106,6 @@ benchmark {
             jmhVersion = "1.21"
         }
         register("jsIr")
-        register("js")
         register("jsIrBuiltIn") {
             jsBenchmarksExecutor = JsBenchmarksExecutor.BuiltIn
         }

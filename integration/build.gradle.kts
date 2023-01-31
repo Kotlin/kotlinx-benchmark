@@ -53,7 +53,6 @@ val createClasspathManifest by tasks.registering {
     dependsOn(plugin.task(":createClasspathManifest"))
     dependsOn(artifactsTask("jvm"))
     dependsOn(artifactsTask("jsIr"))
-    dependsOn(artifactsTask("jsLegacy"))
     dependsOn(artifactsTask("wasm"))
     dependsOn(artifactsTask("metadata"))
     dependsOn(artifactsTaskNativeKlibs())
@@ -67,7 +66,6 @@ val createClasspathManifest by tasks.registering {
             resolve("runtime-metadata.txt").writeText(artifactsTask("metadata").archiveFilePath)
             resolve("runtime-jvm.txt").writeText(artifactsTask("jvm").archiveFilePath)
             resolve("runtime-jsIr.txt").writeText(artifactsTask("jsIr").archiveFilePath)
-            resolve("runtime-js.txt").writeText(artifactsTask("jsLegacy").archiveFilePath)
             resolve("runtime-wasm.txt").writeText(artifactsTask("wasm").archiveFilePath)
             resolve("runtime-native.txt").writeText(artifactsTaskNativeKlibs().klibs())
         }
