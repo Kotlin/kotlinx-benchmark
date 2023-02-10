@@ -98,7 +98,7 @@ kotlin {
 
 # Configuration
 
-In a `build.gradle` file create ` benchmark` section, and inside it add a `targets` section.
+In a `build.gradle` file create `benchmark` section, and inside it add a `targets` section.
 In this section register all targets you want to run benchmarks from. 
 Example for multiplatform project:
 
