@@ -28,6 +28,7 @@ fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, compileCla
     ) {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Build JAR for JMH compiled files for '${target.name}'"
+        isZip64 = true
         dependsOn("${target.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}")
         archiveClassifier.set("JMH")
         manifest.attributes["Main-Class"] = "org.openjdk.jmh.Main"
