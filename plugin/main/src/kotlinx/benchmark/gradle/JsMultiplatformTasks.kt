@@ -22,7 +22,7 @@ private fun Project.createJsBenchmarkCompileTask(target: JsBenchmarkTarget): Kot
     val compilation = target.compilation
     val benchmarkBuildDir = benchmarkBuildDir(target)
     val benchmarkCompilation =
-        compilation.target.compilations.create(BenchmarksPlugin.BENCHMARK_COMPILATION_NAME) as KotlinJsCompilation
+        compilation.target.compilations.maybeCreate(BenchmarksPlugin.BENCHMARK_COMPILATION_NAME) as KotlinJsCompilation
 
     (compilation.target as KotlinJsTargetDsl).apply {
         //force to create executable: required for IR, do nothing on Legacy
