@@ -28,7 +28,7 @@ Kotlin/JVM benchmarks on other platforms with minimum modifications, if any at a
 
 Gradle 7.0 or newer
 
-Kotlin 1.7.20 or newer
+Kotlin 1.9.255-SNAPSHOT or newer
 
 # Gradle plugin
 
@@ -80,6 +80,7 @@ Enable Maven Central for dependencies lookup:
 ```groovy
 repositories {
     mavenCentral()
+mavenLocal()
 }
 ```
 

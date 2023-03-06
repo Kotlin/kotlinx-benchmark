@@ -37,6 +37,7 @@ private val buildScript = run {
     
     repositories {
         mavenCentral()
+mavenLocal()
         maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlin/bootstrap' }
     }
     

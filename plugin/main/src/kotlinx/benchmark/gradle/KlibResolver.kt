@@ -15,6 +15,7 @@ import org.jetbrains.kotlin.storage.*
 import org.jetbrains.kotlin.util.*
 import java.io.*
 import org.jetbrains.kotlin.konan.file.File as KonanFile
+import org.jetbrains.kotlin.library.metadata.KlibMetadataFactories
 
 internal enum class KlibResolver { JS, Native }
 
@@ -47,6 +48,7 @@ internal fun KlibResolver.createModuleDescriptor(
         storageManager,
         DefaultBuiltIns.Instance,
         LanguageVersionSettingsImpl.DEFAULT,
+        emptySet(),
         emptySet(),
         emptySet(),
         emptyList(),

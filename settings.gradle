@@ -1,9 +1,7 @@
 pluginManagement {
     repositories {
         gradlePluginPortal()
-        if (settings.hasProperty("kotlin_repo_url") && settings.kotlin_repo_url != null) {
-            maven { url = settings.kotlin_repo_url }
-        }
+        mavenLocal()
     }
 }
 

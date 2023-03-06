@@ -1,6 +1,7 @@
 buildscript {
     repositories {
         maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/maven' }
+        mavenLocal()
         gradlePluginPortal()
 
         KotlinCommunity.addDevRepositoryIfEnabled(delegate, project)
@@ -33,6 +34,7 @@ infra {
 // https://youtrack.jetbrains.com/issue/KT-48410
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
 afterEvaluate {
