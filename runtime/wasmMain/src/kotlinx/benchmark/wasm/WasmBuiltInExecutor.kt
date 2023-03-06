@@ -2,8 +2,17 @@ package kotlinx.benchmark.wasm
 
 import kotlinx.benchmark.*
 
+
+private external interface JsAny
+
 @JsFun("(p) => p")
-private external fun id(p: Any): Any
+private external fun jsId(p: JsAny): JsAny
+
+private fun id(p: Any): Any {
+    // TODO: Use dedicated type for passing Kotlin references to JS when it is available
+    @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
+    return jsId(p as JsAny)
+}
 
 class WasmBuiltInExecutor(
     name: String,
