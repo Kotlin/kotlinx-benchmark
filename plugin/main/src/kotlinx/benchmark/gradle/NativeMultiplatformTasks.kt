@@ -37,7 +37,6 @@ private fun Project.createNativeBenchmarkGenerateSourceTask(target: NativeBenchm
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Generate Native source files for '${target.name}'"
         val compilation = target.compilation
-        onlyIf { compilation.compileKotlinTask.enabled }
         this.nativeTarget = compilation.target.konanTarget.name
         title = target.name
         inputClassesDirs = compilation.output.allOutputs
@@ -96,7 +95,6 @@ private fun Project.createNativeBenchmarkCompileTask(target: NativeBenchmarkTarg
                     description = "Compile Native benchmark source files for '${compilationTarget.name}'"
                     dependsOn(generateSourceTaskName(target))
                 }
-                linkTask.onlyIf { compilation.compileKotlinTask.enabled }
                 tasks.getByName(BenchmarksPlugin.ASSEMBLE_BENCHMARKS_TASKNAME).dependsOn(linkTask)
                 entryPoint("kotlinx.benchmark.generated.main")
             }
@@ -121,7 +119,6 @@ fun Project.createNativeBenchmarkExecTask(
         val binary =
             benchmarkCompilation.target.binaries.getExecutable(benchmarkCompilation.name, NativeBuildType.RELEASE)
         val linkTask = binary.linkTask
-        onlyIf { linkTask.enabled }
 
         dependsOn(linkTask)
 
