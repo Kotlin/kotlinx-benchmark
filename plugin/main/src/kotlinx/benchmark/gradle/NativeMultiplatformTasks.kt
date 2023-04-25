@@ -2,10 +2,12 @@ package kotlinx.benchmark.gradle
 
 import org.gradle.api.*
 import org.gradle.api.tasks.*
+import org.gradle.process.ExecOperations
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.konan.target.*
 import java.io.File
 import java.nio.file.Path
+import javax.inject.Inject
 import kotlin.io.path.*
 
 fun Project.processNativeCompilation(target: NativeBenchmarkTarget) {
@@ -144,7 +146,9 @@ fun Project.createNativeBenchmarkExecTask(
     }
 }
 
-open class NativeBenchmarkExec() : DefaultTask() {
+open class NativeBenchmarkExec @Inject constructor(
+    private val execOperations: ExecOperations,
+) : DefaultTask() {
 /*
     @Option(option = "filter", description = "Configures the filter for benchmarks to run.")
     var filter: String? = null
@@ -173,7 +177,7 @@ open class NativeBenchmarkExec() : DefaultTask() {
     lateinit var benchProgressPath: String
 
     private fun execute(args: Collection<String>) {
-        project.exec {
+        execOperations.exec {
             it.executable = executable.absolutePath
             it.args(args)
             workingDir?.let { dir ->
