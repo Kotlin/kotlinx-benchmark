@@ -1,6 +1,7 @@
 package kotlinx.benchmark.gradle
 
 import org.gradle.api.*
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.tasks.*
 import org.gradle.process.ExecOperations
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
@@ -148,6 +149,7 @@ fun Project.createNativeBenchmarkExecTask(
 
 open class NativeBenchmarkExec @Inject constructor(
     private val execOperations: ExecOperations,
+    private val objectFactory: ObjectFactory,
 ) : DefaultTask() {
 /*
     @Option(option = "filter", description = "Configures the filter for benchmarks to run.")
@@ -191,7 +193,7 @@ open class NativeBenchmarkExec @Inject constructor(
     fun run() {
         // Get full list of running benchmarks
         execute(listOf(configFile.absolutePath, "--list", benchProgressPath, benchsDescriptionDir.absolutePath))
-        val detailedConfigFiles = project.fileTree(benchsDescriptionDir).files.sortedBy { it.absolutePath }
+        val detailedConfigFiles = objectFactory.fileTree().from(benchsDescriptionDir).files.sortedBy { it.absolutePath }
         val runResults = mutableMapOf<String, String>()
 
         val forkPerBenchmark = nativeFork.let { it == null || it == "perBenchmark" }
