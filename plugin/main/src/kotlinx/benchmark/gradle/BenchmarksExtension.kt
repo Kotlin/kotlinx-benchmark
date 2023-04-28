@@ -51,7 +51,9 @@ open class BenchmarksExtension(val project: Project) {
             when {
                 multiplatform != null -> {
                     val target = multiplatform.targets.findByName(name)
-                    when (val compilation = target?.compilations?.findByName(KotlinCompilation.MAIN_COMPILATION_NAME)) {
+                    // We allow the name to be either a target or a source set
+                    when (val compilation = target?.compilations?.findByName(KotlinCompilation.MAIN_COMPILATION_NAME)
+                        ?: multiplatform.targets.flatMap { it.compilations }.find { it.defaultSourceSetName == name }) {
                         null -> {
                             project.logger.warn("Warning: Cannot find a benchmark compilation '$name', ignoring.")
                             BenchmarkTarget(this, name) // ignore

@@ -14,7 +14,9 @@ allOpen {
 }
 
 kotlin {
-    jvm()
+    jvm {
+        compilations.create('benchmark') { associateWith(compilations.main) }
+    }
     js('jsIr', IR) { nodejs() }
     js('jsIrBuiltIn', IR) { nodejs() }
     wasm { d8() }
@@ -103,6 +105,10 @@ benchmark {
     targets {
         // This one matches compilation base name, e.g. 'jvm', 'jvmTest', etc
         register("jvm") {
+            jmhVersion = "1.21"
+        }
+        // This one matches source set name, e.g. 'jvmMain', 'jvmTest', etc
+        register("jvmBenchmark") {
             jmhVersion = "1.21"
         }
         register("jsIr")
