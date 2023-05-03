@@ -38,6 +38,7 @@ kotlin {
         resources.srcDirs = ["$it.name/resources"]
         languageSettings {
             progressiveMode = true
+            optIn("kotlinx.cinterop.ExperimentalForeignApi")
         }
     }
 
