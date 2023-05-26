@@ -80,9 +80,11 @@ fun Task.setupReporting(target: BenchmarkTarget, config: BenchmarkConfiguration)
     extensions.extraProperties.set("idea.internal.test", project.getSystemProperty("idea.active"))
     val reportsDir = project.benchmarkReportsDir(config, target)
     val reportFile = reportsDir.resolve("${target.name}.${config.reportFileExt()}")
+    val configName = config.name
+    val targetName = target.name
     doFirst {
         reportsDir.mkdirs()
-        logger.lifecycle("Running '${config.name}' benchmarks for '${target.name}'")
+        logger.lifecycle("Running '${configName}' benchmarks for '${targetName}'")
     }
     return reportFile
 }

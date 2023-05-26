@@ -20,6 +20,7 @@ abstract class GradleTest {
     fun project(
         name: String,
         print: Boolean = false,
+        gradleVersion: GradleTestVersion? = null,
         build: ProjectBuilder.() -> Unit = {}
     ): Runner {
         val builder = ProjectBuilder().apply(build)
@@ -30,7 +31,7 @@ abstract class GradleTest {
         if (!kotlinDevUrl.isNullOrBlank()) {
             file("gradle.properties").appendText("\nkotlin_repo_url=$kotlinDevUrl")
         }
-        return Runner(rootProjectDir, print)
+        return Runner(rootProjectDir, print, gradleVersion)
     }
 }
 

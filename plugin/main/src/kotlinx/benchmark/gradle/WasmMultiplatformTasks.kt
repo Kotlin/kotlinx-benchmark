@@ -21,7 +21,7 @@ private fun Project.createWasmBenchmarkCompileTask(target: WasmBenchmarkTarget):
     val compilation = target.compilation
     val benchmarkBuildDir = benchmarkBuildDir(target)
     val benchmarkCompilation =
-        compilation.target.compilations.create(BenchmarksPlugin.BENCHMARK_COMPILATION_NAME) as KotlinJsIrCompilation
+        compilation.target.compilations.create(target.name + BenchmarksPlugin.BENCHMARK_COMPILATION_SUFFIX) as KotlinJsIrCompilation
 
     val kotlinTarget = compilation.target
     check(kotlinTarget is KotlinJsTargetDsl)

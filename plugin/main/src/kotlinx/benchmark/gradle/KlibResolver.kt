@@ -6,11 +6,10 @@ import org.jetbrains.kotlin.config.*
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.incremental.components.*
 import org.jetbrains.kotlin.konan.library.*
-import org.jetbrains.kotlin.konan.util.*
 import org.jetbrains.kotlin.library.*
 import org.jetbrains.kotlin.library.impl.*
 import org.jetbrains.kotlin.library.metadata.*
-import org.jetbrains.kotlin.library.resolver.impl.*
+import org.jetbrains.kotlin.library.metadata.resolver.impl.*
 import org.jetbrains.kotlin.storage.*
 import org.jetbrains.kotlin.util.*
 import java.io.*
@@ -47,6 +46,7 @@ internal fun KlibResolver.createModuleDescriptor(
         storageManager,
         DefaultBuiltIns.Instance,
         LanguageVersionSettingsImpl.DEFAULT,
+        emptySet(),
         emptySet(),
         emptySet(),
         emptyList(),
