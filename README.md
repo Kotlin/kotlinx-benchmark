@@ -99,7 +99,11 @@ kotlin {
 # Configuration
 
 In a `build.gradle` file create `benchmark` section, and inside it add a `targets` section.
-In this section register all targets you want to run benchmarks from. 
+In this section register all compilations you want to run benchmarks for. 
+`register` should either be called on the name of a target (e.g. `"jvm"`) which will register its `main` compilation
+(meaning that `register("jvm")` and `register("jvmMain")` register the same compilation)
+Or on the name of a source set (e.g. `"jvmTest"`, `"jsBenchmark"`) which will register the apt compilation
+(e.g. `register("jsFoo")` uses the `foo` compilation defined for the `js` target)
 Example for multiplatform project:
 
 ```groovy
@@ -211,6 +215,7 @@ benchmark {
 # Separate source sets for benchmarks
 
 Often you want to have benchmarks in the same project, but separated from main code, much like tests. Here is how:
+For a Kotlin/JVM project:
 
 Define source set:
 ```groovy
@@ -237,6 +242,27 @@ Register `benchmarks` source set:
 benchmark {
     targets {
         register("benchmarks")    
+    }
+}
+```
+
+For a Kotlin Multiplatform project:
+
+Define a new compilation in whichever target you'd like (e.g. `jvm`, `js`, etc):
+```groovy
+kotlin {
+    jvm {
+        compilations.create('benchmark') { associateWith(compilations.main) }
+    }
+}
+```
+
+Register it by its source set name (`jvmBenchmark` is the name for the `benchmark` compilation for `jvm` target):
+
+```groovy
+benchmark {
+    targets {
+        register("jvmBenchmark")    
     }
 }
 ```
