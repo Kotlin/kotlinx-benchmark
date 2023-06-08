@@ -103,11 +103,13 @@ benchmark {
 
     // Setup configurations
     targets {
-        // This one matches compilation base name, e.g. 'jvm', 'jvmTest', etc
+        // This one matches target name, e.g. 'jvm', 'js',
+        // and registers its 'main' compilation, so 'jvm' registers 'jvmMain'
         register("jvm") {
             jmhVersion = "1.21"
         }
         // This one matches source set name, e.g. 'jvmMain', 'jvmTest', etc
+        // and register the corresponding compilation (here the 'benchmark' compilation declared in the 'jvm' target)
         register("jvmBenchmark") {
             jmhVersion = "1.21"
         }
