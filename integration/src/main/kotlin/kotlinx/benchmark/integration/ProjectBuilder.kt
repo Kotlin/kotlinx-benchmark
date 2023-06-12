@@ -42,6 +42,7 @@ private fun generateBuildScript(kotlinVersion: String) =
             $kotlin_repo
             maven { url '${System.getProperty("plugin_repo_url")}' }
             mavenCentral()
+            maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev' }
         }
         dependencies {
             classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion'
@@ -56,5 +57,7 @@ private fun generateBuildScript(kotlinVersion: String) =
         $kotlin_repo
         maven { url '${System.getProperty("runtime_repo_url")}' }
         mavenCentral()
+        maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev' }
+        mavenLocal()
     }
     """.trimIndent()
