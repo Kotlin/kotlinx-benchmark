@@ -4,5 +4,7 @@ version '0.1-SNAPSHOT'
 subprojects {
     repositories {
         mavenCentral()
+        maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev' }
+        mavenLocal()
     }
 }
