@@ -2,6 +2,8 @@ buildscript {
     repositories {
         maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/maven' }
         gradlePluginPortal()
+        maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev' }
+        mavenLocal()
 
         KotlinCommunity.addDevRepositoryIfEnabled(delegate, project)
     }
@@ -31,6 +33,8 @@ infra {
 // https://youtrack.jetbrains.com/issue/KT-48410
 repositories {
     mavenCentral()
+    maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev' }
+    mavenLocal()
 }
 
 afterEvaluate {
@@ -43,5 +47,8 @@ allprojects {
     logger.info("Using Kotlin $kotlin_version for project $it")
     repositories {
         KotlinCommunity.addDevRepositoryIfEnabled(delegate, project)
+        maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev' }
+        mavenLocal()
+
     }
 }
