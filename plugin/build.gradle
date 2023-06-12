@@ -6,6 +6,8 @@ buildscript {
     repositories {
         maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/maven' }
         mavenCentral()
+        maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev' }
+        mavenLocal()
         if (kotlinDevUrl != null) {
             maven { url = kotlinDevUrl }
         }
@@ -46,6 +48,8 @@ logger.info("Using Kotlin ${libs.versions.kotlin.get()} for project ${project.na
 repositories {
     mavenCentral()
     gradlePluginPortal()
+    maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev' }
+    mavenLocal()
 
     if (kotlinDevUrl != null) {
         maven { url = kotlinDevUrl }
