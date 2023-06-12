@@ -4,6 +4,8 @@ plugins {
 
 repositories {
     mavenCentral()
+    maven { setUrl("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
+    mavenLocal()
 }
 
 evaluationDependsOn(":kotlinx-benchmark-runtime")
@@ -23,6 +25,6 @@ tasks.test {
 
     systemProperty("plugin_repo_url", plugin.projectDir.resolve("build/maven").absoluteFile.invariantSeparatorsPath)
     systemProperty("runtime_repo_url", rootProject.buildDir.resolve("maven").absoluteFile.invariantSeparatorsPath)
-    systemProperty("kotlin_repo_url", rootProject.properties["kotlin_repo_url"])
+    rootProject.properties["kotlin_repo_url"]?.let { systemProperty("kotlin_repo_url", it) }
     systemProperty("kotlin_version", rootProject.properties["kotlin_version"]!!)
 }
