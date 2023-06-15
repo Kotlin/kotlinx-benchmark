@@ -2,7 +2,9 @@ import org.jetbrains.kotlin.konan.target.KonanTarget
 import org.jetbrains.kotlin.konan.target.HostManager
 
 kotlin {
-    jvm()
+    jvm {
+        compilations.create('benchmark') { associateWith(compilations.main) }
+    }
     js('jsIr', IR) { nodejs() }
     wasm { d8() }
 
@@ -18,6 +20,12 @@ kotlin {
             }
         }
         jvmMain {
+            dependencies {
+                implementation(benchmarkRuntimeJvm)
+            }
+        }
+        jvmBenchmark {
+            dependsOn(jvmMain)
             dependencies {
                 implementation(benchmarkRuntimeJvm)
             }

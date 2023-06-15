@@ -1,11 +1,14 @@
 package kotlinx.benchmark.gradle
 
 import org.gradle.api.*
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.tasks.*
+import org.gradle.process.ExecOperations
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.konan.target.*
 import java.io.File
 import java.nio.file.Path
+import javax.inject.Inject
 import kotlin.io.path.*
 
 fun Project.processNativeCompilation(target: NativeBenchmarkTarget) {
@@ -34,14 +37,11 @@ private fun Project.createNativeBenchmarkGenerateSourceTask(target: NativeBenchm
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Generate Native source files for '${target.name}'"
         val compilation = target.compilation
-        onlyIf { compilation.compileKotlinTask.enabled }
         this.nativeTarget = compilation.target.konanTarget.name
         title = target.name
         inputClassesDirs = compilation.output.allOutputs
 
-        val nativeKlibDependencies = project.files(project.provider {
-            project.configurations.getByName(compilation.defaultSourceSet.implementationMetadataConfigurationName).files
-        })
+        val nativeKlibDependencies = project.configurations.getByName(compilation.defaultSourceSet.implementationMetadataConfigurationName)
         inputDependencies = compilation.compileDependencyFiles + nativeKlibDependencies
 
         outputResourcesDir = file("$benchmarkBuildDir/resources")
@@ -55,7 +55,7 @@ private fun Project.createNativeBenchmarkCompileTask(target: NativeBenchmarkTarg
     val benchmarkBuildDir = benchmarkBuildDir(target)
     val compilationTarget = compilation.target
     val benchmarkCompilation =
-        compilationTarget.compilations.create(BenchmarksPlugin.BENCHMARK_COMPILATION_NAME) as KotlinNativeCompilation
+        compilationTarget.compilations.create(target.name + BenchmarksPlugin.BENCHMARK_COMPILATION_SUFFIX) as KotlinNativeCompilation
 
     // In the previous version of this method a compileTask was changed to build an executable instead of klib.
     // Currently it's impossible to change task output kind and an executable is always produced by
@@ -95,7 +95,6 @@ private fun Project.createNativeBenchmarkCompileTask(target: NativeBenchmarkTarg
                     description = "Compile Native benchmark source files for '${compilationTarget.name}'"
                     dependsOn(generateSourceTaskName(target))
                 }
-                linkTask.onlyIf { compilation.compileKotlinTask.enabled }
                 tasks.getByName(BenchmarksPlugin.ASSEMBLE_BENCHMARKS_TASKNAME).dependsOn(linkTask)
                 entryPoint("kotlinx.benchmark.generated.main")
             }
@@ -120,7 +119,6 @@ fun Project.createNativeBenchmarkExecTask(
         val binary =
             benchmarkCompilation.target.binaries.getExecutable(benchmarkCompilation.name, NativeBuildType.RELEASE)
         val linkTask = binary.linkTask
-        onlyIf { linkTask.enabled }
 
         dependsOn(linkTask)
 
@@ -144,7 +142,10 @@ fun Project.createNativeBenchmarkExecTask(
     }
 }
 
-open class NativeBenchmarkExec() : DefaultTask() {
+open class NativeBenchmarkExec @Inject constructor(
+    private val execOperations: ExecOperations,
+    private val objectFactory: ObjectFactory,
+) : DefaultTask() {
 /*
     @Option(option = "filter", description = "Configures the filter for benchmarks to run.")
     var filter: String? = null
@@ -173,7 +174,7 @@ open class NativeBenchmarkExec() : DefaultTask() {
     lateinit var benchProgressPath: String
 
     private fun execute(args: Collection<String>) {
-        project.exec {
+        execOperations.exec {
             it.executable = executable.absolutePath
             it.args(args)
             workingDir?.let { dir ->
@@ -187,7 +188,7 @@ open class NativeBenchmarkExec() : DefaultTask() {
     fun run() {
         // Get full list of running benchmarks
         execute(listOf(configFile.absolutePath, "--list", benchProgressPath, benchsDescriptionDir.absolutePath))
-        val detailedConfigFiles = project.fileTree(benchsDescriptionDir).files.sortedBy { it.absolutePath }
+        val detailedConfigFiles = objectFactory.fileTree().from(benchsDescriptionDir).files.sortedBy { it.absolutePath }
         val runResults = mutableMapOf<String, String>()
 
         val forkPerBenchmark = nativeFork.let { it == null || it == "perBenchmark" }

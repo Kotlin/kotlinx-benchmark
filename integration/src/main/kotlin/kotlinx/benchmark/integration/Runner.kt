@@ -5,7 +5,8 @@ import java.io.*
 
 class Runner(
     private val projectDir: File,
-    private val print: Boolean
+    private val print: Boolean,
+    private val gradleVersion: GradleTestVersion? = null,
 ) {
 
     private fun gradle(vararg tasks: String): GradleRunner =
@@ -14,6 +15,9 @@ class Runner(
             .withArguments(*(defaultArguments() + tasks))
             .run {
                 if (print) forwardStdOutput(System.out.bufferedWriter()) else this
+            }
+            .run {
+                if (gradleVersion != null) withGradleVersion(gradleVersion.versionString) else this
             }
 
     fun run(vararg tasks: String, fn: BuildResult.() -> Unit = {}) {
