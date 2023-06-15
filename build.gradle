@@ -52,6 +52,5 @@ allprojects {
         KotlinCommunity.addDevRepositoryIfEnabled(delegate, project)
         maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev' }
         mavenLocal()
-
     }
 }

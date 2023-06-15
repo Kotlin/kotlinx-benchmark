@@ -20,13 +20,17 @@ sourceSets.all {
     kotlin.srcDirs = ["$it.name/src"]
     java.srcDirs = ["$it.name/src"]
     resources.srcDirs = ["$it.name/resources"]
+    languageSettings.languageVersion = kotlin_language_version
 }
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.languageVersion = kotlin_language_version
 }
+
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.languageVersion = kotlin_language_version
 }
 
 

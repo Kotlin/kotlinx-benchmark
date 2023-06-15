@@ -28,3 +28,11 @@ tasks.test {
     rootProject.properties["kotlin_repo_url"]?.let { systemProperty("kotlin_repo_url", it) }
     systemProperty("kotlin_version", rootProject.properties["kotlin_version"]!!)
 }
+
+allprojects {
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
+        kotlinOptions {
+            languageVersion = rootProject.properties["kotlin_language_version"].toString()
+        }
+    }
+}

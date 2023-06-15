@@ -79,12 +79,16 @@ sourceSets {
         java.srcDirs = ['test/src']
         resources.srcDirs = ['test/resources']
     }
+    configureEach {
+        languageSettings.languageVersion = rootProject.properties["kotlin_language_version"]
+    }
 }
 
 compileKotlin {
     kotlinOptions {
         freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
-        apiVersion = "1.4" // the version of Kotlin embedded in Gradle
+//        apiVersion = "1.4" // the version of Kotlin embedded in Gradle
+        languageVersion = rootProject.properties["kotlin_language_version"]
     }
 }
 
