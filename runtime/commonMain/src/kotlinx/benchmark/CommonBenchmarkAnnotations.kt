@@ -77,7 +77,10 @@ fun BenchmarkTimeUnit.toSecondsMultiplier() = when (this) {
 
 @Target(AnnotationTarget.CLASS)
 expect annotation class Warmup(
-    val iterations: Int = -1
+    val iterations: Int = -1,
+    val time: Int = -1,
+    val timeUnit: BenchmarkTimeUnit = BenchmarkTimeUnit.SECONDS,
+    val batchSize: Int = -1
 )
 
 @Target(AnnotationTarget.CLASS)
