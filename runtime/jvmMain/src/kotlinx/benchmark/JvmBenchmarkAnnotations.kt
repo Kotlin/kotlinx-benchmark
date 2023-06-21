@@ -10,8 +10,8 @@ actual typealias TearDown = org.openjdk.jmh.annotations.TearDown
 
 actual typealias Benchmark = org.openjdk.jmh.annotations.Benchmark
 
-@Suppress("NO_ACTUAL_CLASS_MEMBER_FOR_EXPECTED_CLASS")
-actual typealias BenchmarkMode = org.openjdk.jmh.annotations.BenchmarkMode
+@Target(AnnotationTarget.CLASS)
+actual annotation class BenchmarkMode(actual vararg val value: Mode)
 
 actual typealias Mode = org.openjdk.jmh.annotations.Mode
 
@@ -25,5 +25,4 @@ actual typealias Warmup = org.openjdk.jmh.annotations.Warmup
 @Suppress("ACTUAL_ANNOTATION_CONFLICTING_DEFAULT_ARGUMENT_VALUE")
 actual typealias Measurement = org.openjdk.jmh.annotations.Measurement
 
-@Suppress("NO_ACTUAL_CLASS_MEMBER_FOR_EXPECTED_CLASS")
-actual typealias Param = org.openjdk.jmh.annotations.Param
+actual annotation class Param(actual vararg val value: String)
