@@ -26,7 +26,10 @@ actual enum class BenchmarkTimeUnit {
 
 @Target(AnnotationTarget.CLASS)
 actual annotation class Warmup(
-    actual val iterations: Int
+    actual val iterations: Int,
+    actual val time: Int,
+    actual val timeUnit: BenchmarkTimeUnit,
+    actual val batchSize: Int
 )
 
 @Target(AnnotationTarget.CLASS)
