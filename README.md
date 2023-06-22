@@ -64,28 +64,11 @@ The `kotlinx-benchmark` library is designed to work with Kotlin/JVM, Kotlin/JS, 
 
     ```kotlin
     plugins {
-        kotlin("plugin.allopen") version "1.8.21"
         id("org.jetbrains.kotlinx.benchmark") version "0.4.8"
     }
     ```
 
-3.  **Enabling AllOpen Plugin**: If your benchmark classes are annotated with `@State(Scope.Benchmark)`, apply the `allopen` plugin and specify the `State` annotation.
-
-    ```kotlin
-    plugins {
-        kotlin("plugin.allopen") version "1.8.21"
-    }
-    ```
-
-4.  **Using AllOpen Plugin**: The `allopen` plugin is used to satisfy JMH requirements, or all benchmark classes and methods should be `open`.
-
-    ```
-    allOpen {
-        annotation("org.openjdk.jmh.annotations.State")
-    }
-    ```
-
-5.  **Specifying Repository**: Ensure you have `mavenCentral()` for dependencies lookup in the list of repositories:
+3.  **Specifying Repository**: Ensure you have `mavenCentral()` for dependencies lookup in the list of repositories:
 
         ```kotlin
         repositories {
@@ -114,24 +97,8 @@ The `kotlinx-benchmark` library is designed to work with Kotlin/JVM, Kotlin/JS, 
         id 'org.jetbrains.kotlinx.benchmark' version '0.4.8'
     }
     ```
-
-3.  **Enabling AllOpen Plugin**: If your benchmark classes are annotated with `@State(Scope.Benchmark)`, apply the `allopen` plugin and specify the `State` annotation.
-
-    ```groovy
-    plugins {
-        id 'org.jetbrains.kotlin.plugin.allopen'
-    }
-    ```
-
-4.  **Using AllOpen Plugin**: The `allopen` plugin is used to satisfy JMH requirements, or all benchmark classes and methods should be `open`.
-
-    ```
-    allOpen {
-        annotation("org.openjdk.jmh.annotations.State")
-    }
-    ```
-
-5.  **Specifying Repository**: Ensure you have `mavenCentral()` in the list of repositories:
+    
+3.  **Specifying Repository**: Ensure you have `mavenCentral()` in the list of repositories:
 
         ```groovy
         repositories {
@@ -142,6 +109,21 @@ The `kotlinx-benchmark` library is designed to work with Kotlin/JVM, Kotlin/JS, 
     </details>
 
 ### Target-specific configurations
+
+#### Kotlin/JVM
+
+For Kotlin/JVM, applying the [allopen plugin](https://kotlinlang.org/docs/all-open-plugin.html) is pivotal to meet JMH's criteria for `open` benchmark classes/methods. Alternatively, make all benchmark classes and methods `open`. Implement it as follows:
+
+```kotlin
+plugins {
+    kotlin("jvm") version "1.8.21"
+    kotlin("plugin.allopen") version "1.8.21"
+}
+
+allOpen {
+    annotation("org.openjdk.jmh.annotations.State")
+}
+```
 
 #### Kotlin/JS
 
@@ -155,7 +137,7 @@ kotlin {
 }
 ```
 
-For Kotlin/JS, both Legacy and IR backends are supported. However, simultaneous target declarations such as `kotlin.js.compiler=both` or `js(BOTH)` are not feasible. Ensure each backend is separately declared. For a detailed configuration example, please refer to the [build script of the kotlin-multiplatform example project](https://github.com/Kotlin/kotlinx-benchmark/blob/master/examples/kotlin-multiplatform/build.gradle).
+For Kotlin/JS, IR backends are supported. However, simultaneous target declarations such as `kotlin.js.compiler=both` or `js(BOTH)` are not feasible. Ensure each backend is separately declared. For a detailed configuration example, please refer to the [build script of the kotlin-multiplatform example project](https://github.com/Kotlin/kotlinx-benchmark/blob/master/examples/kotlin-multiplatform/build.gradle).
 
 #### Multiplatform
 
