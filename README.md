@@ -45,7 +45,7 @@ kotlinx.benchmark is a toolkit for running benchmarks for multiplatform code wri
 
 ## Using in Your Projects
 
-The `kotlinx-benchmark` library is designed to work with Kotlin/JVM, Kotlin/JS, and Kotlin/Native targets. To get started, ensure you're using Kotlin 1.7.20 or newer and Gradle 7.0 or newer.
+The `kotlinx-benchmark` library is designed to work with Kotlin/JVM, Kotlin/JS, and Kotlin/Native targets. To get started, ensure you're using Kotlin 1.8.20 or newer and Gradle 8.0 or newer.
 
 ### Gradle Setup
 
