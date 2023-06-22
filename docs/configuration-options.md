@@ -50,6 +50,8 @@ benchmark {
 
 Each configuration brings a bundle of options to the table, providing you with the flexibility to meet your specific benchmarking needs. We delve into these options to give you a better understanding and help you make the most of the basic and advanced settings:
 
+**Note:** Many of these configuration options correspond to annotations in the benchmark code. Please be aware that any values provided in the build script will override those defined by annotations in the code. 
+
 ### Basic Configuration Options: The Essential Settings <a name="step-3a"></a>
 
 | Option | Description | Default Value | Possible Values |
