@@ -7,7 +7,10 @@
 [![Maven Central](https://img.shields.io/maven-central/v/org.jetbrains.kotlinx/kotlinx-benchmark-runtime.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22org.jetbrains.kotlinx%22%20AND%20a:%22kotlinx-benchmark-runtime%22)
 [![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v?label=Gradle%20Plugin&metadataUrl=https://plugins.gradle.org/m2/org/jetbrains/kotlinx/kotlinx-benchmark-plugin/maven-metadata.xml)](https://plugins.gradle.org/plugin/org.jetbrains.kotlinx.benchmark)
 
-kotlinx-benchmark is a toolkit for running benchmarks for multiplatform code written in Kotlin.
+`kotlinx-benchmark` is a toolkit for running benchmarks for multiplatform code written in Kotlin.
+It is designed to work with Kotlin/JVM, Kotlin/JS, Kotlin/Native, and Kotlin/Wasm (experimental) targets.
+
+To get started, ensure you're using Kotlin 1.9.20 or newer and Gradle 7.4 or newer.
 
 ## Features
 
@@ -19,8 +22,7 @@ kotlinx-benchmark is a toolkit for running benchmarks for multiplatform code wri
 
 <!--- TOC -->
 
-- [Using in Your Projects](#using-in-your-projects)
-  - [Project Setup](#project-setup)
+- [Setting Up a Kotlin Multiplatform Project for Benchmarking](#setting-up-a-kotlin-multiplatform-project-for-benchmarking)
   - [Target-specific configurations](#target-specific-configurations)
     - [Kotlin/JVM](#kotlinjvm)
     - [Kotlin/JS](#kotlinjs)
@@ -42,17 +44,13 @@ kotlinx-benchmark is a toolkit for running benchmarks for multiplatform code wri
   - [Setting Up a Separate Source Set for Benchmarks](docs/separate-benchmark-source-set.md)
   - [Overview of Tasks Provided by kotlinx-benchmark Gradle Plugin](docs/tasks-overview.md)
 
-## Using in Your Projects
+## Setting Up a Kotlin Multiplatform Project for Benchmarking
 
-The `kotlinx-benchmark` library is designed to work with Kotlin/JVM, Kotlin/JS, Kotlin/Native, and Kotlin/Wasm (experimental) targets. 
-To get started, ensure you're using Kotlin 1.9.20 or newer and Gradle 7.4 or newer.
+To configure a Kotlin Multiplatform project for benchmarking, follow the steps below. 
+If you want to benchmark only Kotlin/JVM and Java code, you may refer to our [comprehensive guide](docs/kotlin-jvm-project-setup.md) 
+dedicated to setting up benchmarking in those specific project types.
 
-### Project Setup
-
-Follow the steps below to set up a Kotlin Multiplatform project for benchmarking.
-
-<details open>
-<summary>Kotlin DSL</summary>
+<details open><summary>Kotlin DSL</summary>
 
 1.  **Applying Benchmark Plugin**: Apply the benchmark plugin.
 
@@ -98,10 +96,9 @@ Follow the steps below to set up a Kotlin Multiplatform project for benchmarking
     }
     ```
 
-    </details>
+</details>
 
-<details>
-<summary>Groovy DSL</summary>
+<details><summary>Groovy DSL</summary>
 
 1.  **Applying Benchmark Plugin**: Apply the benchmark plugin.
 
@@ -147,7 +144,7 @@ Follow the steps below to set up a Kotlin Multiplatform project for benchmarking
     }
     ```
 
-    </details>
+</details>
 
 ### Target-specific configurations
 
@@ -191,8 +188,7 @@ To run benchmarks in Kotlin/JVM:
     }
     ```
 
-    <details>
-      <summary><b>Explanation</b></summary>
+    <details><summary><b>Explanation</b></summary>
 
     Assume that you've annotated each of your benchmark classes with `@State(Scope.Benchmark)`:
 
@@ -208,8 +204,8 @@ To run benchmarks in Kotlin/JVM:
     }
     ```
 
-    In Kotlin, classes are `final` by default, which means they can't be overridden. 
-    This is incompatible with the operation of the Java Microbenchmark Harness (JMH), which kotlinx-benchmark uses under the hood for running benchmarks on JVM.
+    In Kotlin, classes are `final` by default, which means they can't be overridden.
+    This conflicts with the Java Microbenchmark Harness (JMH) operation, which `kotlinx-benchmark` uses under the hood for running benchmarks on JVM.
     JMH requires benchmark classes and methods to be `open` to be able to generate subclasses and conduct the benchmark.
 
     This is where the `allopen` plugin comes into play. With the plugin applied, any class annotated with `@State` is treated as `open`, which allows JMH to work as intended:
@@ -307,7 +303,8 @@ To run benchmarks in Kotlin/Wasm:
     }
     ```
 
-Note: Kotlin/Wasm is an experimental compilation target for Kotlin. It may be dropped or changed at any time.
+Note: Kotlin/Wasm is an experimental compilation target for Kotlin. It may be dropped or changed at any time. Refer to 
+[Kotlin/Wasm documentation](https://kotlinlang.org/docs/wasm-overview.html) for up-to-date information about the target stability.
 
 ### Writing Benchmarks
 
@@ -393,11 +390,11 @@ See [writing benchmarks](docs/writing-benchmarks.md) for a complete guide for wr
 To run your benchmarks in all registered platforms, run `benchmark` Gradle task in your project.
 To run only on a specific platform, run `<target-name>Benchmark`, e.g., `jvmBenchmark`.
 
-For more details about the tasks created by the kotlinx-benchmark plugin, refer to [this guide](docs/tasks-overview.md).
+For more details about the tasks created by the `kotlinx-benchmark` plugin, refer to [this guide](docs/tasks-overview.md).
 
 ### Benchmark Configuration Profiles
 
-The kotlinx-benchmark library provides the ability to create multiple configuration profiles. The `main` configuration is already created by the Toolkit.
+The `kotlinx-benchmark` library provides the ability to create multiple configuration profiles. The `main` configuration is already created by the toolkit.
 Additional profiles can be created as needed in the `configurations` section of the `benchmark` block:
 
 ```kotlin
@@ -430,9 +427,9 @@ Refer to our [detailed documentation](docs/separate-benchmark-source-set.md) on 
 
 ## Examples
 
-To help you better understand how to use the kotlinx-benchmark library, we've provided an [examples](examples) subproject. 
+To help you better understand how to use the `kotlinx-benchmark` library, we've provided an [examples](examples) subproject. 
 These examples showcase various use cases and offer practical insights into the library's functionality.
 
 ## Contributing
 
-We welcome contributions to kotlinx-benchmark! If you want to contribute, please refer to our [Contribution Guidelines](CONTRIBUTING.md).
+We welcome contributions to `kotlinx-benchmark`! If you want to contribute, please refer to our [Contribution Guidelines](CONTRIBUTING.md).
