@@ -25,6 +25,7 @@ kotlinx.benchmark is a toolkit for running benchmarks for multiplatform code wri
     - [Kotlin DSL](#kotlin-dsl)
     - [Groovy DSL](#groovy-dsl)
   - [Target-specific configurations](#target-specific-configurations)
+    - [Kotlin/JVM](#kotlinjvm)
     - [Kotlin/JS](#kotlinjs)
     - [Multiplatform](#multiplatform)
   - [Benchmark Configuration](#benchmark-configuration)
@@ -34,7 +35,7 @@ kotlinx.benchmark is a toolkit for running benchmarks for multiplatform code wri
 <!--- END -->
 
 - **Additional links**
-  - [Harnessing Code Performance: The Art and Science of Benchmarking](docs/benchmarking-overview.md)
+  - [Code Benchmarking: A Brief Overview](docs/benchmarking-overview.md)
   - [Understanding Benchmark Runtime](docs/benchmark-runtime.md)
   - [Configuring kotlinx-benchmark](docs/configuration-options.md)
   - [Interpreting and Analyzing Results](docs/interpreting-results.md)
@@ -70,11 +71,11 @@ The `kotlinx-benchmark` library is designed to work with Kotlin/JVM, Kotlin/JS, 
 
 3.  **Specifying Repository**: Ensure you have `mavenCentral()` for dependencies lookup in the list of repositories:
 
-        ```kotlin
-        repositories {
-            mavenCentral()
-        }
-        ```
+    ```kotlin
+    repositories {
+        mavenCentral()
+    }
+    ```
 
     </details>
 
@@ -97,22 +98,24 @@ The `kotlinx-benchmark` library is designed to work with Kotlin/JVM, Kotlin/JS, 
         id 'org.jetbrains.kotlinx.benchmark' version '0.4.8'
     }
     ```
-    
+
 3.  **Specifying Repository**: Ensure you have `mavenCentral()` in the list of repositories:
 
-        ```groovy
-        repositories {
-            mavenCentral()
-        }
-        ```
+    ```groovy
+    repositories {
+        mavenCentral()
+    }
+    ```
 
     </details>
 
 ### Target-specific configurations
 
+For different platforms, there may be distinct requirements and settings that need to be configured.
+
 #### Kotlin/JVM
 
-For Kotlin/JVM, applying the [allopen plugin](https://kotlinlang.org/docs/all-open-plugin.html) is pivotal to meet JMH's criteria for `open` benchmark classes/methods. Alternatively, make all benchmark classes and methods `open`. Implement it as follows:
+When benchmarking Kotlin/JVM code with Java Microbenchmark Harness (JMH), you should use the [allopen plugin](https://kotlinlang.org/docs/all-open-plugin.html). This plugin ensures your benchmark classes and methods are `open`, meeting JMH's requirements.
 
 ```kotlin
 plugins {
@@ -125,9 +128,45 @@ allOpen {
 }
 ```
 
+<details>
+  <summary><b>Illustrative Example</b></summary>
+
+Consider you annotated each of your benchmark classes with `@State(Scope.Benchmark)`:
+
+```kotlin
+@State(Scope.Benchmark)
+class MyBenchmark {
+    // Benchmarking-related methods and variables
+    fun benchmarkMethod() {
+        // benchmarking logic
+    }
+}
+```
+
+In Kotlin, classes and methods are `final` by default, which means they can't be overridden. This is incompatible with the operation of the Java Microbenchmark Harness (JMH), which needs to generate subclasses for benchmarking.
+
+This is where the `allopen` plugin comes into play. With the plugin applied, any class annotated with `@State` is treated as `open`, which allows JMH to work as intended. Here's the Kotlin DSL configuration for the `allopen` plugin:
+
+```kotlin
+plugins {
+    kotlin("plugin.allopen") version "1.8.21"
+}
+
+allOpen {
+    annotation("org.openjdk.jmh.annotations.State")
+}
+```
+
+This configuration ensures that your `MyBenchmark` class and its `benchmarkMethod` function are treated as `open`, allowing JMH to generate subclasses and conduct the benchmark.
+
+</details>
+
+You can alternatively mark your benchmark classes and methods `open` manually, but using the `allopen` plugin enhances code maintainability.
+
 #### Kotlin/JS
 
-For Kotlin/JS, include the `nodejs()` method call in the `kotlin` block:
+For benchmarking Kotlin/JS code Node.js execution enviroment should be targeted. See https://kotlinlang.org/docs/js-project-setup.html#execution-environments. This is because kotlinx-benchmark-runtime uses Node.js environment to run benchmarks. Include the `nodejs()` method call in the `kotlin` block:
+
 
 ```kotlin
 kotlin {
@@ -137,7 +176,7 @@ kotlin {
 }
 ```
 
-For Kotlin/JS, IR backends are supported. However, simultaneous target declarations such as `kotlin.js.compiler=both` or `js(BOTH)` are not feasible. Ensure each backend is separately declared. For a detailed configuration example, please refer to the [build script of the kotlin-multiplatform example project](https://github.com/Kotlin/kotlinx-benchmark/blob/master/examples/kotlin-multiplatform/build.gradle).
+For Kotlin/JS, only IR backend is supported. For more information on the IR compiler, please refer to the [Kotlin/JS IR compiler documentation](https://kotlinlang.org/docs/js-ir-compiler.html)
 
 #### Multiplatform
 
