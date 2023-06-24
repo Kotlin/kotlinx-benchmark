@@ -232,10 +232,10 @@ This command instructs Gradle to execute the `benchmark` task, which in turn run
 
 The execution of your benchmarks might take some time. This is normal and necessary: benchmarks must be run for a sufficient length of time to produce reliable, statistically significant results.
 
-For more details regarding the available Gradle tasks, refer to this [document](docs/tasks-overview.md).
+For more details regarding the available Gradle tasks, refer to this [document](tasks-overview.md).
 
 ### Step 5: Analyze the Results
 
-To fully understand and make the best use of these results, it's important to know how to interpret and analyze them properly. For a comprehensive guide on interpreting and analyzing benchmarking results, please refer to this dedicated document: [Interpreting and Analyzing Results](docs/interpreting-results.md).
+To fully understand and make the best use of these results, it's important to know how to interpret and analyze them properly. For a comprehensive guide on interpreting and analyzing benchmarking results, please refer to this dedicated document: [Interpreting and Analyzing Results](interpreting-results.md).
 
 Congratulations! You have successfully set up a Kotlin Multiplatform benchmark project using kotlinx-benchmark.
