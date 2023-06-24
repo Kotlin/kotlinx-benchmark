@@ -1,4 +1,4 @@
-# Harnessing Code Performance: The Art and Science of Benchmarking with kotlinx-benchmark
+# Code Benchmarking: A Brief Overview
 
 This guide serves as your compass for mastering the art of benchmarking with kotlinx-benchmark. By harnessing the power of benchmarking, you can unlock performance insights in your code, uncover bottlenecks, compare different implementations, detect regressions, and make informed decisions for optimization. 
 
@@ -46,8 +46,6 @@ Benchmarking provides several benefits for software development projects:
 3. **Regression Detection:** Regular benchmarking enables the detection of performance regressions, i.e., when a change causes a degradation in performance. This helps catch potential issues early in the development process and prevents performance degradation in production.
 
 4. **Hardware and Environment Variations:** Benchmarking helps evaluate the impact of different hardware configurations, system setups, or environments on performance. It enables developers to optimize their software for specific target platforms.
-
- comparison across systems. This eases sharing and discussing performance results within a team or the larger community.
 
 ## Benchmarking Use Cases
 
