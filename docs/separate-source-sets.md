@@ -20,7 +20,7 @@ A source set defines the location of your source code, the names of compiled cla
 
 ## Why Have Separate Source Sets for Benchmarks? <a name="why-have-separate-source-sets-for-benchmarks"></a>
 
-Having separate source sets for benchmarks offers several advantages:
+Creating separate source sets for benchmarks is especially beneficial when you are integrating benchmarks into an existing project. Here are several advantages of doing so:
 
 1. **Organization**: It helps maintain a clean and organized project structure. Segregating benchmarks from the main code makes it easier to navigate and locate specific code segments.
 
@@ -65,7 +65,7 @@ Transform your Kotlin JVM project with separate benchmark source sets by followi
    ```groovy
    benchmark {
        targets {
-           register("benchmarks") 
+           register("benchmarks")
        }
    }
    ```
@@ -93,7 +93,7 @@ Set up your Kotlin Multiplatform project to accommodate separate benchmark sourc
    ```kotlin
    benchmark {
        targets {
-           register("jvmBenchmark")
+           register("benchmark")
        }
    }
    ```
@@ -104,11 +104,12 @@ Set up your Kotlin Multiplatform project to accommodate separate benchmark sourc
 
 Here are some common questions about creating separate source sets for benchmarks:
 
-**Q: Can I use the same benchmark source set for multiple targets?**
-A: While it's possible, it's generally recommended to have separate source sets for different targets to avoid configuration conflicts and ensure more accurate benchmarks.
+**Q: Is it recommended to reuse the same benchmark source set for benchmarking multiple target platforms in a Kotlin Multiplatform Project?**
+A: It's generally recommended to have separate source sets for different targets to avoid configuration conflicts and ensure more accurate benchmarks. This practice mitigates the risk of configuration conflicts inherent in different platforms that may have unique dependencies and setup requirements.
 
-**Q: I'm encountering issues when running benchmarks from the IDE. What should I do?**
-A: Ensure that the `src/benchmark/kotlin` directory is marked as "Sources Root" in your IDE. If you're still experiencing difficulties, refer to the discussions in [issue #112](https://github.com/Kotlin/kotlinx-benchmark/pull/112) for potential solutions.
+Moreover, the performance characteristics can vary significantly across platforms. Having separate source sets for each benchmarking target ensures that your benchmarking process accurately reflects the performance of your code in its specific operational context.
+
+For instance, consider a multiplatform project with JVM and JavaScript targets. Rather than using a single shared benchmark source set, you should ideally create two separate benchmark source sets, say `jvmBenchmark` and `jsBenchmark`. By doing so, you are able to customize each benchmark source set according to the peculiarities and performance nuances of its corresponding platform, thereby yielding more accurate and meaningful benchmarking results.
 
 **Q: Where can I ask additional questions?**
-A: Feel free to post any questions or issues on the [kotlinx-benchmark GitHub page](https://github.com/Kotlin/kotlinx-benchmark). The community is always ready to assist you!
+A: We invite you to bring your questions or issues to several platforms. For more immediate interactive feedback, consider joining our [Slack channel](https://kotlinlang.slack.com) where developers and Kotlin enthusiasts discuss a range of topics. For more in-depth, threaded discussions, post your queries on the [GitHub Discussions page](https://github.com/Kotlin/kotlinx-benchmark/discussions) for kotlinx-benchmark. You're also welcome to raise specific issues on the [kotlinx-benchmark GitHub page](https://github.com/Kotlin/kotlinx-benchmark). Each of these platforms is actively monitored, and the community is always prepared to assist you!
