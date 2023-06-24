@@ -18,4 +18,4 @@ This guide provides you with information on the compatibility of different versi
 
 *Note: "Minimum Required" implies that any higher version than the one mentioned will also be compatible.*
 
-For more details about the changes, improvements, and updates in each `kotlinx-benchmark` version, please refer to the [RELEASE NOTES](https://github.com/Kotlin/kotlinx-benchmark/releases) and [CHANGELOG](#).
+For more details about the changes, improvements, and updates in each `kotlinx-benchmark` version, please refer to the [RELEASE NOTES](https://github.com/Kotlin/kotlinx-benchmark/releases) and [CHANGELOG](../CHANGELOG.md).
