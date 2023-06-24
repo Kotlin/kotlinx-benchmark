@@ -28,7 +28,7 @@ benchmark {
 }
 ```
 
-For detailed guidance on creating separate source sets for benchmarks in your Kotlin project, please refer to [Benchmarking with Gradle: Creating Separate Source Sets](docs/separate-source-sets.md).
+For detailed guidance on creating separate source sets for benchmarks in your Kotlin project, please refer to [Benchmarking with Gradle: Creating Separate Source Sets](separate-source-sets.md).
 
 ## Step 2: Tailoring the Setup – Create Benchmark Configurations <a name="step-2"></a>
 
