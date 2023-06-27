@@ -115,7 +115,7 @@ For different platforms, there may be distinct requirements and settings that ne
 
 #### Kotlin/JVM
 
-When benchmarking Kotlin/JVM code with Java Microbenchmark Harness (JMH), you should use the [allopen plugin](https://kotlinlang.org/docs/all-open-plugin.html). This plugin ensures your benchmark classes and methods are `open`, meeting JMH's requirements.
+When benchmarking Kotlin/JVM code with Java Microbenchmark Harness (JMH), you should use the [allopen plugin](https://kotlinlang.org/docs/all-open-plugin.html). This plugin ensures your benchmark classes and methods are `open`, meeting JMH's requirements. Make sure to apply the jvm plugin. 
 
 ```kotlin
 plugins {
@@ -161,7 +161,19 @@ This configuration ensures that your `MyBenchmark` class and its `benchmarkMetho
 
 </details>
 
-You can alternatively mark your benchmark classes and methods `open` manually, but using the `allopen` plugin enhances code maintainability.
+You can alternatively mark your benchmark classes and methods `open` manually, but using the `allopen` plugin enhances code maintainability. For a practical example, please refer to [examples](examples/kotlin-kts).
+
+#### Java
+
+ In order to conduct benchmarking in Java, you need to apply the Java plugin. 
+
+```kotlin
+plugins {
+    id("java")
+}
+```
+
+For a practical example, please refer to [examples](examples/java).
 
 #### Kotlin/JS
 
@@ -180,9 +192,13 @@ For Kotlin/JS, only IR backend is supported. For more information on the IR comp
 
 #### Multiplatform
 
-For multiplatform projects, add the `kotlinx-benchmark-runtime` dependency to the `commonMain` source set:
+For multiplatform projects, add the `kotlinx-benchmark-runtime` dependency to the `commonMain` source set, and be sure to apply the multiplatform plugin, as shown below:
 
 ```kotlin
+plugins {
+    id("multiplatform")
+}
+
 kotlin {
     sourceSets {
         commonMain {
@@ -194,7 +210,7 @@ kotlin {
 }
 ```
 
-The platform-specific artifacts will be resolved automatically.
+This setup enables running benchmarks in the main compilation of any registered targets. Another option is to register the compilation you want to run benchmarks from. The platform-specific artifacts will be resolved automatically. For a practical example, please refer to [examples](examples/multiplatform).
 
 ### Benchmark Configuration
 
@@ -232,9 +248,11 @@ benchmark {
 }
 ```
 
+For comprehensive guidance on configuring your benchmark setup, please refer to our detailed documentation on [Configuring kotlinx-benchmark](docs/configuration-options.md).
+
 # Examples
 
-The project contains [examples](https://github.com/Kotlin/kotlinx-benchmark/tree/master/examples) subproject that demonstrates using the library.
+To help you better understand how to use the kotlinx-benchmark library, we've provided an [examples](examples) subproject. These examples showcase various use cases and offer practical insights into the library's functionality.
 
 ## Contributing
 
