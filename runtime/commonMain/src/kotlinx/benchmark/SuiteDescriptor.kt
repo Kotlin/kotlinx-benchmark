@@ -1,9 +1,11 @@
 package kotlinx.benchmark
 
 object DefaultDescriptorParameters {
-    val iterations = 3
-    val warmups = 3
-    val iterationTime = IterationTime(1, BenchmarkTimeUnit.SECONDS)
+    val iterations = 5
+    val warmups = 5
+    val iterationTime = IterationTime(10, BenchmarkTimeUnit.SECONDS)
+    val outputTimeUnit = BenchmarkTimeUnit.SECONDS
+    val mode = Mode.Throughput
 }
 
 open class SuiteDescriptor<T>(
@@ -20,8 +22,8 @@ open class SuiteDescriptor<T>(
     val warmups: Int = DefaultDescriptorParameters.warmups,
 
     val iterationTime: IterationTime = DefaultDescriptorParameters.iterationTime,
-    val outputTimeUnit: BenchmarkTimeUnit = BenchmarkTimeUnit.MILLISECONDS,
-    val mode: Mode = Mode.Throughput
+    val outputTimeUnit: BenchmarkTimeUnit = DefaultDescriptorParameters.outputTimeUnit,
+    val mode: Mode = DefaultDescriptorParameters.mode
 ) {
     private val _benchmarks = mutableListOf<BenchmarkDescriptor<T>>()
 
