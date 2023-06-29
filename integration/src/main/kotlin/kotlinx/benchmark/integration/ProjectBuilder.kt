@@ -1,7 +1,5 @@
 package kotlinx.benchmark.integration
 
-import java.io.*
-
 class ProjectBuilder {
     private val configurations = mutableMapOf<String, BenchmarkConfiguration>()
     private val targets = mutableMapOf<String, BenchmarkTarget>()
@@ -31,11 +29,21 @@ benchmark {
     }
 }
 
-private val buildScript = run {
+private val kotlin_repo = System.getProperty("kotlin_repo_url").let {
+    if (it.isNullOrBlank()) "" else "maven { url '$it' }"
+}
+
+private val buildScript =
     """
     buildscript {
+        repositories {
+            $kotlin_repo
+            maven { url '${System.getProperty("plugin_repo_url")}' }
+            mavenCentral()
+        }
         dependencies {
-            classpath files(${readFileList("plugin-classpath.txt")})
+            classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:${System.getProperty("kotlin_version")}'
+            classpath 'org.jetbrains.kotlinx:kotlinx-benchmark-plugin:0.5.0-SNAPSHOT'
         }
     }
     
@@ -43,23 +51,8 @@ private val buildScript = run {
     apply plugin: 'org.jetbrains.kotlinx.benchmark'
     
     repositories {
+        $kotlin_repo
+        maven { url '${System.getProperty("runtime_repo_url")}' }
         mavenCentral()
-        maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlin/bootstrap' }
     }
-    
-    def benchmarkRuntimeMetadata = files(${readFileList("runtime-metadata.txt")})
-    def benchmarkRuntimeJvm = files(${readFileList("runtime-jvm.txt")})
-    def benchmarkRuntimeJsIr = files(${readFileList("runtime-jsIr.txt")})
-    def benchmarkRuntimeWasm = files(${readFileList("runtime-wasm.txt")})
-    def benchmarkRuntimeNative = files(${readFileList("runtime-native.txt")})
     """.trimIndent()
-}
-
-private fun readFileList(fileName: String): String {
-    val resource = ProjectBuilder::class.java.classLoader.getResource(fileName)
-        ?: throw IllegalStateException("Could not find resource '$fileName'")
-    val files = File(resource.toURI())
-        .readLines()
-        .map { File(it).absolutePath.replace("\\", "\\\\") } // escape backslashes in Windows paths
-    return files.joinToString(", ") { "'$it'" }
-}
