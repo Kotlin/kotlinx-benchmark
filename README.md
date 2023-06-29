@@ -36,7 +36,7 @@ Use plugin in `build.gradle`:
 
 ```groovy
 plugins {
-    id 'org.jetbrains.kotlinx.benchmark' version '0.4.4'
+    id 'org.jetbrains.kotlinx.benchmark' version '0.4.8'
 }
 ```
 
@@ -89,7 +89,7 @@ kotlin {
     sourceSets {
         commonMain {
              dependencies {
-                 implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.4")
+                 implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.8")
              }
         }
     }
@@ -228,7 +228,7 @@ Propagate dependencies and output from `main` sourceSet.
 
 ```groovy
 dependencies {
-    benchmarksCompile sourceSets.main.output + sourceSets.main.runtimeClasspath 
+    add("benchmarksImplementation", sourceSets.main.output + sourceSets.main.runtimeClasspath)
 }
 ```
 
