@@ -16,43 +16,20 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation(benchmarkRuntimeMetadata)
+                implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.5.0-SNAPSHOT")
             }
         }
         jvmMain {
-            dependencies {
-                implementation(benchmarkRuntimeJvm)
-            }
         }
         jvmBenchmark {
             dependsOn(jvmMain)
-            dependencies {
-                implementation(benchmarkRuntimeJvm)
-            }
         }
         jsIrMain {
-            dependencies {
-                implementation(benchmarkRuntimeJsIr)
-            }
         }
         wasmMain {
-            dependencies {
-                implementation(benchmarkRuntimeWasm)
-            }
         }
         nativeMain {
-            dependsOn(commonMain)
-            dependencies {
-                implementation(benchmarkRuntimeNative)
-            }
         }
-    }
-}
-
-repositories {
-    def kotlinDevUrl = rootProject.properties["kotlin_repo_url"]
-    if (kotlinDevUrl != null) {
-        maven { url = kotlinDevUrl }
     }
 }
 

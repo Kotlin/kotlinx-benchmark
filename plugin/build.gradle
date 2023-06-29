@@ -96,37 +96,6 @@ dependencies {
     compileOnly "org.openjdk.jmh:jmh-generator-bytecode:$jmhVersion" // used in worker
 }
 
-// configuration of classpath for plugin integration tests
-
-configurations {
-    testPluginClasspath {
-        attributes {
-            attribute(
-                    Usage.USAGE_ATTRIBUTE,
-                    project.objects.named(Usage.class, Usage.JAVA_RUNTIME)
-            )
-            attribute(
-                    Category.CATEGORY_ATTRIBUTE,
-                    project.objects.named(Category.class, Category.LIBRARY)
-            )
-        }
-    }
-}
-
-dependencies {
-    testPluginClasspath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-}
-
-task createClasspathManifest {
-    def outputDir = file("$buildDir/$name")
-    outputs.dir outputDir
-
-    doLast {
-        outputDir.mkdirs()
-        file("$outputDir/plugin-classpath.txt").text = (sourceSets.main.runtimeClasspath + configurations.testPluginClasspath).join("\n")
-    }
-}
-
 
 if (project.findProperty("publication_repository") == "space") {
     // publish to Space repository

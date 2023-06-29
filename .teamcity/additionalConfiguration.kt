@@ -11,6 +11,9 @@ import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.GradleBuildStep
 import jetbrains.buildServer.configs.kotlin.v2019_2.buildSteps.gradle
 
 fun Project.additionalConfiguration() {
+    knownBuilds.buildVersion.params {
+        param(versionSuffixParameter, "")
+    }
     platforms.forEach { platform ->
         val gradleBuild = knownBuilds.buildOn(platform).steps.items.single() as GradleBuildStep
         gradleBuild.tasks += " " + "fastBenchmark"
