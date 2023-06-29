@@ -2,7 +2,7 @@ package kotlinx.benchmark.native
 
 import kotlinx.benchmark.*
 import kotlin.native.internal.GC
-import kotlin.system.*
+import kotlin.time.*
 
 class NativeExecutor(
     name: String,
@@ -218,25 +218,28 @@ class NativeExecutor(
         return getStackTrace().joinToString("\n") + "\nCause: ${nested.message}\n" + nested.stacktrace()
     }
 
+    @OptIn(ExperimentalTime::class)
     private inline fun measure(
         cycles: Int,
         nativeGCAfterIteration: Boolean,
         body: () -> Unit,
     ): Double {
-        var counter = cycles
         if (nativeGCAfterIteration)
             GC.collect()
-        val startTime = getTimeNanos()
-        while (counter-- > 0) {
-            body()
+
+        val duration = measureTime {
+            var counter = cycles
+            while (counter-- > 0) {
+                body()
+            }
+            if (nativeGCAfterIteration)
+                GC.collect()
         }
-        if (nativeGCAfterIteration)
-            GC.collect()
-        val endTime = getTimeNanos()
-        val time = endTime - startTime
-        return time.toDouble() / cycles
+
+        return duration.toDouble(DurationUnit.NANOSECONDS) / cycles
     }
 
+    @OptIn(ExperimentalTime::class)
     private inline fun <T> measureWarmup(
         name: String,
         config: BenchmarkConfiguration,
@@ -256,19 +259,18 @@ class NativeExecutor(
 
             if (config.nativeGCAfterIteration)
                 GC.collect()
-            val startTime = getTimeNanos()
-            var endTime = startTime
+            val startTime = TimeSource.Monotonic.markNow()
+            var duration = Duration.ZERO
             iterations = 0
-            while (endTime - startTime < benchmarkNanos) {
+            while (duration.inWholeNanoseconds < benchmarkNanos) {
                 body()
-                endTime = getTimeNanos()
+                duration = startTime.elapsedNow()
                 iterations++
             }
             if (config.nativeGCAfterIteration)
                 GC.collect()
 
-            val time = endTime - startTime
-            val metric = time.toDouble() / iterations // TODO: metric
+            val metric = duration.toDouble(DurationUnit.NANOSECONDS) / iterations // TODO: metric
             val sample = metric.nanosToText(config.mode, config.outputTimeUnit)
             val iterationNumber = currentIteration ?: iteration
             reporter.output(name, benchmark.name, "Warm-up #$iterationNumber: $sample")

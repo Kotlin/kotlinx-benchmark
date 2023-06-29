@@ -54,7 +54,7 @@ val createClasspathManifest by tasks.registering {
     dependsOn(artifactsTask("jvm"))
     dependsOn(artifactsTask("jsIr"))
     dependsOn(artifactsTask("wasm"))
-    dependsOn(artifactsTask("metadata"))
+    dependsOn(artifactsTask("allMetadata"))
     dependsOn(artifactsTaskNativeKlibs())
 
     val outputDir = file("$buildDir/$name")
@@ -63,7 +63,7 @@ val createClasspathManifest by tasks.registering {
         outputDir.apply {
             mkdirs()
             resolve("plugin-classpath.txt").writeText(plugin.classpath().resolve("plugin-classpath.txt").readText())
-            resolve("runtime-metadata.txt").writeText(artifactsTask("metadata").archiveFilePath)
+            resolve("runtime-metadata.txt").writeText(artifactsTask("allMetadata").archiveFilePath)
             resolve("runtime-jvm.txt").writeText(artifactsTask("jvm").archiveFilePath)
             resolve("runtime-jsIr.txt").writeText(artifactsTask("jsIr").archiveFilePath)
             resolve("runtime-wasm.txt").writeText(artifactsTask("wasm").archiveFilePath)
