@@ -7,10 +7,9 @@ Elevate your project's performance potential with organized, efficient, and isol
 1. [What is a Source Set?](#what-is-a-source-set)
 2. [Why Have Separate Source Sets for Benchmarks?](#why-have-separate-source-sets-for-benchmarks)
 3. [Step-by-step Setup Guide](#setup-guide)
-   - [Kotlin JVM Project](#jvm-project)
+   - [Kotlin Java & JVM Project](#kotlin-java-jvm-projects)
    - [Kotlin Multiplatform Project](#multiplatform-project)
-4. [Frequently Asked Questions](#frequently-asked-questions)
-5. [Troubleshooting](#troubleshooting)
+4. [Additional Resources](#additional-resources)
 
 ## What is a Source Set? <a name="what-is-a-source-set"></a>
 
@@ -32,7 +31,7 @@ Creating separate source sets for benchmarks is especially beneficial when you a
 
 Below are the step-by-step instructions to set up separate source sets for benchmarks in both Kotlin JVM and Multiplatform projects:
 
-### Kotlin JVM Project <a name="jvm-project"></a>
+### Kotlin Java & JVM Projects <a name="jvm-project"></a>
 
 Transform your Kotlin JVM project with separate benchmark source sets by following these simple steps:
 
@@ -52,7 +51,7 @@ Transform your Kotlin JVM project with separate benchmark source sets by followi
 
    ```groovy
    dependencies {
-       benchmarksCompile sourceSets.main.output + sourceSets.main.runtimeClasspath
+    add("benchmarksImplementation", sourceSets.main.output + sourceSets.main.runtimeClasspath)
    }
    ```
 
@@ -76,7 +75,7 @@ Set up your Kotlin Multiplatform project to accommodate separate benchmark sourc
 
 1. **Define New Compilation**:
 
-   Start by defining a new compilation in your target of choice (e.g. jvm, js, etc.) in your `build.gradle.kts` file. In this example, we're associating the new compilation 'benchmark' with the `main` compilation of the `jvm` target.
+   Start by defining a new compilation in your target of choice (e.g. jvm, js, native, wasm etc.) in your `build.gradle.kts` file. In this example, we're associating the new compilation 'benchmark' with the `main` compilation of the `jvm` target.
 
    ```kotlin
    kotlin {
@@ -88,28 +87,19 @@ Set up your Kotlin Multiplatform project to accommodate separate benchmark sourc
 
 2. **Register Benchmark Compilation**:
 
-   Conclude by registering your benchmark compilation. This notifies the kotlinx-benchmark tool that benchmarks are located within this compilation and should be executed accordingly.
+   Conclude by registering your new benchmark compilation using its source set name. In this instance, `jvmBenchmark` is the name for the benchmark compilation for the `jvm` target.
 
    ```kotlin
    benchmark {
        targets {
-           register("benchmark")
+           register("jvmBenchmark")
        }
    }
    ```
 
    For more information on creating a custom compilation, you can refer to the [Kotlin documentation on creating a custom compilation](https://kotlinlang.org/docs/multiplatform-configure-compilations.html#create-a-custom-compilation).
 
-## Frequently Asked Questions <a name="frequently-asked-questions"></a>
-
-Here are some common questions about creating separate source sets for benchmarks:
-
-**Q: Is it recommended to reuse the same benchmark source set for benchmarking multiple target platforms in a Kotlin Multiplatform Project?**
-A: It's generally recommended to have separate source sets for different targets to avoid configuration conflicts and ensure more accurate benchmarks. This practice mitigates the risk of configuration conflicts inherent in different platforms that may have unique dependencies and setup requirements.
-
-Moreover, the performance characteristics can vary significantly across platforms. Having separate source sets for each benchmarking target ensures that your benchmarking process accurately reflects the performance of your code in its specific operational context.
-
-For instance, consider a multiplatform project with JVM and JavaScript targets. Rather than using a single shared benchmark source set, you should ideally create two separate benchmark source sets, say `jvmBenchmark` and `jsBenchmark`. By doing so, you are able to customize each benchmark source set according to the peculiarities and performance nuances of its corresponding platform, thereby yielding more accurate and meaningful benchmarking results.
+## Additional Resources <a name="additional-resources"></a>
 
 **Q: Where can I ask additional questions?**
-A: We invite you to bring your questions or issues to several platforms. For more immediate interactive feedback, consider joining our [Slack channel](https://kotlinlang.slack.com) where developers and Kotlin enthusiasts discuss a range of topics. For more in-depth, threaded discussions, post your queries on the [GitHub Discussions page](https://github.com/Kotlin/kotlinx-benchmark/discussions) for kotlinx-benchmark. You're also welcome to raise specific issues on the [kotlinx-benchmark GitHub page](https://github.com/Kotlin/kotlinx-benchmark). Each of these platforms is actively monitored, and the community is always prepared to assist you!
+A: For any additional queries or issues, you can reach out via our Slack channel for real-time interactions, engage in comprehensive conversations on or GitHub Discussions page, or report specific problems on the kotlinx-benchmark GitHub page, with each platform maintained by a skilled, supportive community ready to assist you.

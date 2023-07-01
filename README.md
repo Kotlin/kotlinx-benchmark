@@ -53,23 +53,15 @@ The `kotlinx-benchmark` library is designed to work with Kotlin/JVM, Kotlin/JS, 
 <details open>
 <summary>Kotlin DSL</summary>
 
-1.  **Adding Dependency**: Add the `kotlinx-benchmark-runtime` dependency in your `build.gradle.kts` file.
-
-    ```kotlin
-    dependencies {
-        implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.8")
-    }
-    ```
-
-2.  **Applying Benchmark Plugin**: Next, apply the benchmark plugin.
+1.  **Applying Benchmark Plugin**: Apply the benchmark plugin.
 
     ```kotlin
     plugins {
-        id("org.jetbrains.kotlinx.benchmark") version "0.4.8"
+        id("org.jetbrains.kotlinx.benchmark") version "0.4.9"
     }
     ```
 
-3.  **Specifying Repository**: Ensure you have `mavenCentral()` for dependencies lookup in the list of repositories:
+2.  **Specifying Repository**: Ensure you have `mavenCentral()` for dependencies lookup in the list of repositories:
 
     ```kotlin
     repositories {
@@ -82,24 +74,16 @@ The `kotlinx-benchmark` library is designed to work with Kotlin/JVM, Kotlin/JS, 
 <details>
 <summary>Groovy DSL</summary>
 
-1.  **Adding Dependency**: In your `build.gradle` file, include the `kotlinx-benchmark-runtime` dependency.
-
-    ```groovy
-    dependencies {
-        implementation 'org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.8'
-    }
-    ```
-
-2.  **Applying Benchmark Plugin**: Next, apply the benchmark plugin.
+1.  **Applying Benchmark Plugin**: Apply the benchmark plugin.
 
     ```groovy
     plugins {
         id 'org.jetbrains.kotlin.plugin.allopen' version "1.8.21"
-        id 'org.jetbrains.kotlinx.benchmark' version '0.4.8'
+        id 'org.jetbrains.kotlinx.benchmark' version '0.4.9'
     }
     ```
 
-3.  **Specifying Repository**: Ensure you have `mavenCentral()` in the list of repositories:
+2.  **Specifying Repository**: Ensure you have `mavenCentral()` in the list of repositories:
 
     ```groovy
     repositories {
@@ -163,42 +147,26 @@ This configuration ensures that your `MyBenchmark` class and its `benchmarkMetho
 
 You can alternatively mark your benchmark classes and methods `open` manually, but using the `allopen` plugin enhances code maintainability. For a practical example, please refer to [examples](examples/kotlin-kts).
 
-#### Java
-
- In order to conduct benchmarking in Java, you need to apply the Java plugin. 
-
-```kotlin
-plugins {
-    id("java")
-}
-```
-
-For a practical example, please refer to [examples](examples/java).
-
 #### Kotlin/JS
 
-For benchmarking Kotlin/JS code Node.js execution enviroment should be targeted. See https://kotlinlang.org/docs/js-project-setup.html#execution-environments. This is because kotlinx-benchmark-runtime uses Node.js environment to run benchmarks. Include the `nodejs()` method call in the `kotlin` block:
-
+Specify a compiler like the [IR compiler](https://kotlinlang.org/docs/js-ir-compiler.html) and set benchmarking targets in one step. Here, `jsIr` and `jsIrBuiltIn` are both using the IR compiler. The former uses benchmark.js, while the latter uses Kotlin's built-in plugin.
 
 ```kotlin
 kotlin {
-    js {
-        nodejs()
+    js('jsIr', IR) { 
+        nodejs() 
+    }
+    js('jsIrBuiltIn', IR) { 
+        nodejs() 
     }
 }
 ```
 
-For Kotlin/JS, only IR backend is supported. For more information on the IR compiler, please refer to the [Kotlin/JS IR compiler documentation](https://kotlinlang.org/docs/js-ir-compiler.html)
-
 #### Multiplatform
 
-For multiplatform projects, add the `kotlinx-benchmark-runtime` dependency to the `commonMain` source set, and be sure to apply the multiplatform plugin, as shown below:
+For multiplatform projects, add the `kotlinx-benchmark-runtime` dependency to the `commonMain` source set:
 
 ```kotlin
-plugins {
-    id("multiplatform")
-}
-
 kotlin {
     sourceSets {
         commonMain {
