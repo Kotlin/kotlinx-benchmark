@@ -8,7 +8,7 @@
 [![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v?label=Gradle%20Plugin&metadataUrl=https://plugins.gradle.org/m2/org/jetbrains/kotlinx/kotlinx-benchmark-plugin/maven-metadata.xml)](https://plugins.gradle.org/plugin/org.jetbrains.kotlinx.benchmark)
 [![IR](https://img.shields.io/badge/Kotlin%2FJS-IR%20supported-yellow)](https://kotl.in/jsirsupported)
 
-kotlinx.benchmark is a toolkit for running benchmarks for multiplatform code written in Kotlin and running on the following supported targets: JVM, JavaScript and Native.
+kotlinx-benchmark is a toolkit for running benchmarks for multiplatform code written in Kotlin.
 
 ## Features
 
@@ -46,7 +46,7 @@ kotlinx.benchmark is a toolkit for running benchmarks for multiplatform code wri
 
 ## Using in Your Projects
 
-The `kotlinx-benchmark` library is designed to work with Kotlin/JVM, Kotlin/JS, and Kotlin/Native targets. To get started, ensure you're using Kotlin 1.8.20 or newer and Gradle 8.0 or newer.
+The `kotlinx-benchmark` library is designed to work with Kotlin/JVM, Kotlin/JS, Kotlin/Native, and Kotlin/WASM (experimental) targets. To get started, ensure you're using Kotlin 1.8.20 or newer and Gradle 8.0 or newer.
 
 ### Gradle Setup
 
@@ -149,7 +149,7 @@ You can alternatively mark your benchmark classes and methods `open` manually, b
 
 #### Kotlin/JS
 
-Specify a compiler like the [IR compiler](https://kotlinlang.org/docs/js-ir-compiler.html) and set benchmarking targets in one step. Here, `jsIr` and `jsIrBuiltIn` are both using the IR compiler. The former uses benchmark.js, while the latter uses Kotlin's built-in plugin.
+Create a JS target with Node.js execution environment and register it as a benchmark target:
 
 ```kotlin
 kotlin {
@@ -159,8 +159,16 @@ kotlin {
     js('jsIrBuiltIn', IR) { 
         nodejs() 
     }
+    benchmark {
+        targets {
+            register("jsIr")
+            register("jsIrBuiltIn")
+        }
+    }
 }
 ```
+
+This setup is using the [IR compiler](https://kotlinlang.org/docs/js-ir-compiler.html). `jsIr` and `jsIrBuiltIn` are both using the IR compiler. The former uses benchmark.js, while the latter uses Kotlin's built-in plugin.
 
 #### Multiplatform
 
@@ -180,11 +188,9 @@ kotlin {
 
 This setup enables running benchmarks in the main compilation of any registered targets. Another option is to register the compilation you want to run benchmarks from. The platform-specific artifacts will be resolved automatically. For a practical example, please refer to [examples](examples/multiplatform).
 
-### Benchmark Configuration
+Note: Benchmark classes located in the common source set will be run in all platforms, while those located in a platform-specific source set will be run in the corresponding platform.
 
-In a `build.gradle` file create `benchmark` section, and inside it add a `targets` section.
-In this section register all targets you want to run benchmarks from. 
-Example for multiplatform project:
+Define your benchmark targets within the `benchmark` section in your `build.gradle` file:
 
 ```kotlin
 benchmark {
@@ -207,6 +213,7 @@ benchmark {
             warmups = 20
             iterations = 10
             iterationTime = 3
+            iterationTimeUnit = "s"
         }
         smoke {
             warmups = 5
