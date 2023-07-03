@@ -139,6 +139,108 @@ private fun validateConfig(config: BenchmarkConfiguration) {
         }
     }
 
+    config.iterations?.let {
+        require(it > 0) {
+            "Iterations must be greater than 0."
+        }
+    }
+
+    config.warmups?.let {
+        require(it >= 0) {
+            "Warmups must be equal to or greater than 0."
+        }
+    }
+
+    config.iterationTime?.let {
+        require(it > 0) {
+            "Iteration time must be greater than 0."
+        }
+        require(config.iterationTimeUnit != null) {
+            "If iterationTime is provided, iterationTimeUnit must also be provided."
+        }
+    }
+    
+    config.iterationTimeUnit?.let {
+        require(it.toLowerCase() in setOf(
+            "seconds", "s", "microseconds", "us", "milliseconds", "ms",
+            "nanoseconds", "ns", "minutes", "m"
+        )) {
+            "Unknown time unit: $it"
+        }
+        require(config.iterationTime != null) {
+            "If iterationTimeUnit is provided, iterationTime must also be provided."
+        }
+    }
+    
+
+    config.mode?.let {
+        require(it.toLowerCase() in setOf("thrpt", "avgt")) {
+            "Benchmark mode '$it' is not supported."
+        }
+    }
+
+    config.outputTimeUnit?.let {
+        require(it.toLowerCase() in setOf(
+            "seconds", "s", "microseconds", "us", "milliseconds", "ms",
+            "nanoseconds", "ns", "minutes", "m"
+        )) {
+            "Unknown time unit: $it"
+        }
+    }
+
+    config.includes.forEach {
+        require(it.isNotBlank()) {
+            "Include pattern should not be blank."
+        }
+    }
+
+    // Validate exclude
+    config.excludes.forEach {
+        require(it.isNotBlank()) {
+            "Exclude pattern should not be blank."
+        }
+    }
+
+    // Validate params
+    config.params.forEach { (param, values) ->
+        require(param.isNotBlank()) {
+            "Param name should not be blank."
+        }
+        require(values.isNotEmpty()) {
+            "Param '$param' should have at least one value."
+        }
+    }
+
+    // Validate advanced
+    config.advanced.forEach { (param, value) ->
+        println("Validating advanced param: $param with value: $value")
+        require(param.isNotBlank()) {
+            "Advanced config name should not be blank."
+        }
+        require(value.toString().isNotBlank()) {
+            "Value for advanced config '$param' should not be blank."
+        }
+
+        // Specific advanced config validations
+        when (param) {
+            "nativeFork" -> require(value.toString().toLowerCase() in setOf("perbenchmark", "periteration")) {
+                "Invalid value '$value' for 'nativeFork'. It should be either 'perBenchmark' or 'perIteration'."
+            }
+            "nativeGCAfterIteration" -> require(value is Boolean) {
+                "Invalid value '$value' for 'nativeGCAfterIteration'. It should be a Boolean value."
+            }
+            "jvmForks" -> {
+                val intValue = value.toString().toIntOrNull()
+                require(intValue != null && intValue >= 0 || value.toString().toLowerCase() == "definedbyjmh") {
+                    "Invalid value '$value' for 'jvmForks'. It should be a non-negative integer, or 'definedByJmh'."
+                }
+            }
+            "jsUseBridge" -> require(value is Boolean) {
+                "Invalid value '$value' for 'jsUseBridge'. It should be a Boolean value."
+            }
+            else -> throw IllegalArgumentException("Invalid advanced config parameter '$param'. Allowed parameters are 'nativeFork', 'nativeGCAfterIteration', 'jvmForks', and 'jsUseBridge'.")
+        }
+    }
 }
 
 internal val Gradle.isConfigurationCacheAvailable
