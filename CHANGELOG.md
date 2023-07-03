@@ -1,5 +1,54 @@
 # CHANGELOG
 
+## 0.4.11
+
+- Take into consideration `jvmToolchain` when running benchmarks [#176](https://github.com/Kotlin/kotlinx-benchmark/issues/176)
+- Hide unintentionally public API with an opt-in annotation [#211](https://github.com/Kotlin/kotlinx-benchmark/issues/211)
+- Use locale-insensitive decimal and thousands separators in reports formatting
+- Don't add `experimental-wasm-gc` flag for NodeJs >= 22 [#212](https://github.com/Kotlin/kotlinx-benchmark/issues/212)
+- Allow having benchmark classes in the root package in non-JVM platforms [#215](https://github.com/Kotlin/kotlinx-benchmark/issues/215)
+- Improve error messages for invalid use of annotations
+- Use `Classpath` normalization for classpath inputs of source generator tasks
+
+## 0.4.10
+
+- Support Kotlin 1.9.21
+- Validate values of benchmark configuration options [#124](https://github.com/Kotlin/kotlinx-benchmark/issues/124),
+  [#125](https://github.com/Kotlin/kotlinx-benchmark/issues/125)
+- Improve Kotlin/Native implementation of Blockhole [#114](https://github.com/Kotlin/kotlinx-benchmark/issues/114)
+- Fix parsing of `@Measurement` annotation that misbehaved in non-JVM platforms
+- Improve error messages when a target is not supported
+- Support nodejs() environment for Kotlin/Wasm target
+
+## 0.4.9
+
+- Support Kotlin 1.9.0
+- Support registering multiplatform source sets as benchmark targets
+- Support all native targets in accordance with the official Kotlin strategy
+- Align the default values of configuration options with JMH [#75](https://github.com/Kotlin/kotlinx-benchmark/issues/75)
+
+## 0.4.8
+
+- Drop legacy JS support
+- Support building large JARs [#95](https://github.com/Kotlin/kotlinx-benchmark/issues/95)
+- Support Kotlin 1.8.20
+- Fix JVM and Native configuration cache warnings
+
+## 0.4.7
+
+- Support Kotlin 1.8.0
+
+## 0.4.6
+
+- Support Gradle 8.0
+- Sign kotlinx-benchmark-plugin artifacts with the Signing Plugin
+- Upgrade Kotlin version to 1.7.20
+- Upgrade Gradle version to 7.4.2
+
+## 0.4.5
+
+- Remove redundant jmh-core dependency from plugin
+
 ## 0.4.4
 
 - Require the minimum Kotlin version of 1.7.0
