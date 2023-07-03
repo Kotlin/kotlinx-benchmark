@@ -1,5 +1,27 @@
 # CHANGELOG
 
+## 0.4.8
+
+- Drop legacy JS support
+- Support building large JARs [#95](https://github.com/Kotlin/kotlinx-benchmark/issues/95)
+- Support Kotlin 1.8.20
+- Fix JVM and Native configuration cache warnings
+
+## 0.4.7
+
+- Support Kotlin 1.8.0
+
+## 0.4.6
+
+- Support Gradle 8.0
+- Sign kotlinx-benchmark-plugin artifacts with the Signing Plugin
+- Upgrade Kotlin version to 1.7.20
+- Upgrade Gradle version to 7.4.2
+
+## 0.4.5
+
+- Remove redundant jmh-core dependency from plugin
+
 ## 0.4.4
 
 - Require the minimum Kotlin version of 1.7.0
