@@ -141,9 +141,9 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
         val modesValue = modeAnnotation?.argumentValue("value")?.value as List<EnumValue>?
         val mode = modesValue?.single()?.enumEntryName?.toString()
 
-        val measureIterations = measureAnnotation?.argumentValue("iterations")?.value as Int?
-        val measureIterationTime = measureAnnotation?.argumentValue("time")?.value as Int?
-        val measureIterationTimeUnit = measureAnnotation?.argumentValue("timeUnit") as EnumValue?
+        val measureIterations = measureAnnotation?.argumentValue("iterations")?.value as? Int
+        val measureIterationTime = measureAnnotation?.argumentValue("time")?.value as? Int
+        val measureIterationTimeUnit = measureAnnotation?.argumentValue("timeUnit") as? EnumValue
 
         val warmupIterations = warmupAnnotation?.argumentValue("iterations")?.value as Int?
 
