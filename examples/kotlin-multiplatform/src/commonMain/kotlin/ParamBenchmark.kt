@@ -15,9 +15,6 @@ class ParamBenchmark {
     @Param("1", "2")
     var value = 0
 
-    @Param("""a "string" with quotes""")
-    var text: String = ""
-
     @Benchmark
     fun mathBenchmark(): Double {
         return log(sqrt(data.toDouble()) * data, 2.0)
@@ -26,12 +23,5 @@ class ParamBenchmark {
     @Benchmark
     fun otherBenchmark(): Int {
         return data + data
-    }
-
-    @Benchmark
-    fun textContentCheck(): String {
-        check(text.length == 22)
-        check(text.count { it == '\"' } == 2)
-        return text
     }
 }
