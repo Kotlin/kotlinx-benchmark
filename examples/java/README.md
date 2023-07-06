@@ -18,18 +18,18 @@ Inside of this example, you'll see the following folders and files:
 
 ## Tasks
 
-All tasks can be run from the root of the project, from a terminal:
+All tasks can be run from the root of the library:
 
 | Task Name | Action |
 | --- | --- |
-| `gradle assembleBenchmarks` | Generate and build all benchmarks in the project |
-| `gradle benchmark` | Execute all benchmarks in the project |
-| `gradle mainBenchmark` | Execute benchmark for 'main' |
-| `gradle mainBenchmarkCompile` | Compile JMH source files for 'main' |
-| `gradle mainBenchmarkGenerate` | Generate JMH source files for 'main' |
-| `gradle mainBenchmarkJar` | Build JAR for JMH compiled files for 'main' |
-| `gradle mainSingleParamBenchmark` | Execute benchmark for 'main' |
-| `gradle singleParamBenchmark` | Execute all benchmarks in the project |
+| `assembleBenchmarks` | Generate and build all benchmarks in the project |
+| `benchmark` | Execute all benchmarks in the project |
+| `mainBenchmark` | Execute benchmark for the 'main' source set |
+| `mainBenchmarkCompile` | Compile JMH source files for the 'main' source set |
+| `mainBenchmarkGenerate` | Generate JMH source files for the 'main' source set |
+| `mainBenchmarkJar` | Build JAR for JMH compiled files for the 'main' source set |
+| `mainSingleParamBenchmark` | Execute benchmark for the 'main' source set with the 'singleParam' configuration |
+| `singleParamBenchmark` | Execute all benchmarks in the project with the 'singleParam' configuration |
 
 ## Want to learn more?
 
