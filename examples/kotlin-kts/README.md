@@ -20,12 +20,12 @@ All tasks can be run from the root of the project, from a terminal:
 
 | Task Name | Action |
 | --- | --- |
-| `gradle assembleBenchmarks` | Generate and build all benchmarks in the project |
-| `gradle benchmark` | Execute all benchmarks in the project |
-| `gradle mainBenchmark` | Execute benchmark for 'benchmarks' |
-| `gradle mainBenchmarkCompile` | Compile JMH source files for 'benchmarks' |
-| `gradle mainBenchmarkGenerate` | Generate JMH source files for 'benchmarks' |
-| `gradle mainBenchmarkJar` | Build JAR for JMH compiled files for 'benchmarks' |
+| `assembleBenchmarks` | Generate and build all benchmarks in the project |
+| `benchmark` | Execute all benchmarks in the project |
+| `mainBenchmark` | Execute benchmark for 'benchmarks' |
+| `mainBenchmarkCompile` | Compile JMH source files for 'benchmarks' |
+| `mainBenchmarkGenerate` | Generate JMH source files for 'benchmarks' |
+| `mainBenchmarkJar` | Build JAR for JMH compiled files for 'benchmarks' |
 
 ## Want to learn more?
 
