@@ -43,60 +43,60 @@ Inside of this example, you'll see the following folders and files:
 
 ## Tasks
 
-All tasks can be run from the root of the project, from a terminal:
+All tasks can be run from the root of the library, from a terminal:
 
 | Task Name | Action |
 | --- | --- |
-| `gradle assembleBenchmarks` | Generate and build all benchmarks in the project |
-| `gradle benchmark` | Execute all benchmarks in the project |
-| `gradle compileJsIrBenchmarkKotlinJsIr` | Compile JS benchmark source files for 'jsIr' |
-| `gradle compileJsIrBuiltInBenchmarkKotlinJsIrBuiltIn` | Compile JS benchmark source files for 'jsIrBuiltIn' |
-| `gradle compileWasmBenchmarkKotlinWasm` | Compile Wasm benchmark source files for 'wasm' |
-| `gradle csvBenchmark` | Execute all benchmarks in a project |
-| `gradle fastBenchmark` | Execute all benchmarks in a project |
-| `gradle forkBenchmark` | Execute all benchmarks in a project |
-| `gradle jsIrBenchmark` | Executes benchmark for 'jsIr' with NodeJS |
-| `gradle jsIrBenchmarkGenerate` | Generate JS source files for 'jsIr' |
-| `gradle jsIrBuiltInBenchmark` | Executes benchmark for 'jsIrBuiltIn' with NodeJS |
-| `gradle jsIrBuiltInBenchmarkGenerate` | Generate JS source files for 'jsIrBuiltIn' |
-| `gradle jsIrBuiltInCsvBenchmark` | Executes benchmark for 'jsIrBuiltIn' with NodeJS |
-| `gradle jsIrBuiltInFastBenchmark` | Executes benchmark for 'jsIrBuiltIn' with NodeJS |
-| `gradle jsIrBuiltInForkBenchmark` | Executes benchmark for 'jsIrBuiltIn' with NodeJS |
-| `gradle jsIrBuiltInParamsBenchmark` | Executes benchmark for 'jsIrBuiltIn' with NodeJS |
-| `gradle jsIrCsvBenchmark` | Executes benchmark for 'jsIr' with NodeJS |
-| `gradle jsIrFastBenchmark` | Executes benchmark for 'jsIr' with NodeJS |
-| `gradle jsIrForkBenchmark` | Executes benchmark for 'jsIr' with NodeJS |
-| `gradle jsIrParamsBenchmark` | Executes benchmark for 'jsIr' with NodeJS |
-| `gradle jvmBenchmark` | Execute benchmark for 'jvm' |
-| `gradle jvmBenchmarkBenchmark` | Execute benchmark for 'jvmBenchmark' |
-| `gradle jvmBenchmarkBenchmarkCompile` | Compile JMH source files for 'jvmBenchmark' |
-| `gradle jvmBenchmarkBenchmarkGenerate` | Generate JMH source files for 'jvmBenchmark' |
-| `gradle jvmBenchmarkBenchmarkJar` | Build JAR for JMH compiled files for 'jvmBenchmark' |
-| `gradle jvmBenchmarkCompile` | Compile JMH source files for 'jvm' |
-| `gradle jvmBenchmarkCsvBenchmark` | Execute benchmark for 'jvmBenchmark' |
-| `gradle jvmBenchmarkFastBenchmark` | Execute benchmark for 'jvmBenchmark' |
-| `gradle jvmBenchmarkForkBenchmark` | Execute benchmark for 'jvmBenchmark' |
-| `gradle jvmBenchmarkGenerate` | Generate JMH source files for 'jvm' |
-| `gradle jvmBenchmarkJar` | Build JAR for JMH compiled files for 'jvm' |
-| `gradle jvmBenchmarkParamsBenchmark` | Execute benchmark for 'jvmBenchmark' |
-| `gradle jvmCsvBenchmark` | Execute benchmark for 'jvm' |
-| `gradle jvmFastBenchmark` | Execute benchmark for 'jvm' |
-| `gradle jvmForkBenchmark` | Execute benchmark for 'jvm' |
-| `gradle jvmParamsBenchmark` | Execute benchmark for 'jvm' |
-| `gradle linkNativeBenchmarkReleaseExecutableNative` | Compile Native benchmark source files for 'native' |
-| `gradle nativeBenchmark` | Executes benchmark for 'native' |
-| `gradle nativeBenchmarkGenerate` | Generate Native source files for 'native' |
-| `gradle nativeCsvBenchmark` | Executes benchmark for 'native' |
-| `gradle nativeFastBenchmark` | Executes benchmark for 'native' |
-| `gradle nativeForkBenchmark` | Executes benchmark for 'native' |
-| `gradle nativeParamsBenchmark` | Executes benchmark for 'native' |
-| `gradle paramsBenchmark` | Execute all benchmarks in a project |
-| `gradle wasmBenchmark` | Executes benchmark for 'wasm' with D8 |
-| `gradle wasmBenchmarkGenerate` | Generate Wasm source files for 'wasm' |
-| `gradle wasmCsvBenchmark` | Executes benchmark for 'wasm' with D8 |
-| `gradle wasmFastBenchmark` | Executes benchmark for 'wasm' with D8 |
-| `gradle wasmForkBenchmark` | Executes benchmark for 'wasm' with D8 |
-| `gradle wasmParamsBenchmark` | Executes benchmark for 'wasm' with D8 |
+| `assembleBenchmarks` | Generates and builds all benchmarks in the project. |
+| `benchmark` | Executes all benchmarks in the project. |
+| `compileJsIrBenchmarkKotlinJsIr` | Compiles the source files for 'jsIr' benchmark. |
+| `compileJsIrBuiltInBenchmarkKotlinJsIrBuiltIn` | Compiles the source files for 'jsIrBuiltIn' benchmark. |
+| `compileWasmBenchmarkKotlinWasm` | Compiles the source files for 'wasm' benchmark. |
+| `csvBenchmark` | Executes all benchmarks in the project with the CSV configuration. |
+| `fastBenchmark` | Executes all benchmarks in the project with the Fast configuration. |
+| `forkBenchmark` | Executes all benchmarks in the project with the Fork configuration. |
+| `jsIrBenchmark` | Executes benchmark for the 'jsIr' source set. |
+| `jsIrBenchmarkGenerate` | Generates source files for the 'jsIr' source set. |
+| `jsIrBuiltInBenchmark` | Executes benchmark for the 'jsIrBuiltIn' source set. |
+| `jsIrBuiltInBenchmarkGenerate` | Generates source files for the 'jsIrBuiltIn' source set. |
+| `jsIrBuiltInCsvBenchmark` | Executes benchmark for the 'jsIrBuiltIn' source set with the CSV configuration. |
+| `jsIrBuiltInFastBenchmark` | Executes benchmark for the 'jsIrBuiltIn' source set with the Fast configuration. |
+| `jsIrBuiltInForkBenchmark` | Executes benchmark for the 'jsIrBuiltIn' source set with the Fork configuration. |
+| `jsIrBuiltInParamsBenchmark` | Executes benchmark for the 'jsIrBuiltIn' source set with the Params configuration. |
+| `jsIrCsvBenchmark` | Executes benchmark for the 'jsIr' source set with the CSV configuration. |
+| `jsIrFastBenchmark` | Executes benchmark for the 'jsIr' source set with the Fast configuration. |
+| `jsIrForkBenchmark` | Executes benchmark for the 'jsIr' source set with the Fork configuration. |
+| `jsIrParamsBenchmark` | Executes benchmark for the 'jsIr' source set with the Params configuration. |
+| `jvmBenchmark` | Executes benchmark for the 'jvm' source set. |
+| `jvmBenchmarkBenchmark` | Executes benchmark for the 'jvmBenchmark' source set. |
+| `jvmBenchmarkBenchmarkCompile` | Compiles the source files for 'jvmBenchmark'. |
+| `jvmBenchmarkBenchmarkGenerate` | Generates source files for the 'jvmBenchmark' source set. |
+| `jvmBenchmarkBenchmarkJar` | Builds the JAR for 'jvmBenchmark' compiled files. |
+| `jvmBenchmarkCompile` | Compiles the source files for the 'jvm' benchmark. |
+| `jvmBenchmarkCsvBenchmark` | Executes benchmark for the 'jvmBenchmark' source set with the CSV configuration. |
+| `jvmBenchmarkFastBenchmark` | Executes benchmark for the 'jvmBenchmark' source set with the Fast configuration. |
+| `jvmBenchmarkForkBenchmark` | Executes benchmark for the 'jvmBenchmark' source set with the Fork configuration. |
+| `jvmBenchmarkGenerate` | Generates source files for the 'jvm' source set. |
+| `jvmBenchmarkJar` | Builds the JAR for 'jvm' compiled files. |
+| `jvmBenchmarkParamsBenchmark` | Executes benchmark for the 'j| `jvmBenchmarkParamsBenchmark` | Executes benchmark for the 'jvmBenchmark' source set with the Params configuration. |
+| `jvmCsvBenchmark` | Executes benchmark for the 'jvm' source set with the CSV configuration. |
+| `jvmFastBenchmark` | Executes benchmark for the 'jvm' source set with the Fast configuration. |
+| `jvmForkBenchmark` | Executes benchmark for the 'jvm' source set with the Fork configuration. |
+| `jvmParamsBenchmark` | Executes benchmark for the 'jvm' source set with the Params configuration. |
+| `linkNativeBenchmarkReleaseExecutableNative` | Compiles the source files for 'native' benchmark. |
+| `nativeBenchmark` | Executes benchmark for the 'native' source set. |
+| `nativeBenchmarkGenerate` | Generates source files for the 'native' source set. |
+| `nativeCsvBenchmark` | Executes benchmark for the 'native' source set with the CSV configuration. |
+| `nativeFastBenchmark` | Executes benchmark for the 'native' source set with the Fast configuration. |
+| `nativeForkBenchmark` | Executes benchmark for the 'native' source set with the Fork configuration. |
+| `nativeParamsBenchmark` | Executes benchmark for the 'native' source set with the Params configuration. |
+| `paramsBenchmark` | Executes all benchmarks in the project with the Params configuration. |
+| `wasmBenchmark` | Executes benchmark for the 'wasm' source set. |
+| `wasmBenchmarkGenerate` | Generates source files for the 'wasm' source set. |
+| `wasmCsvBenchmark` | Executes benchmark for the 'wasm' source set with the CSV configuration. |
+| `wasmFastBenchmark` | Executes benchmark for the 'wasm' source set with the Fast configuration. |
+| `wasmForkBenchmark` | Executes benchmark for the 'wasm' source set with the Fork configuration. |
+| `wasmParamsBenchmark` | Executes benchmark for the 'wasm' source set with the Params configuration. |
 
 ## Want to learn more?
 
