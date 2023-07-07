@@ -134,18 +134,18 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
         val outputTimeAnnotation = original.annotations.singleOrNull { it.fqName.toString() == outputTimeAnnotationFQN }
         val modeAnnotation = original.annotations.singleOrNull { it.fqName.toString() == modeAnnotationFQN }
 
-        val outputTimeUnitValue = outputTimeAnnotation?.argumentValue("value") as? EnumValue
+        val outputTimeUnitValue = outputTimeAnnotation?.argumentValue("value") as EnumValue?
         val outputTimeUnit = outputTimeUnitValue?.enumEntryName?.toString()
 
         @Suppress("UNCHECKED_CAST")
-        val modesValue = modeAnnotation?.argumentValue("value")?.value as? List<EnumValue>
+        val modesValue = modeAnnotation?.argumentValue("value")?.value as List<EnumValue>?
         val mode = modesValue?.single()?.enumEntryName?.toString()
 
-        val measureIterations = measureAnnotation?.argumentValue("iterations")?.value as? Int
-        val measureIterationTime = measureAnnotation?.argumentValue("time")?.value as? Int
-        val measureIterationTimeUnit = measureAnnotation?.argumentValue("timeUnit") as? EnumValue
+        val measureIterations = measureAnnotation?.argumentValue("iterations")?.value as Int?
+        val measureIterationTime = measureAnnotation?.argumentValue("time")?.value as Int?
+        val measureIterationTimeUnit = measureAnnotation?.argumentValue("timeUnit") as EnumValue?
 
-        val warmupIterations = warmupAnnotation?.argumentValue("iterations")?.value as? Int
+        val warmupIterations = warmupAnnotation?.argumentValue("iterations")?.value as Int?
 
         val iterations = measureIterations
         val iterationTime = measureIterationTime
@@ -203,7 +203,7 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
                     val constant = annotation.argumentValue("value") 
                         ?: error("@Param annotation should have at least one default value")
                     @Suppress("UNCHECKED_CAST")
-                    val values = constant.value as? List<StringValue>
+                    val values = constant.value as List<StringValue>?
                         ?: error("@Param annotation should have at least one default value")
                     values
                 })
