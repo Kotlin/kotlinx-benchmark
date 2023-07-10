@@ -9,7 +9,7 @@ class SourceSetAsBenchmarkTargetTest : GradleTest() {
     fun testSupportForSourceSetsAsBenchmarkTargets() {
         val jvmBenchmark = "jvmBenchmark"
         val configuration = "jsonDefault"
-        val targets = listOf("jsIr", "wasm", "jvm", "native", jvmBenchmark)
+        val targets = listOf("jsIr", "wasmJs", "jvm", "native", jvmBenchmark)
 
         val runner =
             project("kotlin-multiplatform", true) {

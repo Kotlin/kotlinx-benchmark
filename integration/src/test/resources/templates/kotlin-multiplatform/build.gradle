@@ -6,7 +6,7 @@ kotlin {
         compilations.create('benchmark') { associateWith(compilations.main) }
     }
     js('jsIr', IR) { nodejs() }
-    wasm { d8() }
+    wasm('wasmJs') { d8() }
 
     if (HostManager.hostIsLinux) linuxX64('native')
     if (HostManager.hostIsMingw) mingwX64('native')
@@ -26,7 +26,7 @@ kotlin {
         }
         jsIrMain {
         }
-        wasmMain {
+        wasmJsMain {
         }
         nativeMain {
         }
@@ -37,7 +37,7 @@ benchmark {
     targets {
         register("jvm")
         register("jsIr")
-        register("wasm")
+        register("wasmJs")
         register("native")
     }
 }
