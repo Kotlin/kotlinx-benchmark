@@ -112,7 +112,7 @@ benchmark {
         register("jvm") 
         register("js")
         register("native")
-        register("wasm") // Experimental
+        register("wasmJs") // Experimental
     }
 }
 ```
@@ -207,7 +207,7 @@ benchmark {
             // jsBenchmarksExecutor = JsBenchmarksExecutor.BuiltIn
         }
         register("native")
-        register("wasm") // Experimental
+        register("wasmJs") // Experimental
     }
 }
 ```  
