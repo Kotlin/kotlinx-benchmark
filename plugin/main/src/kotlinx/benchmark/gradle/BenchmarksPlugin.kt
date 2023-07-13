@@ -7,6 +7,7 @@ import org.gradle.util.*
 class BenchmarksPlugin : Plugin<Project> {
     companion object {
         const val PLUGIN_ID = "org.jetbrains.kotlinx.benchmark"
+        // This value is overridden by `overridePluginVersion` task during release builds.
         const val PLUGIN_VERSION = "0.5.0-SNAPSHOT"
 
         const val BENCHMARKS_TASK_GROUP = "benchmark"

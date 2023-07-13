@@ -96,6 +96,24 @@ dependencies {
     compileOnly "org.openjdk.jmh:jmh-generator-bytecode:$jmhVersion" // used in worker
 }
 
+tasks.register("overridePluginVersion") {
+    description = "Overrides BenchmarksPlugin.PLUGIN_VERSION during release builds"
+    onlyIf {
+        project.findProperty("releaseVersion") != null
+    }
+    doLast {
+        def benchmarksPluginFile = "${projectDir}/main/src/kotlinx/benchmark/gradle/BenchmarksPlugin.kt"
+        def releaseVersion = project.findProperty("releaseVersion")
+        ant.replaceregexp(
+                file: benchmarksPluginFile,
+                match: "const val PLUGIN_VERSION = \"[\\d.]+-SNAPSHOT\"",
+                replace: "const val PLUGIN_VERSION = \"$releaseVersion\"",
+                encoding: "UTF-8"
+        )
+    }
+}
+
+tasks.compileKotlin.dependsOn overridePluginVersion
 
 if (project.findProperty("publication_repository") == "space") {
     // publish to Space repository
