@@ -1,6 +1,6 @@
 buildscript {
     dependencies {
-        classpath "org.jetbrains.kotlinx:kotlinx-benchmark-plugin:0.5.0-SNAPSHOT"
+        classpath "org.jetbrains.kotlinx:kotlinx-benchmark-plugin"
     }
 }
 

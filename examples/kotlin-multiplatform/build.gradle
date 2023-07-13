@@ -5,7 +5,7 @@ import kotlinx.benchmark.gradle.JsBenchmarksExecutor
 plugins {
     id 'org.jetbrains.kotlin.multiplatform'
     id 'org.jetbrains.kotlin.plugin.allopen' version "1.8.21"
-    id 'org.jetbrains.kotlinx.benchmark' version "0.5.0-SNAPSHOT"
+    id 'org.jetbrains.kotlinx.benchmark'
 }
 
 // how to apply plugin to a specific source set?
