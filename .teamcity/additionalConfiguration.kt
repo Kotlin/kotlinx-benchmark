@@ -51,13 +51,22 @@ fun Project.deployPlugin() = BuildType {
     type = BuildTypeSettings.Type.DEPLOYMENT
     enablePersonalBuilds = false
     maxRunningBuilds = 1
+    params {
+        text(
+            name = releaseVersionParameter,
+            value = "",
+            label = "Release Version",
+            display = ParameterDisplay.PROMPT,
+            allowEmpty = false
+        )
+    }
 
     steps {
         gradle {
             name = "Publish Plugin"
             jdkHome = "%env.$jdk%"
             jvmArgs = "-Xmx1g"
-            gradleParams = "--info --stacktrace -P$gradlePublishKey=%$gradlePublishKey% -P$gradlePublishSecret=%$gradlePublishSecret%"
+            gradleParams = "--info --stacktrace -P$releaseVersionParameter=%$releaseVersionParameter% -P$gradlePublishKey=%$gradlePublishKey% -P$gradlePublishSecret=%$gradlePublishSecret%"
             tasks = "clean :plugin:publishPlugins"
             buildFile = ""
             gradleWrapperPath = ""
