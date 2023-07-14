@@ -113,4 +113,68 @@ class OptionsValidationTest : GradleTest() {
             runner.run("invalidOutputTimeUnitBenchmark")
         }
     }
+
+    @Test
+    fun testIncludesValidation() {
+        val runner = project("kotlin-multiplatform") {
+            configuration("blankIncludePattern") {
+                iterations = 1
+                iterationTime = 100
+                iterationTimeUnit = "ms"
+                include(" ")
+            }
+        }
+        
+        assertFailsWith<RuntimeException> {
+            runner.run("blankIncludePatternBenchmark")
+        }
+    }
+    
+    @Test
+    fun testExcludesValidation() {
+        val runner = project("kotlin-multiplatform") {
+            configuration("blankExcludePattern") {
+                iterations = 1
+                iterationTime = 100
+                iterationTimeUnit = "ms"
+                exclude(" ")
+            }
+        }
+        
+        assertFailsWith<RuntimeException> {
+            runner.run("blankExcludePatternBenchmark")
+        }
+    }
+    
+    @Test
+    fun testParamsValidation() {
+        val runner = project("kotlin-multiplatform") {
+            configuration("blankParamName") {
+                iterations = 1
+                iterationTime = 100
+                iterationTimeUnit = "ms"
+                param(" ", "value")
+            }
+        }
+        
+        assertFailsWith<RuntimeException> {
+            runner.run("blankParamNameBenchmark")
+        }
+    }
+    
+    @Test
+    fun testAdvancedValidation() {
+        val runner = project("kotlin-multiplatform") {
+            configuration("blankAdvancedConfigName") {
+                iterations = 1
+                iterationTime = 100
+                iterationTimeUnit = "ms"
+                advanced(" ", "value")
+            }
+        }
+        
+        assertFailsWith<RuntimeException> {
+            runner.run("blankAdvancedConfigNameBenchmark")
+        }
+    }    
 }
