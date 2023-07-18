@@ -171,10 +171,50 @@ class OptionsValidationTest : GradleTest() {
                 iterationTimeUnit = "ms"
                 advanced(" ", "value")
             }
-        }
+    
+            configuration("invalidNativeFork") {
+                iterations = 1
+                iterationTime = 100
+                iterationTimeUnit = "ms"
+                advanced("nativeFork", "x")
+            }
 
-        assertFailsWith<RuntimeException> {
-            runner.run("blankAdvancedConfigNameBenchmark")
+            configuration("invalidNativeGCAfterIteration") {
+                iterations = 1
+                iterationTime = 100
+                iterationTimeUnit = "ms"
+                advanced("nativeGCAfterIteration", "x")
+            }
+    
+            configuration("invalidJvmForks") {
+                iterations = 1
+                iterationTime = 100
+                iterationTimeUnit = "ms"
+                advanced("jvmForks", "-1")
+            }
+    
+            configuration("invalidJsUseBridge") {
+                iterations = 1
+                iterationTime = 100
+                iterationTimeUnit = "ms"
+                advanced("jsUseBridge", "x")
+            }
         }
-    }
+    
+        runner.runAndFail("blankAdvancedConfigNameBenchmark") {
+            assertOutputContains("Advanced config name should not be blank.")
+        }
+        runner.runAndFail("invalidNativeForkBenchmark") {
+            assertOutputContains("Invalid value 'x' for 'nativeFork'. It should be either 'perBenchmark' or 'perIteration'.")
+        }
+        runner.runAndFail("invalidNativeGCAfterIterationBenchmark") {
+            assertOutputContains("Invalid value 'x' for 'nativeGCAfterIteration'. It should be a Boolean value.")
+        }
+        runner.runAndFail("invalidJvmForksBenchmark") {
+            assertOutputContains("Invalid value '-1' for 'jvmForks'. It should be a non-negative integer, or 'definedByJmh'.")
+        }
+        runner.runAndFail("invalidJsUseBridgeBenchmark") {
+            assertOutputContains("Invalid value 'x' for 'jsUseBridge'. It should be a Boolean value.")
+        }
+    }   
 }
