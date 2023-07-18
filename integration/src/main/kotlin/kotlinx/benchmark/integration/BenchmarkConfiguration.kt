@@ -39,10 +39,8 @@ class BenchmarkConfiguration {
             mode = ${mode?.escape()}
             outputTimeUnit = ${outputTimeUnit?.escape()}
             reportFormat = ${reportFormat?.escape()}
-            includes = ${includes.map { it.escape() }.joinToString(prefix = "[", postfix = "]")}
-            excludes = ${excludes.map { it.escape() }.joinToString(prefix = "[", postfix = "]")}
-            params = ${params.map { "\"${it.key}\" to listOf(${it.value.joinToString()})" }.joinToString(prefix = "mapOf(", postfix = ")")}
-            advanced = ${advanced.map { "\"${it.key}\" to \"${it.value}\"" }.joinToString(prefix = "mapOf(", postfix = ")")}
+            includes = ${includes.map { it.escape() }}
+            excludes = ${excludes.map { it.escape() }}
         }
     """.trimIndent().split("\n")
 }

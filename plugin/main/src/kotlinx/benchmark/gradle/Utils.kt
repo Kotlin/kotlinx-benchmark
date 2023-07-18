@@ -194,14 +194,12 @@ private fun validateConfig(config: BenchmarkConfiguration) {
         }
     }
 
-    // Validate exclude
     config.excludes.forEach {
         require(it.isNotBlank()) {
             "Exclude pattern should not be blank."
         }
     }
 
-    // Validate params
     config.params.forEach { (param, values) ->
         require(param.isNotBlank()) {
             "Param name should not be blank."
@@ -211,7 +209,6 @@ private fun validateConfig(config: BenchmarkConfiguration) {
         }
     }
 
-    // Validate advanced
     config.advanced.forEach { (param, value) ->
         println("Validating advanced param: $param with value: $value")
         require(param.isNotBlank()) {
@@ -221,7 +218,6 @@ private fun validateConfig(config: BenchmarkConfiguration) {
             "Value for advanced config '$param' should not be blank."
         }
 
-        // Specific advanced config validations
         when (param) {
             "nativeFork" -> require(value.toString().toLowerCase() in setOf("perbenchmark", "periteration")) {
                 "Invalid value '$value' for 'nativeFork'. It should be either 'perBenchmark' or 'perIteration'."
