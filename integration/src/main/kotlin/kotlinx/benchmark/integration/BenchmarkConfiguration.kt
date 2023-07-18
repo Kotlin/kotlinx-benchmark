@@ -41,6 +41,10 @@ class BenchmarkConfiguration {
             reportFormat = ${reportFormat?.escape()}
             includes = ${includes.map { it.escape() }}
             excludes = ${excludes.map { it.escape() }}
+            ${params.entries.joinToString(separator = "\n") { """param("${it.key}", ${it?.value?.joinToString()})""" }}
+            ${advanced.entries.joinToString(separator = "\n") {
+                """advanced("${it.key}", ${if (it.value is String) "\"${it.value}\"" else it.value})"""
+            }}
         }
     """.trimIndent().split("\n")
 }

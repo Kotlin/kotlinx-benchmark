@@ -6,6 +6,22 @@ import kotlin.test.*
 class OptionsValidationTest : GradleTest() {
 
     @Test
+    fun testReportFormatValidation() {
+        val runner = project("kotlin-multiplatform") {
+            configuration("invalidReportFormat") {
+                iterations = 1
+                iterationTime = 100
+                iterationTimeUnit = "ms"
+                reportFormat = "htmll"
+            }
+        }
+    
+        runner.runAndFail("invalidReportFormatBenchmark") {
+            assertOutputContains("Report format 'htmll' is not supported.")
+        }
+    }
+    
+    @Test
     fun testIterationsValidation() {
         val runner = project("kotlin-multiplatform") {
             configuration("zeroIterations") {
@@ -15,10 +31,9 @@ class OptionsValidationTest : GradleTest() {
             }
         }
     
-        val exception = assertFailsWith<RuntimeException> {
-            runner.run("zeroIterationsBenchmark")
+        runner.runAndFail("zeroIterationsBenchmark") {
+            assertOutputContains("Iterations must be greater than 0.")
         }
-        assert(exception.message?.contains("Iterations must be greater than 0.") ?: false)
     }
     
     @Test
@@ -32,10 +47,9 @@ class OptionsValidationTest : GradleTest() {
             }
         }
     
-        val exception = assertFailsWith<RuntimeException> {
-            runner.run("negativeWarmupsBenchmark")
+        runner.runAndFail("negativeWarmupsBenchmark") {
+            assertOutputContains("Warmups must be equal to or greater than 0.")
         }
-        assert(exception.message?.contains("Warmups must be equal to or greater than 0.") ?: false)
     }
     
     @Test
@@ -48,10 +62,9 @@ class OptionsValidationTest : GradleTest() {
             }
         }
     
-        val exception = assertFailsWith<RuntimeException> {
-            runner.run("zeroIterationTimeBenchmark")
+        runner.runAndFail("zeroIterationTimeBenchmark") {
+            assertOutputContains("Iteration time must be greater than 0.")
         }
-        assert(exception.message?.contains("Iteration time must be greater than 0.") ?: false)
     }
     
     @Test
@@ -64,10 +77,9 @@ class OptionsValidationTest : GradleTest() {
             }
         }
     
-        val exception = assertFailsWith<RuntimeException> {
-            runner.run("invalidIterationTimeUnitBenchmark")
+        runner.runAndFail("invalidIterationTimeUnitBenchmark") {
+            assertOutputContains("Unknown time unit: x")
         }
-        assert(exception.message?.contains("Unknown time unit: x") ?: false)
     }
     
     @Test
@@ -81,10 +93,9 @@ class OptionsValidationTest : GradleTest() {
             }
         }
     
-        val exception = assertFailsWith<RuntimeException> {
-            runner.run("invalidModeBenchmark")
+        runner.runAndFail("invalidModeBenchmark") {
+            assertOutputContains("Benchmark mode 'x' is not supported.")
         }
-        assert(exception.message?.contains("Benchmark mode 'x' is not supported.") ?: false)
     }
     
     @Test
@@ -98,10 +109,9 @@ class OptionsValidationTest : GradleTest() {
             }
         }
     
-        val exception = assertFailsWith<RuntimeException> {
-            runner.run("invalidOutputTimeUnitBenchmark")
+        runner.runAndFail("invalidOutputTimeUnitBenchmark") {
+            assertOutputContains("Unknown time unit: x")
         }
-        assert(exception.message?.contains("Unknown time unit: x") ?: false)
     }
     
     @Test
@@ -115,10 +125,9 @@ class OptionsValidationTest : GradleTest() {
             }
         }
     
-        val exception = assertFailsWith<RuntimeException> {
-            runner.run("blankIncludePatternBenchmark")
+        runner.runAndFail("blankIncludePatternBenchmark") {
+            assertOutputContains("Include pattern should not be blank.")
         }
-        assert(exception.message?.contains("Include pattern should not be blank.") ?: false)
     }
     
     @Test
@@ -132,9 +141,40 @@ class OptionsValidationTest : GradleTest() {
             }
         }
     
-        val exception = assertFailsWith<RuntimeException> {
-            runner.run("blankExcludePatternBenchmark")
+        runner.runAndFail("blankExcludePatternBenchmark") {
+            assertOutputContains("Exclude pattern should not be blank.")
         }
-        assert(exception.message?.contains("Exclude pattern should not be blank.") ?: false)
-    }      
+    }    
+
+    @Test
+    fun testParamsValidation() {
+        val runner = project("kotlin-multiplatform") {
+            configuration("blankParamName") {
+                iterations = 1
+                iterationTime = 100
+                iterationTimeUnit = "ms"
+                param(" ", 5)
+            }
+        }
+
+        runner.runAndFail("blankParamNameBenchmark") {
+            assertOutputContains("Param name should not be blank.")
+        }
+    }
+
+    @Test
+    fun testAdvancedValidation() {
+        val runner = project("kotlin-multiplatform") {
+            configuration("blankAdvancedConfigName") {
+                iterations = 1
+                iterationTime = 100
+                iterationTimeUnit = "ms"
+                advanced(" ", "value")
+            }
+        }
+
+        assertFailsWith<RuntimeException> {
+            runner.run("blankAdvancedConfigNameBenchmark")
+        }
+    }
 }
