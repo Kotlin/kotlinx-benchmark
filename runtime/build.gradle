@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
+
 plugins {
     id 'org.jetbrains.kotlin.multiplatform'
 }
@@ -80,6 +83,17 @@ kotlin {
         }
         nativeMain {
             dependsOn(commonMain)
+        }
+    }
+
+    targets.withType(KotlinNativeTarget).configureEach {
+        compilations.main {
+            cinterops {
+                blackhole {
+                    defFile project.file("nativeMain/src/cinterop/blackhole.def")
+                    packageName 'kotlinx.benchmark.impl'
+                }
+            }
         }
     }
 }
