@@ -315,9 +315,69 @@ Note: Kotlin/WASM is an experimental compilation target for Kotlin. It may be dr
 
 ### Writing Benchmarks
 
-Now you can write your benchmarks.
+After setting up your project and configuring targets, you can start writing benchmarks:
 
-// A short introduction to writing benchmarks.
+1. **Create Benchmark Class**: Create a class in your source set where you'd like to add the benchmark. Annotate this class with `@State(Scope.Benchmark)`.
+
+    ```kotlin
+    // MyBenchmark.kt
+    @State(Scope.Benchmark)
+    class MyBenchmark {
+        // Benchmarking-related methods and variables
+    }
+    ```
+
+2. **Initialize Resources**: Within the class, you can define any setup or teardown methods using `@Setup` and `@TearDown` annotations respectively. These methods will be executed before and after the entire benchmark run.
+
+    ```kotlin
+    var myList: MutableList<Int>? = null
+
+    @Setup
+    fun prepare() {
+        myList = ArrayList(1000)
+        // fill with data
+    }
+
+    @TearDown
+    fun cleanup() {
+        myList = null
+    }
+    ```
+
+3. **Define Benchmark Method**: Next, create methods that you would like to be benchmarked within this class and annotate them with `@Benchmark`.
+
+    ```kotlin
+    @Benchmark
+    fun benchmarkMethod() {
+        // Benchmarking logic here
+    }
+    ```
+
+Your final benchmark class will look something like this:
+
+```kotlin
+@State(Scope.Benchmark)
+class MyBenchmark {
+
+    var myList: MutableList<Int>? = null
+
+    @Setup
+    fun prepare() {
+        myList = ArrayList(1000)
+        // fill with data
+    }
+
+    @Benchmark
+    fun benchmarkMethod() {
+        // Benchmarking logic here
+    }
+
+    @TearDown
+    fun cleanup() {
+        myList = null
+    }
+}
+```
 
 Note: Benchmark classes located in the common source set will be run in all platforms, while those located in a platform-specific source set will be run only in the corresponding platform.
 
