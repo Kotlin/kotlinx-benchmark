@@ -198,7 +198,7 @@ To run benchmarks in Kotlin/JVM:
     <details>
       <summary><b>Explanation</b></summary>
 
-    Consider you annotated each of your benchmark classes with `@State(Scope.Benchmark)`:
+    Assume that you've annotated each of your benchmark classes with `@State(Scope.Benchmark)`:
 
     ```kotlin
     // MyBenchmark.kt
@@ -321,18 +321,18 @@ Now you can write your benchmarks.
 
 Note: Benchmark classes located in the common source set will be run in all platforms, while those located in a platform-specific source set will be run only in the corresponding platform.
 
-See <TBD-document> to for a complete guide for writing benchmarks.
+See [writing benchmarks](docs/writing-benchmarks.md) for a complete guide for writing benchmarks.
 
 ### Running Benchmarks
 
-To run your benchmarks in all registered platforms run `benchmark` Gradle task in your project.
-To run in only in a specific platform run `<target-name>Benchmark`, e.g., `jvmBenchmark`.
+To run your benchmarks in all registered platforms, run `benchmark` Gradle task in your project.
+To run only on a specific platform, run `<target-name>Benchmark`, e.g., `jvmBenchmark`.
 
-Learn more about the tasks kotlinx-benchmark plugin creates in [this guide](docs/tasks-overview.md).
+For more details about the tasks created by the kotlinx-benchmark plugin, refer to [this guide](docs/tasks-overview.md).
 
 ### Benchmark Configuration Profiles
 
-The kotlinx-benchmark library provides ability to create multiple configuration profiles. The `main` configuration is already created by Toolkit.
+The kotlinx-benchmark library provides the ability to create multiple configuration profiles. The `main` configuration is already created by the Toolkit.
 Additional profiles can be created as needed in the `configurations` section of the `benchmark` block:
 
 ```kotlin
@@ -370,4 +370,4 @@ These examples showcase various use cases and offer practical insights into the 
 
 ## Contributing
 
-We welcome contributions to kotlinx-benchmark! If you want to contribute, please refer to our Contribution Guidelines.
+We welcome contributions to kotlinx-benchmark! If you want to contribute, please refer to our [Contribution Guidelines](CONTRIBUTING.md).
