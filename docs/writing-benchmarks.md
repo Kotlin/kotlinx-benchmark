@@ -18,7 +18,6 @@ The toolkit offers various annotations that can be used to customize your setup.
 | `@Measurement` | Sets properties for the benchmark measurement phase. | Class |
 | `@Param` | Defines parameters for benchmark customization. | Class |
 | `@Scope` | Specifies when a new instance of the state object is provided. | Class |
-| `Mode` | Indicates benchmark mode - `Throughput` (operations per time unit) or `AverageTime` (time per operation). | Class |
 | `@BenchmarkTimeUnit` | Specifies the unit of benchmark result display. | Class |
 | `@Fork` | Allows the launch of separate JVM processes for each benchmark test | Class |
 | `@NativeFork` | (Native Only) Defines isolation level for native benchmarks - `PerBenchmark` (new process for each benchmark) or `PerIteration` (new process for each iteration). | Class |
@@ -32,7 +31,7 @@ Here's a step-by-step process to create a benchmark class:
     ```kotlin
     @State(Scope.Benchmark)
     class MyBenchmark {
-        // Benchmarking-related methods and variables
+
     }
     ```
 
@@ -41,12 +40,12 @@ Here's a step-by-step process to create a benchmark class:
     ```kotlin
     @Setup
     fun prepare() {
-        // setup code
+
     }
 
     @TearDown
     fun cleanup() {
-        // cleanup code
+
     }
     ```
 
@@ -63,17 +62,17 @@ Here's a step-by-step process to create a benchmark class:
     
         @Setup
         fun prepare() {
-            // setup code
+
         }
         
         @Benchmark
         fun benchmarkMethod() {
-            // Benchmarking logic here
+
         }
     
         @TearDown
         fun cleanup() {
-            // cleanup code
+
         }
     }
     ```
@@ -89,7 +88,7 @@ Here's a step-by-step process to create a benchmark class:
     @Warmup(iterations = WARMUP_ITERATIONS, time = 1, timeUnit = TimeUnit.SECONDS)
     @Measurement(iterations = 1, time = 1, timeUnit = TimeUnit.SECONDS)
     fun benchmarkMethod() {
-        // Benchmarking logic here
+
     }
     ```
 
@@ -101,17 +100,17 @@ Here's a step-by-step process to create a benchmark class:
     
         @Setup
         fun prepare() {
-            // setup code
+
         }
     
         @Benchmark
         fun benchmarkMethod() {
-            // Benchmarking logic here
+
         }
     
         @TearDown
         fun cleanup() {
-            // cleanup code
+
         }
     }
     ```

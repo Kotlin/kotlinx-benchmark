@@ -320,27 +320,23 @@ After setting up your project and configuring targets, you can start writing ben
 1. **Create Benchmark Class**: Create a class in your source set where you'd like to add the benchmark. Annotate this class with `@State(Scope.Benchmark)`.
 
     ```kotlin
-    // MyBenchmark.kt
     @State(Scope.Benchmark)
     class MyBenchmark {
-        // Benchmarking-related methods and variables
+
     }
     ```
 
 2. **Initialize Resources**: Within the class, you can define any setup or teardown methods using `@Setup` and `@TearDown` annotations respectively. These methods will be executed before and after the entire benchmark run.
 
     ```kotlin
-    var myList: MutableList<Int>? = null
-
     @Setup
     fun prepare() {
-        myList = ArrayList(1000)
-        // fill with data
+
     }
 
     @TearDown
     fun cleanup() {
-        myList = null
+
     }
     ```
 
@@ -349,7 +345,7 @@ After setting up your project and configuring targets, you can start writing ben
     ```kotlin
     @Benchmark
     fun benchmarkMethod() {
-        // Benchmarking logic here
+
     }
     ```
 
@@ -359,22 +355,19 @@ Your final benchmark class will look something like this:
 @State(Scope.Benchmark)
 class MyBenchmark {
 
-    var myList: MutableList<Int>? = null
-
     @Setup
     fun prepare() {
-        myList = ArrayList(1000)
-        // fill with data
+
     }
 
     @Benchmark
     fun benchmarkMethod() {
-        // Benchmarking logic here
+
     }
 
     @TearDown
     fun cleanup() {
-        myList = null
+
     }
 }
 ```
