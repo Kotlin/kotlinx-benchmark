@@ -22,10 +22,10 @@ All tasks can be run from the root of the project, from a terminal:
 | --- | --- |
 | `assembleBenchmarks` | Generate and build all benchmarks in the project |
 | `benchmark` | Execute all benchmarks in the project |
-| `mainBenchmark` | Execute benchmark for 'benchmarks' |
-| `mainBenchmarkCompile` | Compile JMH source files for 'benchmarks' |
-| `mainBenchmarkGenerate` | Generate JMH source files for 'benchmarks' |
-| `mainBenchmarkJar` | Build JAR for JMH compiled files for 'benchmarks' |
+| `mainBenchmark` | Execute benchmark for 'main' |
+| `mainBenchmarkCompile` | Compile JMH source files for 'main' |
+| `mainBenchmarkGenerate` | Generate JMH source files for 'main' |
+| `mainBenchmarkJar` | Build JAR for JMH compiled files for 'main' |
 
 ## Want to learn more?
 
