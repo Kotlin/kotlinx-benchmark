@@ -16,6 +16,7 @@ actual class Blackhole {
      * unlikely to happen) an object will be wrapped into a weak reference and stored into a field.
      */
     @Volatile
+    private var targetLcgValue: Int = Random.nextInt()
     private var lcg: Int = Random.nextInt()
     @Volatile
     internal var ref: WeakReference<Any>? = null
@@ -23,10 +24,11 @@ actual class Blackhole {
     actual fun consume(obj: Any?) {
         // https://en.wikipedia.org/wiki/Linear_congruential_generator
         val next = lcg * 1664525 + 1013904223
-        if (next == 0) {
+        if ((next and targetLcgValue) == 0) {
             if (obj !== null) {
                 ref = WeakReference(obj)
             }
+            targetLcgValue *= 17
         }
         lcg = next
     }
