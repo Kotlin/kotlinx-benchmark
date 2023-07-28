@@ -134,106 +134,109 @@ fun writeParameters(
 
 private fun validateConfig(config: BenchmarkConfiguration) {
     config.reportFormat?.let {
-        require(it.toLowerCase() in setOf("json", "csv", "scsv", "text")) {
-            "Unrecognized report format '$it'. Please use one of the following: 'json', 'csv', 'scsv', or 'text'."
+        val validFormats = setOf("json", "csv", "scsv", "text")
+        require(it.toLowerCase() in validFormats) {
+            "Invalid report format: '$it'. Accepted formats: ${validFormats.joinToString(", ")} (e.g., reportFormat = 'json')."
         }
     }
 
     config.iterations?.let {
         require(it > 0) {
-            "Invalid iterations '$it'. Please provide a positive number (e.g., iterations = 5)."
+            "Invalid iterations: '$it'. Expected a positive integer (e.g., iterations = 5)."
         }
     }
 
     config.warmups?.let {
         require(it >= 0) {
-            "Invalid warmups '$it'. Please provide a non-negative number (e.g., warmups = 3)."
+            "Invalid warmups: '$it'. Expected a non-negative integer (e.g., warmups = 3)."
         }
     }
 
     config.iterationTime?.let {
         require(it > 0) {
-            "Invalid iterationTime '$it'. Please provide a positive number (e.g., iterationTime = 1)."
+            "Invalid iterationTime: '$it'. Expected a positive number (e.g., iterationTime = 300)."
         }
         require(config.iterationTimeUnit != null) {
-            "Missing iterationTimeUnit. Please provide the iterationTimeUnit when iterationTime is given."
+            "Missing iterationTimeUnit. Please provide iterationTimeUnit when specifying iterationTime."
         }
     }
     
     config.iterationTimeUnit?.let {
         val validTimeUnits = setOf("seconds", "s", "microseconds", "us", "milliseconds", "ms", "nanoseconds", "ns", "minutes", "m")
         require(it.toLowerCase() in validTimeUnits) {
-            "Invalid iterationTimeUnit '$it'. Valid units: ${validTimeUnits.joinToString(", ")}."
+            "Invalid iterationTimeUnit: '$it'. Accepted units: ${validTimeUnits.joinToString(", ")} (e.g., iterationTimeUnit = 'ms')."
         }
         require(config.iterationTime != null) {
-            "Missing iterationTime. Please provide the iterationTime when iterationTimeUnit is given."
+            "Missing iterationTime. Please provide iterationTime when specifying iterationTimeUnit."
         }
     }
     
     config.mode?.let {
         val validModes = setOf("thrpt", "avgt")
         require(it.toLowerCase() in validModes) {
-            "Unsupported benchmark mode '$it'. Valid modes: ${validModes.joinToString(", ")}."
+            "Invalid benchmark mode: '$it'. Accepted modes: ${validModes.joinToString(", ")} (e.g., mode = 'thrpt')."
         }
     }
     
     config.outputTimeUnit?.let {
         val validTimeUnits = setOf("seconds", "s", "microseconds", "us", "milliseconds", "ms", "nanoseconds", "ns", "minutes", "m")
         require(it.toLowerCase() in validTimeUnits) {
-            "Invalid outputTimeUnit '$it'. Valid units: ${validTimeUnits.joinToString(", ")}."
+            "Invalid outputTimeUnit: '$it'. Accepted units: ${validTimeUnits.joinToString(", ")} (e.g., outputTimeUnit = 'ns')."
         }
     }    
 
-    config.includes.forEach {
-        require(it.isNotBlank()) {
-            "Include pattern must not be blank."
+    config.includes.forEach { pattern ->
+        require(pattern.isNotBlank()) {
+            "Invalid include pattern: '$pattern'. Pattern must not be blank."
         }
     }
 
-    config.excludes.forEach {
-        require(it.isNotBlank()) {
-            "Exclude pattern must not be blank."
+    config.excludes.forEach { pattern ->
+        require(pattern.isNotBlank()) {
+            "Invalid exclude pattern: '$pattern'. Pattern must not be blank."
         }
     }
 
     config.params.forEach { (param, values) ->
         require(param.isNotBlank()) {
-            "Param name must not be blank."
+            "Invalid param name: '$param'. It must not be blank."
         }
         require(values.isNotEmpty()) {
-            "No values provided for param '$param'. At least one value is required."
+            "Param '$param' has no values. At least one value is required."
         }
     }
 
     config.advanced.forEach { (param, value) ->
         println("Validating advanced param: $param with value: $value")
         require(param.isNotBlank()) {
-            "Invalid param '$param'. Advanced config name should not be blank."
+            "Invalid advanced config param: '$param'. It must not be blank."
         }
         require(value.toString().isNotBlank()) {
-            "Invalid value '$value' for param '$param'. Advanced config value should not be blank."
+            "Invalid value for param '$param': '$value'. Value should not be blank."
         }
-    
+
         when (param) {
-            "nativeFork" -> require(value.toString().toLowerCase() in setOf("perbenchmark", "periteration")) {
-                "Invalid value '$value' for 'nativeFork'. Acceptable values are 'perBenchmark' or 'perIteration'."
+            "nativeFork" -> {
+                val validValues = setOf("perbenchmark", "periteration")
+                require(value.toString().toLowerCase() in validValues) {
+                    "Invalid value for 'nativeFork': '$value'. Accepted values: ${validValues.joinToString(", ")}."
+                }
             }
             "nativeGCAfterIteration" -> require(value is Boolean) {
-                "Invalid value '$value' for 'nativeGCAfterIteration'. Expecting a Boolean value."
+                "Invalid value for 'nativeGCAfterIteration': '$value'. Expected a Boolean value."
             }
             "jvmForks" -> {
                 val intValue = value.toString().toIntOrNull()
                 require(intValue != null && intValue >= 0 || value.toString().toLowerCase() == "definedbyjmh") {
-                    "Invalid value '$value' for 'jvmForks'. Acceptable values are a non-negative integer, or 'definedByJmh'."
+                    "Invalid value for 'jvmForks': '$value'. Expected a non-negative integer or 'definedByJmh'."
                 }
             }
             "jsUseBridge" -> require(value is Boolean) {
-                "Invalid value '$value' for 'jsUseBridge'. Expecting a Boolean value."
+                "Invalid value for 'jsUseBridge': '$value'. Expected a Boolean value."
             }
-            else -> throw IllegalArgumentException("Invalid advanced config parameter '$param'. Valid parameters include 'nativeFork', 'nativeGCAfterIteration', 'jvmForks', and 'jsUseBridge'.")
+            else -> throw IllegalArgumentException("Invalid advanced config parameter: '$param'. Accepted parameters: 'nativeFork', 'nativeGCAfterIteration', 'jvmForks', 'jsUseBridge'.")
         }
     }
-    
 }
 
 internal val Gradle.isConfigurationCacheAvailable
