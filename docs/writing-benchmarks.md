@@ -19,17 +19,17 @@ class ExampleBenchmark {
 
     @Setup
     fun prepare() {
-        list = List(param) { it } // Initializes a list of integers from 0 to param - 1
+        list = List(param) { it }
     }
 
     @Benchmark
     fun benchmarkMethod(): Int {
-        return list.sum() // Sums all the integers in the list
+        return list.sum()
     }
 
     @TearDown
     fun cleanup() {
-        list = ArrayList() // Clears the list
+        list = ArrayList()
     }
 }
 ```
@@ -62,16 +62,16 @@ The `@OutputTimeUnit` annotation dictates the time unit in which your results wi
 
 #### @Warmup
 
-The `@Warmup` annotation is used to specify a preliminary phase before the actual benchmarking takes place. During this warmup phase, the code in your `@Benchmark` method, is executed several times, but these runs aren't included in the final benchmark results. The primary purpose of the warmup phase is to let the system "warm up" and reach its optimal performance state. In a typical scenario, when a Java application starts, the JVM (Java Virtual Machine) goes through a process called "JIT (Just-In-Time) compilation" where it learns about your code, optimizes it, and compiles it into native machine code for faster execution. The more the code is run, the more chances the JVM gets to optimize it, potentially making it run faster over time. The warmup phase is akin to giving the JVM a "practice run" to figure out the best optimizations for your code. This is particularly crucial for benchmarking because if you were to start measuring performance right from the first run, your results might be skewed by the JVM's initial learning and optimization process. 
+The `@Warmup` annotation is used to specify a preliminary phase before the actual benchmarking takes place. During this warmup phase, the code in your `@Benchmark` method, is executed several times, but these runs aren't included in the final benchmark results. The primary purpose of the warmup phase is to let the system "warm up" and reach its optimal performance state. In a typical scenario, when a Java application starts, the JVM (Java Virtual Machine) goes through a process called "JIT (Just-In-Time) compilation" where it learns about your code, optimizes it, and compiles it into native machine code for faster execution. The more the code is run, the more chances the JVM gets to optimize it, potentially making it run faster over time. The warmup phase is akin to giving the JVM a "practice run" to figure out the best optimizations for your code. This is particularly crucial for benchmarking because if you were to start measuring performance right from the first run, your results might be skewed by the JVM's initial learning and optimization process. In our example, the `@Warmup` annotation is used to allow five iterations, each lasting one second, of executing the benchmark method before the actual measurement starts.
 
 #### @Measurement
 
-The `@Measurement` annotation is used to control the properties of the actual benchmarking phase. It sets how many times the benchmark method is run (iterations) and how long each run should last. The results from these runs are recorded and reported as the final benchmark results.
+The `@Measurement` annotation is used to control the properties of the actual benchmarking phase. It sets how many times the benchmark method is run (iterations) and how long each run should last. The results from these runs are recorded and reported as the final benchmark results. In our example, the `@Measurement` annotation specifies that the benchmark method will be run once for a duration of one second for the final performance measurement.
 
 #### @Fork
 
-The `@Fork` annotation is utilized to command to launch each benchmark in a standalone Java Virtual Machine (JVM) process. The JVM conducts various behind-the-scenes optimizations such as Just-In-Time compilation, class loading, and garbage collection. These can significantly impact the performance of our code. However, these influences might differ from one run to another, leading to inconsistent or misleading benchmark results if multiple benchmarks are executed within the same JVM process. By triggering the JVM to fork for each benchmark, these JVM-specific factors are eliminated from affecting the benchmark results, providing a clean and independent environment for each benchmark, enhancing the reliability and comparability of results. The value you assign to the `@Fork` annotation determines the number of separate JVM processes initiated for each benchmark. If this annotation is not specified, JVMs are not forked and all benchmarks are run in the same JVM process. Repeating the benchmark across multiple JVMs and averaging the results gives a more accurate representation of typical performance and accommodates for variability possibly caused by different JVM startups.
+The `@Fork` annotation is utilized to command to launch each benchmark in a standalone Java Virtual Machine (JVM) process. The JVM conducts various behind-the-scenes optimizations such as Just-In-Time compilation, class loading, and garbage collection. These can significantly impact the performance of our code. However, these influences might differ from one run to another, leading to inconsistent or misleading benchmark results if multiple benchmarks are executed within the same JVM process. By triggering the JVM to fork for each benchmark, these JVM-specific factors are eliminated from affecting the benchmark results, providing a clean and independent environment for each benchmark, enhancing the reliability and comparability of results. The value you assign to the `@Fork` annotation determines the number of separate JVM processes initiated for each benchmark. If this annotation is not specified, JVMs are not forked and all benchmarks are run in the same JVM process. Repeating the benchmark across multiple JVMs and averaging the results gives a more accurate representation of typical performance and accommodates for variability possibly caused by different JVM startups. In our example, the `@Fork(1)` annotation indicates that each benchmark test should run in one separate JVM process, thus ensuring an isolated and reliable testing environment for each test run.
 
 #### @Param
 
-The `@Param` annotation is used to pass different parameters to your benchmark method. It allows you to run the same benchmark method with different input values, so you can see how these variations affect performance. The values you provide for the `@Param` annotation are the different inputs you want to use in your benchmark test. The benchmark will run once for each provided value.
+The `@Param` annotation is used to pass different parameters to your benchmark method. It allows you to run the same benchmark method with different input values, so you can see how these variations affect performance. The values you provide for the `@Param` annotation are the different inputs you want to use in your benchmark test. The benchmark will run once for each provided value. In our example, `@Param` annotation is used with values '1' and '2', which means the benchmarkMethod will be executed twice, once with the `param` value as '1' and then with '2'. This could serve to help in understanding how the size of the input list impacts the time it takes to sum all the integers in the list.
