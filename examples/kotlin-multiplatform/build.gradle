@@ -3,9 +3,9 @@ import org.jetbrains.kotlin.konan.target.KonanTarget
 import kotlinx.benchmark.gradle.JsBenchmarksExecutor
 
 plugins {
-    id 'org.jetbrains.kotlin.multiplatform'
-    id 'org.jetbrains.kotlin.plugin.allopen' version "1.9.0"
-    id 'org.jetbrains.kotlinx.benchmark'
+    id "org.jetbrains.kotlin.multiplatform"
+    id "org.jetbrains.kotlin.plugin.allopen" version "1.8.21"
+    id "org.jetbrains.kotlinx.benchmark"
 }
 
 // how to apply plugin to a specific source set?
@@ -15,15 +15,15 @@ allOpen {
 
 kotlin {
     jvm {
-        compilations.create('benchmark') { associateWith(compilations.main) }
+        compilations.create("benchmark") { associateWith(compilations.main) }
     }
-    js('jsIr', IR) { nodejs() }
-    js('jsIrBuiltIn', IR) { nodejs() }
-    wasm('wasmJs') { d8() }
-    if (HostManager.host == KonanTarget.MACOS_X64.INSTANCE) macosX64('native')
-    if (HostManager.host == KonanTarget.MACOS_ARM64.INSTANCE) macosArm64('native')
-    if (HostManager.hostIsLinux) linuxX64('native')
-    if (HostManager.hostIsMingw) mingwX64('native')
+    js("jsIr", IR) { nodejs() }
+    js("jsIrBuiltIn", IR) { nodejs() }
+    wasm("wasmJs") { d8() }
+    if (HostManager.host == KonanTarget.MACOS_X64.INSTANCE) macosX64("native")
+    if (HostManager.host == KonanTarget.MACOS_ARM64.INSTANCE) macosArm64("native")
+    if (HostManager.hostIsLinux) linuxX64("native")
+    if (HostManager.hostIsMingw) mingwX64("native")
 
     sourceSets.all {
         languageSettings {

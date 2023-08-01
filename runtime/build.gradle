@@ -1,5 +1,5 @@
 plugins {
-    id 'org.jetbrains.kotlin.multiplatform'
+    id "org.jetbrains.kotlin.multiplatform"
 }
 
 repositories {
@@ -54,7 +54,7 @@ kotlin {
         resources.srcDirs = ["$it.name/resources"]
         languageSettings {
             progressiveMode = true
-            optIn('kotlin.experimental.ExperimentalNativeApi')
+            optIn("kotlin.experimental.ExperimentalNativeApi")
             optIn("kotlinx.cinterop.ExperimentalForeignApi")
         }
     }
@@ -62,7 +62,7 @@ kotlin {
     sourceSets {
         commonTest {
             dependencies {
-                implementation 'org.jetbrains.kotlin:kotlin-test'
+                implementation "org.jetbrains.kotlin:kotlin-test"
             }
         }
         jvmMain {

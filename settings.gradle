@@ -7,12 +7,12 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'kotlinx-benchmark'
+rootProject.name = "kotlinx-benchmark"
 
 includeBuild("plugin")
 
 include "runtime"
-project(":runtime").name = 'kotlinx-benchmark-runtime'
+project(":runtime").name = "kotlinx-benchmark-runtime"
 
 include "integration"
 

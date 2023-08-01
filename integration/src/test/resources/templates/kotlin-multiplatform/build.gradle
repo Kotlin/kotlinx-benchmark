@@ -3,15 +3,15 @@ import org.jetbrains.kotlin.konan.target.HostManager
 
 kotlin {
     jvm {
-        compilations.create('benchmark') { associateWith(compilations.main) }
+        compilations.create("benchmark") { associateWith(compilations.main) }
     }
-    js('jsIr', IR) { nodejs() }
-    wasm('wasmJs') { d8() }
+    js("jsIr", IR) { nodejs() }
+    wasm("wasmJs") { d8() }
 
-    if (HostManager.hostIsLinux) linuxX64('native')
-    if (HostManager.hostIsMingw) mingwX64('native')
-    if (HostManager.host == KonanTarget.MACOS_X64.INSTANCE) macosX64('native')
-    if (HostManager.host == KonanTarget.MACOS_ARM64.INSTANCE) macosArm64('native')
+    if (HostManager.hostIsLinux) linuxX64("native")
+    if (HostManager.hostIsMingw) mingwX64("native")
+    if (HostManager.host == KonanTarget.MACOS_X64.INSTANCE) macosX64("native")
+    if (HostManager.host == KonanTarget.MACOS_ARM64.INSTANCE) macosArm64("native")
 
     sourceSets {
         commonMain {

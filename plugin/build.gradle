@@ -1,7 +1,7 @@
 buildscript {
     ext.kotlinDevUrl = rootProject.properties["kotlin_repo_url"]
     repositories {
-        maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/maven' }
+        maven { url "https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/maven" }
         mavenCentral()
         if (kotlinDevUrl != null) {
             maven { url = kotlinDevUrl }
@@ -15,13 +15,13 @@ buildscript {
 }
 
 plugins {
-    id 'java-gradle-plugin'
-    id 'maven-publish'
-    id 'com.gradle.plugin-publish' version '0.21.0'
+    id "java-gradle-plugin"
+    id "maven-publish"
+    id "com.gradle.plugin-publish" version "0.21.0"
 }
 
-apply plugin: 'org.jetbrains.kotlin.jvm'
-apply plugin: 'kotlinx.team.infra'
+apply plugin: "org.jetbrains.kotlin.jvm"
+apply plugin: "kotlinx.team.infra"
 
 infra {
     teamcity {
@@ -46,9 +46,9 @@ repositories {
 }
 
 pluginBundle {
-    website = 'https://github.com/Kotlin/kotlinx-benchmark'
-    vcsUrl = 'https://github.com/Kotlin/kotlinx-benchmark.git'
-    tags = ['benchmarking', 'multiplatform', 'kotlin']
+    website = "https://github.com/Kotlin/kotlinx-benchmark"
+    vcsUrl = "https://github.com/Kotlin/kotlinx-benchmark.git"
+    tags = ["benchmarking", "multiplatform", "kotlin"]
 }
 
 gradlePlugin {
@@ -64,34 +64,34 @@ gradlePlugin {
 
 sourceSets {
     main {
-        kotlin.srcDirs = ['main/src']
-        java.srcDirs = ['main/src']
-        resources.srcDirs = ['main/resources']
+        kotlin.srcDirs = ["main/src"]
+        java.srcDirs = ["main/src"]
+        resources.srcDirs = ["main/resources"]
     }
     test {
-        kotlin.srcDirs = ['test/src']
-        java.srcDirs = ['test/src']
-        resources.srcDirs = ['test/resources']
+        kotlin.srcDirs = ["test/src"]
+        java.srcDirs = ["test/src"]
+        resources.srcDirs = ["test/resources"]
     }
 }
 
 compileKotlin {
     kotlinOptions {
-        freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
+        freeCompilerArgs += "-opt-in=kotlin.RequiresOptIn"
         apiVersion = "1.4" // the version of Kotlin embedded in Gradle
     }
 }
 
 dependencies {
-    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlin_version
+    implementation group: "org.jetbrains.kotlin", name: "kotlin-reflect", version: kotlin_version
 
-    implementation 'com.squareup:kotlinpoet:1.3.0'
+    implementation "com.squareup:kotlinpoet:1.3.0"
 
-    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-util-klib-metadata', version: kotlin_version
-    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-util-klib', version: kotlin_version
-    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-util-io', version: kotlin_version
+    implementation group: "org.jetbrains.kotlin", name: "kotlin-util-klib-metadata", version: kotlin_version
+    implementation group: "org.jetbrains.kotlin", name: "kotlin-util-klib", version: kotlin_version
+    implementation group: "org.jetbrains.kotlin", name: "kotlin-util-io", version: kotlin_version
     
-    compileOnly group: 'org.jetbrains.kotlin.multiplatform', name: 'org.jetbrains.kotlin.multiplatform.gradle.plugin', version: kotlin_version
+    compileOnly group: "org.jetbrains.kotlin.multiplatform", name: "org.jetbrains.kotlin.multiplatform.gradle.plugin", version: kotlin_version
     compileOnly "org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlin_version"
     compileOnly "org.openjdk.jmh:jmh-generator-bytecode:$jmhVersion" // used in worker
 }

@@ -5,10 +5,10 @@ buildscript {
 }
 
 plugins {
-    id 'java'
+    id "java"
 }
 
-apply plugin: 'org.jetbrains.kotlinx.benchmark'
+apply plugin: "org.jetbrains.kotlinx.benchmark"
 
 dependencies {
     implementation(project(":kotlinx-benchmark-runtime"))

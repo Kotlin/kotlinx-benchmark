@@ -1,6 +1,6 @@
 buildscript {
     repositories {
-        maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/maven' }
+        maven { url "https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/maven" }
         gradlePluginPortal()
 
         KotlinCommunity.addDevRepositoryIfEnabled(delegate, project)
@@ -12,7 +12,7 @@ buildscript {
     }
 }
 
-apply plugin: 'kotlinx.team.infra'
+apply plugin: "kotlinx.team.infra"
 
 infra {
     teamcity {
