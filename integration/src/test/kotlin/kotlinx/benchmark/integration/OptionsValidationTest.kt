@@ -17,7 +17,7 @@ class OptionsValidationTest : GradleTest() {
         }
     
         runner.runAndFail("invalidReportFormatBenchmark") {
-            assertOutputContains("Report format 'htmll' is not supported.")
+            assertOutputContains("Invalid report format: 'htmll'. Accepted formats: json, csv, scsv, text (e.g., reportFormat = 'json').")
         }
     }
     
@@ -32,7 +32,7 @@ class OptionsValidationTest : GradleTest() {
         }
     
         runner.runAndFail("zeroIterationsBenchmark") {
-            assertOutputContains("Iterations must be greater than 0.")
+            assertOutputContains("Invalid iterations: '0'. Expected a positive integer (e.g., iterations = 5).")
         }
     }
     
@@ -48,7 +48,7 @@ class OptionsValidationTest : GradleTest() {
         }
     
         runner.runAndFail("negativeWarmupsBenchmark") {
-            assertOutputContains("Warmups must be equal to or greater than 0.")
+            assertOutputContains("Invalid warmups: '-1'. Expected a non-negative integer (e.g., warmups = 3).")
         }
     }
     
@@ -63,7 +63,7 @@ class OptionsValidationTest : GradleTest() {
         }
     
         runner.runAndFail("zeroIterationTimeBenchmark") {
-            assertOutputContains("Iteration time must be greater than 0.")
+            assertOutputContains("Invalid iterationTime: '0'. Expected a positive number (e.g., iterationTime = 300).")
         }
     }
     
@@ -78,7 +78,7 @@ class OptionsValidationTest : GradleTest() {
         }
     
         runner.runAndFail("invalidIterationTimeUnitBenchmark") {
-            assertOutputContains("Unknown time unit: x")
+            assertOutputContains("Invalid iterationTimeUnit: 'x'. Accepted units: seconds, s, microseconds, us, milliseconds, ms, nanoseconds, ns, minutes, m (e.g., iterationTimeUnit = 'ms').")
         }
     }
     
@@ -94,7 +94,7 @@ class OptionsValidationTest : GradleTest() {
         }
     
         runner.runAndFail("invalidModeBenchmark") {
-            assertOutputContains("Benchmark mode 'x' is not supported.")
+            assertOutputContains("Invalid benchmark mode: 'x'. Accepted modes: thrpt, avgt (e.g., mode = 'thrpt').")
         }
     }
     
@@ -110,7 +110,7 @@ class OptionsValidationTest : GradleTest() {
         }
     
         runner.runAndFail("invalidOutputTimeUnitBenchmark") {
-            assertOutputContains("Unknown time unit: x")
+            assertOutputContains("Invalid outputTimeUnit: 'x'. Accepted units: seconds, s, microseconds, us, milliseconds, ms, nanoseconds, ns, minutes, m (e.g., outputTimeUnit = 'ns').")
         }
     }
     
@@ -126,7 +126,7 @@ class OptionsValidationTest : GradleTest() {
         }
     
         runner.runAndFail("blankIncludePatternBenchmark") {
-            assertOutputContains("Include pattern should not be blank.")
+            assertOutputContains("Invalid include pattern: ' '. Pattern must not be blank.")
         }
     }
     
@@ -142,7 +142,7 @@ class OptionsValidationTest : GradleTest() {
         }
     
         runner.runAndFail("blankExcludePatternBenchmark") {
-            assertOutputContains("Exclude pattern should not be blank.")
+            assertOutputContains("Invalid exclude pattern: ' '. Pattern must not be blank.")
         }
     }    
 
@@ -158,7 +158,7 @@ class OptionsValidationTest : GradleTest() {
         }
 
         runner.runAndFail("blankParamNameBenchmark") {
-            assertOutputContains("Param name should not be blank.")
+            assertOutputContains("Invalid param name: ' '. It must not be blank.")
         }
     }
 
@@ -171,28 +171,28 @@ class OptionsValidationTest : GradleTest() {
                 iterationTimeUnit = "ms"
                 advanced(" ", "value")
             }
-    
+        
             configuration("invalidNativeFork") {
                 iterations = 1
                 iterationTime = 100
                 iterationTimeUnit = "ms"
                 advanced("nativeFork", "x")
             }
-
+    
             configuration("invalidNativeGCAfterIteration") {
                 iterations = 1
                 iterationTime = 100
                 iterationTimeUnit = "ms"
                 advanced("nativeGCAfterIteration", "x")
             }
-    
+        
             configuration("invalidJvmForks") {
                 iterations = 1
                 iterationTime = 100
                 iterationTimeUnit = "ms"
                 advanced("jvmForks", "-1")
             }
-    
+        
             configuration("invalidJsUseBridge") {
                 iterations = 1
                 iterationTime = 100
@@ -200,21 +200,21 @@ class OptionsValidationTest : GradleTest() {
                 advanced("jsUseBridge", "x")
             }
         }
-    
+        
         runner.runAndFail("blankAdvancedConfigNameBenchmark") {
-            assertOutputContains("Advanced config name should not be blank.")
+            assertOutputContains("Invalid advanced config name: ' '. It must not be blank.")
         }
         runner.runAndFail("invalidNativeForkBenchmark") {
-            assertOutputContains("Invalid value 'x' for 'nativeFork'. It should be either 'perBenchmark' or 'perIteration'.")
+            assertOutputContains("Invalid value 'x' for 'nativeFork'. Accepted values: 'perBenchmark', 'perIteration' (e.g., nativeFork = 'perBenchmark').")
         }
         runner.runAndFail("invalidNativeGCAfterIterationBenchmark") {
-            assertOutputContains("Invalid value 'x' for 'nativeGCAfterIteration'. It should be a Boolean value.")
+            assertOutputContains("Invalid value 'x' for 'nativeGCAfterIteration'. Expected a boolean value (e.g., nativeGCAfterIteration = true).")
         }
         runner.runAndFail("invalidJvmForksBenchmark") {
-            assertOutputContains("Invalid value '-1' for 'jvmForks'. It should be a non-negative integer, or 'definedByJmh'.")
+            assertOutputContains("Invalid value '-1' for 'jvmForks'. Expected a non-negative integer or 'definedByJmh' (e.g., jvmForks = 2 or jvmForks = 'definedByJmh').")
         }
         runner.runAndFail("invalidJsUseBridgeBenchmark") {
-            assertOutputContains("Invalid value 'x' for 'jsUseBridge'. It should be a Boolean value.")
+            assertOutputContains("Invalid value 'x' for 'jsUseBridge'. Expected a boolean value (e.g., jsUseBridge = true).")
         }
-    }   
+    }      
 }
