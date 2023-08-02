@@ -12,14 +12,14 @@ To get started, let's look at a simple example:
 @State(Scope.Benchmark)
 class ExampleBenchmark {
 
-    @Param("1", "2")
+    @Param("4", "10")
     var param: Int = 0
 
-    private var list: List<Int> = ArrayList()
+    private var list: MutableList<Int> = ArrayList()
 
     @Setup
     fun prepare() {
-        list = List(param) { it }
+        list = MutableList(param) { it }
     }
 
     @Benchmark
@@ -29,7 +29,7 @@ class ExampleBenchmark {
 
     @TearDown
     fun cleanup() {
-        list = ArrayList()
+        list.clear()
     }
 }
 ```
