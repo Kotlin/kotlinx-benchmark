@@ -17,8 +17,11 @@ kotlin {
     jvm {
         compilations.create('benchmark') { associateWith(compilations.main) }
     }
-    js('jsIr', IR) { nodejs() }
-    js('jsIrBuiltIn', IR) { nodejs() }
+    js(IR) {
+        nodejs()
+        compilations.create("defaultExecutor") { associateWith(compilations.main) }
+        compilations.create("builtInExecutor") { associateWith(compilations.main) }
+    }
     wasm('wasmJs') { d8() }
     if (HostManager.host == KonanTarget.MACOS_X64.INSTANCE) macosX64('native')
     if (HostManager.host == KonanTarget.MACOS_ARM64.INSTANCE) macosArm64('native')
@@ -44,8 +47,8 @@ kotlin {
         wasmJsMain {}
 
         jsMain {
-            jsIrMain.dependsOn(it)
-            jsIrBuiltInMain.dependsOn(it)
+            jsDefaultExecutor.dependsOn(it)
+            jsBuiltInExecutor.dependsOn(it)
         }
 
         nativeMain {
@@ -114,8 +117,8 @@ benchmark {
         register("jvmBenchmark") {
             jmhVersion = "1.21"
         }
-        register("jsIr")
-        register("jsIrBuiltIn") {
+        register("jsDefaultExecutor")
+        register("jsBuiltInExecutor") {
             jsBenchmarksExecutor = JsBenchmarksExecutor.BuiltIn
         }
         register("wasmJs")
