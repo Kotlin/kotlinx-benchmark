@@ -81,6 +81,7 @@ private fun Project.createNativeBenchmarkCompileTask(target: NativeBenchmarkTarg
 
         // TODO: check if there are other ways to set compiler options.
         this.kotlinOptions.freeCompilerArgs = compilation.kotlinOptions.freeCompilerArgs
+        this.compilerOptions.options.freeCompilerArgs.addAll(compilation.compilerOptions.options.freeCompilerArgs)
     }
 
     compilationTarget.apply {
