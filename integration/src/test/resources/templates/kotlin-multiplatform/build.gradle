@@ -13,6 +13,12 @@ kotlin {
     if (HostManager.host == KonanTarget.MACOS_X64.INSTANCE) macosX64('native')
     if (HostManager.host == KonanTarget.MACOS_ARM64.INSTANCE) macosArm64('native')
 
+    sourceSets.all {
+        languageSettings {
+            languageVersion = project.property("kotlin_language_version")
+        }
+    }
+
     sourceSets {
         commonMain {
             dependencies {
