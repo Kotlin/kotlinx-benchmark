@@ -10,7 +10,3 @@ repositories {
     maven { setUrl("https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev") }
     mavenLocal()
 }
-
-kotlinDslPluginOptions {
-    experimentalWarning.set(false)
-}
