@@ -15,12 +15,12 @@ class OptionsValidationTest : GradleTest() {
                 reportFormat = "htmll"
             }
         }
-    
+
         runner.runAndFail("invalidReportFormatBenchmark") {
             assertOutputContains("Invalid report format: 'htmll'. Accepted formats: json, csv, scsv, text (e.g., reportFormat = 'json').")
         }
     }
-    
+
     @Test
     fun testIterationsValidation() {
         val runner = project("kotlin-multiplatform") {
@@ -30,12 +30,12 @@ class OptionsValidationTest : GradleTest() {
                 iterationTimeUnit = "ms"
             }
         }
-    
+
         runner.runAndFail("zeroIterationsBenchmark") {
             assertOutputContains("Invalid iterations: '0'. Expected a positive integer (e.g., iterations = 5).")
         }
     }
-    
+
     @Test
     fun testWarmupsValidation() {
         val runner = project("kotlin-multiplatform") {
@@ -46,12 +46,12 @@ class OptionsValidationTest : GradleTest() {
                 iterationTimeUnit = "ms"
             }
         }
-    
+
         runner.runAndFail("negativeWarmupsBenchmark") {
             assertOutputContains("Invalid warmups: '-1'. Expected a non-negative integer (e.g., warmups = 3).")
         }
     }
-    
+
     @Test
     fun testIterationTimeValidation() {
         val runner = project("kotlin-multiplatform") {
@@ -61,12 +61,12 @@ class OptionsValidationTest : GradleTest() {
                 iterationTimeUnit = "ms"
             }
         }
-    
+
         runner.runAndFail("zeroIterationTimeBenchmark") {
             assertOutputContains("Invalid iterationTime: '0'. Expected a positive number (e.g., iterationTime = 300).")
         }
     }
-    
+
     @Test
     fun testIterationTimeUnitValidation() {
         val runner = project("kotlin-multiplatform") {
@@ -76,12 +76,12 @@ class OptionsValidationTest : GradleTest() {
                 iterationTimeUnit = "x"
             }
         }
-    
+
         runner.runAndFail("invalidIterationTimeUnitBenchmark") {
             assertOutputContains("Invalid iterationTimeUnit: 'x'. Accepted units: seconds, s, microseconds, us, milliseconds, ms, nanoseconds, ns, minutes, m (e.g., iterationTimeUnit = 'ms').")
         }
     }
-    
+
     @Test
     fun testModeValidation() {
         val runner = project("kotlin-multiplatform") {
@@ -92,12 +92,12 @@ class OptionsValidationTest : GradleTest() {
                 mode = "x"
             }
         }
-    
+
         runner.runAndFail("invalidModeBenchmark") {
             assertOutputContains("Invalid benchmark mode: 'x'. Accepted modes: thrpt, avgt (e.g., mode = 'thrpt').")
         }
     }
-    
+
     @Test
     fun testOutputTimeUnitValidation() {
         val runner = project("kotlin-multiplatform") {
@@ -108,12 +108,12 @@ class OptionsValidationTest : GradleTest() {
                 outputTimeUnit = "x"
             }
         }
-    
+
         runner.runAndFail("invalidOutputTimeUnitBenchmark") {
             assertOutputContains("Invalid outputTimeUnit: 'x'. Accepted units: seconds, s, microseconds, us, milliseconds, ms, nanoseconds, ns, minutes, m (e.g., outputTimeUnit = 'ns').")
         }
     }
-    
+
     @Test
     fun testIncludesValidation() {
         val runner = project("kotlin-multiplatform") {
@@ -124,12 +124,12 @@ class OptionsValidationTest : GradleTest() {
                 include(" ")
             }
         }
-    
+
         runner.runAndFail("blankIncludePatternBenchmark") {
             assertOutputContains("Invalid include pattern: ' '. Pattern must not be blank.")
         }
     }
-    
+
     @Test
     fun testExcludesValidation() {
         val runner = project("kotlin-multiplatform") {
@@ -140,11 +140,11 @@ class OptionsValidationTest : GradleTest() {
                 exclude(" ")
             }
         }
-    
+
         runner.runAndFail("blankExcludePatternBenchmark") {
             assertOutputContains("Invalid exclude pattern: ' '. Pattern must not be blank.")
         }
-    }    
+    }  
 
     @Test
     fun testParamsValidation() {
@@ -171,28 +171,28 @@ class OptionsValidationTest : GradleTest() {
                 iterationTimeUnit = "ms"
                 advanced(" ", "value")
             }
-        
+
             configuration("invalidNativeFork") {
                 iterations = 1
                 iterationTime = 100
                 iterationTimeUnit = "ms"
                 advanced("nativeFork", "x")
             }
-    
+
             configuration("invalidNativeGCAfterIteration") {
                 iterations = 1
                 iterationTime = 100
                 iterationTimeUnit = "ms"
                 advanced("nativeGCAfterIteration", "x")
             }
-        
+
             configuration("invalidJvmForks") {
                 iterations = 1
                 iterationTime = 100
                 iterationTimeUnit = "ms"
                 advanced("jvmForks", "-1")
             }
-        
+
             configuration("invalidJsUseBridge") {
                 iterations = 1
                 iterationTime = 100
@@ -200,7 +200,7 @@ class OptionsValidationTest : GradleTest() {
                 advanced("jsUseBridge", "x")
             }
         }
-        
+
         runner.runAndFail("blankAdvancedConfigNameBenchmark") {
             assertOutputContains("Invalid advanced config name: ' '. It must not be blank.")
         }
@@ -216,5 +216,5 @@ class OptionsValidationTest : GradleTest() {
         runner.runAndFail("invalidJsUseBridgeBenchmark") {
             assertOutputContains("Invalid value 'x' for 'jsUseBridge'. Expected a boolean value (e.g., jsUseBridge = true).")
         }
-    }      
+    }
 }
