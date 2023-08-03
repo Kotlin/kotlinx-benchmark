@@ -21,6 +21,10 @@ sourceSets.all {
     java.srcDirs = ["$it.name/src"]
     resources.srcDirs = ["$it.name/resources"]
 }
+compileJava {
+    sourceCompatibility = "1.8"
+    targetCompatibility = "1.8"
+}
 
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
