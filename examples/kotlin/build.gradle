@@ -23,9 +23,19 @@ sourceSets.all {
     languageSettings.languageVersion = kotlin_language_version
 }
 
+compileJava {
+    sourceCompatibility = "1.8"
+    targetCompatibility = "1.8"
+}
+
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
     kotlinOptions.languageVersion = kotlin_language_version
+}
+
+compileTestJava {
+    sourceCompatibility = "1.8"
+    targetCompatibility = "1.8"
 }
 
 compileTestKotlin {
