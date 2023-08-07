@@ -15,7 +15,7 @@ class ParamBenchmark {
     @Param("1", "2")
     var value = 0
 
-    @Param("""a "string" with quotes""")
+    @Param(*arrayOf("""a "string" with quotes"""))
     var text: String = ""
 
     @Benchmark
