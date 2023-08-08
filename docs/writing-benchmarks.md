@@ -29,7 +29,7 @@ class ExampleBenchmark {
 
     @TearDown
     fun cleanup() {
-        list.clear()
+        println("Running Teardown...")
     }
 }
 ```
@@ -46,7 +46,7 @@ The `@Setup` annotation is used to mark a method that sets up the necessary prec
 
 #### @TearDown
 
-The `@TearDown` annotation is used to denote a method that's executed after the benchmarking method(s), typically responsible for cleaning up or deallocating any resources or conditions that were initialized or consumed during the benchmark. Similarly to the `@Setup` annotation, the `@TearDown` method must also reside within a `@State` class. For instance, if your benchmark creates temporary files or opens network connections, the method marked with `@TearDown` is where you would put the code to delete those files or close those connections. The `@TearDown` annotation helps you avoid performance bias and ensure the proper maintenance of resources and the preparation of a clean environment for the next run. In our example, the `cleanup` function annotated with `@TearDown` is used to clear the list of integers after each benchmark iteration, ensuring that each test starts with the same initial state.
+The `@TearDown` annotation is used to denote a method that's executed after the benchmarking method(s), typically responsible for cleaning up or deallocating any resources or conditions that were initialized or consumed during the benchmark. Similarly to the `@Setup` annotation, the `@TearDown` method must also reside within a `@State` class. For instance, if your benchmark creates temporary files or opens network connections, the method marked with `@TearDown` is where you would put the code to delete those files or close those connections. The `@TearDown` annotation helps you avoid performance bias and ensure the proper maintenance of resources and the preparation of a clean environment for the next run. In our example, the `cleanup` function annotated with `@TearDown` is used to print a message to the console.
 
 #### @Benchmark
 
