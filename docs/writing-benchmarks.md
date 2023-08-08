@@ -1,13 +1,12 @@
 ## Writing Benchmarks
 
-To get started, let's look at a simple example:
+To get started, let's look at a simple multiplatform example:
 
 ```kotlin
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
-@Warmup(iterations = 5, time = 1, timeUnit = TimeUnit.SECONDS)
-@Measurement(iterations = 1, time = 1, timeUnit = TimeUnit.SECONDS)
-@Fork(1)
+@Warmup(iterations = 20, time = 1, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 20, time = 1, timeUnit = TimeUnit.SECONDS)
 @BenchmarkTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Benchmark)
 class ExampleBenchmark {
@@ -33,6 +32,9 @@ class ExampleBenchmark {
     }
 }
 ```
+
+**Example Description**: 
+Our exmaple tests how fast we can add up numbers in a list. We try it with a list of 4 numbers and then with 10 numbers. This helps us know how well our adding method works with different list sizes.
 
 ### Explaining the Annotations
 
@@ -70,7 +72,7 @@ The `@Measurement` annotation is used to control the properties of the actual be
 
 #### @Fork
 
-The `@Fork` annotation is utilized to command to launch each benchmark in a standalone Java Virtual Machine (JVM) process. The JVM conducts various behind-the-scenes optimizations such as Just-In-Time compilation, class loading, and garbage collection. These can significantly impact the performance of our code. However, these influences might differ from one run to another, leading to inconsistent or misleading benchmark results if multiple benchmarks are executed within the same JVM process. By triggering the JVM to fork for each benchmark, these JVM-specific factors are eliminated from affecting the benchmark results, providing a clean and independent environment for each benchmark, enhancing the reliability and comparability of results. The value you assign to the `@Fork` annotation determines the number of separate JVM processes initiated for each benchmark. If this annotation is not specified, JVMs are not forked and all benchmarks are run in the same JVM process. Repeating the benchmark across multiple JVMs and averaging the results gives a more accurate representation of typical performance and accommodates for variability possibly caused by different JVM startups. In our example, the `@Fork(1)` annotation indicates that each benchmark test should run in one separate JVM process, thus ensuring an isolated and reliable testing environment for each test run.
+The `@Fork` annotation, available only in the Kotlin/JVM target, is utilized to command to launch each benchmark in a standalone Java Virtual Machine (JVM) process. The JVM conducts various behind-the-scenes optimizations such as Just-In-Time compilation, class loading, and garbage collection. These can significantly impact the performance of our code. However, these influences might differ from one run to another, leading to inconsistent or misleading benchmark results if multiple benchmarks are executed within the same JVM process. By triggering the JVM to fork for each benchmark, these JVM-specific factors are eliminated from affecting the benchmark results, providing a clean and independent environment for each benchmark, enhancing the reliability and comparability of results. The value you assign to the `@Fork` annotation determines the number of separate JVM processes initiated for each benchmark. If this annotation is not specified, JVMs are not forked and all benchmarks are run in the same JVM process. Repeating the benchmark across multiple JVMs and averaging the results gives a more accurate representation of typical performance and accommodates for variability possibly caused by different JVM startups. The `@Fork(1)` annotation for exmaple, indicates that each benchmark test should run in one separate JVM process, thus ensuring an isolated and reliable testing environment for each test run.
 
 #### @Param
 
