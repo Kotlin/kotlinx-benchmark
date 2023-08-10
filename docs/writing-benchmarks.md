@@ -12,13 +12,15 @@ To get started, let's look at a simple multiplatform example:
 class ExampleBenchmark {
 
     @Param("4", "10")
-    var param: Int = 0
+    var size: Int = 0
 
-    private var list: MutableList<Int> = ArrayList()
+    private val list = ArrayList<Int>()
 
     @Setup
     fun prepare() {
-        list = MutableList(param) { it }
+        for (i in 0 until size) {
+            list.add(i) 
+        }
     }
 
     @Benchmark
@@ -28,13 +30,13 @@ class ExampleBenchmark {
 
     @TearDown
     fun cleanup() {
-        println("Running Teardown...")
+        list.clear()
     }
 }
 ```
 
 **Example Description**: 
-Our exmaple tests how fast we can add up numbers in a list. We try it with a list of 4 numbers and then with 10 numbers. This helps us know how well our adding method works with different list sizes.
+Our exmaple tests how fast we can add up numbers in a ArrayList. We try it with a list of 4 numbers and then with 10 numbers. This helps us know how well our adding method works with different list sizes.
 
 ### Explaining the Annotations
 
@@ -44,11 +46,11 @@ The `@State` annotation, when set to `Scope.Benchmark`, is applied to a class to
 
 #### @Setup
 
-The `@Setup` annotation is used to mark a method that sets up the necessary preconditions for your benchmark test. It serves as a preparatory step where you set up the environment for the benchmark, performing tasks such as generating data, establishing database connections, or preparing any other resources your benchmark requires. In the Kotlin/JVM target, the `@Setup` annotation can operate on three levels - `Iteration`, `Trial`, and `Invocation`. In `Iteration` level, the setup method is run before each benchmark iteration, ensuring a consistent state across all iterations. On the other hand, `Trial` level execution runs the setup method once for the entire set of benchmark method iterations, suitable when state modifications are part of the benchmark itself. The `Invocation` level will run the setup method before each invocation of the benchmark, which allows for even finer-grained control over the setup process. Specify the level using `@Setup(Level.Trial)`, `@Setup(Level.Iteration)`, or `@Setup(Level.Invocation)`; if not defined, it defaults to `Level.Trial`. Specifying the Level is only possible when targeting Kotlin/JVM making `Level.Trial` the only option on all other targets. The key point to remember is that the `@Setup` method's execution time is not included in the final benchmark results - the timer starts only when the `@Benchmark` method begins. This makes `@Setup` an ideal place for initialization tasks that should not impact the timing results of your benchmark. By using the `@Setup` annotation, you ensure consistency across all executions of your benchmark, providing accurate and reliable results. In the provided example, the `@Setup` annotation is used to prepare a list containing integers from 0 to a specified parameter value.
+The `@Setup` annotation is used to mark a method that sets up the necessary preconditions for your benchmark test. It serves as a preparatory step where you set up the environment for the benchmark, performing tasks such as generating data, establishing database connections, or preparing any other resources your benchmark requires. In the Kotlin/JVM target, the `@Setup` annotation can operate on three levels - `Iteration`, `Trial`, and `Invocation`. In `Iteration` level, the setup method is run before each benchmark iteration, ensuring a consistent state across all iterations. On the other hand, `Trial` level execution runs the setup method once for the entire set of benchmark method iterations, suitable when state modifications are part of the benchmark itself. The `Invocation` level will run the setup method before each invocation of the benchmark, which allows for even finer-grained control over the setup process. Specify the level using `@Setup(Level.Trial)`, `@Setup(Level.Iteration)`, or `@Setup(Level.Invocation)`; if not defined, it defaults to `Level.Trial`. Specifying the Level is only possible when targeting Kotlin/JVM making `Level.Trial` the only option on all other targets. The key point to remember is that the `@Setup` method's execution time is not included in the final benchmark results - the timer starts only when the `@Benchmark` method begins. This makes `@Setup` an ideal place for initialization tasks that should not impact the timing results of your benchmark. By using the `@Setup` annotation, you ensure consistency across all executions of your benchmark, providing accurate and reliable results. In the provided example, the `@Setup` annotation is used to populate an ArrayList with integers from 0 up to a specified size.
 
 #### @TearDown
 
-The `@TearDown` annotation is used to denote a method that's executed after the benchmarking method(s). This method is typically responsible for cleaning up or deallocating any resources or conditions that were initialized in the `@Setup` method. For instance, if your setup method created temporary files or opened network connections, the method marked with `@TearDown` is where you would put the code to delete those files or close those connections. The `@TearDown` annotation helps you avoid performance bias and ensure the proper maintenance of resources and the preparation of a clean environment for the next run. In our example, the `cleanup` function annotated with `@TearDown` is used to simply print a message to the console.
+The `@TearDown` annotation is used to denote a method that's executed after the benchmarking method(s). This method is typically responsible for cleaning up or deallocating any resources or conditions that were initialized in the `@Setup` method. For instance, if your setup method created temporary files or opened network connections, the method marked with `@TearDown` is where you would put the code to delete those files or close those connections. The `@TearDown` annotation helps you avoid performance bias and ensure the proper maintenance of resources and the preparation of a clean environment for the next run. In our example, the `cleanup` function annotated with `@TearDown` is used to clear our ArrayList.
 
 #### @Benchmark
 
