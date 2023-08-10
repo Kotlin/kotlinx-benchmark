@@ -1,6 +1,5 @@
 package kotlinx.benchmark.integration
 
-import java.io.*
 import kotlin.test.*
 
 class OptionsValidationTest : GradleTest() {
@@ -17,7 +16,7 @@ class OptionsValidationTest : GradleTest() {
         }
 
         runner.runAndFail("invalidReportFormatBenchmark") {
-            assertOutputContains("Invalid report format: 'htmll'. Accepted formats: json, csv, scsv, text (e.g., reportFormat = 'json').")
+            assertOutputContains("Invalid report format: 'htmll'. Accepted formats: json, csv, scsv, text (e.g., reportFormat = \"json\").")
         }
     }
 
@@ -67,6 +66,12 @@ class OptionsValidationTest : GradleTest() {
         }
     }
 
+    private val validTimeUnits = "NANOSECONDS, ns, nanos, " +
+            "MICROSECONDS, us, micros, " +
+            "MILLISECONDS, ms, millis, " +
+            "SECONDS, s, sec, " +
+            "MINUTES, m, min"
+
     @Test
     fun testIterationTimeUnitValidation() {
         val runner = project("kotlin-multiplatform") {
@@ -75,11 +80,31 @@ class OptionsValidationTest : GradleTest() {
                 iterationTime = 100
                 iterationTimeUnit = "x"
             }
+            configuration("incorrectCaseIterationTimeUnit") {
+                iterations = 1
+                iterationTime = 1
+                iterationTimeUnit = "seconds"
+            }
         }
 
         runner.runAndFail("invalidIterationTimeUnitBenchmark") {
-            assertOutputContains("Invalid iterationTimeUnit: 'x'. Accepted units: seconds, s, microseconds, us, milliseconds, ms, nanoseconds, ns, minutes, m (e.g., iterationTimeUnit = 'ms').")
+            assertOutputContains("Invalid iterationTimeUnit: 'x'. Accepted units: $validTimeUnits (e.g., iterationTimeUnit = \"ms\").")
         }
+        runner.runAndFail("incorrectCaseIterationTimeUnitBenchmark") {
+            assertOutputContains("Invalid iterationTimeUnit: 'seconds'. Accepted units: $validTimeUnits (e.g., iterationTimeUnit = \"ms\").")
+        }
+    }
+
+    @Test
+    fun testValidIterationTimeUnit() {
+        val runner = project("kotlin-multiplatform") {
+            configuration("validIterationTimeUnit") {
+                iterations = 1
+                iterationTime = 1
+                iterationTimeUnit = "SECONDS"
+            }
+        }
+        runner.run("validIterationTimeUnitBenchmark") // Successful
     }
 
     @Test
@@ -94,7 +119,7 @@ class OptionsValidationTest : GradleTest() {
         }
 
         runner.runAndFail("invalidModeBenchmark") {
-            assertOutputContains("Invalid benchmark mode: 'x'. Accepted modes: thrpt, avgt (e.g., mode = 'thrpt').")
+            assertOutputContains("Invalid benchmark mode: 'x'. Accepted modes: thrpt, avgt (e.g., mode = \"thrpt\").")
         }
     }
 
@@ -110,7 +135,7 @@ class OptionsValidationTest : GradleTest() {
         }
 
         runner.runAndFail("invalidOutputTimeUnitBenchmark") {
-            assertOutputContains("Invalid outputTimeUnit: 'x'. Accepted units: seconds, s, microseconds, us, milliseconds, ms, nanoseconds, ns, minutes, m (e.g., outputTimeUnit = 'ns').")
+            assertOutputContains("Invalid outputTimeUnit: 'x'. Accepted units: $validTimeUnits (e.g., outputTimeUnit = \"ns\").")
         }
     }
 
@@ -172,6 +197,13 @@ class OptionsValidationTest : GradleTest() {
                 advanced(" ", "value")
             }
 
+            configuration("invalidAdvancedConfigName") {
+                iterations = 1
+                iterationTime = 100
+                iterationTimeUnit = "ms"
+                advanced("jsFork", "value")
+            }
+
             configuration("invalidNativeFork") {
                 iterations = 1
                 iterationTime = 100
@@ -202,19 +234,22 @@ class OptionsValidationTest : GradleTest() {
         }
 
         runner.runAndFail("blankAdvancedConfigNameBenchmark") {
-            assertOutputContains("Invalid advanced config name: ' '. It must not be blank.")
+            assertOutputContains("Invalid advanced option name: ' '. It must not be blank.")
+        }
+        runner.runAndFail("invalidAdvancedConfigNameBenchmark") {
+            assertOutputContains("Invalid advanced option name: 'jsFork'. Accepted options: \"nativeFork\", \"nativeGCAfterIteration\", \"jvmForks\", \"jsUseBridge\".")
         }
         runner.runAndFail("invalidNativeForkBenchmark") {
-            assertOutputContains("Invalid value 'x' for 'nativeFork'. Accepted values: 'perBenchmark', 'perIteration' (e.g., nativeFork = 'perBenchmark').")
+            assertOutputContains("Invalid value for 'nativeFork': 'x'. Accepted values: perBenchmark, perIteration.")
         }
         runner.runAndFail("invalidNativeGCAfterIterationBenchmark") {
-            assertOutputContains("Invalid value 'x' for 'nativeGCAfterIteration'. Expected a boolean value (e.g., nativeGCAfterIteration = true).")
+            assertOutputContains("Invalid value for 'nativeGCAfterIteration': 'x'. Expected a Boolean value.")
         }
         runner.runAndFail("invalidJvmForksBenchmark") {
-            assertOutputContains("Invalid value '-1' for 'jvmForks'. Expected a non-negative integer or 'definedByJmh' (e.g., jvmForks = 2 or jvmForks = 'definedByJmh').")
+            assertOutputContains("Invalid value for 'jvmForks': '-1'. Expected a non-negative integer or \"definedByJmh\".")
         }
         runner.runAndFail("invalidJsUseBridgeBenchmark") {
-            assertOutputContains("Invalid value 'x' for 'jsUseBridge'. Expected a boolean value (e.g., jsUseBridge = true).")
+            assertOutputContains("Invalid value for 'jsUseBridge': 'x'. Expected a Boolean value.")
         }
     }
 }

@@ -134,9 +134,8 @@ fun writeParameters(
 
 private fun validateConfig(config: BenchmarkConfiguration) {
     config.reportFormat?.let {
-        val validFormats = setOf("json", "csv", "scsv", "text")
-        require(it.toLowerCase() in validFormats) {
-            "Invalid report format: '$it'. Accepted formats: ${validFormats.joinToString(", ")} (e.g., reportFormat = 'json')."
+        require(it.toLowerCase() in ValidOptions.format) {
+            "Invalid report format: '$it'. Accepted formats: ${ValidOptions.format.joinToString(", ")} (e.g., reportFormat = \"json\")."
         }
     }
 
@@ -162,9 +161,8 @@ private fun validateConfig(config: BenchmarkConfiguration) {
     }
 
     config.iterationTimeUnit?.let {
-        val validTimeUnits = setOf("seconds", "s", "microseconds", "us", "milliseconds", "ms", "nanoseconds", "ns", "minutes", "m")
-        require(it.toLowerCase() in validTimeUnits) {
-            "Invalid iterationTimeUnit: '$it'. Accepted units: ${validTimeUnits.joinToString(", ")} (e.g., iterationTimeUnit = 'ms')."
+        require(it in ValidOptions.timeUnits) {
+            "Invalid iterationTimeUnit: '$it'. Accepted units: ${ValidOptions.timeUnits.joinToString(", ")} (e.g., iterationTimeUnit = \"ms\")."
         }
         require(config.iterationTime != null) {
             "Missing iterationTime. Please provide iterationTime when specifying iterationTimeUnit."
@@ -172,16 +170,14 @@ private fun validateConfig(config: BenchmarkConfiguration) {
     }
 
     config.mode?.let {
-        val validModes = setOf("thrpt", "avgt")
-        require(it.toLowerCase() in validModes) {
-            "Invalid benchmark mode: '$it'. Accepted modes: ${validModes.joinToString(", ")} (e.g., mode = 'thrpt')."
+        require(it in ValidOptions.modes) {
+            "Invalid benchmark mode: '$it'. Accepted modes: ${ValidOptions.modes.joinToString(", ")} (e.g., mode = \"thrpt\")."
         }
     }
     
     config.outputTimeUnit?.let {
-        val validTimeUnits = setOf("seconds", "s", "microseconds", "us", "milliseconds", "ms", "nanoseconds", "ns", "minutes", "m")
-        require(it.toLowerCase() in validTimeUnits) {
-            "Invalid outputTimeUnit: '$it'. Accepted units: ${validTimeUnits.joinToString(", ")} (e.g., outputTimeUnit = 'ns')."
+        require(it in ValidOptions.timeUnits) {
+            "Invalid outputTimeUnit: '$it'. Accepted units: ${ValidOptions.timeUnits.joinToString(", ")} (e.g., outputTimeUnit = \"ns\")."
         }
     }    
 
@@ -207,19 +203,17 @@ private fun validateConfig(config: BenchmarkConfiguration) {
     }
 
     config.advanced.forEach { (param, value) ->
-        println("Validating advanced param: $param with value: $value")
         require(param.isNotBlank()) {
-            "Invalid advanced config param: '$param'. It must not be blank."
+            "Invalid advanced option name: '$param'. It must not be blank."
         }
         require(value.toString().isNotBlank()) {
-            "Invalid value for param '$param': '$value'. Value should not be blank."
+            "Invalid value for advanced option '$param': '$value'. Value should not be blank."
         }
 
         when (param) {
             "nativeFork" -> {
-                val validValues = setOf("perbenchmark", "periteration")
-                require(value.toString().toLowerCase() in validValues) {
-                    "Invalid value for 'nativeFork': '$value'. Accepted values: ${validValues.joinToString(", ")}."
+                require(value.toString() in ValidOptions.nativeForks) {
+                    "Invalid value for 'nativeFork': '$value'. Accepted values: ${ValidOptions.nativeForks.joinToString(", ")}."
                 }
             }
             "nativeGCAfterIteration" -> require(value is Boolean) {
@@ -227,16 +221,29 @@ private fun validateConfig(config: BenchmarkConfiguration) {
             }
             "jvmForks" -> {
                 val intValue = value.toString().toIntOrNull()
-                require(intValue != null && intValue >= 0 || value.toString().toLowerCase() == "definedbyjmh") {
-                    "Invalid value for 'jvmForks': '$value'. Expected a non-negative integer or 'definedByJmh'."
+                require(intValue != null && intValue >= 0 || value.toString() == "definedByJmh") {
+                    "Invalid value for 'jvmForks': '$value'. Expected a non-negative integer or \"definedByJmh\"."
                 }
             }
             "jsUseBridge" -> require(value is Boolean) {
                 "Invalid value for 'jsUseBridge': '$value'. Expected a Boolean value."
             }
-            else -> throw IllegalArgumentException("Invalid advanced config parameter: '$param'. Accepted parameters: 'nativeFork', 'nativeGCAfterIteration', 'jvmForks', 'jsUseBridge'.")
+            else -> throw IllegalArgumentException("Invalid advanced option name: '$param'. Accepted options: \"nativeFork\", \"nativeGCAfterIteration\", \"jvmForks\", \"jsUseBridge\".")
         }
     }
+}
+
+private object ValidOptions {
+    val format = setOf("json", "csv", "scsv", "text")
+    val timeUnits = setOf(
+        "NANOSECONDS", "ns", "nanos",
+        "MICROSECONDS", "us", "micros",
+        "MILLISECONDS", "ms", "millis",
+        "SECONDS", "s", "sec",
+        "MINUTES", "m", "min"
+    )
+    val modes = setOf("thrpt", "avgt")
+    val nativeForks = setOf("perBenchmark", "perIteration")
 }
 
 internal val Gradle.isConfigurationCacheAvailable
