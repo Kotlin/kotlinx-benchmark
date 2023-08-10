@@ -57,7 +57,7 @@ The options below control benchmark execution in specific platforms:
 ### Kotlin/JVM
 | Option                                      | Description                                                | Possible Values                | Default Value  |
 |---------------------------------------------|------------------------------------------------------------|--------------------------------|----------------|
-| `advanced("jvmForks", value)`               | Specifies the number of times the harness should fork.     | Integer, "definedByJmh"        | `1`            |
+| `advanced("jvmForks", value)`               | Specifies the number of times the harness should fork.     | Integer, "definedByJmh"        | `5`            |
 
 **Notes on "jvmForks":**
 - **0** - "no fork", i.e., no subprocesses are forked to run benchmarks.
