@@ -1,7 +1,7 @@
 # Mastering kotlinx-benchmark Configuration
 
 This is a comprehensive guide to configuration options that help fine-tune your benchmarking setup to suit your specific needs.
-The `configurations` section of the `benchmark` block serves as the control center for setting the parameters of your benchmark profiles.
+The `configurations` section of the `benchmark` block serves as the control center for setting the parameters of your benchmark profiles. The library provides a default configuration profile named "main", which can be configured according to your needs just like any other profile. Here's a basic structure of how configurations can be set up:
 ```kotlin
 // build.gradle.kts
 benchmark {
