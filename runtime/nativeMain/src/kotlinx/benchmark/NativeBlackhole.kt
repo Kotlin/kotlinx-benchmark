@@ -49,7 +49,7 @@ actual class Blackhole {
 
     actual inline fun consume(i: Int) {
         // To ensure that i's value will not be removed by optimizations like dead code elimination,
-        // it's value is compares with two value i0 and i1, such that i1 = i0 + 1.
+        // its value is compares with two value i0 and i1, such that i1 = i0 + 1.
         // As long as i0 and i1 are different, the following condition should not ever be met
         // and as the branch following it (note that if it is executed, then NPE will happen).
         // To ensure that at least i0 value will be loaded on every call, it was annotated with Volatile.
@@ -57,7 +57,7 @@ actual class Blackhole {
         // This approach has one drawback: in general, it should be compiled to a code with two branch instructions,
         // and performance characteristics of a benchmark may not be stable if consumed value is sometimes equal to i0.
         // In practice, there is almost no effect on the measured performance and
-        // the difference is withing error margin.
+        // the difference is within the error margin.
         // However, if it becomes a problem one day, then the condition should be rewritten to something like:
         // if (((i0 xor i) and (i1 xor i)) == -1) { ... }
         // We can't simply compare xor results as it could be optimized to comparison of i0 and i1 and i's evaluation
