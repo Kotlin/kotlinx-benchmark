@@ -242,7 +242,7 @@ private object ValidOptions {
         "SECONDS", "s", "sec",
         "MINUTES", "m", "min"
     )
-    val modes = setOf("thrpt", "avgt")
+    val modes = setOf("thrpt", "avgt", "Throughput", "AverageTime")
     val nativeForks = setOf("perBenchmark", "perIteration")
 }
 

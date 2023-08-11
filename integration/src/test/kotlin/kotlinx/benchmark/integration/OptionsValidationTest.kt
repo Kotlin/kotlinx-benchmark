@@ -96,15 +96,16 @@ class OptionsValidationTest : GradleTest() {
     }
 
     @Test
-    fun testValidIterationTimeUnit() {
+    fun testValidOptions() {
         val runner = project("kotlin-multiplatform") {
-            configuration("validIterationTimeUnit") {
+            configuration("validOptions") {
                 iterations = 1
                 iterationTime = 1
                 iterationTimeUnit = "SECONDS"
+                mode = "AverageTime"
             }
         }
-        runner.run("validIterationTimeUnitBenchmark") // Successful
+        runner.run("validOptionsBenchmark") // Successful
     }
 
     @Test
