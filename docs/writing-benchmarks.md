@@ -79,3 +79,26 @@ The `@Fork` annotation, available only in the Kotlin/JVM target, is utilized to 
 #### @Param
 
 The `@Param` annotation is used to pass different parameters to your benchmark method. It allows you to run the same benchmark method with different input values, so you can see how these variations affect performance. The values you provide for the `@Param` annotation are the different inputs you want to use in your benchmark test. The benchmark will run once for each provided value. In our example, `@Param` annotation is used with values '4' and '10', which means the benchmarkMethod will be executed twice, once with the `param` value as '4' and then with '10'. This could serve to help in understanding how the size of the input list impacts the time it takes to sum all the integers in the list.
+
+## Blackhole
+
+Modern compilers often remove computations that they deem unnecessary, which could serve to distort benchmark results. In essence, `Blackhole` maintains the integrity of benchmarks by preventing unwanted JVM optimizations. The Blackhole class is available on all targets excluding Kotlin/Wasm(experimental)
+
+#### How to Use Blackhole:
+
+Inject `Blackhole` into your benchmark method and use it to consume results:
+
+```kotlin
+@Benchmark
+fun longBlackholeBenchmark(bh: Blackhole) {
+    repeat(1000) {
+        bh.consume(text.length)
+    }
+}
+```
+
+By consuming results, you signal to the compiler that these computations are significant and shouldn't be optimized away.
+
+For a deeper dive into `Blackhole` and its nuances, you can refer to:
+- [Official Javadocs](https://javadoc.io/static/org.openjdk.jmh/jmh-core/1.23/org/openjdk/jmh/infra/Blackhole.html)
+- [JMH](https://github.com/openjdk/jmh/blob/master/jmh-core/src/main/java/org/openjdk/jmh/infra/Blackhole.java#L157-L254)
