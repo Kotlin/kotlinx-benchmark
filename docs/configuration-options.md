@@ -31,7 +31,7 @@ Be aware that values defined in the build script will override those specified b
 | `iterationTime`                     | Sets the duration for each iteration, both measurement and warm-up.                                                        | Integer                       | @Measurement(..., time: Int, ...)                   |
 | `iterationTimeUnit`                 | Defines the unit for `iterationTime`.                                                                                        | Time unit, see below          | @Measurement(..., timeUnit: BenchmarkTimeUnit, ...) |
 | `outputTimeUnit`                    | Sets the unit for the results display.                                                                                       | Time unit, see below          | @OutputTimeUnit(value: BenchmarkTimeUnit)           |
-| `mode`                              | Selects "thrpt" for measuring the number of function calls per unit time or "avgt" for measuring the time per function call. | "thrpt", "avgt"               | @BenchmarkMode                                      |
+| `mode`                              | Selects "thrpt" (Throughput) for measuring the number of function calls per unit time or "avgt" (AverageTime) for measuring the time per function call. | "thrpt", "avgt", "Throughput", "AverageTime"       | @BenchmarkMode                                      |
 | `include("…")`                      | Applies a regular expression to include benchmarks that match the substring in their fully qualified names.                  | Regex pattern                 | -                                                   |
 | `exclude("…")`                      | Applies a regular expression to exclude benchmarks that match the substring in their fully qualified names.                  | Regex pattern                 | -                                                   |
 | `param("name", "value1", "value2")` | Assigns values to a public mutable property with the specified name, annotated with `@Param`.                                | Any string values             | @Param                                              |
@@ -57,7 +57,7 @@ The options below control benchmark execution in specific platforms:
 ### Kotlin/JVM
 | Option                                      | Description                                                | Possible Values                | Default Value  |
 |---------------------------------------------|------------------------------------------------------------|--------------------------------|----------------|
-| `advanced("jvmForks", value)`               | Specifies the number of times the harness should fork.     | Integer, "definedByJmh"        | `5`            |
+| `advanced("jvmForks", value)`               | Specifies the number of times the harness should fork.     | Integer, "definedByJmh"        | `1`            |
 
 **Notes on "jvmForks":**
 - **0** - "no fork", i.e., no subprocesses are forked to run benchmarks.
