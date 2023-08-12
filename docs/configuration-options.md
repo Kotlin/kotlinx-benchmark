@@ -1,7 +1,11 @@
 # Mastering kotlinx-benchmark Configuration
 
 This is a comprehensive guide to configuration options that help fine-tune your benchmarking setup to suit your specific needs.
+
+## The `configurations` Section
+
 The `configurations` section of the `benchmark` block serves as the control center for setting the parameters of your benchmark profiles. The library provides a default configuration profile named "main", which can be configured according to your needs just like any other profile. Here's a basic structure of how configurations can be set up:
+
 ```kotlin
 // build.gradle.kts
 benchmark {
@@ -13,16 +17,18 @@ benchmark {
     }
 }
 ```
-Configuration profiles enable you to execute benchmarks in specific ways.
-`include` and `exclude` options are used to specify the benchmarks to run in this profile.
-By default, all benchmarks are included.
-`kotlinx-benchmark` Gradle plugin creates tasks for running benchmarks in each configuration profile. For example, 
-task `smokeBenchmark` will run benchmarks according to the `"smoke"` configuration profile. See [tasks-overview.md](tasks-overview.md).
-Use the options described below to configure how the benchmarks should be run.
+
+## Understanding Configuration Profiles
+
+Configuration profiles dictate the execution pattern of benchmarks:
+
+- Utilize `include` and `exclude` options to select specific benchmarks for a profile.
+- By default, every benchmark is included.
+- Each configuration profile translates to a task in the `kotlinx-benchmark` Gradle plugin. For instance, the task `smokeBenchmark` is tailored to run benchmarks based on the `"smoke"` configuration profile. For an overview of tasks, refer to [tasks-overview.md](tasks-overview.md).
 
 ## Core Configuration Options
 
-Be aware that values defined in the build script will override those specified by annotations in the code.
+Note that values defined in the build script take precedence over those specified by annotations in the code.
 
 | Option                              | Description                                                                                                                  | Possible Values               | Corresponding Annotation                            |
 | ----------------------------------- |------------------------------------------------------------------------------------------------------------------------------|-------------------------------|-----------------------------------------------------|
@@ -31,11 +37,11 @@ Be aware that values defined in the build script will override those specified b
 | `iterationTime`                     | Sets the duration for each iteration, both measurement and warm-up.                                                        | Integer                       | @Measurement(..., time: Int, ...)                   |
 | `iterationTimeUnit`                 | Defines the unit for `iterationTime`.                                                                                        | Time unit, see below          | @Measurement(..., timeUnit: BenchmarkTimeUnit, ...) |
 | `outputTimeUnit`                    | Sets the unit for the results display.                                                                                       | Time unit, see below          | @OutputTimeUnit(value: BenchmarkTimeUnit)           |
-| `mode`                              | Selects "thrpt" (Throughput) for measuring the number of function calls per unit time or "avgt" (AverageTime) for measuring the time per function call. | "thrpt", "avgt", "Throughput", "AverageTime"       | @BenchmarkMode                                      |
+| `mode`                              | Selects "thrpt" (Throughput) for measuring the number of function calls per unit time or "avgt" (AverageTime) for measuring the time per function call. | `thrpt`(default), `Throughput`(default), `avgt`, `AverageTime`       | @BenchmarkMode                                      |
 | `include("…")`                      | Applies a regular expression to include benchmarks that match the substring in their fully qualified names.                  | Regex pattern                 | -                                                   |
 | `exclude("…")`                      | Applies a regular expression to exclude benchmarks that match the substring in their fully qualified names.                  | Regex pattern                 | -                                                   |
 | `param("name", "value1", "value2")` | Assigns values to a public mutable property with the specified name, annotated with `@Param`.                                | Any string values             | @Param                                              |
-| `reportFormat`                      | Defines the benchmark report's format options.                                                                               | "json", "csv", "scsv", "text" | -                                                   |
+| `reportFormat`                      | Defines the benchmark report's format options.                                                                               | `json`(default), `csv`, `scsv`, `text` | -                                                   |
 
 The following values can be used for specifying time unit:
 - "NANOSECONDS", "ns", "nanos"
@@ -46,12 +52,12 @@ The following values can be used for specifying time unit:
 
 ## Platform-Specific Configuration Options
 
-The options below control benchmark execution in specific platforms:
+The options listed in the following sections allow you to tailor the benchmark execution behavior for specific platforms:
 
 ### Kotlin/Native
 | Option                                        | Description                                                                                                            | Possible Values                | Default Value  |
 |-----------------------------------------------|------------------------------------------------------------------------------------------------------------------------|--------------------------------|----------------|
-| `advanced("nativeFork", "value")`             | Executes iterations within the same process ("perBenchmark") or each iteration in a separate process ("perIteration"). | "perBenchmark", "perIteration" | "perBenchmark" |
+| `advanced("nativeFork", "value")`             | Executes iterations within the same process ("perBenchmark") or each iteration in a separate process ("perIteration"). | `perBenchmark`, `perIteration` | "perBenchmark" |
 | `advanced("nativeGCAfterIteration", value)`   | Whether to trigger garbage collection after each iteration.                                                            | `true`, `false`                | `false`        |
 
 ### Kotlin/JVM
@@ -70,5 +76,3 @@ The options below control benchmark execution in specific platforms:
 | `advanced("jsUseBridge", value)`              | Generate special benchmark bridges to stop inlining optimizations.                                    | `true`, `false` | `true`        |
 
 **Note:** "jsUseBridge" works only when the `BuiltIn` benchmark executor is selected.
-
-With this guide at your side, you're ready to optimize your benchmarking process with `kotlinx-benchmark`. Happy benchmarking!
