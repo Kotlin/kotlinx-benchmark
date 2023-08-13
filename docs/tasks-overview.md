@@ -1,10 +1,12 @@
-# Overview of Tasks provided by kotlinx-benchmark Gradle Plugin
+## Overview of Tasks Provided by kotlinx-benchmark Gradle Plugin
 
 The kotlinx-benchmark plugin creates different Gradle tasks depending on how it is configured.
-For each pair of configuration profile and registered target it creates a task to run that profile on the platform.
+For each pair of configuration profile and registered target a task is created to execute that profile on the respective platform.
 To learn more about configuration profiles, refer to [configuration-options.md](configuration-options.md).
 
-For illustration purposes consider that the kotlinx-benchmark plugin is configured in the following way:
+### Example Configuration
+
+To illustrate, consider the following `kotlinx-benchmark` configuration:
 
 ```kotlin
 // build.gradle.kts
@@ -32,35 +34,29 @@ benchmark {
 }
 ```
 
-## Running benchmarks within the "main" configuration profile
+## Tasks for the "main" Configuration Profile
 
-### `benchmark`
+- **`benchmark`**:
+    - Runs benchmarks within the "main" profile for all registered targets.
 
-This task runs benchmarks within the "main" profile in all registered targets.
+- **`<targetName>Benchmark`**:
+    - Runs benchmarks within the "main" profile for a particular target.
+    - In our example, `jvmBenchmark` runs benchmarks within the "main" profile in the `jvm` target, while `jsBenchmark` runs them in the `js` target.
 
-### `<targetName>Benchmark`
+## Tasks for Custom Configuration Profiles
 
-This task runs benchmarks within the "main" profile for a particular target. In our example, `jvmBenchmark` runs benchmarks within the "main" profile in `jvm` target, 
-while `jsBenchmark` runs them in `js` target.
+- **`<configName>Benchmark`**:
+    - Runs benchmarks within `<configName>` profile in all registered targets.
+    - In our example, `smokeBenchmark` runs benchmarks within the "smoke" profile.
 
-## Running benchmarks within a created configuration profile
-
-### `<configName>Benchmark`
-
-This task runs benchmarks within `<configName>` profile in all registered targets. In our example, `smokeBenchmark` runs benchmarks within the "smoke" profile.
-
-
-### `<targetName><configName>Benchmark`
-
-This task runs benchmarks within `<configName>` profile in `<targetName>` target. In our example, `jvmSmokeBenchmark` runs benchmarks within the "smoke" profile in `jvm` target,
-while `jsSmokeBenchmark` runs them in `js` target.
+- **`<targetName><configName>Benchmark`**:
+    - Runs benchmarks within `<configName>` profile in `<targetName>` target.
+    - In our example, `jvmSmokeBenchmark` runs benchmarks within the "smoke" profile in `jvm` target while `jsSmokeBenchmark` runs them in `js` target.
 
 ## Other useful tasks
 
-### `<targetName>BenchmarkJar`
-
-This task is created only when a Kotlin/JVM target is registered for benchmarking.
-It produces a self-contained executable JAR in `build/benchmarks/<targetName>/jars/` directory of your project 
-that contains your benchmarks in `<targetName>` target, and all essential JMH infrastructure code.
-The JAR file can be run using `java -jar path-to-the.jar` command with relevant options. Run with `-h` to see the available options.
-In our example, `jvmBenchmarkJar` produces a JAR file in `build/benchmarks/jvm/jars/` directory that contains benchmarks in `jvm` target.
+- **`<targetName>BenchmarkJar`**:
+    - Created only when a Kotlin/JVM target is registered for benchmarking.
+    - Produces a self-contained executable JAR in `build/benchmarks/<targetName>/jars/` directory of your project that contains your benchmarks in `<targetName>` target, and all essential JMH infrastructure code.
+    - The JAR file can be run using `java -jar path-to-the.jar` command with relevant options. Run with `-h` to see the available options.
+    - In our example, `jvmBenchmarkJar` produces a JAR file in `build/benchmarks/jvm/jars/` directory that contains benchmarks in `jvm` target.
