@@ -22,26 +22,25 @@ benchmark {
 
 Configuration profiles dictate the execution pattern of benchmarks:
 
-- Utilize `include` and `exclude` options to select specific benchmarks for a profile.
-- By default, every benchmark is included.
+- Utilize `include` and `exclude` options to select specific benchmarks for a profile. By default, every benchmark is included.
 - Each configuration profile translates to a task in the `kotlinx-benchmark` Gradle plugin. For instance, the task `smokeBenchmark` is tailored to run benchmarks based on the `"smoke"` configuration profile. For an overview of tasks, refer to [tasks-overview.md](tasks-overview.md).
 
 ## Core Configuration Options
 
 Note that values defined in the build script take precedence over those specified by annotations in the code.
 
-| Option                              | Description                                                                                                                  | Possible Values               | Corresponding Annotation                            |
-| ----------------------------------- |------------------------------------------------------------------------------------------------------------------------------|-------------------------------|-----------------------------------------------------|
-| `iterations`                        | Sets the number of iterations for measurements.                                                                              | Integer                       | @Measurement(iterations: Int, ...)                  |
-| `warmups`                           | Sets the number of iterations for system warming, ensuring accurate measurements.                                            | Integer                       | @Warmup(iterations: Int)                            |
-| `iterationTime`                     | Sets the duration for each iteration, both measurement and warm-up.                                                        | Integer                       | @Measurement(..., time: Int, ...)                   |
-| `iterationTimeUnit`                 | Defines the unit for `iterationTime`.                                                                                        | Time unit, see below          | @Measurement(..., timeUnit: BenchmarkTimeUnit, ...) |
-| `outputTimeUnit`                    | Sets the unit for the results display.                                                                                       | Time unit, see below          | @OutputTimeUnit(value: BenchmarkTimeUnit)           |
-| `mode`                              | Selects "thrpt" (Throughput) for measuring the number of function calls per unit time or "avgt" (AverageTime) for measuring the time per function call. | `thrpt`(default), `Throughput`(default), `avgt`, `AverageTime`       | @BenchmarkMode                                      |
-| `include("…")`                      | Applies a regular expression to include benchmarks that match the substring in their fully qualified names.                  | Regex pattern                 | -                                                   |
-| `exclude("…")`                      | Applies a regular expression to exclude benchmarks that match the substring in their fully qualified names.                  | Regex pattern                 | -                                                   |
-| `param("name", "value1", "value2")` | Assigns values to a public mutable property with the specified name, annotated with `@Param`.                                | Any string values             | @Param                                              |
-| `reportFormat`                      | Defines the benchmark report's format options.                                                                               | `json`(default), `csv`, `scsv`, `text` | -                                                   |
+| Option                              | Description                                                                                                                                             | Possible Values                                            | Corresponding Annotation                            |
+| ----------------------------------- |---------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------|-----------------------------------------------------|
+| `iterations`                        | Sets the number of iterations for measurements.                                                                                                         | Positive Integer                                           | @Measurement(iterations: Int, ...)                  |
+| `warmups`                           | Sets the number of iterations for system warming, ensuring accurate measurements.                                                                       | Non-negative Integer                                       | @Warmup(iterations: Int)                            |
+| `iterationTime`                     | Sets the duration for each iteration, both measurement and warm-up.                                                                                     | Positive Integer                                           | @Measurement(..., time: Int, ...)                   |
+| `iterationTimeUnit`                 | Defines the unit for `iterationTime`.                                                                                                                   | Time unit, see below                                       | @Measurement(..., timeUnit: BenchmarkTimeUnit, ...) |
+| `outputTimeUnit`                    | Sets the unit for the results display.                                                                                                                  | Time unit, see below                                       | @OutputTimeUnit(value: BenchmarkTimeUnit)           |
+| `mode`                              | Selects "thrpt" (Throughput) for measuring the number of function calls per unit time or "avgt" (AverageTime) for measuring the time per function call. | `thrpt`, `Throughput`, `avgt`, `AverageTime`               | @BenchmarkMode(value: Mode)                         |
+| `include("…")`                      | Applies a regular expression to include benchmarks that match the substring in their fully qualified names.                                             | Regex pattern                                              | -                                                   |
+| `exclude("…")`                      | Applies a regular expression to exclude benchmarks that match the substring in their fully qualified names.                                             | Regex pattern                                              | -                                                   |
+| `param("name", "value1", "value2")` | Assigns values to a public mutable property with the specified name, annotated with `@Param`.                                                           | String values that represent valid values for the property | @Param                                              |
+| `reportFormat`                      | Defines the benchmark report's format options.                                                                                                          | `json`(default), `csv`, `scsv`, `text`                     | -                                                   |
 
 The following values can be used for specifying time unit:
 - "NANOSECONDS", "ns", "nanos"
