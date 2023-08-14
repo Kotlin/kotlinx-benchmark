@@ -72,6 +72,9 @@ private fun Project.createNodeJsExec(
     if (compilation.target.platformType == KotlinPlatformType.wasm) {
         throw GradleException("Kotlin/WASM does not support targeting NodeJS for benchmarks.")
     }
+    if (compilation !is KotlinJsIrCompilation) {
+        throw GradleException("Legacy Kotlin/JS backends are not supported. Please migrate to Kotlin/JS IR backend.")
+    }
     dependsOn(compilation.runtimeDependencyFiles)
     group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
     description = "Executes benchmark for '${target.name}' with NodeJS"

@@ -71,7 +71,7 @@ enum class JsBenchmarksExecutor {
 class JsBenchmarkTarget(
     extension: BenchmarksExtension,
     name: String,
-    val compilation: KotlinJsCompilation
+    val compilation: KotlinJsIrCompilation
 ) : BenchmarkTarget(extension, name) {
     var jsBenchmarksExecutor: JsBenchmarksExecutor = JsBenchmarksExecutor.BenchmarkJs
 }
