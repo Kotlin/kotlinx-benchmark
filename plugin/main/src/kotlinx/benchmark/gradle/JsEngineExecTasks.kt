@@ -28,7 +28,7 @@ fun Project.createJsEngineBenchmarkExecTask(
     }
 
     if (compilationTarget is KotlinWasmSubTargetContainerDsl) {
-        check(compilation is KotlinJsIrCompilation) { "Legacy Kotlin/JS is does not supported by D8 engine" }
+        check(compilation is KotlinJsIrCompilation) { "Legacy Kotlin/JS is not supported by D8 engine" }
         compilationTarget.whenD8Configured {
             val execTask = createD8Exec(config, target, compilation, taskName)
             tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(execTask)
@@ -69,6 +69,9 @@ private fun Project.createNodeJsExec(
     compilation: KotlinJsCompilation,
     taskName: String
 ): TaskProvider<NodeJsExec> = NodeJsExec.create(compilation, taskName) {
+    if (compilation.target.platformType == KotlinPlatformType.wasm) {
+        throw GradleException("Kotlin/WASM does not support targeting NodeJS for benchmarks.")
+    }
     dependsOn(compilation.runtimeDependencyFiles)
     group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
     description = "Executes benchmark for '${target.name}' with NodeJS"
@@ -90,6 +93,9 @@ private fun Project.createD8Exec(
     compilation: KotlinJsIrCompilation,
     taskName: String
 ): TaskProvider<D8Exec> = D8Exec.create(compilation, taskName) {
+    if (compilation.target.platformType == KotlinPlatformType.js) {
+        throw GradleException("Kotlin/JS does not support targeting D8 for benchmarks.")
+    }
     dependsOn(compilation.runtimeDependencyFiles)
     group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
     description = "Executes benchmark for '${target.name}' with D8"
