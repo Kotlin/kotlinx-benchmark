@@ -3,4 +3,4 @@ pluginManagement {
         gradlePluginPortal()
     }
 }
-rootProject.name = 'kotlinx-benchmark-plugin'
+rootProject.name = "kotlinx-benchmark-plugin"

@@ -1,11 +1,12 @@
+import kotlinx.benchmark.gradle.*
 import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.KonanTarget
 import kotlinx.benchmark.gradle.JsBenchmarksExecutor
 
 plugins {
-    id "org.jetbrains.kotlin.multiplatform"
-    id "org.jetbrains.kotlin.plugin.allopen" version "1.8.21"
-    id "org.jetbrains.kotlinx.benchmark"
+    kotlin("multiplatform")
+    kotlin("plugin.allopen") version "1.8.21"
+    id("org.jetbrains.kotlinx.benchmark")
 }
 
 // how to apply plugin to a specific source set?
@@ -15,13 +16,13 @@ allOpen {
 
 kotlin {
     jvm {
-        compilations.create("benchmark") { associateWith(compilations.main) }
+        compilations.create("benchmark") { associateWith(compilations.getByName("main")) }
     }
     js("jsIr", IR) { nodejs() }
     js("jsIrBuiltIn", IR) { nodejs() }
     wasm("wasmJs") { d8() }
-    if (HostManager.host == KonanTarget.MACOS_X64.INSTANCE) macosX64("native")
-    if (HostManager.host == KonanTarget.MACOS_ARM64.INSTANCE) macosArm64("native")
+    if (HostManager.host == KonanTarget.MACOS_X64) macosX64("native")
+    if (HostManager.host == KonanTarget.MACOS_ARM64) macosArm64("native")
     if (HostManager.hostIsLinux) linuxX64("native")
     if (HostManager.hostIsMingw) mingwX64("native")
 
@@ -32,23 +33,29 @@ kotlin {
     }
 
     sourceSets {
-        commonMain {
+        getByName("commonMain") {
             dependencies {
-                implementation project(":kotlinx-benchmark-runtime")
+                implementation(project(":kotlinx-benchmark-runtime"))
             }
         }
 
-        jvmMain {}
+        getByName("jvmMain") {}
 
-        wasmJsMain {}
+        getByName("wasmJsMain") {}
 
-        jsMain {
-            jsIrMain.dependsOn(it)
-            jsIrBuiltInMain.dependsOn(it)
+
+        val jsMain by creating
+
+        getByName("jsIrMain") {
+            dependsOn(jsMain)
         }
 
-        nativeMain {
-            dependsOn(commonMain)
+        getByName("jsIrBuiltInMain") {
+            dependsOn(jsMain)
+        }
+
+        getByName("nativeMain") {
+            dependsOn(getByName("commonMain"))
         }
     }
 }
@@ -56,7 +63,7 @@ kotlin {
 // Configure benchmark
 benchmark {
     configurations {
-        main { // --> jvmBenchmark, jsBenchmark, <native target>Benchmark, benchmark
+        named("main") { // --> jvmBenchmark, jsBenchmark, <native target>Benchmark, benchmark
             iterations = 5 // number of iterations
             iterationTime = 300
             iterationTimeUnit = "ms"
@@ -64,7 +71,7 @@ benchmark {
             advanced("jsUseBridge", true)
         }
 
-        params {
+        create("params") {
             iterations = 5 // number of iterations
             iterationTime = 300
             iterationTimeUnit = "ms"
@@ -73,7 +80,7 @@ benchmark {
             param("unused", 6, 9)
         }
 
-        fast { // --> jvmFastBenchmark, jsFastBenchmark, <native target>FastBenchmark, fastBenchmark
+        create("fast") { // --> jvmFastBenchmark, jsFastBenchmark, <native target>FastBenchmark, fastBenchmark
             include("Common")
             exclude("long")
             iterations = 5
@@ -82,7 +89,7 @@ benchmark {
             advanced("nativeGCAfterIteration", true)
         }
 
-        csv {
+        create("csv") {
             include("Common")
             exclude("long")
             iterations = 1
@@ -91,7 +98,7 @@ benchmark {
             reportFormat = "csv" // csv report format
         }
 
-        fork {
+        create("fork") {
             include("CommonBenchmark")
             iterations = 5
             iterationTime = 300
@@ -106,15 +113,18 @@ benchmark {
         // This one matches target name, e.g. 'jvm', 'js',
         // and registers its 'main' compilation, so 'jvm' registers 'jvmMain'
         register("jvm") {
+            this as JvmBenchmarkTarget
             jmhVersion = "1.21"
         }
         // This one matches source set name, e.g. 'jvmMain', 'jvmTest', etc
         // and register the corresponding compilation (here the 'benchmark' compilation declared in the 'jvm' target)
         register("jvmBenchmark") {
+            this as JvmBenchmarkTarget
             jmhVersion = "1.21"
         }
         register("jsIr")
         register("jsIrBuiltIn") {
+            this as JsBenchmarkTarget
             jsBenchmarksExecutor = JsBenchmarksExecutor.BuiltIn
         }
         register("wasmJs")
