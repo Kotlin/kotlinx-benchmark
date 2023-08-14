@@ -37,7 +37,8 @@ benchmark {
 ## Tasks for the "main" Configuration Profile
 
 - **`benchmark`**:
-    - Runs benchmarks within the "main" profile for all registered targets. In our example, `benchmark` runs benchmarks within the "main" profile in both `jvm` and `js` targets.
+    - Runs benchmarks within the "main" profile for all registered targets. 
+    - In our example, `benchmark` runs benchmarks within the "main" profile in both `jvm` and `js` targets.
 
 - **`<targetName>Benchmark`**:
     - Runs benchmarks within the "main" profile for a particular target.
@@ -59,4 +60,5 @@ benchmark {
     - Created only when a Kotlin/JVM target is registered for benchmarking.
     - Produces a self-contained executable JAR in `build/benchmarks/<targetName>/jars/` directory of your project that contains your benchmarks in `<targetName>` target, and all essential JMH infrastructure code.
     - The JAR file can be run using `java -jar path-to-the.jar` command with relevant options. Run with `-h` to see the available options.
+    - The Jar file can be used for running JMH profilers
     - In our example, `jvmBenchmarkJar` produces a JAR file in `build/benchmarks/jvm/jars/` directory that contains benchmarks in `jvm` target.
