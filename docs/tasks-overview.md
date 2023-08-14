@@ -37,7 +37,7 @@ benchmark {
 ## Tasks for the "main" Configuration Profile
 
 - **`benchmark`**:
-    - Runs benchmarks within the "main" profile for all registered targets.
+    - Runs benchmarks within the "main" profile for all registered targets. In our example, `benchmark` runs benchmarks within the "main" profile in both `jvm` and `js` targets.
 
 - **`<targetName>Benchmark`**:
     - Runs benchmarks within the "main" profile for a particular target.
