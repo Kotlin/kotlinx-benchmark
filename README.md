@@ -326,12 +326,22 @@ After setting up your project and configuring targets, you can start writing ben
     }
     ```
 
-2. **Initialize Resources**: Within the class, you can define any setup or teardown methods using `@Setup` and `@TearDown` annotations respectively. These methods will be executed before and after the entire benchmark run.
+2. **Set up Parameters and Variables**: Define variables needed for the benchmark.
+
+    ```kotlin
+    var param: Int = 10
+
+    private var list: MutableList<Int> = ArrayList()
+    ```
+
+3. **Initialize Resources**: Within the class, you can define any setup or teardown methods using `@Setup` and `@TearDown` annotations respectively. These methods will be executed before and after the entire benchmark run.
 
     ```kotlin
     @Setup
     fun prepare() {
-        list = MutableList(param) { it }
+        for (i in 0 until size) {
+            list.add(i)
+        }
     }
 
     @TearDown
@@ -340,7 +350,7 @@ After setting up your project and configuring targets, you can start writing ben
     }
     ```
 
-3. **Define Benchmark Method**: Next, create methods that you would like to be benchmarked within this class and annotate them with `@Benchmark`.
+4. **Define Benchmark Method**: Next, create methods that you would like to be benchmarked within this class and annotate them with `@Benchmark`.
 
     ```kotlin
     @Benchmark
@@ -360,7 +370,9 @@ Your final benchmark class will look something like this:
 
         @Setup
         fun prepare() {
-            list = MutableList(param) { it }
+            for (i in 0 until size) {
+                list.add(i)
+            }
         }
 
         @Benchmark
