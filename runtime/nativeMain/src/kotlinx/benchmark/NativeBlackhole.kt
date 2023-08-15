@@ -27,6 +27,8 @@ actual class Blackhole {
     var bh: Blackhole? = null
 
     actual inline fun consume(obj: Any?) {
+        // identityHashCode is an intrinsic function
+        // resolved into getting an object address, so there will be no call.
         val hc = obj?.identityHashCode() ?: 0
         consume(hc)
     }
