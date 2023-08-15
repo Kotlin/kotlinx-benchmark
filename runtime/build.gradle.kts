@@ -1,5 +1,5 @@
 plugins {
-    id "org.jetbrains.kotlin.multiplatform"
+    id("org.jetbrains.kotlin.multiplatform")
 }
 
 repositories {
@@ -50,9 +50,12 @@ kotlin {
     wasm("wasmJs") { d8() }
 
     sourceSets.all {
-        kotlin.srcDirs = ["$it.name/src"]
-        resources.srcDirs = ["$it.name/resources"]
-        languageSettings {
+        val srcDirName = this.name
+
+        kotlin.setSrcDirs(listOf("$srcDirName/src"))
+        resources.setSrcDirs(listOf("$srcDirName/resources"))
+
+        languageSettings.apply {
             progressiveMode = true
             optIn("kotlin.experimental.ExperimentalNativeApi")
             optIn("kotlinx.cinterop.ExperimentalForeignApi")
@@ -60,26 +63,29 @@ kotlin {
     }
 
     sourceSets {
-        commonTest {
+        getByName("commonTest") {
             dependencies {
-                implementation "org.jetbrains.kotlin:kotlin-test"
+                implementation("org.jetbrains.kotlin:kotlin-test")
             }
         }
-        jvmMain {
+        getByName("jvmMain") {
             dependencies {
-                compileOnly "org.openjdk.jmh:jmh-core:$jmhVersion"
+                compileOnly("org.openjdk.jmh:jmh-core:${property("jmhVersion")}")
             }
         }
-        jvmTest {
+        getByName("jvmTest") {
             dependencies {
-                implementation "org.openjdk.jmh:jmh-core:$jmhVersion"
+                implementation("org.openjdk.jmh:jmh-core:${property("jmhVersion")}")
             }
         }
-        jsMain {
-            jsIrMain.dependsOn(it)
+
+        val jsMain by creating
+        
+        getByName("jsIrMain") {
+            dependsOn(jsMain)
         }
-        nativeMain {
-            dependsOn(commonMain)
+        getByName("nativeMain") {
+            dependsOn(commonMain.get())
         }
     }
 }
@@ -90,10 +96,10 @@ if (project.findProperty("publication_repository") == "space") {
         repositories {
             maven {
                 name = "space"
-                url = "https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/dev"
+                url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/dev")
                 credentials {
-                    username = project.findProperty("space.user")
-                    password = project.findProperty("space.token")
+                    username = project.findProperty("space.user") as String?
+                    password = project.findProperty("space.token") as String?
                 }
             }
         }
