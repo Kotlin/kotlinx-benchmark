@@ -1,6 +1,6 @@
 package kotlinx.benchmark.integration
 
-class AnnotationSpecifier {
+class AnnotationsSpecifier {
 
     private var isMeasurementSpecified: Boolean = false
     private var isOutputTimeUnitSpecified: Boolean = false
