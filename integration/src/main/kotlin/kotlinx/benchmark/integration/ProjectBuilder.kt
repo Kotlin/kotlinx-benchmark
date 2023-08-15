@@ -3,12 +3,18 @@ package kotlinx.benchmark.integration
 class ProjectBuilder {
     private val configurations = mutableMapOf<String, BenchmarkConfiguration>()
     private val targets = mutableMapOf<String, BenchmarkTarget>()
+    private val kotlinConfig = KotlinConfiguration()
 
     fun configuration(name: String, configuration: BenchmarkConfiguration.() -> Unit = {}) {
         configurations[name] = BenchmarkConfiguration().apply(configuration)
     }
+    
     fun register(name: String, configuration: BenchmarkTarget.() -> Unit = {}) {
         targets[name] = BenchmarkTarget().apply(configuration)
+    }
+
+    fun kotlin(configuration: KotlinConfiguration.() -> Unit) {
+        kotlinConfig.apply(configuration)
     }
 
     fun build(original: String): String {
@@ -23,7 +29,10 @@ benchmark {
         ${targets.flatMap { it.value.lines(it.key) }.joinToString("\n        ")}
     }
 }
-            """.trimIndent()
+kotlin {
+    ${kotlinConfig.lines().joinToString("\n    ")}
+}
+        """.trimIndent()
 
         return buildScript + "\n\n" + original + "\n\n" + script
     }
