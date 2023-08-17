@@ -34,18 +34,14 @@ class AnnotationsSpecifier {
         this.benchmarkMode = mode
     }
 
-    fun replacementForLine(line: String): String {
-        val trimmedLine = line.trimStart()
-        val prefix = line.substring(0, line.length - trimmedLine.length)
-        return when {
-            isMeasurementSpecified && trimmedLine.startsWith("@Measurement") ->
-                "$prefix@Measurement($iterations, $time, $timeUnit)"
-            isOutputTimeUnitSpecified && trimmedLine.startsWith("@OutputTimeUnit") ->
-                "$prefix@OutputTimeUnit($outputTimeUnit)"
-            isBenchmarkModeSpecified && trimmedLine.startsWith("@BenchmarkMode") ->
-                "$prefix@BenchmarkMode($benchmarkMode)"
-            else -> line
-        }
+    fun setup(methodName: String) {
+        this.methodName = methodName
+        methodAnnotations.add("@Setup")
+    }
+
+    fun teardown(methodName: String) {
+        this.methodName = methodName
+        methodAnnotations.add("@TearDown")
     }
 
     fun param(fieldName: String, vararg values: String) {
@@ -60,25 +56,24 @@ class AnnotationsSpecifier {
         return null
     }
 
-    fun setup(methodName: String) {
-        this.methodName = methodName
-        methodAnnotations.add("@Setup")
-    }
-
-    fun teardown(methodName: String) {
-        this.methodName = methodName
-        methodAnnotations.add("@TearDown")
-    }
-
-    fun paramForMethod(methodName: String) {
-        this.methodName = methodName
-        methodAnnotations.add("@Param")
-    }
-
     fun getAnnotationsForMethod(line: String): String? {
         if (line.contains("fun $methodName(")) {
             return methodAnnotations.joinToString("\n")
         }
         return null
+    }
+
+    fun replacementForLine(line: String): String {
+        val trimmedLine = line.trimStart()
+        val prefix = line.substring(0, line.length - trimmedLine.length)
+        return when {
+            isMeasurementSpecified && trimmedLine.startsWith("@Measurement") ->
+                "$prefix@Measurement($iterations, $time, $timeUnit)"
+            isOutputTimeUnitSpecified && trimmedLine.startsWith("@OutputTimeUnit") ->
+                "$prefix@OutputTimeUnit($outputTimeUnit)"
+            isBenchmarkModeSpecified && trimmedLine.startsWith("@BenchmarkMode") ->
+                "$prefix@BenchmarkMode($benchmarkMode)"
+            else -> line
+        }
     }
 }
