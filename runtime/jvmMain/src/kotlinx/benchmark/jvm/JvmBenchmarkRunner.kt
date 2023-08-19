@@ -58,6 +58,21 @@ fun main(args: Array<String>) {
         }
     }
 
+    val profilerName = config.advanced["jvmProfiler"]
+    when (profilerName) {
+        "gc" -> jmhOptions.addProfiler("gc")
+        "stack" -> jmhOptions.addProfiler("stack")
+        "cl" -> jmhOptions.addProfiler("cl")
+        "comp" -> jmhOptions.addProfiler("comp")
+        "perf" -> jmhOptions.addProfiler("perf")
+        "perfnorm" -> jmhOptions.addProfiler("perfnorm")
+        "perfasm" -> jmhOptions.addProfiler("perfasm")
+        "xperfasm" -> jmhOptions.addProfiler("xperfasm")
+        "dtraceasm" -> jmhOptions.addProfiler("dtraceasm")
+        null -> {}
+        else -> throw IllegalArgumentException("Invalid value for 'jvmProfiler': $profilerName. Accepted values: gc, stack, cl, comp")
+    }
+
     val reportFormat = ResultFormatType.valueOf(config.reportFormat.uppercase())
     val reporter = BenchmarkProgress.create(config.traceFormat)
     val output = JmhOutputFormat(reporter, config.name)
