@@ -56,6 +56,13 @@ fun main(args: Array<String>) {
         }
     }
 
+    val profilerName = config.advanced["jmhProfiler"]
+    when (profilerName) {
+        "gc" -> jmhOptions.addProfiler("gc")
+        "stack" -> jmhOptions.addProfiler("stack")
+        else -> throw IllegalArgumentException("Unknown JMH profiler: $profilerName")
+    }
+
     val reportFormat = ResultFormatType.valueOf(config.reportFormat.uppercase())
     val reporter = BenchmarkProgress.create(config.traceFormat)
     val output = JmhOutputFormat(reporter, config.name)
