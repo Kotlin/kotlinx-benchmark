@@ -56,7 +56,7 @@ fun main(args: Array<String>) {
         }
     }
 
-    val profilerName = config.advanced["jmhProfiler"]
+    val profilerName = config.advanced["jvmProfiler"]
     when (profilerName) {
         "gc" -> jmhOptions.addProfiler("gc")
         "stack" -> jmhOptions.addProfiler("stack")
