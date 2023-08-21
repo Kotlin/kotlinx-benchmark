@@ -81,6 +81,7 @@ sourceSets {
     }
     configureEach {
         languageSettings.languageVersion = rootProject.properties["kotlin_language_version"]
+        languageSettings.apiVersion = rootProject.properties["kotlin_api_version"]
     }
 }
 
@@ -92,6 +93,7 @@ compileKotlin {
 //        languageVersion = "1.6" // the version of Kotlin embedded in Gradle
         // TODO: Remove this. Set for testing, should be the values above
         languageVersion = kotlin_language_version
+        apiVersion = kotlin_api_version
     }
 }
 

@@ -21,6 +21,7 @@ sourceSets.all {
     java.srcDirs = ["$it.name/src"]
     resources.srcDirs = ["$it.name/resources"]
     languageSettings.languageVersion = kotlin_language_version
+    languageSettings.apiVersion = kotlin_api_version
 }
 
 compileJava {
@@ -31,6 +32,7 @@ compileJava {
 compileKotlin {
     kotlinOptions.jvmTarget = "1.8"
     kotlinOptions.languageVersion = kotlin_language_version
+    kotlinOptions.apiVersion = kotlin_api_version
 }
 
 compileTestJava {
@@ -41,6 +43,7 @@ compileTestJava {
 compileTestKotlin {
     kotlinOptions.jvmTarget = "1.8"
     kotlinOptions.languageVersion = kotlin_language_version
+    kotlinOptions.apiVersion = kotlin_api_version
 }
 
 

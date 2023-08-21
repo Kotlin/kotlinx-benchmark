@@ -33,6 +33,7 @@ allprojects {
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).all {
         kotlinOptions {
             languageVersion = rootProject.properties["kotlin_language_version"].toString()
+            apiVersion = rootProject.properties["kotlin_api_version"].toString()
         }
     }
 }

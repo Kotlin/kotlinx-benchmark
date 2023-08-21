@@ -32,6 +32,7 @@ kotlin {
         languageSettings {
             progressiveMode = true
             languageVersion = kotlin_language_version
+            apiVersion = kotlin_api_version
         }
     }
 

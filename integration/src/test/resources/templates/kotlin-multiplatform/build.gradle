@@ -16,6 +16,7 @@ kotlin {
     sourceSets.all {
         languageSettings {
             languageVersion = project.property("kotlin_language_version")
+            apiVersion = project.property("kotlin_api_version")
         }
     }
 
