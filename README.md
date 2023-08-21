@@ -315,7 +315,8 @@ Note: Kotlin/WASM is an experimental compilation target for Kotlin. It may be dr
 
 ### Writing Benchmarks
 
-After setting up your project and configuring targets, you can start writing benchmarks:
+After setting up your project and configuring targets, you can start writing benchmarks.
+As an example, let's write a simplified benchmark that tests how fast we can add up numbers in an ArrayList:
 
 1. **Create Benchmark Class**: Create a class in your source set where you'd like to add the benchmark. Annotate this class with `@State(Scope.Benchmark)`.
 
@@ -326,12 +327,11 @@ After setting up your project and configuring targets, you can start writing ben
     }
     ```
 
-2. **Set up Parameters and Variables**: Define variables needed for the benchmark.
+2. **Set up Variables**: Define variables needed for the benchmark.
 
     ```kotlin
-    var param: Int = 10
-
-    private var list: MutableList<Int> = ArrayList()
+    private val size = 10
+    private val list = ArrayList<Int>()
     ```
 
 3. **Initialize Resources**: Within the class, you can define any setup or teardown methods using `@Setup` and `@TearDown` annotations respectively. These methods will be executed before and after the entire benchmark run.
@@ -361,30 +361,31 @@ After setting up your project and configuring targets, you can start writing ben
 
 Your final benchmark class will look something like this:
 
-    @State(Scope.Benchmark)
-    class MyBenchmark {
+```kotlin
+@State(Scope.Benchmark)
+class MyBenchmark {
 
-        var param: Int = 10
+    private val size = 10
+    private val list = ArrayList<Int>()
 
-        private var list: MutableList<Int> = ArrayList()
-
-        @Setup
-        fun prepare() {
-            for (i in 0 until size) {
-                list.add(i)
-            }
-        }
-
-        @Benchmark
-        fun benchmarkMethod(): Int {
-            return list.sum()
-        }
-
-        @TearDown
-        fun cleanup() {
-            list.clear()
+    @Setup
+    fun prepare() {
+        for (i in 0 until size) {
+            list.add(i)
         }
     }
+
+    @Benchmark
+    fun benchmarkMethod(): Int {
+        return list.sum()
+    }
+
+    @TearDown
+    fun cleanup() {
+        list.clear()
+    }
+}
+```
 
 Note: Benchmark classes located in the common source set will be run in all platforms, while those located in a platform-specific source set will be run only in the corresponding platform.
 
