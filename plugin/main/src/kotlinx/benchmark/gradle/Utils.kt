@@ -228,9 +228,9 @@ private fun validateConfig(config: BenchmarkConfiguration) {
             "jsUseBridge" -> require(value is Boolean) {
                 "Invalid value for 'jsUseBridge': '$value'. Expected a Boolean value."
             }
-            "jmhProfiler" -> {
-                require(value.toString() in ValidOptions.jmhProfilers) {
-                    "Invalid value for 'jmhProfiler': '$value'. Accepted values: ${ValidOptions.jmhProfilers.joinToString(", ")}."
+            "jvmProfiler" -> {
+                require(value.toString() in ValidOptions.jvmProfilers) {
+                    "Invalid value for 'jvmProfiler': '$value'. Accepted values: ${ValidOptions.jvmProfilers.joinToString(", ")}."
                 }
             }
             else -> throw IllegalArgumentException("Invalid advanced option name: '$param'. Accepted options: \"nativeFork\", \"nativeGCAfterIteration\", \"jvmForks\", \"jsUseBridge\".")
@@ -249,7 +249,7 @@ private object ValidOptions {
     )
     val modes = setOf("thrpt", "avgt", "Throughput", "AverageTime")
     val nativeForks = setOf("perBenchmark", "perIteration")
-    val jmhProfilers = setOf("stack", "gc")
+    val jvmProfilers = setOf("stack", "gc", "cl", "comp")
 }
 
 internal val Gradle.isConfigurationCacheAvailable

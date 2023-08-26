@@ -226,6 +226,13 @@ class OptionsValidationTest : GradleTest() {
                 iterationTimeUnit = "ms"
                 advanced("jsUseBridge", "x")
             }
+
+            configuration("invalidjvmProfiler") {
+                iterations = 1
+                iterationTime = 100
+                iterationTimeUnit = "ms"
+                advanced("jvmProfiler", "x")
+            }
         }
 
         runner.runAndFail("blankAdvancedConfigNameBenchmark") {
@@ -246,6 +253,9 @@ class OptionsValidationTest : GradleTest() {
         runner.runAndFail("invalidJsUseBridgeBenchmark") {
             assertOutputContains("Invalid value for 'jsUseBridge': 'x'. Expected a Boolean value.")
         }
+        runner.runAndFail("invalidjvmProfiler") {
+            assertOutputContains("Invalid value for 'jvmProfiler': 'x'. Accepted values: ${ValidOptions.jvmProfilers.joinToString(", ")}.")
+        }
     }
 }
 
@@ -260,4 +270,5 @@ private object ValidOptions {
     )
     val modes = setOf("thrpt", "avgt", "Throughput", "AverageTime")
     val nativeForks = setOf("perBenchmark", "perIteration")
+    val jvmProfilers = setOf("stack", "gc", "cl", "comp")
 }

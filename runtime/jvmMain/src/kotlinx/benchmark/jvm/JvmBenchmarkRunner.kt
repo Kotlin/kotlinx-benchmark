@@ -60,7 +60,9 @@ fun main(args: Array<String>) {
     when (profilerName) {
         "gc" -> jmhOptions.addProfiler("gc")
         "stack" -> jmhOptions.addProfiler("stack")
-        else -> throw IllegalArgumentException("Unknown JMH profiler: $profilerName")
+        "cl" -> jmhOptions.addProfiler("cl")
+        "comp" -> jmhOptions.addProfiler("comp")
+        else -> throw IllegalArgumentException("Invalid value for 'jvmProfiler': $profilerName. Accepted values: gc, stack, cl")
     }
 
     val reportFormat = ResultFormatType.valueOf(config.reportFormat.uppercase())
