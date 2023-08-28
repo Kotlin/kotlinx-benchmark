@@ -69,7 +69,7 @@ open class BenchmarksExtension(val project: Project) {
                                 check(compilation is KotlinJsIrCompilation)
                                 WasmBenchmarkTarget(this, name, compilation)
                             }
-                        }                        
+                        }
                         is KotlinNativeCompilation -> {
                             NativeBenchmarkTarget(this, name, compilation)
                         }
