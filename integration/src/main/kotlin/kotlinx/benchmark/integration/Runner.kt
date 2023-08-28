@@ -34,4 +34,16 @@ class Runner(
 
     private fun defaultArguments(): Array<String> = arrayOf("--stacktrace")
 
+    fun updateAnnotations(filePath: String, annotationsSpecifier: AnnotationsSpecifier.() -> Unit) {
+        val annotations = AnnotationsSpecifier().also(annotationsSpecifier)
+        val file = projectDir.resolve(filePath)
+        val updatedLines = file.readLines().map { annotations.replacementForLine(it) }
+        file.writeText(updatedLines.joinToString(separator = "\n"))
+    }
+
+    fun generatedDir(targetName: String, filePath: String, fileTestAction: (File) -> Unit) {
+        fileTestAction(
+            projectDir.resolve("build/benchmarks/${targetName}/sources/kotlinx/benchmark/generated").resolve(filePath)
+        )
+    }
 }
