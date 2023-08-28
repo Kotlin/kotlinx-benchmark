@@ -21,6 +21,9 @@ class ProjectBuilder {
 
         val script =
             """
+kotlin {
+    ${kotlinConfig.lines().joinToString("\n    ")}
+}
 benchmark {
     configurations {
         ${configurations.flatMap { it.value.lines(it.key) }.joinToString("\n        ")}
@@ -28,9 +31,6 @@ benchmark {
     targets {
         ${targets.flatMap { it.value.lines(it.key) }.joinToString("\n        ")}
     }
-}
-kotlin {
-    ${kotlinConfig.lines().joinToString("\n    ")}
 }
         """.trimIndent()
 
