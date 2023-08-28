@@ -227,7 +227,7 @@ class OptionsValidationTest : GradleTest() {
                 advanced("jsUseBridge", "x")
             }
 
-            configuration("invalidjvmProfiler") {
+            configuration("invalidJvmProfiler") {
                 iterations = 1
                 iterationTime = 100
                 iterationTimeUnit = "ms"
@@ -253,7 +253,7 @@ class OptionsValidationTest : GradleTest() {
         runner.runAndFail("invalidJsUseBridgeBenchmark") {
             assertOutputContains("Invalid value for 'jsUseBridge': 'x'. Expected a Boolean value.")
         }
-        runner.runAndFail("invalidjvmProfiler") {
+        runner.runAndFail("invalidJvmProfiler") {
             assertOutputContains("Invalid value for 'jvmProfiler': 'x'. Accepted values: ${ValidOptions.jvmProfilers.joinToString(", ")}.")
         }
     }
