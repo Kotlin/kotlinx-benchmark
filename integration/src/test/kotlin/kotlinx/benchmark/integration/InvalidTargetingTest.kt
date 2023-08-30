@@ -13,9 +13,9 @@ class InvalidTargetingTest : GradleTest() {
                 iterationTimeUnit = "ms"
                 reportFormat = "json"
             }
-            register("wasm")
+            register("wasmTest")
             kotlin {
-                wasm("wasm") {
+                wasm("wasmTest") {
                     nodejs()
                 }
             }
