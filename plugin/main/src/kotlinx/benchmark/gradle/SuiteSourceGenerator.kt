@@ -155,11 +155,67 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
         val benchmarkFunctions =
             functions.filter { it.annotations.any { it.fqName.toString() == benchmarkAnnotationFQN } }
 
+        benchmarkFunctions.forEach { function ->
+            if (DescriptorVisibilities.isPrivate(function.visibility)) {
+                error("Invalid usage of @Benchmark: Method `${function.name}` is private. @Benchmark methods should be public.")
+            }
+            if (function.visibility == DescriptorVisibilities.INTERNAL) {
+                error("Invalid usage of @Benchmark: Method `${function.name}` is internal.")
+            }
+            function.valueParameters.forEach { param ->
+                val paramType = param.type.toString()
+                
+                if (paramType != "Blackhole" && param.name.toString() != "state") {
+                    error("Invalid usage of @Benchmark: Method `${function.name}` has a parameter of type `$paramType` which is neither a Blackhole nor a @State object")
+                }
+            }
+        }
+
         val setupFunctions = functions
             .filter { it.annotations.any { it.fqName.toString() == setupAnnotationFQN } }
 
+        setupFunctions.forEach { function ->
+            if (DescriptorVisibilities.isPrivate(function.visibility)) {
+                error("Invalid usage of @Setup: Method `${function.name}` is private. @Setup methods should be public.")
+            }
+            if (function.visibility == DescriptorVisibilities.INTERNAL) {
+                error("Invalid usage of @Setup: Method `${function.name}` is internal.")
+            }
+            if (function.visibility == DescriptorVisibilities.PROTECTED) {
+                error("Invalid usage of @Setup: Method `${function.name}` is protected.")
+            }
+
+            function.valueParameters.forEach { param ->
+                val paramType = param.type.toString()
+                
+                if (paramType != "Blackhole" && param.name.toString() != "state") {
+                    error("Invalid usage of @Setup: Method `${function.name}` has a parameter of type `$paramType` which is neither a Blackhole nor a @State object")
+                }
+            }
+        }
+
         val teardownFunctions = functions
             .filter { it.annotations.any { it.fqName.toString() == teardownAnnotationFQN } }.reversed()
+
+        teardownFunctions.forEach { function ->
+            if (DescriptorVisibilities.isPrivate(function.visibility)) {
+                error("Invalid usage of @TearDown: Method `${function.name}` is private. @TearDown methods should be public.")
+            }
+            if (function.visibility == DescriptorVisibilities.INTERNAL) {
+                error("Invalid usage of @TearDown: Method `${function.name}` is internal.")
+            }
+            if (function.visibility == DescriptorVisibilities.PROTECTED) {
+                error("Invalid usage of @TearDown: Method `${function.name}` is protected.")
+            }
+
+            function.valueParameters.forEach { param ->
+                val paramType = param.type.toString()
+                
+                if (paramType != "Blackhole" && param.name.toString() != "state") {
+                    error("Invalid usage of @Teardown: Method `${function.name}` has a parameter of type `$paramType` which is neither a Blackhole nor a @State object")
+                }
+            }
+        }
 
         val file = FileSpec.builder(benchmarkPackageName, benchmarkName).apply {
             declareObject(benchmarkClass) {
@@ -192,7 +248,13 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
                     addModifiers(KModifier.PRIVATE)
                     addParameter("instance", originalClass)
                     addParameter("params", MAP.parameterizedBy(STRING, STRING))
+                    
                     parameterProperties.forEach { property ->
+                        when {
+                            !property.isVar -> error("Invalid usage of @Param: Property `${property.name}` is read-only (val). Ensure properties annotated with @Param are mutable (var).")
+                            property.visibility == DescriptorVisibilities.PRIVATE -> error("Invalid usage of @Param: Property `${property.name}` is private. Ensure properties annotated with @Param are not declared private.")
+                            property.visibility == DescriptorVisibilities.INTERNAL -> error("Invalid usage of @Param: Property `${property.name}` is internal. Ensure properties annotated with @Param are not declared internal.")
+                        }
                         val type = property.type.nameIfStandardType ?: error("Only simple types are supported and `${property.type}` is not.")
                         addStatement("instance.${property.name} = params.getValue(\"${property.name}\").to$type()")
                     }
@@ -340,4 +402,4 @@ inline fun FileSpec.Builder.function(
 }
 
 val KotlinType.nameIfStandardType: Name?
-    get() = constructor.declarationDescriptor?.name 
+    get() = constructor.declarationDescriptor?.name

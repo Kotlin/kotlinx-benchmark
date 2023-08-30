@@ -41,6 +41,25 @@ class Runner(
         file.writeText(updatedLines.joinToString(separator = "\n"))
     }
 
+    fun addAnnotation(filePath: String, annotationsSpecifier: AnnotationsSpecifier.() -> Unit) {
+        val annotations = AnnotationsSpecifier().also(annotationsSpecifier)
+        val file = projectDir.resolve(filePath)
+
+        val updatedLines = mutableListOf<String>()
+
+        file.readLines().forEach { line ->
+            annotations.getAnnotationsForMethod(line)?.let { annotations ->
+                updatedLines.add(annotations)
+            } ?: annotations.getAnnotationsForField(line)?.let { annotations ->
+                updatedLines.add(annotations)
+            }
+
+            updatedLines.add(line)
+        }
+
+        file.writeText(updatedLines.joinToString(separator = "\n"))
+    }
+
     fun generatedDir(targetName: String, filePath: String, fileTestAction: (File) -> Unit) {
         fileTestAction(
             projectDir.resolve("build/benchmarks/${targetName}/sources/kotlinx/benchmark/generated").resolve(filePath)
