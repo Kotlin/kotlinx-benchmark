@@ -32,7 +32,7 @@ benchmark {
         ${targets.flatMap { it.value.lines(it.key) }.joinToString("\n        ")}
     }
 }
-        """.trimIndent()
+            """.trimIndent()
 
         return buildScript + "\n\n" + original + "\n\n" + script
     }
