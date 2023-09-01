@@ -12,7 +12,7 @@ class KotlinConfiguration {
         targets.add(Target("wasm", wasmTarget.name, "", wasmTarget.environment))
     }
 
-    fun js(name: String, compiler: String, configuration: JsTarget.() -> Unit) {
+    fun js(name: String, compiler: String = IR, configuration: JsTarget.() -> Unit) {
         val jsTarget = JsTarget(name, compiler)
         jsTarget.configuration()
         targets.add(Target("js", jsTarget.name, jsTarget.compiler, jsTarget.environment))
@@ -30,6 +30,9 @@ class KotlinConfiguration {
         fun nodejs() {
             environment = "nodejs"
         }
+        fun browser() {
+            environment = "browser"
+        }
     }
 
     class JsTarget(val name: String, val compiler: String) {
@@ -38,14 +41,16 @@ class KotlinConfiguration {
         fun d8() {
             environment = "d8"
         }
-
         fun nodejs() {
             environment = "nodejs"
         }
-
+        fun browser() {
+            environment = "browser"
+        }
     }
 
     companion object {
         const val IR = "'IR'"
+        const val LEGACY = "'LEGACY'"
     }
 }

@@ -27,6 +27,9 @@ fun Project.createJsEngineBenchmarkExecTask(
             val execTask = createNodeJsExec(config, target, compilation, taskName)
             tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(execTask)
         }
+        compilationTarget.whenBrowserConfigured {
+            throw GradleException("The browser() environment is not supported for Kotlin/JS benchmarks. Please use nodejs().")
+        }
     }
 
     if (compilationTarget is KotlinWasmSubTargetContainerDsl) {

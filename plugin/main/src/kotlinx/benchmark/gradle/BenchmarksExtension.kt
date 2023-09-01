@@ -62,10 +62,10 @@ open class BenchmarksExtension(val project: Project) {
                             KotlinJvmBenchmarkTarget(this, name, compilation)
                         }
                         is KotlinJsCompilation -> {
-                            check(compilation is KotlinJsIrCompilation)
                             if (compilation.target.platformType != KotlinPlatformType.wasm) {
                                 JsBenchmarkTarget(this, name, compilation)
                             } else {
+                                check(compilation is KotlinJsIrCompilation)
                                 WasmBenchmarkTarget(this, name, compilation)
                             }
                         }
