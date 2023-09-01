@@ -62,27 +62,11 @@ open class JsSourceGeneratorTask
 
     private fun load(lib: File): List<ModuleDescriptor> {
         val storageManager = LockBasedStorageManager("Inspect")
-        return if (ir) {
-            loadIr(lib, storageManager)
-        } else {
-            loadLegacy(lib, storageManager)
-        }
-    }
-
-    private fun loadIr(lib: File, storageManager: StorageManager): List<ModuleDescriptor> {
-        //skip processing of empty dirs (fail if not to do it)
+    
+        // skip processing of empty dirs (fail if not to do it)
         if (lib.listFiles() == null) return emptyList()
         val dependencies = inputDependencies.files.filterNot { it.extension == "js" }.toSet()
         val module = KlibResolver.JS.createModuleDescriptor(lib, dependencies, storageManager)
         return listOf(module)
     }
-
-    private fun loadLegacy(lib: File, storageManager: StorageManager): List<ModuleDescriptor> {
-        val dependencies = inputDependencies.flatMap {
-            loadJsDescriptors(it, storageManager)
-        }
-        return loadJsDescriptors(lib, storageManager, dependencies)
-    }
 }
-
-

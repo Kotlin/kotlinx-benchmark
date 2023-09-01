@@ -20,6 +20,8 @@ fun Project.createJsEngineBenchmarkExecTask(
     val taskName = "${target.name}${config.capitalizedName()}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}"
     val compilationTarget = compilation.target
 
+    check(compilation is KotlinJsIrCompilation) { "Legacy Kotlin/JS backend is not supported. Please migrate to the Kotlin/JS IR compiler backend." }
+
     if (compilationTarget is KotlinJsSubTargetContainerDsl) {
         compilationTarget.whenNodejsConfigured {
             val execTask = createNodeJsExec(config, target, compilation, taskName)
@@ -28,7 +30,6 @@ fun Project.createJsEngineBenchmarkExecTask(
     }
 
     if (compilationTarget is KotlinWasmSubTargetContainerDsl) {
-        check(compilation is KotlinJsIrCompilation) { "Legacy Kotlin/JS is not supported by D8 engine" }
         compilationTarget.whenD8Configured {
             val execTask = createD8Exec(config, target, compilation, taskName)
             tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(execTask)
@@ -71,9 +72,6 @@ private fun Project.createNodeJsExec(
 ): TaskProvider<NodeJsExec> = NodeJsExec.create(compilation, taskName) {
     if (compilation.target.platformType == KotlinPlatformType.wasm) {
         throw GradleException("Kotlin/WASM does not support targeting NodeJS for benchmarks.")
-    }
-    if (compilation !is KotlinJsIrCompilation) {
-        throw GradleException("Legacy Kotlin/JS backends are not supported. Please migrate to Kotlin/JS IR backend.")
     }
     dependsOn(compilation.runtimeDependencyFiles)
     group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
