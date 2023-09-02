@@ -2,13 +2,12 @@ package kotlinx.benchmark.js
 
 import kotlinx.benchmark.*
 import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
-import kotlinx.benchmark.jsEngineSupport
 
 @KotlinxBenchmarkRuntimeInternalApi
 class JsBuiltInExecutor(
     name: String,
     @Suppress("UNUSED_PARAMETER") dummy_args: Array<out String>
-) : CommonSuiteExecutor(name, jsEngineSupport.arguments()[0]) {
+) : CommonSuiteExecutor(name, engineSupport.arguments()[0]) {
 
     private val BenchmarkConfiguration.notUseJsBridge: Boolean
         get() = "false".equals(advanced["jsUseBridge"], ignoreCase = true)
