@@ -13,12 +13,20 @@ allOpen {
     annotation("org.openjdk.jmh.annotations.State")
 }
 
+def distinguishAttribute = Attribute.of('kotlinx-benchmark-distinguishAttribute', String)
+
 kotlin {
     jvm {
         compilations.create('benchmark') { associateWith(compilations.main) }
     }
-    js('jsIr', IR) { nodejs() }
-    js('jsIrBuiltIn', IR) { nodejs() }
+    js('jsIr', IR) {
+        nodejs()
+        attributes.attribute(distinguishAttribute, 'jsIr')
+    }
+    js('jsIrBuiltIn', IR) {
+        nodejs()
+        attributes.attribute(distinguishAttribute, 'jsIrBuiltIn')
+    }
     wasm('wasmJs') { d8() }
     if (HostManager.host == KonanTarget.MACOS_X64.INSTANCE) macosX64('native')
     if (HostManager.host == KonanTarget.MACOS_ARM64.INSTANCE) macosArm64('native')
