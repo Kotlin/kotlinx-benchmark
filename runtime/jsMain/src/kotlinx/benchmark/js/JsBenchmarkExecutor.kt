@@ -10,11 +10,7 @@ private external val benchmarkJs: dynamic
 
 @KotlinxBenchmarkRuntimeInternalApi
 class JsBenchmarkExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<out String>) :
-    SuiteExecutor(name, jsEngineSupport.arguments()[0]) {
-
-    init {
-        check(!isD8) { "${JsBenchmarkExecutor::class.simpleName} does not support d8 engine" }
-    }
+    SuiteExecutor(name, engineSupport.arguments()[0]) {
 
     override fun run(
         runnerConfiguration: RunnerConfiguration,

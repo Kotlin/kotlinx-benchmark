@@ -161,4 +161,9 @@ abstract class CommonSuiteExecutor(
     }
 }
 
-internal expect inline fun measureNanoseconds(block: () -> Unit): Long
+internal inline fun measureNanoseconds(block: () -> Unit): Long {
+    val measurer =  engineSupport.getMeasurer()
+    measurer.measureStart()
+    block()
+    return measurer.measureFinish()
+}
