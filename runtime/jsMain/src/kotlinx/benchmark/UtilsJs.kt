@@ -20,13 +20,25 @@ internal abstract class JsEngineSupport {
     abstract fun arguments(): Array<out String>
 }
 
-internal val isD8: Boolean by lazy {
-    js("typeof d8 !== 'undefined'") as Boolean
-}
+internal val isD8: Boolean by lazy { isD8Engine() }
+
+internal val isSpiderMonkey: Boolean by lazy { isSpiderMonkeyEngine() }
+
+internal val isNodeJs: Boolean by lazy { isNodeJsEngine() }
 
 internal val jsEngineSupport: JsEngineSupport by lazy {
-    if (isD8) D8EngineSupport else NodeJsEngineSupport
+    when {
+        isD8 -> D8EngineSupport
+        isSpiderMonkey -> SpiderMonkeyEngineSupport
+        isNodeJs -> NodeJsEngineSupport
+        else -> error("Unsupported js engine")
+    }
 }
 
 internal actual inline fun measureNanoseconds(block: () -> Unit): Long =
-    if (isD8) d8MeasureTime(block) else nodeJsMeasureTime(block)
+    when {
+        isD8 -> standaloneJsVmMeasureTime(block)
+        isSpiderMonkey -> standaloneJsVmMeasureTime(block)
+        isNodeJs -> nodeJsMeasureTime(block)
+        else -> error("Unsupported js engine")
+    }

@@ -45,3 +45,6 @@ internal inline fun nodeJsMeasureTime(block: () -> Unit): Long {
     val end = getHrTime(process)
     return hrTimeToNs(end) - hrTimeToNs(start)
 }
+
+@JsFun("() => (typeof process !== 'undefined') && (process.release.name === 'node')")
+internal external fun isNodeJsEngine(): Boolean
