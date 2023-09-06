@@ -1,8 +1,8 @@
 pluginManagement {
     repositories {
         gradlePluginPortal()
-        val kotlinRepoUrl: String? by settings
-        kotlinRepoUrl?.let { repoUrl ->
+        val kotlin_repo_url: String? by settings
+        kotlin_repo_url?.let { repoUrl ->
             if (repoUrl.isNotEmpty()) {
                 maven { url = uri(repoUrl) }
             }
@@ -15,12 +15,11 @@ rootProject.name = "kotlinx-benchmark"
 includeBuild("plugin")
 
 include("runtime")
-findProject(":runtime")?.name = "kotlinx-benchmark-runtime"
+project(":runtime").name = "kotlinx-benchmark-runtime"
 
 include("integration")
 
 include("examples")
 include("examples:kotlin-multiplatform")
 include("examples:java")
-include("examples:kotlin")
 include("examples:kotlin-kts")
