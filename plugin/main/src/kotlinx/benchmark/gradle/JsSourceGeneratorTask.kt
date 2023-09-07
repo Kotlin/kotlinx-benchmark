@@ -18,9 +18,6 @@ open class JsSourceGeneratorTask
     lateinit var title: String
 
     @Input
-    var ir: Boolean = false
-
-    @Input
     var useBenchmarkJs: Boolean = true
 
     @InputFiles
