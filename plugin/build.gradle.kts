@@ -28,7 +28,6 @@ plugins {
     kotlin("jvm") version "1.9.0"
 }
 
-apply(plugin = "org.jetbrains.kotlin.jvm")
 apply(plugin = "kotlinx.team.infra")
 
 configure<InfraExtension> {

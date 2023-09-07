@@ -2,10 +2,8 @@ pluginManagement {
     repositories {
         gradlePluginPortal()
         val kotlin_repo_url: String? by settings
-        kotlin_repo_url?.let { repoUrl ->
-            if (repoUrl.isNotEmpty()) {
-                maven { url = uri(repoUrl) }
-            }
+        kotlin_repo_url?.takeIf { it.isNotEmpty() }?.let { repoUrl ->
+            maven { url = uri(repoUrl) }
         }
     }
 }
