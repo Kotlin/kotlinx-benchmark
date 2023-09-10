@@ -7,11 +7,10 @@ buildscript {
     val kotlin_version: String by project
     val infra_version: String by project
     
-    val kotlinDevUrl by extra { rootProject.properties["kotlin_repo_url"] }
     repositories {
         maven("https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/maven")
         mavenCentral()
-        kotlinDevUrl?.let {
+        rootProject.properties["kotlin_repo_url"]?.let {
             maven { url = uri(it.toString()) }
         }
     }
@@ -42,15 +41,13 @@ configure<InfraExtension> {
     }
 }
 
-
-
 logger.info("Using Kotlin ${kotlin_version} for project ${project.name}")
 
 repositories {
     mavenCentral()
     gradlePluginPortal()
 
-    project.properties["kotlinDevUrl"]?.let { url ->
+    rootProject.properties["kotlin_repo_url"]?.let { url ->
         maven { setUrl(url.toString()) }
     }
 }
