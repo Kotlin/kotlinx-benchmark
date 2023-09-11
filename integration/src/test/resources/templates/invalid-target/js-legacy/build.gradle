@@ -1,0 +1,11 @@
+kotlin {
+    js(LEGACY) {
+        nodejs()
+    }
+}
+
+benchmark {
+    targets {
+        register("js")
+    }
+}

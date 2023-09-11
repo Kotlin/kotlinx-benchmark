@@ -17,22 +17,37 @@ fun Project.createJsEngineBenchmarkExecTask(
     compilation: KotlinJsIrCompilation
 ) {
     val taskName = "${target.name}${config.capitalizedName()}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}"
+
     val compilationTarget = compilation.target
+    check(compilationTarget is KotlinJsIrTarget)
 
-    if (compilationTarget is KotlinJsSubTargetContainerDsl) {
-        compilationTarget.whenNodejsConfigured {
-            val execTask = createNodeJsExec(config, target, compilation, taskName)
-            tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(execTask)
+    when (compilationTarget.platformType) {
+        KotlinPlatformType.wasm -> {
+            compilationTarget.whenD8Configured {
+                val execTask = createD8Exec(config, target, compilation, taskName)
+                tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(execTask)
+            }
+            compilationTarget.whenNodejsConfigured {
+                throw GradleException("The nodejs() environment is not supported for Kotlin/Wasm benchmarks. Please use d8().")
+            }
+            compilationTarget.whenBrowserConfigured {
+                throw GradleException("The browser() environment is not supported for Kotlin/Wasm benchmarks. Please use d8().")
+            }
         }
-        compilationTarget.whenBrowserConfigured {
-            throw GradleException("The browser() environment is not supported for Kotlin/JS benchmarks. Please use nodejs().")
+        KotlinPlatformType.js -> {
+            compilationTarget.whenNodejsConfigured {
+                val execTask = createNodeJsExec(config, target, compilation, taskName)
+                tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(execTask)
+            }
+            compilationTarget.whenD8Configured {
+                throw GradleException("The d8() environment is not supported for Kotlin/JS benchmarks. Please use nodejs().")
+            }
+            compilationTarget.whenBrowserConfigured {
+                throw GradleException("The browser() environment is not supported for Kotlin/JS benchmarks. Please use nodejs().")
+            }
         }
-    }
-
-    if (compilationTarget is KotlinWasmSubTargetContainerDsl) {
-        compilationTarget.whenD8Configured {
-            val execTask = createD8Exec(config, target, compilation, taskName)
-            tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(execTask)
+        else -> {
+            throw GradleException("Unsupported platforms type ${compilationTarget.platformType}")
         }
     }
 }
@@ -70,9 +85,6 @@ private fun Project.createNodeJsExec(
     compilation: KotlinJsIrCompilation,
     taskName: String
 ): TaskProvider<NodeJsExec> = NodeJsExec.create(compilation, taskName) {
-    if (compilation.target.platformType == KotlinPlatformType.wasm) {
-        throw GradleException("Kotlin/WASM does not support targeting NodeJS for benchmarks.")
-    }
     dependsOn(compilation.runtimeDependencyFiles)
     group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
     description = "Executes benchmark for '${target.name}' with NodeJS"
@@ -94,9 +106,6 @@ private fun Project.createD8Exec(
     compilation: KotlinJsIrCompilation,
     taskName: String
 ): TaskProvider<D8Exec> = D8Exec.create(compilation, taskName) {
-    if (compilation.target.platformType == KotlinPlatformType.js) {
-        throw GradleException("Kotlin/JS does not support targeting D8 for benchmarks.")
-    }
     dependsOn(compilation.runtimeDependencyFiles)
     group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
     description = "Executes benchmark for '${target.name}' with D8"

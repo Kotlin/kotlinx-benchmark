@@ -5,89 +5,41 @@ import kotlin.test.*
 class InvalidTargetingTest : GradleTest() {
 
     @Test
-    fun testInvalidTargetForKotlinWASM() {
-        val runner = project("kotlin-multiplatform") {
-            configuration("invalidWasm") {
-                iterations = 1
-                iterationTime = 100
-                iterationTimeUnit = "ms"
-                reportFormat = "json"
-            }
-            register("wasmTest")
-            kotlin {
-                wasm("wasmTest") {
-                    nodejs()
-                }
-            }
-        }              
-
-        runner.runAndFail("invalidWasmBenchmark") {
-            assertOutputContains("Kotlin/WASM does not support targeting NodeJS for benchmarks.")
+    fun testWasmNodeJs() {
+        val runner = project("invalid-target/wasm-nodejs", true)
+        runner.runAndFail("wasmJsBenchmark") {
+            assertOutputContains("The nodejs() environment is not supported for Kotlin/Wasm benchmarks. Please use d8().")
         }
     }
 
     @Test
-    fun testInvalidTargetForKotlinJS() {
-        val runner = project("kotlin-multiplatform") {
-            configuration("invalidJS") {
-                iterations = 1
-                iterationTime = 100
-                iterationTimeUnit = "ms"
-                reportFormat = "json"
-            }
-            register("jsTest")
-            kotlin {
-                js("jsTest", KotlinConfiguration.IR) {
-                    d8()
-                }
-            }
-        }              
-
-        runner.runAndFail("invalidJsBenchmark") {
-            assertOutputContains("Kotlin/JS does not support targeting D8 for benchmarks.")
+    fun testWasmBrowser() {
+        val runner = project("invalid-target/wasm-browser", true)
+        runner.runAndFail("wasmJsBenchmark") {
+            assertOutputContains("The browser() environment is not supported for Kotlin/Wasm benchmarks. Please use d8().")
         }
     }
 
     @Test
-    fun testLegacyJsBackend() {
-        val runner = project("kotlin-multiplatform") {
-            configuration("legacyJS") {
-                iterations = 1
-                iterationTime = 100
-                iterationTimeUnit = "ms"
-                reportFormat = "json"
-            }
-            register("legacyJsTest")
-            kotlin {
-                js("legacyJsTest", KotlinConfiguration.LEGACY) {
-                    nodejs()
-                }
-            }
+    fun testJsD8() {
+        val runner = project("invalid-target/js-d8", true)
+        runner.runAndFail("jsBenchmark") {
+            assertOutputContains("The d8() environment is not supported for Kotlin/JS benchmarks. Please use nodejs().")
         }
+    }
 
-        runner.runAndFail("legacyJsBenchmark") {
+    @Test
+    fun testJsLegacyBackend() {
+        val runner = project("invalid-target/js-legacy", true)
+        runner.runAndFail("jsBenchmark") {
             assertOutputContains("Legacy Kotlin/JS backend is not supported. Please migrate to the Kotlin/JS IR compiler backend.")
         }
     }
 
     @Test
-    fun testBrowserEnvironmentForKotlinJS() {
-        val runner = project("kotlin-multiplatform") {
-            configuration("invalidBrowserJS") {
-                iterations = 1
-                iterationTime = 100
-                iterationTimeUnit = "ms"
-                reportFormat = "json"
-            }
-            register("jsBrowserTest")
-            kotlin {
-                js("jsBrowserTest", KotlinConfiguration.IR) {
-                    browser()
-                }
-            }
-        }
-
-        runner.runAndFail("invalidBrowserJsBenchmark") {
+    fun testJsBrowser() {
+        val runner = project("invalid-target/js-browser", true)
+        runner.runAndFail("jsBenchmark") {
             assertOutputContains("The browser() environment is not supported for Kotlin/JS benchmarks. Please use nodejs().")
         }
     }
