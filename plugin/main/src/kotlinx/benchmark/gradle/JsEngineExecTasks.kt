@@ -20,15 +20,19 @@ fun Project.createJsEngineBenchmarkExecTask(
     val taskName = "${target.name}${config.capitalizedName()}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}"
     val compilationTarget = compilation.target
 
+    check(compilation is KotlinJsIrCompilation) { "Legacy Kotlin/JS backend is not supported. Please migrate to the Kotlin/JS IR compiler backend." }
+
     if (compilationTarget is KotlinJsSubTargetContainerDsl) {
         compilationTarget.whenNodejsConfigured {
             val execTask = createNodeJsExec(config, target, compilation, taskName)
             tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(execTask)
         }
+        compilationTarget.whenBrowserConfigured {
+            throw GradleException("The browser() environment is not supported for Kotlin/JS benchmarks. Please use nodejs().")
+        }
     }
 
     if (compilationTarget is KotlinWasmSubTargetContainerDsl) {
-        check(compilation is KotlinJsIrCompilation) { "Legacy Kotlin/JS is does not supported by D8 engine" }
         compilationTarget.whenD8Configured {
             val execTask = createD8Exec(config, target, compilation, taskName)
             tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(execTask)
@@ -69,6 +73,9 @@ private fun Project.createNodeJsExec(
     compilation: KotlinJsCompilation,
     taskName: String
 ): TaskProvider<NodeJsExec> = NodeJsExec.create(compilation, taskName) {
+    if (compilation.target.platformType == KotlinPlatformType.wasm) {
+        throw GradleException("Kotlin/WASM does not support targeting NodeJS for benchmarks.")
+    }
     dependsOn(compilation.runtimeDependencyFiles)
     group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
     description = "Executes benchmark for '${target.name}' with NodeJS"
@@ -90,6 +97,9 @@ private fun Project.createD8Exec(
     compilation: KotlinJsIrCompilation,
     taskName: String
 ): TaskProvider<D8Exec> = D8Exec.create(compilation, taskName) {
+    if (compilation.target.platformType == KotlinPlatformType.js) {
+        throw GradleException("Kotlin/JS does not support targeting D8 for benchmarks.")
+    }
     dependsOn(compilation.runtimeDependencyFiles)
     group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
     description = "Executes benchmark for '${target.name}' with D8"

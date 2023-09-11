@@ -3,18 +3,27 @@ package kotlinx.benchmark.integration
 class ProjectBuilder {
     private val configurations = mutableMapOf<String, BenchmarkConfiguration>()
     private val targets = mutableMapOf<String, BenchmarkTarget>()
+    private val kotlinConfig = KotlinConfiguration()
 
     fun configuration(name: String, configuration: BenchmarkConfiguration.() -> Unit = {}) {
         configurations[name] = BenchmarkConfiguration().apply(configuration)
     }
+    
     fun register(name: String, configuration: BenchmarkTarget.() -> Unit = {}) {
         targets[name] = BenchmarkTarget().apply(configuration)
+    }
+
+    fun kotlin(configuration: KotlinConfiguration.() -> Unit) {
+        kotlinConfig.apply(configuration)
     }
 
     fun build(original: String): String {
 
         val script =
             """
+kotlin {
+    ${kotlinConfig.lines().joinToString("\n    ")}
+}
 benchmark {
     configurations {
         ${configurations.flatMap { it.value.lines(it.key) }.joinToString("\n        ")}
