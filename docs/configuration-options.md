@@ -63,6 +63,7 @@ The options listed in the following sections allow you to tailor the benchmark e
 | Option                                      | Description                                                | Possible Values                | Default Value  |
 |---------------------------------------------|------------------------------------------------------------|--------------------------------|----------------|
 | `advanced("jvmForks", value)`               | Specifies the number of times the harness should fork.     | Integer, "definedByJmh"        | `1`            |
+| `advanced("jvmProfiler", value)`            | Sets the profiler to be used during benchmarking.          | "gc", "stack", "cl", "comp"    | `null` (No profiler)|
 
 **Notes on "jvmForks":**
 - **0** - "no fork", i.e., no subprocesses are forked to run benchmarks.
