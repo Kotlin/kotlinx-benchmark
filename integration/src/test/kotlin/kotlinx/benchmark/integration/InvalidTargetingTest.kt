@@ -8,7 +8,7 @@ class InvalidTargetingTest : GradleTest() {
     fun testWasmNodeJs() {
         val runner = project("invalid-target/wasm-nodejs", true)
         runner.runAndFail("wasmJsBenchmark") {
-            assertOutputContains("The nodejs() environment is not supported for Kotlin/Wasm benchmarks. Please use d8().")
+            assertOutputContains("kotlinx-benchmark supports only d8() environment for Kotlin/Wasm.")
         }
     }
 
@@ -16,7 +16,7 @@ class InvalidTargetingTest : GradleTest() {
     fun testWasmBrowser() {
         val runner = project("invalid-target/wasm-browser", true)
         runner.runAndFail("wasmJsBenchmark") {
-            assertOutputContains("The browser() environment is not supported for Kotlin/Wasm benchmarks. Please use d8().")
+            assertOutputContains("kotlinx-benchmark supports only d8() environment for Kotlin/Wasm.")
         }
     }
 
@@ -24,7 +24,7 @@ class InvalidTargetingTest : GradleTest() {
     fun testJsD8() {
         val runner = project("invalid-target/js-d8", true)
         runner.runAndFail("jsBenchmark") {
-            assertOutputContains("The d8() environment is not supported for Kotlin/JS benchmarks. Please use nodejs().")
+            assertOutputContains("kotlinx-benchmark supports only nodejs() environment for Kotlin/JS.")
         }
     }
 
@@ -40,7 +40,7 @@ class InvalidTargetingTest : GradleTest() {
     fun testJsBrowser() {
         val runner = project("invalid-target/js-browser", true)
         runner.runAndFail("jsBenchmark") {
-            assertOutputContains("The browser() environment is not supported for Kotlin/JS benchmarks. Please use nodejs().")
+            assertOutputContains("kotlinx-benchmark supports only nodejs() environment for Kotlin/JS.")
         }
     }
 }
