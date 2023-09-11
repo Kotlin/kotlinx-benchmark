@@ -6,7 +6,6 @@ import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJsCompilation
 import org.jetbrains.kotlin.gradle.targets.js.d8.D8Exec
 import org.jetbrains.kotlin.gradle.targets.js.dsl.*
 import org.jetbrains.kotlin.gradle.targets.js.ir.*
@@ -15,12 +14,10 @@ import org.jetbrains.kotlin.gradle.targets.js.nodejs.*
 fun Project.createJsEngineBenchmarkExecTask(
     config: BenchmarkConfiguration,
     target: BenchmarkTarget,
-    compilation: KotlinJsCompilation
+    compilation: KotlinJsIrCompilation
 ) {
     val taskName = "${target.name}${config.capitalizedName()}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}"
     val compilationTarget = compilation.target
-
-    check(compilation is KotlinJsIrCompilation) { "Legacy Kotlin/JS backend is not supported. Please migrate to the Kotlin/JS IR compiler backend." }
 
     if (compilationTarget is KotlinJsSubTargetContainerDsl) {
         compilationTarget.whenNodejsConfigured {
@@ -40,7 +37,7 @@ fun Project.createJsEngineBenchmarkExecTask(
     }
 }
 
-private fun Project.getExecutableFile(compilation: KotlinJsCompilation): Provider<RegularFile> {
+private fun Project.getExecutableFile(compilation: KotlinJsIrCompilation): Provider<RegularFile> {
     val executableFile = when (val kotlinTarget = compilation.target) {
         is KotlinJsIrTarget -> {
             val binary = kotlinTarget.binaries.executable(compilation)
@@ -54,7 +51,7 @@ private fun Project.getExecutableFile(compilation: KotlinJsCompilation): Provide
     return project.layout.file(executableFile)
 }
 
-private val KotlinJsCompilation.isWasmCompilation: Boolean get() =
+private val KotlinJsIrCompilation.isWasmCompilation: Boolean get() =
     target.platformType == KotlinPlatformType.wasm
 
 private fun MutableList<String>.addWasmArguments() {
@@ -70,7 +67,7 @@ private fun MutableList<String>.addJsArguments() {
 private fun Project.createNodeJsExec(
     config: BenchmarkConfiguration,
     target: BenchmarkTarget,
-    compilation: KotlinJsCompilation,
+    compilation: KotlinJsIrCompilation,
     taskName: String
 ): TaskProvider<NodeJsExec> = NodeJsExec.create(compilation, taskName) {
     if (compilation.target.platformType == KotlinPlatformType.wasm) {
