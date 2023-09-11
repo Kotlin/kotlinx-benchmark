@@ -233,7 +233,7 @@ private fun validateConfig(config: BenchmarkConfiguration) {
                     "Invalid value for 'jvmProfiler': '$value'. Accepted values: ${ValidOptions.jvmProfilers.joinToString(", ")}."
                 }
             }
-            else -> throw IllegalArgumentException("Invalid advanced option name: '$param'. Accepted options: \"nativeFork\", \"nativeGCAfterIteration\", \"jvmForks\", \"jsUseBridge\".")
+            else -> throw IllegalArgumentException("Invalid advanced option name: '$param'. Accepted options: \"nativeFork\", \"nativeGCAfterIteration\", \"jvmForks\", \"jsUseBridge\", \"jvmProfiler\".")
         }
     }
 }
