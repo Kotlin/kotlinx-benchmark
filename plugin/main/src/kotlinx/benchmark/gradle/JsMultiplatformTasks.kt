@@ -18,11 +18,11 @@ fun Project.processJsCompilation(target: JsBenchmarkTarget) {
     }
 }
 
-private fun Project.createJsBenchmarkCompileTask(target: JsBenchmarkTarget): KotlinJsCompilation {
+private fun Project.createJsBenchmarkCompileTask(target: JsBenchmarkTarget): KotlinJsIrCompilation {
     val compilation = target.compilation
     val benchmarkBuildDir = benchmarkBuildDir(target)
     val benchmarkCompilation =
-        compilation.target.compilations.create(target.name + BenchmarksPlugin.BENCHMARK_COMPILATION_SUFFIX) as KotlinJsCompilation
+        compilation.target.compilations.create(target.name + BenchmarksPlugin.BENCHMARK_COMPILATION_SUFFIX) as KotlinJsIrCompilation
 
     (compilation.target as KotlinJsTargetDsl).apply {
         //force to create executable: required for IR, do nothing on Legacy
@@ -66,7 +66,7 @@ private fun Project.createJsBenchmarkCompileTask(target: JsBenchmarkTarget): Kot
 
 private fun Project.createJsBenchmarkGenerateSourceTask(
     target: JsBenchmarkTarget,
-    compilationOutput: KotlinJsCompilation
+    compilationOutput: KotlinJsIrCompilation
 ) {
     val benchmarkBuildDir = benchmarkBuildDir(target)
     task<JsSourceGeneratorTask>("${target.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}") {

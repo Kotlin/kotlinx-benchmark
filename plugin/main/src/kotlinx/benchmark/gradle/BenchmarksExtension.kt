@@ -62,10 +62,12 @@ open class BenchmarksExtension(val project: Project) {
                             KotlinJvmBenchmarkTarget(this, name, compilation)
                         }
                         is KotlinJsCompilation -> {
+                            check(compilation is KotlinJsIrCompilation) {
+                                "Legacy Kotlin/JS backend is not supported. Please migrate to the Kotlin/JS IR compiler backend."
+                            }
                             if (compilation.target.platformType != KotlinPlatformType.wasm) {
                                 JsBenchmarkTarget(this, name, compilation)
                             } else {
-                                check(compilation is KotlinJsIrCompilation)
                                 WasmBenchmarkTarget(this, name, compilation)
                             }
                         }
