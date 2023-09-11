@@ -18,9 +18,6 @@ open class JsSourceGeneratorTask
     lateinit var title: String
 
     @Input
-    var ir: Boolean = false
-
-    @Input
     var useBenchmarkJs: Boolean = true
 
     @InputFiles
@@ -48,7 +45,7 @@ open class JsSourceGeneratorTask
     }
 
     private fun generateSources(lib: File) {
-        val modules = load(lib)
+        val modules = loadIr(lib, LockBasedStorageManager("Inspect"))
         modules.forEach { module ->
             val generator = SuiteSourceGenerator(
                 title,
@@ -60,29 +57,11 @@ open class JsSourceGeneratorTask
         }
     }
 
-    private fun load(lib: File): List<ModuleDescriptor> {
-        val storageManager = LockBasedStorageManager("Inspect")
-        return if (ir) {
-            loadIr(lib, storageManager)
-        } else {
-            loadLegacy(lib, storageManager)
-        }
-    }
-
     private fun loadIr(lib: File, storageManager: StorageManager): List<ModuleDescriptor> {
-        //skip processing of empty dirs (fail if not to do it)
+        // skip processing of empty dirs (fails if not to do it)
         if (lib.listFiles() == null) return emptyList()
         val dependencies = inputDependencies.files.filterNot { it.extension == "js" }.toSet()
         val module = KlibResolver.JS.createModuleDescriptor(lib, dependencies, storageManager)
         return listOf(module)
     }
-
-    private fun loadLegacy(lib: File, storageManager: StorageManager): List<ModuleDescriptor> {
-        val dependencies = inputDependencies.flatMap {
-            loadJsDescriptors(it, storageManager)
-        }
-        return loadJsDescriptors(lib, storageManager, dependencies)
-    }
 }
-
-

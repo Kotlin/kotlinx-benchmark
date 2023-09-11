@@ -73,7 +73,6 @@ private fun Project.createJsBenchmarkGenerateSourceTask(
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Generate JS source files for '${target.name}'"
         title = target.name
-        ir = target.compilation is KotlinJsIrCompilation
         useBenchmarkJs = target.jsBenchmarksExecutor == JsBenchmarksExecutor.BenchmarkJs
         inputClassesDirs = compilationOutput.output.allOutputs
         inputDependencies = compilationOutput.compileDependencyFiles
