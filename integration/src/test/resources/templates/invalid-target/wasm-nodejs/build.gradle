@@ -1,0 +1,11 @@
+kotlin {
+    wasm("wasmJs") {
+        nodejs()
+    }
+}
+
+benchmark {
+    targets {
+        register("wasmJs")
+    }
+}

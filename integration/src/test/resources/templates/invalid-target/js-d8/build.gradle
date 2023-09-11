@@ -1,0 +1,11 @@
+kotlin {
+    js(IR) {
+        d8()
+    }
+}
+
+benchmark {
+    targets {
+        register("js")
+    }
+}

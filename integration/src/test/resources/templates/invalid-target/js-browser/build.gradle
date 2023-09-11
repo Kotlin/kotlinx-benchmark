@@ -1,0 +1,11 @@
+kotlin {
+    js(IR) {
+        browser()
+    }
+}
+
+benchmark {
+    targets {
+        register("js")
+    }
+}
