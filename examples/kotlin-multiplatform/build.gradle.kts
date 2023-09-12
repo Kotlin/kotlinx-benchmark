@@ -5,7 +5,7 @@ import kotlinx.benchmark.gradle.JsBenchmarksExecutor
 
 plugins {
     kotlin("multiplatform")
-    kotlin("plugin.allopen") version "1.8.21"
+    kotlin("plugin.allopen") version "1.9.0"
     id("org.jetbrains.kotlinx.benchmark")
 }
 
