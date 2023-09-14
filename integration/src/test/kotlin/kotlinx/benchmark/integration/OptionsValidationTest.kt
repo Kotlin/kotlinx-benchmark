@@ -270,5 +270,5 @@ private object ValidOptions {
     )
     val modes = setOf("thrpt", "avgt", "Throughput", "AverageTime")
     val nativeForks = setOf("perBenchmark", "perIteration")
-    val jvmProfilers = setOf("stack", "gc", "cl", "comp")
+    val jvmProfilers = setOf("stack", "gc", "cl", "comp", "perf", "perfnorm", "perfasm", "xperfasm", " dtraceasm")
 }

@@ -62,6 +62,11 @@ fun main(args: Array<String>) {
         "stack" -> jmhOptions.addProfiler("stack")
         "cl" -> jmhOptions.addProfiler("cl")
         "comp" -> jmhOptions.addProfiler("comp")
+        "perf" -> jmhOptions.addProfiler("perf")
+        "perfnorm" -> jmhOptions.addProfiler("perfnorm")
+        "perfasm" -> jmhOptions.addProfiler("perfasm")
+        "xperfasm" -> jmhOptions.addProfiler("xperfasm")
+        "dtraceasm" -> jmhOptions.addProfiler("dtraceasm")
         null -> {}
         else -> throw IllegalArgumentException("Invalid value for 'jvmProfiler': $profilerName. Accepted values: gc, stack, cl, comp")
     }
