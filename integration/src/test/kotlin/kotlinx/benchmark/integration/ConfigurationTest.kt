@@ -28,7 +28,7 @@ class ConfigurationTest : GradleTest() {
             },
             checkBlock = {
                 val actualIterations = output.lines().count { it.startsWith("Iteration #") }
-                assertEquals(expectedIterations, actualIterations, "Expected $expectedIterations iterations but found $actualIterations")
+                assertEquals(expectedIterations, actualIterations)
             }
         )
     }
