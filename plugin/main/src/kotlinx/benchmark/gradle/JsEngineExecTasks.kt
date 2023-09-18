@@ -53,7 +53,7 @@ private fun Project.getExecutableFile(compilation: KotlinJsIrCompilation): Provi
             val destinationDir = binary.linkSyncTask.map { it.destinationDir }
             destinationDir.zip(outputFile) { dir, file -> dir.resolve(file.name) }
         }
-        else -> compilation.compileKotlinTaskProvider.flatMap { it.outputFileProperty }
+        else -> compilation.compileTaskProvider.flatMap { it.outputFileProperty }
     }
     return project.layout.file(executableFile)
 }
