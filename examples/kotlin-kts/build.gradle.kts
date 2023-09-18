@@ -28,6 +28,7 @@ dependencies {
 tasks.withType<KotlinCompile> {
     kotlinOptions {
         jvmTarget = "1.8"
+        languageVersion = rootProject.properties["kotlin_language_version"].toString()
     }
 }
 
