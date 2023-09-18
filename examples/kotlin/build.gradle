@@ -20,6 +20,7 @@ sourceSets.all {
     kotlin.srcDirs = ["$it.name/src"]
     java.srcDirs = ["$it.name/src"]
     resources.srcDirs = ["$it.name/resources"]
+    languageSettings.languageVersion = kotlin_language_version
 }
 
 compileKotlin {
