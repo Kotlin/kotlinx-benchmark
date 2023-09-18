@@ -57,6 +57,7 @@ kotlin {
         resources.srcDirs = ["$it.name/resources"]
         languageSettings {
             progressiveMode = true
+            languageVersion = kotlin_language_version
         }
     }
 
