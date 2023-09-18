@@ -39,6 +39,7 @@ kotlin {
     sourceSets.configureEach {
         languageSettings {
             progressiveMode = true
+            languageVersion = kotlin_language_version
         }
     }
 
