@@ -4,9 +4,13 @@ actual enum class Scope {
     Benchmark
 }
 
+@Target(AnnotationTarget.CLASS)
 actual annotation class State(actual val value: Scope)
+@Target(AnnotationTarget.FUNCTION)
 actual annotation class Setup
+@Target(AnnotationTarget.FUNCTION)
 actual annotation class TearDown
+@Target(AnnotationTarget.FUNCTION)
 actual annotation class Benchmark
 
 
