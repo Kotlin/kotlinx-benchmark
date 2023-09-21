@@ -1,6 +1,6 @@
 buildscript {
     def loadPropFromRootProject = { String prop ->
-        ext.set(prop, System.getProperty(prop))
+        ext.set(prop, rootProject.properties[prop])
         if (ext.get(prop) == null) {
             def filename = projectDir.getAbsoluteFile().toPath().parent.resolve("gradle.properties").toString()
             def fis = new FileInputStream(filename)
