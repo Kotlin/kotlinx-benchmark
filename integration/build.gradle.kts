@@ -37,3 +37,5 @@ allprojects {
         }
     }
 }
+
+tasks.getByName("apiCheck").dependsOn(rootProject.gradle.includedBuild("plugin").task(":apiCheck"))

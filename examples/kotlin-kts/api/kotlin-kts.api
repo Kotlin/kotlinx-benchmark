@@ -1,0 +1,7 @@
+public class test/KtsTestBenchmark {
+	public fun <init> ()V
+	public fun cosBenchmark ()D
+	public fun setUp ()V
+	public fun sqrtBenchmark ()D
+}
+

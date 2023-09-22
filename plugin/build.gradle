@@ -9,7 +9,7 @@ buildscript {
             ext.set(prop, properties.getProperty(prop))
         }
     }
-    ["kotlin_version", "kotlin_language_version", "kotlin_api_version" ].each {
+    ["kotlin_version", "kotlin_language_version", "kotlin_api_version"].each {
         loadPropFromRootProject(it)
     }
     ext.kotlinDevUrl = rootProject.properties["kotlin_repo_url"]
@@ -33,6 +33,7 @@ plugins {
     id 'java-gradle-plugin'
     id 'maven-publish'
     id 'com.gradle.plugin-publish' version '0.21.0'
+    id 'org.jetbrains.kotlinx.binary-compatibility-validator' version '0.13.2'
 }
 
 apply plugin: 'org.jetbrains.kotlin.jvm'

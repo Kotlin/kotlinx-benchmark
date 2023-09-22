@@ -1,0 +1,56 @@
+public abstract class test/BaseBenchmark {
+	public fun <init> ()V
+	public fun baseBenchmark ()D
+	public fun baseSetup ()V
+	public fun baseTeardown ()V
+	protected fun getData ()D
+	protected fun setData (D)V
+}
+
+public class test/CommonBenchmark {
+	public fun <init> ()V
+	public fun exception ()V
+	public fun longBenchmark ()D
+	public fun longBlackholeBenchmark (Lorg/openjdk/jmh/infra/Blackhole;)V
+	public fun mathBenchmark ()D
+	public fun setUp ()V
+	public fun teardown ()V
+}
+
+public class test/InheritedBenchmark : test/BaseBenchmark {
+	public fun <init> ()V
+	public fun inheritedBenchmark ()D
+	public fun inheritedSetup ()V
+	public fun inheritedTeardown ()V
+}
+
+public class test/JvmTestBenchmark {
+	public fun <init> ()V
+	public fun cosBenchmark ()D
+	public fun setUp ()V
+	public fun sqrtBenchmark ()D
+}
+
+public final class test/JvmTestBenchmarkKt {
+	public static final field WARMUP_ITERATIONS I
+}
+
+public class test/ParamBenchmark {
+	public fun <init> ()V
+	public fun getData ()I
+	public fun getText ()Ljava/lang/String;
+	public fun getValue ()I
+	public fun mathBenchmark ()D
+	public fun otherBenchmark ()I
+	public fun setData (I)V
+	public fun setText (Ljava/lang/String;)V
+	public fun setValue (I)V
+	public fun textContentCheck ()Ljava/lang/String;
+}
+
+public class test/nested/CommonBenchmark {
+	public fun <init> ()V
+	public fun mathBenchmark ()D
+	public fun setUp ()V
+}
+

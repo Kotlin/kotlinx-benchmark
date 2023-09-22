@@ -1,0 +1,62 @@
+public final class kotlinx/benchmark/integration/BenchmarkConfiguration {
+	public fun <init> ()V
+	public final fun getIterationTime ()Ljava/lang/Long;
+	public final fun getIterationTimeUnit ()Ljava/lang/String;
+	public final fun getIterations ()Ljava/lang/Integer;
+	public final fun getMode ()Ljava/lang/String;
+	public final fun getOutputTimeUnit ()Ljava/lang/String;
+	public final fun getReportFormat ()Ljava/lang/String;
+	public final fun getWarmups ()Ljava/lang/Integer;
+	public final fun lines (Ljava/lang/String;)Ljava/util/List;
+	public final fun setIterationTime (Ljava/lang/Long;)V
+	public final fun setIterationTimeUnit (Ljava/lang/String;)V
+	public final fun setIterations (Ljava/lang/Integer;)V
+	public final fun setMode (Ljava/lang/String;)V
+	public final fun setOutputTimeUnit (Ljava/lang/String;)V
+	public final fun setReportFormat (Ljava/lang/String;)V
+	public final fun setWarmups (Ljava/lang/Integer;)V
+}
+
+public final class kotlinx/benchmark/integration/BenchmarkTarget {
+	public fun <init> ()V
+	public final fun getJmhVersion ()Ljava/lang/String;
+	public final fun getJsBenchmarksExecutor ()Lkotlinx/benchmark/integration/JsBenchmarksExecutor;
+	public final fun lines (Ljava/lang/String;)Ljava/util/List;
+	public final fun setJmhVersion (Ljava/lang/String;)V
+	public final fun setJsBenchmarksExecutor (Lkotlinx/benchmark/integration/JsBenchmarksExecutor;)V
+}
+
+public final class kotlinx/benchmark/integration/GradleTestVersion : java/lang/Enum {
+	public static final field v8_0 Lkotlinx/benchmark/integration/GradleTestVersion;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public final fun getVersionString ()Ljava/lang/String;
+	public static fun valueOf (Ljava/lang/String;)Lkotlinx/benchmark/integration/GradleTestVersion;
+	public static fun values ()[Lkotlinx/benchmark/integration/GradleTestVersion;
+}
+
+public final class kotlinx/benchmark/integration/JsBenchmarksExecutor : java/lang/Enum {
+	public static final field BenchmarkJs Lkotlinx/benchmark/integration/JsBenchmarksExecutor;
+	public static final field BuiltIn Lkotlinx/benchmark/integration/JsBenchmarksExecutor;
+	public static fun getEntries ()Lkotlin/enums/EnumEntries;
+	public static fun valueOf (Ljava/lang/String;)Lkotlinx/benchmark/integration/JsBenchmarksExecutor;
+	public static fun values ()[Lkotlinx/benchmark/integration/JsBenchmarksExecutor;
+}
+
+public final class kotlinx/benchmark/integration/ProjectBuilder {
+	public fun <init> ()V
+	public final fun build (Ljava/lang/String;)Ljava/lang/String;
+	public final fun configuration (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun configuration$default (Lkotlinx/benchmark/integration/ProjectBuilder;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public final fun register (Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun register$default (Lkotlinx/benchmark/integration/ProjectBuilder;Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+}
+
+public final class kotlinx/benchmark/integration/Runner {
+	public fun <init> (Ljava/io/File;ZLkotlinx/benchmark/integration/GradleTestVersion;)V
+	public synthetic fun <init> (Ljava/io/File;ZLkotlinx/benchmark/integration/GradleTestVersion;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun run ([Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun run$default (Lkotlinx/benchmark/integration/Runner;[Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+	public final fun runAndFail ([Ljava/lang/String;Lkotlin/jvm/functions/Function1;)V
+	public static synthetic fun runAndFail$default (Lkotlinx/benchmark/integration/Runner;[Ljava/lang/String;Lkotlin/jvm/functions/Function1;ILjava/lang/Object;)V
+}
+

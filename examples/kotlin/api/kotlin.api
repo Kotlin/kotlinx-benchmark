@@ -1,0 +1,12 @@
+public final class test/TestData {
+	public fun <init> (D)V
+	public final fun component1 ()D
+	public final fun copy (D)Ltest/TestData;
+	public static synthetic fun copy$default (Ltest/TestData;DILjava/lang/Object;)Ltest/TestData;
+	public fun equals (Ljava/lang/Object;)Z
+	public final fun getValue ()D
+	public fun hashCode ()I
+	public final fun setValue (D)V
+	public fun toString ()Ljava/lang/String;
+}
+
