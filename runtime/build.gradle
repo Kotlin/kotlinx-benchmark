@@ -61,9 +61,6 @@ kotlin {
             optIn("kotlinx.cinterop.ExperimentalForeignApi")
             languageVersion = kotlin_language_version
             apiVersion = kotlin_api_version
-            compilerOptions{
-                freeCompilerArgs.add("-Xexpect-actual-classes")
-            }
         }
     }
 
