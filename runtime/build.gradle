@@ -66,6 +66,7 @@ kotlin {
             }
         }
         jvmMain {
+            dependsOn(commonMain)
             dependencies {
                 compileOnly "org.openjdk.jmh:jmh-core:$jmhVersion"
             }
@@ -76,6 +77,7 @@ kotlin {
             }
         }
         jsMain {
+            dependsOn(commonMain)
             jsIrMain.dependsOn(it)
         }
         nativeMain {
