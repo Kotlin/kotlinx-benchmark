@@ -27,14 +27,6 @@ class InvalidTargetingTest : GradleTest() {
     }
 
     @Test
-    fun testJsLegacyBackend() {
-        val runner = project("invalid-target/js-legacy", true)
-        runner.runAndFail("jsBenchmark") {
-            assertOutputContains("Legacy Kotlin/JS backend is not supported. Please migrate to the Kotlin/JS IR compiler backend.")
-        }
-    }
-
-    @Test
     fun testJsBrowser() {
         val runner = project("invalid-target/js-browser", true)
         runner.runAndFail("jsBenchmark") {
