@@ -57,4 +57,9 @@ allprojects {
         maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev' }
         mavenLocal()
     }
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask).configureEach {
+        compilerOptions {
+            freeCompilerArgs.add("-Xpartial-linkage-loglevel=ERROR")
+        }
+    }
 }

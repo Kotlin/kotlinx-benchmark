@@ -105,6 +105,10 @@ compileKotlin {
         languageVersion = kotlin_language_version
         apiVersion = kotlin_api_version
     }
+
+    compilerOptions {
+        freeCompilerArgs.add("-Xpartial-linkage-loglevel=ERROR")
+    }
 }
 
 dependencies {
