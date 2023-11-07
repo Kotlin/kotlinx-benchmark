@@ -126,8 +126,8 @@ public final class kotlinx/benchmark/gradle/JmhBytecodeGeneratorWorker$Companion
 }
 
 public final class kotlinx/benchmark/gradle/JsBenchmarkTarget : kotlinx/benchmark/gradle/BenchmarkTarget {
-	public fun <init> (Lkotlinx/benchmark/gradle/BenchmarksExtension;Ljava/lang/String;Lorg/jetbrains/kotlin/gradle/plugin/mpp/KotlinJsCompilation;)V
-	public final fun getCompilation ()Lorg/jetbrains/kotlin/gradle/plugin/mpp/KotlinJsCompilation;
+	public fun <init> (Lkotlinx/benchmark/gradle/BenchmarksExtension;Ljava/lang/String;Lorg/jetbrains/kotlin/gradle/targets/js/ir/KotlinJsIrCompilation;)V
+	public final fun getCompilation ()Lorg/jetbrains/kotlin/gradle/targets/js/ir/KotlinJsIrCompilation;
 	public final fun getJsBenchmarksExecutor ()Lkotlinx/benchmark/gradle/JsBenchmarksExecutor;
 	public final fun setJsBenchmarksExecutor (Lkotlinx/benchmark/gradle/JsBenchmarksExecutor;)V
 }
@@ -141,7 +141,7 @@ public final class kotlinx/benchmark/gradle/JsBenchmarksExecutor : java/lang/Enu
 }
 
 public final class kotlinx/benchmark/gradle/JsEngineExecTasksKt {
-	public static final fun createJsEngineBenchmarkExecTask (Lorg/gradle/api/Project;Lkotlinx/benchmark/gradle/BenchmarkConfiguration;Lkotlinx/benchmark/gradle/BenchmarkTarget;Lorg/jetbrains/kotlin/gradle/plugin/mpp/KotlinJsCompilation;)V
+	public static final fun createJsEngineBenchmarkExecTask (Lorg/gradle/api/Project;Lkotlinx/benchmark/gradle/BenchmarkConfiguration;Lkotlinx/benchmark/gradle/BenchmarkTarget;Lorg/jetbrains/kotlin/gradle/targets/js/ir/KotlinJsIrCompilation;)V
 }
 
 public final class kotlinx/benchmark/gradle/JsMultiplatformTasksKt {
@@ -358,8 +358,8 @@ public final class kotlinx/benchmark/gradle/UtilsKt$sam$i$org_gradle_api_Action$
 }
 
 public final class kotlinx/benchmark/gradle/WasmBenchmarkTarget : kotlinx/benchmark/gradle/BenchmarkTarget {
-	public fun <init> (Lkotlinx/benchmark/gradle/BenchmarksExtension;Ljava/lang/String;Lorg/jetbrains/kotlin/gradle/plugin/mpp/KotlinJsCompilation;)V
-	public final fun getCompilation ()Lorg/jetbrains/kotlin/gradle/plugin/mpp/KotlinJsCompilation;
+	public fun <init> (Lkotlinx/benchmark/gradle/BenchmarksExtension;Ljava/lang/String;Lorg/jetbrains/kotlin/gradle/targets/js/ir/KotlinJsIrCompilation;)V
+	public final fun getCompilation ()Lorg/jetbrains/kotlin/gradle/targets/js/ir/KotlinJsIrCompilation;
 }
 
 public final class kotlinx/benchmark/gradle/WasmMultiplatformTasksKt {
