@@ -358,8 +358,8 @@ public final class kotlinx/benchmark/gradle/UtilsKt$sam$i$org_gradle_api_Action$
 }
 
 public final class kotlinx/benchmark/gradle/WasmBenchmarkTarget : kotlinx/benchmark/gradle/BenchmarkTarget {
-	public fun <init> (Lkotlinx/benchmark/gradle/BenchmarksExtension;Ljava/lang/String;Lorg/jetbrains/kotlin/gradle/targets/js/ir/KotlinJsIrCompilation;)V
-	public final fun getCompilation ()Lorg/jetbrains/kotlin/gradle/targets/js/ir/KotlinJsIrCompilation;
+	public fun <init> (Lkotlinx/benchmark/gradle/BenchmarksExtension;Ljava/lang/String;Lorg/jetbrains/kotlin/gradle/plugin/mpp/KotlinJsCompilation;)V
+	public final fun getCompilation ()Lorg/jetbrains/kotlin/gradle/plugin/mpp/KotlinJsCompilation;
 }
 
 public final class kotlinx/benchmark/gradle/WasmMultiplatformTasksKt {
