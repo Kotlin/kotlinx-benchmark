@@ -48,8 +48,9 @@ private fun Project.getExecutableFile(compilation: KotlinJsIrCompilation): Provi
     val kotlinTarget = compilation.target as KotlinJsIrTarget
     val binary = kotlinTarget.binaries.executable(compilation)
         .first { it.mode == KotlinJsBinaryMode.PRODUCTION } as JsIrBinary
+    val extension = if (kotlinTarget.platformType == KotlinPlatformType.wasm) "mjs" else "js"
     val outputFileName = binary.linkTask.flatMap { task ->
-        task.compilerOptions.moduleName.map { "$it.js" }
+        task.compilerOptions.moduleName.map { "$it.$extension" }
     }
     val destinationDir = binary.linkSyncTask.flatMap { it.destinationDirectory }
     val executableFile = destinationDir.zip(outputFileName) { dir, fileName -> dir.resolve(fileName) }
