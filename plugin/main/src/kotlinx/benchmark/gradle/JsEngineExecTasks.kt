@@ -36,14 +36,16 @@ fun Project.createJsEngineBenchmarkExecTask(
 }
 
 private fun Project.getExecutableFile(compilation: KotlinJsIrCompilation): Provider<RegularFile> {
-    val kotlinTarget = compilation.target as KotlinJsIrTarget
-    val binary = kotlinTarget.binaries.executable(compilation)
-        .first { it.mode == KotlinJsBinaryMode.PRODUCTION } as JsIrBinary
-    val outputFileName = binary.linkTask.flatMap { task ->
-        task.compilerOptions.moduleName.map { "$it.js" }
+    val executableFile = when (val kotlinTarget = compilation.target) {
+        is KotlinJsIrTarget -> {
+            val binary = kotlinTarget.binaries.executable(compilation)
+                .first { it.mode == KotlinJsBinaryMode.PRODUCTION } as JsIrBinary
+            val outputFile = binary.linkTask.flatMap { it.outputFileProperty }
+            val destinationDir = binary.linkSyncTask.map { it.destinationDir }
+            destinationDir.zip(outputFile) { dir, file -> dir.resolve(file.name) }
+        }
+        else -> compilation.compileKotlinTaskProvider.flatMap { it.outputFileProperty }
     }
-    val destinationDir = binary.linkSyncTask.flatMap { it.destinationDirectory }
-    val executableFile = destinationDir.zip(outputFileName) { dir, fileName -> dir.resolve(fileName) }
     return project.layout.file(executableFile)
 }
 
