@@ -42,7 +42,7 @@ private fun Project.getExecutableFile(compilation: KotlinJsIrCompilation): Provi
     val outputFileName = binary.linkTask.flatMap { task ->
         task.compilerOptions.moduleName.map { "$it.js" }
     }
-    val destinationDir = binary.linkSyncTask.map { it.destinationDir }
+    val destinationDir = binary.linkSyncTask.flatMap { it.destinationDirectory }
     val executableFile = destinationDir.zip(outputFileName) { dir, fileName -> dir.resolve(fileName) }
     return project.layout.file(executableFile)
 }
