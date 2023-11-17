@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
+
 plugins {
     id 'org.jetbrains.kotlin.multiplatform'
 }
@@ -100,4 +102,11 @@ if (project.findProperty("publication_repository") == "space") {
             }
         }
     }
+}
+
+// Workaround for TeamCity build failure:
+// Task 'compileTestKotlinLinuxX64' uses this output of task 'signLinuxX64Publication' without declaring an explicit or implicit dependency.
+// TODO: Find out and fix the issue
+tasks.withType(KotlinNativeCompile).matching { it.name.toLowerCase().contains("test") }.configureEach {
+    it.dependsOn(tasks.withType(Sign))
 }
