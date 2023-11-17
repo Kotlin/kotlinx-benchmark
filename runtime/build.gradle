@@ -8,6 +8,12 @@ repositories {
     mavenLocal()
 
 }
+kotlin {
+    compilerOptions {
+        languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.@Companion.fromVersion(project.ext.kotlin_language_version))
+        apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.@Companion.fromVersion(project.ext.kotlin_api_version))
+    }
+}
 
 kotlin {
     infra {
@@ -55,14 +61,8 @@ kotlin {
     sourceSets.all {
         kotlin.srcDirs = ["$it.name/src"]
         resources.srcDirs = ["$it.name/resources"]
-        languageSettings {
-            progressiveMode = true
-            optIn('kotlin.experimental.ExperimentalNativeApi')
-            optIn("kotlinx.cinterop.ExperimentalForeignApi")
-            languageVersion = kotlin_language_version
-            apiVersion = kotlin_api_version
-        }
     }
+
 
     sourceSets {
         commonTest {

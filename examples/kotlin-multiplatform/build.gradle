@@ -28,13 +28,12 @@ kotlin {
     if (HostManager.hostIsLinux) linuxX64('native')
     if (HostManager.hostIsMingw) mingwX64('native')
 
-    sourceSets.all {
-        languageSettings {
-            progressiveMode = true
-            languageVersion = kotlin_language_version
-            apiVersion = kotlin_api_version
-        }
+    compilerOptions {
+        progressiveMode = true
+        languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.@Companion.fromVersion(project.ext.kotlin_language_version))
+        apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.@Companion.fromVersion(project.ext.kotlin_api_version))
     }
+
 
     sourceSets {
         commonMain {
