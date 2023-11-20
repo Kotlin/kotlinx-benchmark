@@ -73,8 +73,12 @@ sourceSets {
         java.srcDirs = ['test/src']
         resources.srcDirs = ['test/resources']
     }
-    configureEach {
-        languageSettings.languageVersion = rootProject.properties["kotlin_language_version"]
+}
+
+kotlin {
+    compilerOptions {
+        languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.@Companion.fromVersion(project.ext.kotlin_language_version))
+        apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.@Companion.fromVersion(project.ext.kotlin_api_version))
     }
 }
 
