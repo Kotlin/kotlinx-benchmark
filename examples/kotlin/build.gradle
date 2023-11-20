@@ -20,8 +20,15 @@ sourceSets.configureEach {
     kotlin.srcDirs = ["$it.name/src"]
     java.srcDirs = ["$it.name/src"]
     resources.srcDirs = ["$it.name/resources"]
-    languageSettings.languageVersion = kotlin_language_version
 }
+
+kotlin {
+    compilerOptions {
+        languageVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.@Companion.fromVersion(project.ext.kotlin_language_version))
+        apiVersion.set(org.jetbrains.kotlin.gradle.dsl.KotlinVersion.@Companion.fromVersion(project.ext.kotlin_api_version))
+    }
+}
+
 compileJava {
     sourceCompatibility = "1.8"
     targetCompatibility = "1.8"
