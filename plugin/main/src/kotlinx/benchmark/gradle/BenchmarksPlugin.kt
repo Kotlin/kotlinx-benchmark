@@ -37,8 +37,8 @@ class BenchmarksPlugin : Plugin<Project> {
 
         plugins.withType(org.jetbrains.kotlin.gradle.plugin.KotlinBasePlugin::class.java) { kotlinPlugin ->
             logger.info("Detected Kotlin plugin version '${kotlinPlugin.pluginVersion}'")
-            if (!getKotlinVersion(kotlinPlugin.pluginVersion).isAtLeast(1, 9, 0)) {
-                logger.error("JetBrains Gradle Benchmarks plugin requires Kotlin version 1.9.0 or higher")
+            if (!getKotlinVersion(kotlinPlugin.pluginVersion).isAtLeast(1, 9, 20)) {
+                logger.error("JetBrains Gradle Benchmarks plugin requires Kotlin version 1.9.20 or higher")
             }
         }
 
