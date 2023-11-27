@@ -45,6 +45,7 @@ kotlin {
 
     targets.configureEach {
         compilations.configureEach {
+            kotlinOptions.allWarningsAsErrors = true
             kotlinOptions.freeCompilerArgs += "-Xexpect-actual-classes"
         }
     }
