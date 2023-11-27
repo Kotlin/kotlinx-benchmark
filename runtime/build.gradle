@@ -55,6 +55,7 @@ kotlin {
         languageSettings {
             progressiveMode = true
             optIn('kotlin.experimental.ExperimentalNativeApi')
+            optIn("kotlin.native.runtime.NativeRuntimeApi")
             optIn("kotlinx.cinterop.ExperimentalForeignApi")
         }
     }

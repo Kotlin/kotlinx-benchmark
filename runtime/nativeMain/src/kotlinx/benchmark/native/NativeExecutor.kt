@@ -1,7 +1,7 @@
 package kotlinx.benchmark.native
 
 import kotlinx.benchmark.*
-import kotlin.native.internal.GC
+import kotlin.native.runtime.GC
 import kotlin.time.*
 
 class NativeExecutor(
@@ -218,7 +218,6 @@ class NativeExecutor(
         return getStackTrace().joinToString("\n") + "\nCause: ${nested.message}\n" + nested.stacktrace()
     }
 
-    @OptIn(ExperimentalTime::class)
     private inline fun measure(
         cycles: Int,
         nativeGCAfterIteration: Boolean,
@@ -239,7 +238,6 @@ class NativeExecutor(
         return duration.toDouble(DurationUnit.NANOSECONDS) / cycles
     }
 
-    @OptIn(ExperimentalTime::class)
     private inline fun <T> measureWarmup(
         name: String,
         config: BenchmarkConfiguration,
