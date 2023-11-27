@@ -51,6 +51,12 @@ kotlin {
     js("jsIr", IR) { nodejs() }
     wasm("wasmJs") { d8() }
 
+    targets.configureEach {
+        compilations.configureEach {
+            kotlinOptions.freeCompilerArgs += "-Xexpect-actual-classes"
+        }
+    }
+
     sourceSets.all {
         kotlin.srcDirs = ["$it.name/src"]
         resources.srcDirs = ["$it.name/resources"]
