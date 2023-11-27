@@ -12,7 +12,7 @@ plugins {
     id("org.jetbrains.kotlinx.benchmark")
 }
 
-sourceSets.all {
+sourceSets.configureEach {
     java.setSrcDirs(listOf("$name/src"))
     resources.setSrcDirs(listOf("$name/resources"))
 }

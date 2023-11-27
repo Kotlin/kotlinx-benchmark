@@ -16,7 +16,7 @@ sourceSets {
     benchmarks
 }
 
-sourceSets.all {
+sourceSets.configureEach {
     kotlin.srcDirs = ["$it.name/src"]
     java.srcDirs = ["$it.name/src"]
     resources.srcDirs = ["$it.name/resources"]

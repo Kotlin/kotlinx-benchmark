@@ -28,7 +28,7 @@ kotlin {
     if (HostManager.hostIsLinux) linuxX64('native')
     if (HostManager.hostIsMingw) mingwX64('native')
 
-    sourceSets.all {
+    sourceSets.configureEach {
         languageSettings {
             progressiveMode = true
         }
