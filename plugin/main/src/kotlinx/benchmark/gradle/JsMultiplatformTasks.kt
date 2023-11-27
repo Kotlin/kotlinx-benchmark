@@ -46,7 +46,7 @@ private fun Project.createJsBenchmarkCompileTask(target: JsBenchmarkTarget): Kot
             )
         }
 
-        compileKotlinTask.apply {
+        compileTaskProvider.get().apply {
             group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
             description = "Compile JS benchmark source files for '${target.name}'"
 

@@ -42,7 +42,7 @@ private fun Project.createWasmBenchmarkCompileTask(target: WasmBenchmarkTarget):
                 )
             }
         }
-        compileKotlinTask.apply {
+        compileTaskProvider.get().apply {
             group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
             description = "Compile Wasm benchmark source files for '${target.name}'"
             dependsOn("${target.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}")
