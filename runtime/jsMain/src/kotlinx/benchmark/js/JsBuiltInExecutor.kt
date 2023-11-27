@@ -18,7 +18,7 @@ class JsBuiltInExecutor(
         complete: () -> Unit
     ) {
         if (benchmarks.any { it.isAsync }) {
-            error("${JsBuiltInExecutor::class.simpleName} does not supports async functions")
+            error("${JsBuiltInExecutor::class.simpleName} does not support async functions")
         }
         super.run(runnerConfiguration, benchmarks, start, complete)
     }

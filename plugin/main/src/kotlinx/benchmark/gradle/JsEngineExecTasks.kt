@@ -26,8 +26,11 @@ fun Project.createJsEngineBenchmarkExecTask(
             if (compilationTarget.isD8Configured) {
                 val execTask = createD8Exec(config, target, compilation, taskName)
                 tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(execTask)
+            } else if (compilationTarget.isNodejsConfigured) {
+                val execTask = createNodeJsExec(config, target, compilation, taskName)
+                tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(execTask)
             } else {
-                throw GradleException("kotlinx-benchmark supports only d8() environment for Kotlin/Wasm.")
+                throw GradleException("kotlinx-benchmark only supports d8() and nodejs() environments for Kotlin/Wasm.")
             }
         }
         KotlinPlatformType.js -> {
@@ -35,7 +38,7 @@ fun Project.createJsEngineBenchmarkExecTask(
                 val execTask = createNodeJsExec(config, target, compilation, taskName)
                 tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(execTask)
             } else {
-                throw GradleException("kotlinx-benchmark supports only nodejs() environment for Kotlin/JS.")
+                throw GradleException("kotlinx-benchmark only supports nodejs() environment for Kotlin/JS.")
             }
         }
         else -> {
@@ -62,7 +65,6 @@ private val KotlinJsIrCompilation.isWasmCompilation: Boolean get() =
 
 private fun MutableList<String>.addWasmArguments() {
     add("--experimental-wasm-gc")
-    add("--experimental-wasm-eh")
 }
 
 private fun MutableList<String>.addJsArguments() {
