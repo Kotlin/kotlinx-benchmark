@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.konan.target.HostManager
-import org.jetbrains.kotlin.konan.target.KonanTarget
 import kotlinx.benchmark.gradle.JsBenchmarksExecutor
 
 plugins {
@@ -23,10 +21,14 @@ kotlin {
         compilations.create("builtInExecutor") { associateWith(compilations.main) }
     }
     wasm('wasmJs') { d8() }
-    if (HostManager.host == KonanTarget.MACOS_X64.INSTANCE) macosX64('native')
-    if (HostManager.host == KonanTarget.MACOS_ARM64.INSTANCE) macosArm64('native')
-    if (HostManager.hostIsLinux) linuxX64('native')
-    if (HostManager.hostIsMingw) mingwX64('native')
+
+    // Native targets
+    macosX64()
+    macosArm64()
+    linuxX64()
+    mingwX64()
+
+    applyDefaultHierarchyTemplate()
 
     sourceSets.configureEach {
         languageSettings {
@@ -50,9 +52,7 @@ kotlin {
             jsBuiltInExecutor.dependsOn(it)
         }
 
-        nativeMain {
-            dependsOn(commonMain)
-        }
+        nativeMain {}
     }
 }
 
@@ -121,6 +121,11 @@ benchmark {
             jsBenchmarksExecutor = JsBenchmarksExecutor.BuiltIn
         }
         register("wasmJs")
-        register("native")
+
+        // Native targets
+        register("macosX64")
+        register("macosArm64")
+        register("linuxX64")
+        register("mingwX64")
     }
 }
