@@ -54,9 +54,6 @@ kotlin {
         resources.srcDirs = ["$it.name/resources"]
         languageSettings {
             progressiveMode = true
-            optIn('kotlin.experimental.ExperimentalNativeApi')
-            optIn("kotlin.native.runtime.NativeRuntimeApi")
-            optIn("kotlinx.cinterop.ExperimentalForeignApi")
         }
     }
 
@@ -108,4 +105,12 @@ if (project.findProperty("publication_repository") == "space") {
 // TODO: Find out and fix the issue
 tasks.withType(KotlinNativeCompile).matching { it.name.toLowerCase().contains("test") }.configureEach {
     it.dependsOn(tasks.withType(Sign))
+}
+
+tasks.withType(KotlinNativeCompile).configureEach {
+    compilerOptions.freeCompilerArgs.addAll(
+            "-opt-in=kotlin.experimental.ExperimentalNativeApi",
+            "-opt-in=kotlin.native.runtime.NativeRuntimeApi",
+            "-opt-in=kotlinx.cinterop.ExperimentalForeignApi",
+    )
 }
