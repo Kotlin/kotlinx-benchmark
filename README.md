@@ -1,273 +1,440 @@
+# kotlinx-benchmark
+
 [![Kotlin Alpha](https://kotl.in/badges/alpha.svg)](https://kotlinlang.org/docs/components-stability.html)
 [![JetBrains incubator project](https://jb.gg/badges/incubator.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 [![GitHub license](https://img.shields.io/badge/license-Apache%20License%202.0-blue.svg?style=flat)](https://www.apache.org/licenses/LICENSE-2.0)
-[![Build status](https://teamcity.jetbrains.com/guestAuth/app/rest/builds/buildType:(id:KotlinTools_KotlinxCollectionsImmutable_Build_All)/statusIcon.svg)](https://teamcity.jetbrains.com/viewType.html?buildTypeId=KotlinTools_KotlinxBenchmark_Build_All)
+[![Build status](https://teamcity.jetbrains.com/guestAuth/app/rest/builds/buildType:(id:KotlinTools_KotlinxBenchmark_Build_All)/statusIcon.svg)](https://teamcity.jetbrains.com/viewType.html?buildTypeId=KotlinTools_KotlinxBenchmark_Build_All)
 [![Maven Central](https://img.shields.io/maven-central/v/org.jetbrains.kotlinx/kotlinx-benchmark-runtime.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22org.jetbrains.kotlinx%22%20AND%20a:%22kotlinx-benchmark-runtime%22)
 [![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v?label=Gradle%20Plugin&metadataUrl=https://plugins.gradle.org/m2/org/jetbrains/kotlinx/kotlinx-benchmark-plugin/maven-metadata.xml)](https://plugins.gradle.org/plugin/org.jetbrains.kotlinx.benchmark)
 [![IR](https://img.shields.io/badge/Kotlin%2FJS-IR%20supported-yellow)](https://kotl.in/jsirsupported)
 
+kotlinx-benchmark is a toolkit for running benchmarks for multiplatform code written in Kotlin.
 
-> **_NOTE:_** &nbsp; Starting from version 0.3.0 of the library:
-> * The library runtime is published to Maven Central and no longer published to Bintray.
-> * The Gradle plugin is published to Gradle Plugin Portal
-> * The Gradle plugin id has changed to `org.jetbrains.kotlinx.benchmark`
-> * The library runtime artifact id has changed to `kotlinx-benchmark-runtime`
+## Features
 
+- Low noise and reliable results
+- Statistical analysis
+- Detailed performance reports
 
-**kotlinx.benchmark** is a toolkit for running benchmarks for multiplatform code written in Kotlin 
-and running on the following supported targets: JVM, JavaScript and Native.
+## Table of contents
 
-Both Legacy and IR backends are supported for JS, however `kotlin.js.compiler=both` or `js(BOTH)` target declaration won't work.
-You should declare each targeted backend separately. See build script of the [kotlin-multiplatform example project](https://github.com/Kotlin/kotlinx-benchmark/tree/master/examples/kotlin-multiplatform).
+<!--- TOC -->
 
-On JVM [JMH](https://openjdk.java.net/projects/code-tools/jmh/) is used under the hoods to run benchmarks.
-This library has a very similar way of defining benchmark methods. Thus, using this library you can run your JMH-based 
-Kotlin/JVM benchmarks on other platforms with minimum modifications, if any at all. 
+- [Using in Your Projects](#using-in-your-projects)
+  - [Project Setup](#project-setup)
+  - [Target-specific configurations](#target-specific-configurations)
+    - [Kotlin/JVM](#kotlinjvm)
+    - [Kotlin/JS](#kotlinjs)
+    - [Kotlin/Native](#kotlinnative)
+    - [Kotlin/WASM](#kotlinwasm)
+  - [Writing Benchmarks](#writing-benchmarks)
+  - [Running Benchmarks](#running-benchmarks)
+  - [Benchmark Configuration Profiles](#benchmark-configuration-profiles)
+  - [Separate source sets for benchmarks](#separate-source-sets-for-benchmarks)
+- [Examples](#examples)
+- [Contributing](#contributing)
 
-# Requirements
+<!--- END -->
 
-Gradle 7.0 or newer
+- **Additional links**
+  - [Code Benchmarking: A Brief Overview](docs/benchmarking-overview.md)
+  - [Understanding Benchmark Runtime](docs/benchmark-runtime.md)
+  - [Configuring kotlinx-benchmark](docs/configuration-options.md)
+  - [Interpreting and Analyzing Results](docs/interpreting-results.md)
+  - [Creating Separate Source Sets](docs/seperate-source-sets.md)
+  - [Tasks Overview](docs/tasks-overview.md)
+  - [Compatibility Guide](docs/compatibility.md)
+  - [Submitting issues and PRs](CONTRIBUTING.md)
 
-Kotlin 1.7.20 or newer
+## Using in Your Projects
 
-# Gradle plugin
+The `kotlinx-benchmark` library is designed to work with Kotlin/JVM, Kotlin/JS, Kotlin/Native, and Kotlin/WASM (experimental) targets. 
+To get started, ensure you're using Kotlin 1.8.20 or newer and Gradle 8.0 or newer.
 
-Use plugin in `build.gradle`:
+### Project Setup
 
-```groovy
-plugins {
-    id 'org.jetbrains.kotlinx.benchmark' version '0.4.4'
-}
-```
+Follow the steps below to set up a Kotlin Multiplatform project for benchmarking.
 
-For Kotlin/JS specify building `nodejs` flavour:
+<details open>
+<summary>Kotlin DSL</summary>
 
-```groovy
-kotlin {
-    js {
-        nodejs()
-        …
-    }   
-}
-```
+1.  **Applying Benchmark Plugin**: Apply the benchmark plugin.
 
-For Kotlin/JVM code, add `allopen` plugin to make JMH happy. Alternatively, make all benchmark classes and methods `open`.
+    ```kotlin
+    // build.gradle.kts
+    plugins {
+        id("org.jetbrains.kotlinx.benchmark") version "0.4.9"
+    }
+    ```
 
-For example, if you annotated each of your benchmark classes with `@State(Scope.Benchmark)`:
-```kotlin
-@State(Scope.Benchmark)
-class Benchmark {
-    …
-}
-```
-and added the following code to your `build.gradle`:
-```groovy
-plugins {
-    id 'org.jetbrains.kotlin.plugin.allopen'
-}
+2.  **Specifying Plugin Repository**: Ensure you have the Gradle Plugin Portal for plugin lookup in the list of repositories:
 
-allOpen {
-    annotation("org.openjdk.jmh.annotations.State")
-}
-```
-then you don't have to make benchmark classes and methods `open`. 
-
-# Runtime Library
-
-You need a runtime library with annotations and code that will run benchmarks.
-
-Enable Maven Central for dependencies lookup:
-```groovy
-repositories {
-    mavenCentral()
-}
-```
-
-Add the runtime to dependencies of the platform source set, e.g.:
-```  
-kotlin {
-    sourceSets {
-        commonMain {
-             dependencies {
-                 implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.4")
-             }
+    ```kotlin
+    // settings.gradle.kts
+    pluginManagement {
+        repositories {
+            gradlePluginPortal()
         }
     }
-}
-```
+    ```
 
-# Configuration
+3.  **Adding Runtime Dependency**: Next, add the `kotlinx-benchmark-runtime` dependency to the common source set:
 
-In a `build.gradle` file create `benchmark` section, and inside it add a `targets` section.
-In this section register all compilations you want to run benchmarks for. 
-`register` should either be called on the name of a target (e.g. `"jvm"`) which will register its `main` compilation
-(meaning that `register("jvm")` and `register("jvmMain")` register the same compilation)
-Or on the name of a source set (e.g. `"jvmTest"`, `"jsBenchmark"`) which will register the apt compilation
-(e.g. `register("jsFoo")` uses the `foo` compilation defined for the `js` target)
-Example for multiplatform project:
-
-```groovy
-benchmark {
-    targets {
-        register("jvm") 
-        register("js")
-        register("native")
-        register("wasmJs") // Experimental
-    }
-}
-```
-
-This package can also be used for Java and Kotlin/JVM projects. Register a Java sourceSet as a target:
-
-```groovy
-benchmark {
-    targets {
-        register("main") 
-    }
-}
-```
-
-To configure benchmarks and create multiple profiles, create a `configurations` section in the `benchmark` block,
-and place options inside. Toolkit creates `main` configuration by default, and you can create as many additional
-configurations, as you need.   
-
-
-```groovy
-benchmark {
-    configurations {
-        main { 
-            // configure default configuration
+    ```kotlin
+    // build.gradle.kts
+    kotlin {
+        sourceSets {
+            commonMain {
+                dependencies {
+                    implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.9")
+                }
+            }
         }
-        smoke { 
-            // create and configure "smoke" configuration, e.g. with several fast benchmarks to quickly check
-            // if code changes result in something very wrong, or very right. 
-        }       
     }
-}
-```
+    ```
 
-Available configuration options:
+4.  **Specifying Runtime Repository**: Ensure you have `mavenCentral()` for dependencies lookup in the list of repositories:
 
-* `iterations` – number of measuring iterations
-* `warmups` – number of warm up iterations
-* `iterationTime` – time to run each iteration (measuring and warmup)
-* `iterationTimeUnit` – time unit for `iterationTime` (default is seconds)
-* `outputTimeUnit` – time unit for results output
-* `mode`
-  - "thrpt" (default) – measures number of benchmark function invocations per time
-  - "avgt" – measures time per benchmark function invocation
-* `include("…")` – regular expression to include benchmarks with fully qualified names matching it, as a substring
-* `exclude("…")` – regular expression to exclude benchmarks with fully qualified names matching it, as a substring
-* `param("name", "value1", "value2")` – specify a parameter for a public mutable property `name` annotated with `@Param`
-* `reportFormat` – format of report, can be `json`(default), `csv`, `scsv` or `text`
-* There are also some advanced platform-specific settings that can be configured using `advanced("…", …)` function, 
-  where the first argument is the name of the configuration parameter, and the second is its value. Valid options:
-  * (Kotlin/Native) `nativeFork`
-    - "perBenchmark" (default) – executes all iterations of a benchmark in the same process (one binary execution)
-    - "perIteration" – executes each iteration of a benchmark in a separate process, measures in cold Kotlin/Native runtime environment
-  * (Kotlin/Native) `nativeGCAfterIteration` – when set to `true`, additionally collects garbage after each measuring iteration (default is `false`).
-  * (Kotlin/JVM) `jvmForks` – number of times harness should fork (default is `1`)
-    - a non-negative integer value – the amount to use for all benchmarks included in this configuration, zero means "no fork"
-    - "definedByJmh" – let the underlying JMH determine, which uses the amount specified in [`@Fork` annotation](https://javadoc.io/static/org.openjdk.jmh/jmh-core/1.21/org/openjdk/jmh/annotations/Fork.html) defined for the benchmark function or its enclosing class,
-      or [Defaults.MEASUREMENT_FORKS (`5`)](https://javadoc.io/static/org.openjdk.jmh/jmh-core/1.21/org/openjdk/jmh/runner/Defaults.html#MEASUREMENT_FORKS) if it is not specified by `@Fork`.
-  * (Kotlin/Js and Wasm) `jsUseBridge` – when `false` disables to generate special benchmark bridges to prevent inlining optimisations (only for `BuiltIn` benchmark executors).
+    ```kotlin
+    // build.gradle.kts
+    repositories {
+        mavenCentral()
+    }
+    ```
 
-Time units can be NANOSECONDS, MICROSECONDS, MILLISECONDS, SECONDS, MINUTES, or their short variants such as "ms" or "ns".  
-  
-Example: 
+    </details>
 
-```groovy
-benchmark {
-    // Create configurations
-    configurations {
-        main { // main configuration is created automatically, but you can change its defaults
-            warmups = 20 // number of warmup iterations
-            iterations = 10 // number of iterations
-            iterationTime = 3 // time in seconds per iteration
+<details>
+<summary>Groovy DSL</summary>
+
+1.  **Applying Benchmark Plugin**: Apply the benchmark plugin.
+
+    ```groovy
+    // build.gradle
+    plugins {
+        id 'org.jetbrains.kotlinx.benchmark' version '0.4.9'
+    }
+    ```
+
+2.  **Specifying Plugin Repository**: Ensure you have the Gradle Plugin Portal for plugin lookup in the list of repositories:
+
+    ```groovy
+    // settings.gradle
+    pluginManagement {
+        repositories {
+            gradlePluginPortal()
         }
-        smoke {
-            warmups = 5 // number of warmup iterations
-            iterations = 3 // number of iterations
-            iterationTime = 500 // time in seconds per iteration
-            iterationTimeUnit = "ms" // time unit for iterationTime, default is seconds
-        }   
     }
+    ```
+
+3.  **Adding Runtime Dependency**: Next, add the `kotlinx-benchmark-runtime` dependency to the common source set:
+
+    ```groovy
+    // build.gradle
+    kotlin {
+        sourceSets {
+            commonMain {
+                dependencies {
+                    implementation 'org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.9'
+                }
+            }
+        }
+    }
+    ```
+
+4.  **Specifying Runtime Repository**: Ensure you have `mavenCentral()` for dependencies lookup in the list of repositories:
+
+    ```groovy
+    // build.gradle
+    repositories {
+        mavenCentral()
+    }
+    ```
+
+    </details>
+
+### Target-specific configurations
+
+To run benchmarks on a platform ensure your Kotlin Multiplatform project targets that platform.
+For different platforms, there may be distinct requirements and settings that need to be configured.
+The guide below contains the steps needed to configure each supported platform for benchmarking.
+
+#### Kotlin/JVM
+
+To run benchmarks in Kotlin/JVM:
+1.  Create a JVM target:
+
+    ```kotlin
+    // build.gradle.kts
+    kotlin {
+        jvm()
+    }
+    ```
+
+2.  Register `jvm` as a benchmark target:
+
+    ```kotlin
+    // build.gradle.kts
+    benchmark {
+        targets { 
+            register("jvm")
+        }
+    }
+    ```
+
+3.  Apply [allopen plugin](https://kotlinlang.org/docs/all-open-plugin.html) to ensure your benchmark classes and methods are `open`.
+
+    ```kotlin
+    // build.gradle.kts
+    plugins {
+        kotlin("plugin.allopen") version "1.8.21"
+    }
+
+    allOpen {
+        annotation("org.openjdk.jmh.annotations.State")
+    }
+    ```
+
+    <details>
+      <summary><b>Explanation</b></summary>
+
+    Assume that you've annotated each of your benchmark classes with `@State(Scope.Benchmark)`:
+
+    ```kotlin
+    // MyBenchmark.kt
+    @State(Scope.Benchmark)
+    class MyBenchmark {
+        // Benchmarking-related methods and variables
+        fun benchmarkMethod() {
+            // benchmarking logic
+        }
+    }
+    ```
+
+    In Kotlin, classes are `final` by default, which means they can't be overridden. 
+    This is incompatible with the operation of the Java Microbenchmark Harness (JMH), which kotlinx-benchmark uses under the hood for running benchmarks on JVM.
+    JMH requires benchmark classes and methods to be `open` to be able to generate subclasses and conduct the benchmark.
+
+    This is where the `allopen` plugin comes into play. With the plugin applied, any class annotated with `@State` is treated as `open`, which allows JMH to work as intended:
+
+    ```kotlin
+    // build.gradle.kts
+    plugins {
+        kotlin("plugin.allopen") version "1.8.21"
+    }
+
+    allOpen {
+        annotation("org.openjdk.jmh.annotations.State")
+    }
+    ```
+
+    This configuration ensures that your `MyBenchmark` class and its `benchmarkMethod` function are treated as `open`.
+
+    </details>
+
+    You can alternatively mark your benchmark classes and methods `open` manually, but using the `allopen` plugin enhances code maintainability.
+
+#### Kotlin/JS
+
+To run benchmarks in Kotlin/JS:
+1.  Create a JS target with Node.js execution environment:
+
+    ```kotlin
+    // build.gradle.kts
+    kotlin {
+        js(IR) { 
+            nodejs() 
+        }
+    }
+    ```
+
+2.  Register `js` as a benchmark target:
+
+    ```kotlin
+    // build.gradle.kts
+    benchmark {
+        targets {
+            register("js")
+        }
+    }
+    ```
+
+For Kotlin/JS, only the [IR compiler backend](https://kotlinlang.org/docs/js-ir-compiler.html) is supported.
+
+#### Kotlin/Native
+
+To run benchmarks in Kotlin/Native:
+1.  Create a Native target:
+
+    ```kotlin
+    // build.gradle.kts
+    kotlin {
+        linuxX64("native")
+    }
+    ```
+
+2.  Register `native` as a benchmark target:
+
+    ```kotlin
+    // build.gradle.kts
+    benchmark {
+        targets {
+            register("native")
+        }
+    }
+    ```
     
-    // Setup targets
-    targets {
-        // This one matches compilation base name, e.g. 'jvm', 'jvmTest', etc
-        register("jvm") {
-            jmhVersion = "1.21" // available only for JVM compilations & Java source sets
+This library supports all [targets supported by the Kotlin/Native compiler](https://kotlinlang.org/docs/native-target-support.html). 
+
+#### Kotlin/WASM
+
+To run benchmarks in Kotlin/WASM:
+1.  Create a WASM target with D8 execution environment:
+
+    ```kotlin
+    // build.gradle.kts
+    kotlin {
+        wasm { 
+            d8() 
         }
-        register("js") {
-            // Note, that benchmarks.js uses a different approach of minTime & maxTime and run benchmarks
-            // until results are stable. We estimate minTime as iterationTime and maxTime as iterationTime*iterations
-            //
-            // You can configure benchmark executor - benchmarkJs or buildIn (works only for JsIr backend) with the next line:
-            // jsBenchmarksExecutor = JsBenchmarksExecutor.BuiltIn
+    }
+    ```
+
+2.  Register `wasm` as a benchmark target:
+
+    ```kotlin
+    // build.gradle.kts
+    benchmark {
+        targets {
+            register("wasm")
         }
-        register("native")
-        register("wasmJs") // Experimental
+    }
+    ```
+
+Note: Kotlin/WASM is an experimental compilation target for Kotlin. It may be dropped or changed at any time.
+
+### Writing Benchmarks
+
+After setting up your project and configuring targets, you can start writing benchmarks:
+
+1. **Create Benchmark Class**: Create a class in your source set where you'd like to add the benchmark. Annotate this class with `@State(Scope.Benchmark)`.
+
+    ```kotlin
+    @State(Scope.Benchmark)
+    class MyBenchmark {
+
+    }
+    ```
+
+2. **Set up Parameters and Variables**: Define variables needed for the benchmark.
+
+    ```kotlin
+    var param: Int = 10
+
+    private var list: MutableList<Int> = ArrayList()
+    ```
+
+3. **Initialize Resources**: Within the class, you can define any setup or teardown methods using `@Setup` and `@TearDown` annotations respectively. These methods will be executed before and after the entire benchmark run.
+
+    ```kotlin
+    @Setup
+    fun prepare() {
+        for (i in 0 until size) {
+            list.add(i)
+        }
+    }
+
+    @TearDown
+    fun cleanup() {
+        list.clear()
+    }
+    ```
+
+4. **Define Benchmark Method**: Next, create methods that you would like to be benchmarked within this class and annotate them with `@Benchmark`.
+
+    ```kotlin
+    @Benchmark
+    fun benchmarkMethod(): Int {
+        return list.sum()
+    }
+    ```
+
+Your final benchmark class will look something like this:
+
+    @State(Scope.Benchmark)
+    class MyBenchmark {
+
+        var param: Int = 10
+
+        private var list: MutableList<Int> = ArrayList()
+
+        @Setup
+        fun prepare() {
+            for (i in 0 until size) {
+                list.add(i)
+            }
+        }
+
+        @Benchmark
+        fun benchmarkMethod(): Int {
+            return list.sum()
+        }
+
+        @TearDown
+        fun cleanup() {
+            list.clear()
+        }
+    }
+
+Note: Benchmark classes located in the common source set will be run in all platforms, while those located in a platform-specific source set will be run only in the corresponding platform.
+
+See [writing benchmarks](docs/writing-benchmarks.md) for a complete guide for writing benchmarks.
+
+### Running Benchmarks
+
+To run your benchmarks in all registered platforms, run `benchmark` Gradle task in your project.
+To run only on a specific platform, run `<target-name>Benchmark`, e.g., `jvmBenchmark`.
+
+For more details about the tasks created by the kotlinx-benchmark plugin, refer to [this guide](docs/tasks-overview.md).
+
+### Benchmark Configuration Profiles
+
+The kotlinx-benchmark library provides the ability to create multiple configuration profiles. The `main` configuration is already created by the Toolkit.
+Additional profiles can be created as needed in the `configurations` section of the `benchmark` block:
+
+```kotlin
+// build.gradle.kts
+benchmark {
+    configurations {
+        named("main") {
+            warmups = 20
+            iterations = 10
+            iterationTime = 3
+            iterationTimeUnit = "s"
+        }
+        register("smoke") {
+            include("<pattern of fully qualified name>")
+            warmups = 5
+            iterations = 3
+            iterationTime = 500
+            iterationTimeUnit = "ms"
+        }
     }
 }
 ```  
-  
-# Separate source sets for benchmarks
 
-Often you want to have benchmarks in the same project, but separated from main code, much like tests. Here is how:
-For a Kotlin/JVM project:
+Refer to our [comprehensive guide](docs/configuration-options.md) to learn about configuration options and how they affect benchmark execution.
 
-Define source set:
-```groovy
-sourceSets {
-    benchmarks
-}
-```
+### Separate source sets for benchmarks
 
-Propagate dependencies and output from `main` sourceSet. 
+Often you want to have benchmarks in the same project, but separated from main code, much like tests.
+Refer to our [detailed documentation](docs/separate-source-sets.md) on configuring your project to add a separate source set for benchmarks.
 
-```groovy
-dependencies {
-    benchmarksCompile sourceSets.main.output + sourceSets.main.runtimeClasspath 
-}
-```
+## Examples
 
-You can also add output and compileClasspath from `sourceSets.test` in the same way if you want 
-to reuse some of the test infrastructure.
+To help you better understand how to use the kotlinx-benchmark library, we've provided an [examples](examples) subproject. 
+These examples showcase various use cases and offer practical insights into the library's functionality.
 
+## Contributing
 
-Register `benchmarks` source set:
-
-```groovy
-benchmark {
-    targets {
-        register("benchmarks")    
-    }
-}
-```
-
-For a Kotlin Multiplatform project:
-
-Define a new compilation in whichever target you'd like (e.g. `jvm`, `js`, etc):
-```groovy
-kotlin {
-    jvm {
-        compilations.create('benchmark') { associateWith(compilations.main) }
-    }
-}
-```
-
-Register it by its source set name (`jvmBenchmark` is the name for the `benchmark` compilation for `jvm` target):
-
-```groovy
-benchmark {
-    targets {
-        register("jvmBenchmark")    
-    }
-}
-```
-
-# Examples
-
-The project contains [examples](https://github.com/Kotlin/kotlinx-benchmark/tree/master/examples) subproject that demonstrates using the library.
- 
+We welcome contributions to kotlinx-benchmark! If you want to contribute, please refer to our [Contribution Guidelines](CONTRIBUTING.md).
