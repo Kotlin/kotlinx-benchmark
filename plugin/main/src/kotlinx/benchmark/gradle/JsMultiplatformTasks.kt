@@ -46,18 +46,20 @@ private fun Project.createJsBenchmarkCompileTask(target: JsBenchmarkTarget): Kot
             )
         }
 
-        compileTaskProvider.get().apply {
-            group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
-            description = "Compile JS benchmark source files for '${target.name}'"
+        compileTaskProvider.configure {
+            it.apply {
+                group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
+                description = "Compile JS benchmark source files for '${target.name}'"
 
-            //TODO: fix destination dir after KT-29711 is fixed
-            //println("JS: ${kotlinOptions.outputFile}")
-            //destinationDir = file("$benchmarkBuildDir/classes")
-            dependsOn("${target.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}")
+                //TODO: fix destination dir after KT-29711 is fixed
+                //println("JS: ${kotlinOptions.outputFile}")
+                //destinationDir = file("$benchmarkBuildDir/classes")
+                dependsOn("${target.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}")
 
-            kotlinOptions.apply {
-                sourceMap = true
-                moduleKind = "umd"
+                kotlinOptions.apply {
+                    sourceMap = true
+                    moduleKind = "umd"
+                }
             }
         }
     }

@@ -62,7 +62,7 @@ private fun Project.createNativeBenchmarkCompileTask(target: NativeBenchmarkTarg
     // a link task. So we disable execution the klib compiling task to save time.
 //    benchmarkCompilation.compileKotlinTask.enabled = false
 
-    benchmarkCompilation.compileTaskProvider.get().dependsOn(generateSourceTaskName(target))
+    benchmarkCompilation.compileTaskProvider.configure { it.dependsOn(generateSourceTaskName(target)) }
 
     benchmarkCompilation.apply {
         val sourceSet = kotlinSourceSets.single()
