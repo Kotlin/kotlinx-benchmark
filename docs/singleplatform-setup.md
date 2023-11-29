@@ -1,26 +1,51 @@
-## Step-by-Step Setup Guide for Single-Platform Benchmarking Project Using kotlinx-benchmark
+# Step-by-Step Setup Guide for Single-Platform Benchmarking Project Using kotlinx-benchmark
 
-### Prerequisites
+This guide will walk you through the process of setting up a single-platform benchmarking project in both Kotlin and Java using the kotlinx-benchmark library.
 
-Before starting, ensure your development environment meets the following [requirements](compatibility.md):
+# Table of Contents
 
-- **Kotlin**: Version 1.8.20 or newer. Install Kotlin from the [official website](https://kotlinlang.org/) or a package manager like SDKMAN! or Homebrew.
-- **Gradle**: Version 8.0 or newer. Download Gradle from the [official website](https://gradle.org/) or use a package manager.
+1. [Prerequisites](#prerequisites)
+2. [Kotlin Project Setup](#koltin-project-setup)
+    - [Step 1: Create a New Java Project](#step-1-create-a-new-java-project)
+    - [Step 2: Add the Benchmark and AllOpen Plugin](#step-2-add-the-benchmark-plugin-and-allopen-plugin)
+    - [Step 3: Configure the Benchmark Plugin](#step-3-configure-the-benchmark-plugin)
+    - [Step 4: Write Benchmarks](#step-4-write-benchmarks)
+    - [Step 5: Run Benchmarks](#step-5-run-benchmarks)
+3. [Java Project Setup](#java-project-setup)
+    - [Step 1: Create a New Kotlin Project](#step-1-create-a-new-kotlin-project)
+    - [Step 2: Add the Benchmark Plugin](#step-2-add-the-benchmark-plugin-1)
+    - [Step 3: Configure the Benchmark Plugin](#step-3-configure-the-benchmark-plugin-1)
+    - [Step 4: Write Benchmarks](#step-4-write-benchmarks-1)
+    - [Step 5: Run Benchmarks](#step-5-run-benchmarks-1)
+4. [Conclusion](#conclusion)
 
-### Step 1: Create a New Kotlin Project
+## Prerequisites
 
-If you're starting from scratch, you can begin by creating a new Kotlin project with Gradle. This can be done either manually, through the command line, or by using an IDE like IntelliJ IDEA, which offers built-in support for project generation.
+Ensure your development environment meets the following [requirements](compatibility.md):
 
-### Step 2: Configure Build
+- **Kotlin**: Version 1.8.20 or newer.
+- **Gradle**: Version 8.0 or newer.
 
-In this step, you'll modify your project's build file to add necessary dependencies and plugins.
+## Kotlin Project Setup
+
+### Step 1: Create a New Java Project
+
+#### IntelliJ IDEA
+
+Click `File` > `New` > `Project`, select `Java`, specify your `Project Name` and `Project Location`, ensure the `Project SDK` is 8 or higher, and click `Finish`.
+
+#### Gradle Command Line
+
+Open your terminal, navigate to the directory where you want to create your new project, and run `gradle init --type java-application`.
+
+### Step 2: Add the Benchmark and AllOpen Plugin
+
+When benchmarking Kotlin/JVM code with Java Microbenchmark Harness (JMH), it is necessary to use the [allopen plugin](https://kotlinlang.org/docs/all-open-plugin.html). This plugin ensures that your benchmark classes and methods are `open`, which is a requirement for JMH. 
 
 <details open>
 <summary><strong>Kotlin DSL</strong></summary>
 
-#### 2.1 Apply the Necessary Plugins
-
-In your `build.gradle.kts` file, add the required plugins. These plugins are necessary for enabling Kotlin/JVM, making all classes and functions open, and using the kotlinx.benchmark plugin.
+In your `build.gradle.kts` file, add the following:
 
 ```kotlin
 plugins {
@@ -28,62 +53,17 @@ plugins {
     kotlin("plugin.allopen") version "1.8.21"
     id("org.jetbrains.kotlinx.benchmark") version "0.4.8"
 }
-```
 
-#### 2.2 Add the Dependencies
-
-Next, add the `kotlinx-benchmark-runtime` dependency to your project. This dependency contains the necessary runtime components for benchmarking.
-
-```kotlin
-dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.8")
-}
-```
-
-#### 2.3 Apply the AllOpen Annotation
-
-Now, you need to instruct the [allopen](https://kotlinlang.org/docs/all-open-plugin.html) plugin to consider all benchmark classes and their methods as open. For that, apply the `allOpen` block and specify the JMH annotation `State`.
-
-```kotlin
 allOpen {
     annotation("org.openjdk.jmh.annotations.State")
 }
 ```
-
-#### 2.4 Define the Repositories
-
-Gradle needs to know where to find the libraries your project depends on. In this case, we're using the libraries hosted on Maven Central, so we need to specify that.
-
-In your `build.gradle.kts` file, add the following code block:
-
-```kotlin
-repositories {
-    mavenCentral()
-}
-```
-
-#### 2.5 Register the Benchmark Targets
-
-Next, we need to inform the kotlinx.benchmark plugin about our benchmarking target. In this case, we are targeting JVM.
-
-In your `build.gradle.kts` file, add the following code block within the `benchmark` block:
-
-```kotlin
-benchmark {
-    targets {
-        register("jvm")
-    }
-}
-```
-
 </details>
 
 <details>
 <summary><strong>Groovy DSL</strong></summary>
 
-#### 2.1 Apply the Necessary Plugins
-
-In your `build.gradle` file, apply the required plugins. These plugins are necessary for enabling Kotlin/JVM, making all classes and functions open, and using the kotlinx.benchmark plugin.
+In your `build.gradle` file, add the following:
 
 ```groovy
 plugins {
@@ -91,45 +71,20 @@ plugins {
     id 'org.jetbrains.kotlin.plugin.allopen' version '1.8.21'
     id 'org.jetbrains.kotlinx.benchmark' version '0.4.8'
 }
-```
 
-#### 2.2 Add the Dependencies
-
-Next, add the `kotlinx-benchmark-runtime` dependency to your project. This dependency contains the necessary runtime components for benchmarking.
-
-```groovy
-dependencies {
-    implementation 'org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.8'
-}
-```
-
-#### 2.3 Apply the AllOpen Annotation
-
-Now, you need to instruct the [allopen](https://kotlinlang.org/docs/all-open-plugin.html) plugin to consider all benchmark classes and their methods as open. For that, apply the `allOpen` block and specify the JMH annotation `State`.
-
-```groovy
 allOpen {
-    annotation("org.openjdk.jmh.annotations.State")
+    annotation 'org.openjdk.jmh.annotations.State'
 }
 ```
+</details>
 
-#### 2.4 Define the Repositories
+In Kotlin, classes and methods are `final` by default, which means they can't be overridden. However, JMH requires the ability to generate subclasses for benchmarking, which is why we need to use the allopen plugin. This configuration ensures that any class annotated with `@State` is treated as `open`, allowing JMH to work as expected.
 
-Gradle needs to know where to find the libraries your project depends on. In this case, we're using the libraries hosted on Maven Central, so we need to specify that.
+You can alternatively mark your benchmark classes and methods `open` manually, but using the `allopen` plugin improves code maintainability.
 
-In your `build.gradle` file, add the following code block:
+### Step 3: Configure the Benchmark Plugin
 
-```groovy
-repositories {
-    mavenCentral()
-}
-```
-
-#### 2.5 Register the Benchmark Targets
-
-Next, we need to inform the kotlinx.benchmark plugin about our benchmarking target. In this case, we are targeting JVM.
-
-In your `build.gradle` file, add the following code block within the `benchmark` block:
+In your `build.gradle` or `build.gradle.kts` file, add the following:
 
 ```groovy
 benchmark {
@@ -139,47 +94,129 @@ benchmark {
 }
 ```
 
-</details>
+### Step 4: Write Benchmarks
 
-### Step 3: Writing Benchmarks
+Create a new source file in your `main/src` directory and write your benchmarks. Here's an example:
 
-Create a new Kotlin source file in your `src/main/kotlin` directory to write your benchmarks. Each benchmark is a class or object with methods annotated with `@Benchmark`. Here's a simple example:
+```java
+package test;
 
-```kotlin
-import org.openjdk.jmh.annotations.Benchmark
+import org.openjdk.jmh.annotations.*;
 
-open class ListBenchmark {
+@State(Scope.Benchmark)
+@Fork(1)
+public class SampleJavaBenchmark {
+    @Param({"A", "B"})
+    String stringValue;
+
+    @Param({"1", "2"})
+    int intValue;
+    
     @Benchmark
-    fun listOfBenchmark() {
-        listOf(1, 2, 3, 4, 5)
+    public String stringBuilder() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append(10);
+        stringBuilder.append(stringValue);
+        stringBuilder.append(intValue);
+        return stringBuilder.toString();
     }
 }
 ```
 
-Ensure that your benchmark class and methods are `open`, as JMH creates subclasses during the benchmarking process. The `allopen` plugin we added earlier enforces this.
+### Step 5: Run Benchmarks
 
-### Step 4: Running Your Benchmarks
+In the terminal, navigate to your project's root directory and run `./gradlew benchmark`.
 
-Executing your benchmarks is an important part of the process. This will allow you to gather performance data about your code. There are two primary ways to run your benchmarks: through the command line or using your IDE.
+## Java Project Setup
 
-#### 4.1 Running Benchmarks From the Command Line
+### Step 1: Create a New Kotlin Project
 
-The simplest way to run your benchmarks is by using the Gradle task `benchmark`. You can do this by opening a terminal, navigating to the root of your project, and entering the following command:
+#### IntelliJ IDEA
 
-```bash
-./gradlew benchmark
+Click `File` > `New` > `Project`, select `Kotlin`, specify your `Project Name` and `Project Location`, ensure the `Project SDK` is 8 or higher, and click `Finish`.
+
+#### Gradle Command Line
+
+Open your terminal, navigate to the directory where you want to create your new project, and run `gradle init --type kotlin-application`.
+
+### Step 2: Add the Benchmark Plugin
+
+<details open>
+<summary><strong>Kotlin DSL</strong></summary>
+
+In your `build.gradle.kts` file, add the following:
+
+```kotlin
+plugins {
+    id 'java'
+    id("org.jetbrains.kotlinx.benchmark") version "0.4.8"
+}
+```
+</details>
+
+<details>
+<summary><strong>Groovy DSL</strong></summary>
+
+In your `build.gradle` file, add the following:
+
+```groovy
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlinx.benchmark' version '0.4.8'
+}
+```
+</details>
+
+### Step 3: Configure the Benchmark Plugin
+
+In your `build.gradle` or `build.gradle.kts` file, add the following:
+
+```groovy
+benchmark {
+    targets {
+        register("main")
+    }
+}
 ```
 
-This command instructs Gradle to execute the `benchmark` task, which in turn runs your benchmarks.
+### Step 4: Write Benchmarks
 
-#### 4.2 Understanding Benchmark Execution
+Create a new source file in your `src/main/java` directory and write your benchmarks. Here's an example:
 
-The execution of your benchmarks might take some time. This is normal and necessary: benchmarks must be run for a sufficient length of time to produce reliable, statistically significant results.
+```kotlin
+package test
 
-For more details regarding the available Gradle tasks, refer to this [document](tasks-overview.md).
+import org.openjdk.jmh.annotations.*
+import java.util.concurrent.*
 
-### Step 5: Analyze the Results
+@State(Scope.Benchmark)
+@Fork(1)
+@Warmup(iterations = 0)
+@Measurement(iterations = 1, time = 1, timeUnit = TimeUnit.SECONDS)
+class KtsTestBenchmark {
+    private var data = 0.0
 
-To fully understand and make the best use of these results, it's important to know how to interpret and analyze them properly. For a comprehensive guide on interpreting and analyzing benchmarking results, please refer to this dedicated document: [Interpreting and Analyzing Results](interpreting-results.md).
+    @Setup
+    fun setUp() {
+        data = 3.0
+    }
 
-Congratulations! You have successfully set up a Kotlin/JVM benchmark project using kotlinx-benchmark.
+    @Benchmark
+    fun sqrtBenchmark(): Double {
+        return Math.sqrt(data)
+    }
+
+    @Benchmark
+    fun cosBenchmark(): Double {
+        return Math.cos(data)
+    }
+}
+```
+
+### Step 5: Run Benchmarks
+
+In the terminal, navigate to your project's root directory and run `./gradlew benchmark`.
+
+## Conclusion
+
+Congratulations! You've set up a single-platform benchmarking project using `kotlinx-benchmark`. Now you can write your own benchmarks to test the performance of your Java or Kotlin code. Happy benchmarking!

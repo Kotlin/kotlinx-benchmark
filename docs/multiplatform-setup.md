@@ -1,38 +1,371 @@
-## Step-by-Step Guide for Multiplatform Benchmarking Setup Using kotlinx.benchmark
+# Step-by-Step Setup Guide for a Multiplatform Benchmarking Project Using kotlinx-benchmark
 
-### Prerequisites
+This guide will walk you through the process of setting up a multiplatform benchmarking project in Kotlin using kotlinx-benchmark.
 
-Before starting, ensure your development environment meets the following requirements:
+# Table of Contents
 
-- **Kotlin**: Version 1.8.20 or newer. Install Kotlin from the [official website](https://kotlinlang.org/) or a package manager like SDKMAN! or Homebrew.
-- **Gradle**: Version 8.0 or newer. Download Gradle from the [official website](https://gradle.org/) or use a package manager.
+1. [Prerequisites](#prerequisites)
+2. [Kotlin/JS Project Setup](#kotlinjs-project-setup)
+3. [Kotlin/Native Project Setup](#kotlinnative-project-setup)
+4. [Kotlin/WASM Project Setup](#kotlinwasm-project-setup)
+5. [Multiplatform Project Setup](#multiplatform-project-setup)
+6. [Conclusion](#conclusion)
 
-### Step 1: Create a New Kotlin Multiplatform Project
+## Prerequisites
 
-Begin by creating a new Kotlin Multiplatform project. You can do this either manually or by using an IDE such as IntelliJ IDEA, which can generate the project structure for you.
+Ensure your development environment meets the following [requirements](compatibility.md):
 
-### Step 2: Configure Build
+- **Kotlin**: Version 1.8.20 or newer.
+- **Gradle**: Version 8.0 or newer.
 
-In this step, you'll modify your project's build file to add necessary dependencies and plugins.
+## Kotlin/JS Project Setup
+
+### Step 1: Add the Benchmark Plugin
 
 <details open>
 <summary><strong>Kotlin DSL</strong></summary>
 
-#### 2.1 Apply the Necessary Plugins
-
-In your `build.gradle.kts` file, add the required plugins. These plugins are necessary for enabling Kotlin Multiplatform, making all classes and functions open, and using the kotlinx.benchmark plugin.
+In your `build.gradle.kts` file, add the benchmarking plugin:
 
 ```kotlin
 plugins {
     kotlin("multiplatform")
-    kotlin("plugin.allopen") version "1.8.21"
     id("org.jetbrains.kotlinx.benchmark") version "0.4.8"
 }
 ```
+</details>
 
-#### 2.2 Add the Dependencies
+<details>
+<summary><strong>Groovy DSL</strong></summary>
 
-Next, add the `kotlinx-benchmark-runtime` dependency to your project. This dependency contains the necessary runtime components for benchmarking.
+In your `build.gradle` file, add the benchmarking plugin:
+
+```groovy
+plugins {
+    id 'org.jetbrains.kotlin.multiplatform'
+    id 'org.jetbrains.kotlinx.benchmark' version '0.4.8'
+}
+```
+</details>
+
+### Step 2: Configure the Benchmark Plugin
+
+The next step is to configure the benchmark plugin to know which targets to run the benchmarks against. In this case, we're specifying `js` as the target platform:
+
+```groovy
+benchmark {
+    targets {
+        register("js")
+    }
+}
+```
+
+### Step 3: Specify the Node.js Target and Optional Compiler
+
+In Kotlin/JS, set the Node.js runtime as your target:
+
+```kotlin
+kotlin {
+    js {
+        nodejs()
+    }   
+}
+```
+
+Optionally you can specify a compiler such as the [IR compiler](https://kotlinlang.org/docs/js-ir-compiler.html) and configure the benchmarking targets:
+
+```kotlin
+kotlin {
+    js('jsIr', IR) { 
+        nodejs() 
+    }
+    js('jsIrBuiltIn', IR) { 
+        nodejs() 
+    }
+}
+```
+
+In this configuration, `jsIr` and `jsIrBuiltIn` are both set up for Node.js and use the IR compiler. The `jsIr` target relies on an external benchmarking library (benchmark.js), whereas `jsIrBuiltIn` leverages the built-in Kotlin benchmarking plugin. Choosing one depends on your specific benchmarking requirements.
+
+### Step 4: Add the Runtime Library
+
+To run benchmarks, add the runtime library, `kotlinx-benchmark-runtime`, to the dependencies of your source set and enable Maven Central for dependencies lookup:
+
+```kotlin
+kotlin {
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.4")
+            }
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+```
+
+### Step 5: Write Benchmarks
+
+Create a new source file in your `src/main/kotlin` directory and write your benchmarks. Here's an example:
+
+```kotlin
+package benchmark
+
+import org.openjdk.jmh.annotations.*
+
+@State(Scope.Benchmark)
+open class JSBenchmark {
+    private var data = 0.0
+
+    @Setup
+    fun setUp() {
+        data = 3.0
+    }
+
+    @Benchmark
+    fun sqrtBenchmark(): Double {
+        return kotlin.math.sqrt(data)
+    }
+}
+```
+
+### Step 6: Run Benchmarks
+
+In the terminal, navigate to your project's root directory and run `./gradlew benchmark`.
+
+## Kotlin/Native Project Setup
+
+### Step 1: Add the Benchmark Plugin
+
+<details open>
+<summary><strong>Kotlin DSL</strong></summary>
+
+In your `build.gradle.kts` file, add the benchmarking plugin:
+
+```kotlin
+plugins {
+    kotlin("multiplatform")
+    id("org.jetbrains.kotlinx.benchmark") version "0.4.8"
+}
+```
+</details>
+
+<details>
+<summary><strong>Groovy DSL</strong></summary>
+
+In your `build.gradle` file, add the benchmarking plugin:
+
+```groovy
+plugins {
+    id 'org.jetbrains.kotlin.multiplatform'
+    id 'org.jetbrains.kotlinx.benchmark' version '0.4.8'
+}
+```
+</details>
+
+### Step 2: Configure the Benchmark Plugin
+
+The next step is to configure the benchmark plugin to know which targets to run the benchmarks against. In this case, we're specifying `native` as the target platform:
+
+```groovy
+benchmark {
+    targets {
+        register("native")
+    }
+}
+```
+
+### Step 3: Add the Runtime Library
+
+To run benchmarks, add the runtime library, `kotlinx-benchmark-runtime`, to the dependencies of your source set and enable Maven Central for dependencies lookup:
+
+```kotlin
+kotlin {
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.4")
+            }
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+```
+
+### Step 4: Write Benchmarks
+
+Create a new source file in your `src/nativeMain/kotlin` directory and write your benchmarks. Here's an example:
+
+```kotlin
+package benchmark
+
+import org.openjdk.jmh.annotations.*
+
+@State(Scope.Benchmark)
+open class NativeBenchmark {
+    private var data = 0.0
+
+    @Setup
+    fun setUp() {
+        data = 3.0
+    }
+
+    @Benchmark
+    fun sqrtBenchmark(): Double {
+        return kotlin.math.sqrt(data)
+    }
+}
+```
+
+### Step 5: Run Benchmarks
+
+In the terminal, navigate to your project's root directory and run `./gradlew benchmark`.
+
+## Kotlin/WASM Project Setup
+
+### Step 1: Add the Benchmark Plugin
+
+<details open>
+<summary><strong>Kotlin DSL</strong></summary>
+
+In your `build.gradle.kts` file, add the following:
+
+```kotlin
+plugins {
+    kotlin("multiplatform")
+    id("org.jetbrains.kotlinx.benchmark") version "0.4.8"
+}
+```
+</details>
+
+<details>
+<summary><strong>Groovy DSL</strong></summary>
+
+In your `build.gradle` file, add the following:
+
+```groovy
+plugins {
+    id 'org.jetbrains.kotlin.multiplatform'
+    id 'org.jetbrains.kotlinx.benchmark' version '0.4.8'
+}
+```
+</details>
+
+### Step 2: Configure the Benchmark Plugin
+
+The next step is to configure the benchmark plugin to know which targets to run the benchmarks against. In this case, we're specifying `wasm` as the target platform:
+
+```groovy
+benchmark {
+    targets {
+        register("wasm")
+    }
+}
+```
+
+### Step 3: Add Runtime Library
+
+To run benchmarks, add the runtime library, `kotlinx-benchmark-runtime`, to the dependencies of your source set and enable Maven Central for dependencies lookup:
+
+```kotlin
+kotlin {
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.4")
+            }
+        }
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+```
+
+### Step 4: Write Benchmarks
+
+Create a new source file in your `src/wasmMain/kotlin` directory and write your benchmarks. Here's an example:
+
+```kotlin
+package benchmark
+
+import org.openjdk.jmh.annotations.*
+
+@State(Scope.Benchmark)
+open class WASMBenchmark {
+    private var data = 0.0
+
+    @Setup
+    fun setUp() {
+        data = 3.0
+    }
+
+    @Benchmark
+    fun sqrtBenchmark(): Double {
+        return kotlin.math.sqrt(data)
+    }
+}
+```
+
+### Step 5: Run Benchmarks
+
+In the terminal, navigate to your project's root directory and run `./gradlew benchmark`. For a practical example, please refer to [examples](../examples/multiplatform).
+
+## Kotlin Multiplatform Project Setup
+
+### Step 1: Add the Benchmark Plugin
+
+<details open>
+<summary><strong>Kotlin DSL</strong></summary>
+
+In your `build.gradle.kts` file, add the following:
+
+```kotlin
+plugins {
+    kotlin("multiplatform")
+    id("org.jetbrains.kotlinx.benchmark") version "0.4.8"
+}
+```
+</details>
+
+<details>
+<summary><strong>Groovy DSL</strong></summary>
+
+In your `build.gradle` file, add the following:
+
+```groovy
+plugins {
+    id 'org.jetbrains.kotlin.multiplatform'
+    id 'org.jetbrains.kotlinx.benchmark' version '0.4.8'
+}
+```
+</details>
+
+### Step 2: Configure the Benchmark Plugin
+
+In your `build.gradle` or `build.gradle.kts` file, add the following:
+
+```groovy
+benchmark {
+    targets {
+        register("jvm")
+        register("js")
+        register("native")
+        register("wasm")
+    }
+}
+```
+
+### Step 3: Add the Runtime Library
+
+To run benchmarks, add the runtime library, `kotlinx-benchmark-runtime`, to the dependencies of your source set and enable Maven Central for dependencies lookup:
 
 ```kotlin
 kotlin {
@@ -44,198 +377,20 @@ kotlin {
         }
     }
 }
-```
 
-#### 2.3 Apply the AllOpen Annotation
-
-Now, you need to instruct the [allopen](https://kotlinlang.org/docs/all-open-plugin.html) plugin to consider all benchmark classes and their methods as open. For that, apply the `allOpen` block and specify the JMH annotation `State`.
-
-```kotlin
-allOpen {
-    annotation("org.openjdk.jmh.annotations.State")
-}
-```
-
-#### 2.4 Define the Repositories
-
-Gradle needs to know where to find the libraries your project depends on. In this case, we're using the libraries hosted on Maven Central, so we need to specify that.
-
-In your `build.gradle.kts` file, add the following code block:
-
-```kotlin
 repositories {
     mavenCentral()
 }
 ```
 
-#### 2.5 Register the Benchmark Targets
+### Step 4: Write Benchmarks
 
-Next, we need to inform the kotlinx.benchmark plugin about our benchmarking targets. For multiplatform projects, we need to register each platform separately.
+Create new source files in your respective `src/<target>Main/kotlin` directories and write your benchmarks. 
 
-In your `build.gradle.kts` file, add the following code block within the `benchmark` block:
+### Step 5: Run Benchmarks
 
-```kotlin
-benchmark {
-    targets {
-        register("jvm")
-        register("js")
-        register("native")
-        // Add more platforms as needed
-    }
-}
-```
+In the terminal, navigate to your project's root directory and run `./gradlew benchmark`.
 
-#### 2.6 Define the Kotlin Targets and SourceSets
+## Conclusion
 
-In the `kotlin` block, you define the different platforms that your project targets and the related source sets. Within each target, you can specify the related compilations. For the JVM, you create a specific 'benchmark' compilation associated with the main compilation.
-
-```kotlin
-jvm {
-    compilations.create('benchmark') { associateWith(compilations.main) }
-}
-```
-
-The dependency `kotlinx-benchmark-runtime` is applied to the `commonMain` source set, indicating that it will be used across all platforms:
-
-```kotlin
-sourceSets {
-    commonMain {
-        dependencies {
-            implementation project(":kotlinx-benchmark-runtime")
-        }
-    }
-}
-```
-
-</details>
-
-<details>
-<summary><strong>Groovy DSL</strong></summary>
-
-#### 2.1 Apply the Necessary Plugins
-
-In your `build.gradle` file, apply the required plugins. These plugins are necessary for enabling Kotlin Multiplatform, making all classes and functions open, and using the kotlinx.benchmark plugin.
-
-```groovy
-plugins {
-    id 'org.jetbrains.kotlin.multiplatform'
-    id 'org.jetbrains.kotlin.plugin.allopen' version '1.8.21'
-    id 'org.jetbrains.kotlinx.benchmark' version '0.4.8'
-}
-```
-
-#### 2.2 Add the Dependencies
-
-Next, add the `kotlinx-benchmark-runtime` dependency to your project. This dependency contains the necessary runtime components for benchmarking.
-
-```groovy
-dependencies {
-    implementation 'org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.8'
-}
-```
-
-#### 2.3 Apply the AllOpen Annotation
-
-Now, you need to instruct the [allopen](https://kotlinlang.org/docs/all-open-plugin.html) plugin to consider all benchmark classes and their methods as open. For that, apply the `allOpen` block and specify the JMH annotation `State`.
-
-```groovy
-allOpen {
-    annotation("org.openjdk.jmh.annotations.State")
-}
-```
-
-#### 2.4 Define the Repositories
-
-Gradle needs to know where to find the libraries your project depends on. In this case, we're using the libraries hosted on Maven Central, so we need to specify that.
-
-In your `build.gradle` file, add the following code block:
-
-```groovy
-repositories {
-    mavenCentral()
-}
-```
-
-#### 2.5 Register the Benchmark Targets
-
-Next, we need to inform the kotlinx.benchmark plugin about our benchmarking targets. For multiplatform projects, we need to register each platform separately.
-
-In your `build.gradle` file, add the following code block within the `benchmark` block:
-
-```groovy
-benchmark {
-    targets {
-        register("jvm")
-        register("js")
-        register("native")
-        // Add more platforms as needed
-    }
-}
-```
-
-#### 2.6 Define the Kotlin Targets and SourceSets
-
-In the `kotlin` block, you define the different platforms that your project targets and the related source sets. Within each target, you can specify the related compilations. For the JVM, you create a specific 'benchmark' compilation associated with the main compilation.
-
-```kotlin
-jvm {
-    compilations.create('benchmark') { associateWith(compilations.main) }
-}
-```
-
-The dependency `kotlinx-benchmark-runtime` is applied to the `commonMain` source set, indicating that it will be used across all platforms:
-
-```kotlin
-sourceSets {
-    commonMain {
-        dependencies {
-            implementation project(":kotlinx-benchmark-runtime")
-        }
-    }
-}
-```
-
-</details>
-
-### Step 3: Writing Benchmarks
-
-Create a new Kotlin source file in your `src/main/kotlin` directory to write your benchmarks. Each benchmark is a class or object with methods annotated with `@Benchmark`. Here's a simple example:
-
-```kotlin
-import org.openjdk.jmh.annotations.Benchmark
-
-open class ListBenchmark {
-    @Benchmark
-    fun listOfBenchmark() {
-        listOf(1, 2, 3, 4, 5)
-    }
-}
-```
-
-Ensure that your benchmark class and methods are `open`, as JMH creates subclasses during the benchmarking process. The `allopen` plugin we added earlier enforces this.
-
-### Step 4: Running Your Benchmarks
-
-Executing your benchmarks is an important part of the process. This will allow you to gather performance data about your code. There are two primary ways to run your benchmarks: through the command line or using your IDE.
-
-#### 4.1 Running Benchmarks From the Command Line
-
-The simplest way to run your benchmarks is by using the Gradle task `benchmark`. You can do this by opening a terminal, navigating to the root of your project, and entering the following command:
-
-```bash
-./gradlew benchmark
-```
-
-This command instructs Gradle to execute the `benchmark` task, which in turn runs your benchmarks.
-
-#### 4.2 Understanding Benchmark Execution
-
-The execution of your benchmarks might take some time. This is normal and necessary: benchmarks must be run for a sufficient length of time to produce reliable, statistically significant results.
-
-For more details regarding the available Gradle tasks, refer to this [document](tasks-overview.md).
-
-### Step 5: Analyze the Results
-
-To fully understand and make the best use of these results, it's important to know how to interpret and analyze them properly. For a comprehensive guide on interpreting and analyzing benchmarking results, please refer to this dedicated document: [Interpreting and Analyzing Results](interpreting-results.md).
-
-Congratulations! You have successfully set up a Kotlin Multiplatform benchmark project using kotlinx-benchmark.
+This guide has walked you through setting up a multiplatform benchmarking project using the kotlinx-benchmark library in Kotlin. It has covered the creation of new projects, the addition and configuration of the benchmark plugin, writing benchmark tests, and running these benchmarks. Remember, performance benchmarking is an essential part of optimizing your code and ensuring it runs as efficiently as possible. Happy benchmarking!
