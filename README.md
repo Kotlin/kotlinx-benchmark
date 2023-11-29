@@ -26,7 +26,7 @@ kotlinx-benchmark is a toolkit for running benchmarks for multiplatform code wri
     - [Kotlin/JVM](#kotlinjvm)
     - [Kotlin/JS](#kotlinjs)
     - [Kotlin/Native](#kotlinnative)
-    - [Kotlin/WASM](#kotlinwasm)
+    - [Kotlin/Wasm](#kotlinwasm)
   - [Writing Benchmarks](#writing-benchmarks)
   - [Running Benchmarks](#running-benchmarks)
   - [Benchmark Configuration Profiles](#benchmark-configuration-profiles)
@@ -41,15 +41,15 @@ kotlinx-benchmark is a toolkit for running benchmarks for multiplatform code wri
   - [Understanding Benchmark Runtime](docs/benchmark-runtime.md)
   - [Configuring kotlinx-benchmark](docs/configuration-options.md)
   - [Interpreting and Analyzing Results](docs/interpreting-results.md)
-  - [Creating Separate Source Sets](docs/seperate-source-sets.md)
+  - [Creating Separate Source Sets](docs/separate-source-sets.md)
   - [Tasks Overview](docs/tasks-overview.md)
   - [Compatibility Guide](docs/compatibility.md)
   - [Submitting issues and PRs](CONTRIBUTING.md)
 
 ## Using in Your Projects
 
-The `kotlinx-benchmark` library is designed to work with Kotlin/JVM, Kotlin/JS, Kotlin/Native, and Kotlin/WASM (experimental) targets. 
-To get started, ensure you're using Kotlin 1.8.20 or newer and Gradle 8.0 or newer.
+The `kotlinx-benchmark` library is designed to work with Kotlin/JVM, Kotlin/JS, Kotlin/Native, and Kotlin/Wasm (experimental) targets. 
+To get started, ensure you're using Kotlin 1.9.20 or newer and Gradle 7.4 or newer.
 
 ### Project Setup
 
@@ -63,7 +63,7 @@ Follow the steps below to set up a Kotlin Multiplatform project for benchmarking
     ```kotlin
     // build.gradle.kts
     plugins {
-        id("org.jetbrains.kotlinx.benchmark") version "0.4.9"
+        id("org.jetbrains.kotlinx.benchmark") version "0.4.10"
     }
     ```
 
@@ -86,7 +86,7 @@ Follow the steps below to set up a Kotlin Multiplatform project for benchmarking
         sourceSets {
             commonMain {
                 dependencies {
-                    implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.9")
+                    implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.10")
                 }
             }
         }
@@ -112,7 +112,7 @@ Follow the steps below to set up a Kotlin Multiplatform project for benchmarking
     ```groovy
     // build.gradle
     plugins {
-        id 'org.jetbrains.kotlinx.benchmark' version '0.4.9'
+        id 'org.jetbrains.kotlinx.benchmark' version '0.4.10'
     }
     ```
 
@@ -135,7 +135,7 @@ Follow the steps below to set up a Kotlin Multiplatform project for benchmarking
         sourceSets {
             commonMain {
                 dependencies {
-                    implementation 'org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.9'
+                    implementation 'org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.10'
                 }
             }
         }
@@ -187,7 +187,7 @@ To run benchmarks in Kotlin/JVM:
     ```kotlin
     // build.gradle.kts
     plugins {
-        kotlin("plugin.allopen") version "1.8.21"
+        kotlin("plugin.allopen") version "1.9.20"
     }
 
     allOpen {
@@ -205,6 +205,7 @@ To run benchmarks in Kotlin/JVM:
     @State(Scope.Benchmark)
     class MyBenchmark {
         // Benchmarking-related methods and variables
+        @Benchmark
         fun benchmarkMethod() {
             // benchmarking logic
         }
@@ -220,7 +221,7 @@ To run benchmarks in Kotlin/JVM:
     ```kotlin
     // build.gradle.kts
     plugins {
-        kotlin("plugin.allopen") version "1.8.21"
+        kotlin("plugin.allopen") version "1.9.20"
     }
 
     allOpen {
@@ -242,7 +243,7 @@ To run benchmarks in Kotlin/JS:
     ```kotlin
     // build.gradle.kts
     kotlin {
-        js(IR) { 
+        js { 
             nodejs() 
         }
     }
@@ -259,8 +260,6 @@ To run benchmarks in Kotlin/JS:
     }
     ```
 
-For Kotlin/JS, only the [IR compiler backend](https://kotlinlang.org/docs/js-ir-compiler.html) is supported.
-
 #### Kotlin/Native
 
 To run benchmarks in Kotlin/Native:
@@ -269,33 +268,34 @@ To run benchmarks in Kotlin/Native:
     ```kotlin
     // build.gradle.kts
     kotlin {
-        linuxX64("native")
+        linuxX64()
     }
     ```
 
-2.  Register `native` as a benchmark target:
+2.  Register `linuxX64` as a benchmark target:
 
     ```kotlin
     // build.gradle.kts
     benchmark {
         targets {
-            register("native")
+            register("linuxX64")
         }
     }
     ```
     
+It is possible to register multiple native targets. However, benchmarks can be executed only for the host target.
 This library supports all [targets supported by the Kotlin/Native compiler](https://kotlinlang.org/docs/native-target-support.html). 
 
-#### Kotlin/WASM
+#### Kotlin/Wasm
 
-To run benchmarks in Kotlin/WASM:
-1.  Create a WASM target with D8 execution environment:
+To run benchmarks in Kotlin/Wasm:
+1.  Create a Wasm target with Node.js execution environment:
 
     ```kotlin
     // build.gradle.kts
     kotlin {
         wasm { 
-            d8() 
+            nodejs() 
         }
     }
     ```
@@ -311,7 +311,7 @@ To run benchmarks in Kotlin/WASM:
     }
     ```
 
-Note: Kotlin/WASM is an experimental compilation target for Kotlin. It may be dropped or changed at any time.
+Note: Kotlin/Wasm is an experimental compilation target for Kotlin. It may be dropped or changed at any time.
 
 ### Writing Benchmarks
 
@@ -329,9 +329,9 @@ After setting up your project and configuring targets, you can start writing ben
 2. **Set up Parameters and Variables**: Define variables needed for the benchmark.
 
     ```kotlin
-    var param: Int = 10
+    private val size = 10
 
-    private var list: MutableList<Int> = ArrayList()
+    private val list = ArrayList()
     ```
 
 3. **Initialize Resources**: Within the class, you can define any setup or teardown methods using `@Setup` and `@TearDown` annotations respectively. These methods will be executed before and after the entire benchmark run.
@@ -364,9 +364,9 @@ Your final benchmark class will look something like this:
     @State(Scope.Benchmark)
     class MyBenchmark {
 
-        var param: Int = 10
+        private val size = 10
 
-        private var list: MutableList<Int> = ArrayList()
+        private val list = ArrayList()
 
         @Setup
         fun prepare() {
