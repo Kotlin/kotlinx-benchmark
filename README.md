@@ -29,7 +29,7 @@ kotlinx-benchmark is a toolkit for running benchmarks for multiplatform code wri
   - [Writing Benchmarks](#writing-benchmarks)
   - [Running Benchmarks](#running-benchmarks)
   - [Benchmark Configuration Profiles](#benchmark-configuration-profiles)
-  - [Separate source sets for benchmarks](#separate-source-sets-for-benchmarks)
+  - [Separate source set for benchmarks](#separate-source-set-for-benchmarks)
 - [Examples](#examples)
 - [Contributing](#contributing)
 
@@ -423,10 +423,10 @@ benchmark {
 
 Refer to our [comprehensive guide](docs/configuration-options.md) to learn about configuration options and how they affect benchmark execution.
 
-### Separate source sets for benchmarks
+### Separate source set for benchmarks
 
 Often you want to have benchmarks in the same project, but separated from main code, much like tests.
-Refer to our [detailed documentation](docs/separate-benchmark-source-set.md) on configuring your project to add a separate source set for benchmarks.
+Refer to our [detailed documentation](docs/separate-benchmark-source-set.md) on configuring your project to set up a separate source set for benchmarks.
 
 ## Examples
 
