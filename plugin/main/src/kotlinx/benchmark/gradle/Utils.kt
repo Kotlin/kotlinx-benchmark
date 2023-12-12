@@ -261,13 +261,8 @@ internal val Gradle.isConfigurationCacheAvailable
     } ?: false
 
 internal fun Project.getSystemProperty(key: String): String? {
-    return if (gradle.isConfigurationCacheAvailable) {
-        providers.systemProperty(key).forUseAtConfigurationTime().orNull
-    } else {
-        System.getProperty(key)
-    }
+    return System.getProperty(key)
 }
-
 fun Project.javaCompilerProvider(): Provider<JavaCompiler> = provider {
     val toolchainService = extensions.findByType(JavaToolchainService::class.java) ?: return@provider null
     val javaExtension = extensions.findByType(JavaPluginExtension::class.java) ?: return@provider null
