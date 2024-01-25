@@ -20,6 +20,7 @@ fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, compileCla
         classpath = compileClasspath
         source = fileTree("$benchmarkBuildDir/sources")
         destinationDirectory.set(file("$benchmarkBuildDir/classes"))
+        javaCompiler.set(javaCompilerProvider())
     }
 
     task<Jar>(
@@ -90,6 +91,9 @@ fun Project.createJvmBenchmarkGenerateSourceTask(
         inputClassesDirs = compilationOutput
         outputResourcesDir = file("$benchmarkBuildDir/resources")
         outputSourcesDir = file("$benchmarkBuildDir/sources")
+        executableProvider = javaLauncherProvider().map {
+            it.executablePath.asFile.absolutePath
+        }
     }
 }
 
@@ -123,5 +127,6 @@ fun Project.createJvmBenchmarkExecTask(
 
         val reportFile = setupReporting(target, config)
         args(writeParameters(target.name, reportFile, traceFormat(), config))
+        javaLauncher.set(javaLauncherProvider())
     }
 }

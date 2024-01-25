@@ -5,7 +5,12 @@ import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.invocation.Gradle
+import org.gradle.api.plugins.JavaPluginExtension
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.jvm.toolchain.JavaCompiler
+import org.gradle.jvm.toolchain.JavaLauncher
+import org.gradle.jvm.toolchain.JavaToolchainService
 import java.io.File
 import java.nio.file.Path
 import java.time.LocalDateTime
@@ -261,4 +266,16 @@ internal fun Project.getSystemProperty(key: String): String? {
     } else {
         System.getProperty(key)
     }
+}
+
+fun Project.javaCompilerProvider(): Provider<JavaCompiler> = provider {
+    val toolchainService = extensions.findByType(JavaToolchainService::class.java) ?: return@provider null
+    val javaExtension = extensions.findByType(JavaPluginExtension::class.java) ?: return@provider null
+    toolchainService.compilerFor(javaExtension.toolchain).orNull
+}
+
+fun Project.javaLauncherProvider(): Provider<JavaLauncher> = provider {
+    val toolchainService = extensions.findByType(JavaToolchainService::class.java) ?: return@provider null
+    val javaExtension = extensions.findByType(JavaPluginExtension::class.java) ?: return@provider null
+    toolchainService.launcherFor(javaExtension.toolchain).orNull
 }

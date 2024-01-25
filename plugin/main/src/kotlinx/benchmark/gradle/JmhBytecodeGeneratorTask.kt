@@ -2,6 +2,7 @@ package kotlinx.benchmark.gradle
 
 import org.gradle.api.*
 import org.gradle.api.file.*
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.*
 import org.gradle.workers.*
 import java.io.*
@@ -28,11 +29,18 @@ open class JmhBytecodeGeneratorTask
     @InputFiles
     @PathSensitive(PathSensitivity.RELATIVE)
     lateinit var runtimeClasspath: FileCollection
+
+    @Optional
+    @Input
+    var executableProvider: Provider<String> = project.provider { null }
     
     @TaskAction
     fun generate() {
         val workQueue = workerExecutor.processIsolation { workerSpec ->
             workerSpec.classpath.setFrom(runtimeClasspath.files)
+            if (executableProvider.isPresent) {
+                workerSpec.forkOptions.executable = executableProvider.get()
+            }
         }
         workQueue.submit(JmhBytecodeGeneratorWorker::class.java) { workParameters ->
             workParameters.inputClasses.setFrom(inputClassesDirs.files)
