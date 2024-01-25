@@ -26,7 +26,10 @@ abstract class GradleTest {
         val builder = ProjectBuilder().apply(build)
         templates.resolve(name).copyRecursively(rootProjectDir)
         file("build.gradle").modify(builder::build)
-        file("settings.gradle").writeText("") // empty settings file
+        val settingsFile = file("settings.gradle")
+        if (!settingsFile.exists()) {
+            file("settings.gradle").writeText("") // empty settings file
+        }
         return Runner(rootProjectDir, print, gradleVersion)
     }
 }
