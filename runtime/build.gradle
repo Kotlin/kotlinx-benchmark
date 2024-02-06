@@ -56,7 +56,10 @@ kotlin {
     targets.configureEach {
         compilations.configureEach {
             compilerOptions.options.with {
-                allWarningsAsErrors.set(true)
+                // TODO: Uncomment before merging to master. Currently, K2 produced warning for suppressing
+                //  NO_ACTUAL_CLASS_MEMBER_FOR_EXPECTED_CLASS and ACTUAL_WITHOUT_EXPECT, which are redundant in K2.
+                //  However, the suppresses are still relevant in K1.
+//                allWarningsAsErrors.set(true)
                 freeCompilerArgs.add("-Xexpect-actual-classes")
                 optIn.addAll(
                         "kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi",
