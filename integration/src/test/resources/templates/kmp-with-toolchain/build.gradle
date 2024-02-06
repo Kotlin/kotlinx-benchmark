@@ -1,6 +1,5 @@
 kotlin {
     jvm {
-        compilations.create('benchmark') { associateWith(compilations.main) }
         jvmToolchain(21)
     }
 
@@ -9,11 +8,6 @@ kotlin {
             dependencies {
                 implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.5.0-SNAPSHOT")
             }
-        }
-        jvmMain {
-        }
-        jvmBenchmark {
-            dependsOn(jvmMain)
         }
     }
 }
