@@ -4,7 +4,6 @@ import groovy.lang.Closure
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.Task
-import org.gradle.api.invocation.Gradle
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
@@ -251,18 +250,10 @@ private object ValidOptions {
     val nativeForks = setOf("perBenchmark", "perIteration")
 }
 
-internal val Gradle.isConfigurationCacheAvailable
-    get() = try {
-        val startParameters = gradle.startParameter
-        startParameters.javaClass.getMethod("isConfigurationCache")
-            .invoke(startParameters) as? Boolean
-    } catch (_: Exception) {
-        null
-    } ?: false
-
 internal fun Project.getSystemProperty(key: String): String? {
-    return System.getProperty(key)
+    return providers.systemProperty(key).orNull
 }
+
 fun Project.javaCompilerProvider(): Provider<JavaCompiler> = provider {
     val toolchainService = extensions.findByType(JavaToolchainService::class.java) ?: return@provider null
     val javaExtension = extensions.findByType(JavaPluginExtension::class.java) ?: return@provider null
