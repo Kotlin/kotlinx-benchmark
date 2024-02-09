@@ -45,4 +45,14 @@ internal fun BuildResult.assertOutputContains(
     }
 }
 
+internal fun BuildResult.assertOutputDoesNotContain(
+    expectedSubString: String,
+    message: String = "Build output contains \"$expectedSubString\""
+) {
+    assert(!output.contains(expectedSubString)) {
+        printBuildOutput()
+        message
+    }
+}
+
 internal fun BuildResult.assertTasksUpToDate(tasks: Collection<String>) = assertTasksUpToDate(*tasks.toTypedArray())
