@@ -54,7 +54,7 @@ Follow these steps to set up a separate source set for benchmarks:
     Place your benchmark code into the default source set of the benchmark compilation. 
     The default source set can also depend on other source sets containing benchmarks. 
     This way you can share benchmarks between multiple benchmark compilations. 
-    Refer to our [writing benchmarks guide](docs/writing-benchmarks.md) for a comprehensive guide on writing benchmarks.
+    Refer to our [writing benchmarks guide](writing-benchmarks.md) for a comprehensive guide on writing benchmarks.
 
 For additional information, refer to the [Kotlin documentation on creating a custom compilation](https://kotlinlang.org/docs/multiplatform-configure-compilations.html#create-a-custom-compilation).
 and the [documentation on associating compiler tasks](https://kotlinlang.org/docs/gradle-configure-project.html#associate-compiler-tasks).
@@ -107,6 +107,6 @@ Set up a separate benchmark source set by following these simple steps:
 4. **Add Benchmarks**
 
    Place your benchmark code into the benchmark source set.
-   Refer to our [writing benchmarks guide](docs/writing-benchmarks.md) for a comprehensive guide on writing benchmarks.
+   Refer to our [writing benchmarks guide](writing-benchmarks.md) for a comprehensive guide on writing benchmarks.
 
 [Here is a sample Kotlin/JVM project](/examples/kotlin) with custom source set for benchmarks.
