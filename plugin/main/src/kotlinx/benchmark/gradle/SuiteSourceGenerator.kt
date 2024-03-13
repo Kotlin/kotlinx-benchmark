@@ -103,17 +103,17 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
             val classDescriptors = DescriptorUtils.getAllDescriptors(packageFragment.getMemberScope())
                 .filterIsInstance<ClassDescriptor>()
 
-            val abstractClassDescriptors = classDescriptors.filter { it.modality == Modality.ABSTRACT }
+            val inheritableClassDescriptors = classDescriptors.filter { it.modality != Modality.FINAL }
 
             // Abstract classes which are annotated directly.
-            val directlyAnnotatedAbstractClassDescriptors = abstractClassDescriptors
+            val directlyAnnotatedInheritableClassDescriptors = inheritableClassDescriptors
                 .filter { it.annotations.any { it.fqName.toString() == stateAnnotationFQN } }
 
             // Contains both directly and indirectly annotated ClassDescriptors.
-            val annotatedAbstractClassDescriptors = abstractClassDescriptors
-                .filter { abstractClass ->
-                    directlyAnnotatedAbstractClassDescriptors.forEach { annotatedAbstractClass ->
-                        if (abstractClass.isSubclassOf(annotatedAbstractClass)) {
+            val annotatedInheritableClassDescriptors = inheritableClassDescriptors
+                .filter { inheritableClass ->
+                    directlyAnnotatedInheritableClassDescriptors.forEach { annotatedInheritableClass ->
+                        if (inheritableClass.isSubclassOf(annotatedInheritableClass)) {
                             // If any benchmark class is not annotated but extended with an abstract class
                             // annotated with @State, it should be included when generating benchmarks.
                             return@filter true
@@ -122,24 +122,17 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
                     return@filter false
                 }
 
-            fun ClassDescriptor.getParentAnnotated(): ClassDescriptor? {
-                annotatedAbstractClassDescriptors.forEach { annotatedAbstractClass ->
-                    if (this.isSubclassOf(annotatedAbstractClass)) {
-                        return annotatedAbstractClass
-                    }
-                }
-                return null
-            }
-
             val annotatedClassDescriptors = mutableListOf<AnnotatedClassDescriptor>()
                 .apply {
                     classDescriptors
                         .filter { it.modality != Modality.ABSTRACT }
                         .forEach {
-                            if (it.annotations.any { it.fqName.toString() == stateAnnotationFQN }) {
+                            if (it.annotations.any {
+                                annotationDescriptor -> annotationDescriptor.fqName.toString() == stateAnnotationFQN
+                            }) {
                                 add(AnnotatedClassDescriptor(it))
                             } else {
-                                val parent = it.getParentAnnotated()
+                                val parent = it.getParentAnnotated(annotatedInheritableClassDescriptors)
                                 if (parent != null) {
                                     add(AnnotatedClassDescriptor(it, parent))
                                 }
@@ -157,7 +150,22 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
         }
     }
 
-    /** @param parentAnnotatedClassDescriptor if null, [original] is directly annotated.*/
+    /** @param annotatedInheritableClassDescriptors descriptors of classes which are inheritable and directly annotated.
+     * with [stateAnnotationFQN].
+     * @return Top most parent class descriptor which was annotated with [stateAnnotationFQN] and inherited by `this` class
+     * descriptor or null if none of its parent classes are not annotated.*/
+    private fun ClassDescriptor.getParentAnnotated(
+        annotatedInheritableClassDescriptors: List<ClassDescriptor>
+    ): ClassDescriptor? {
+        annotatedInheritableClassDescriptors.forEach { annotatedAbstractClass ->
+            if (this.isSubclassOf(annotatedAbstractClass)) {
+                return annotatedAbstractClass
+            }
+        }
+        return null
+    }
+
+    /** @param parentAnnotatedClassDescriptor if null, [original] is directly annotated with [stateAnnotationFQN].*/
     private data class AnnotatedClassDescriptor(
         val original: ClassDescriptor,
         val parentAnnotatedClassDescriptor: ClassDescriptor? = null
