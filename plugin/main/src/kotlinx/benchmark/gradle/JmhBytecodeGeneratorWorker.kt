@@ -106,7 +106,7 @@ abstract class JmhBytecodeGeneratorWorker : WorkAction<JmhBytecodeGeneratorWorkP
                 errCount++
                 sb.append("  - ").append(e.toString()).append("\n")
             }
-            throw RuntimeException("Generation of JMH bytecode failed with " + errCount + "errors:\n" + sb)
+            throw RuntimeException("Generation of JMH bytecode failed with " + errCount + " errors:\n" + sb)
         }
     }
 }
