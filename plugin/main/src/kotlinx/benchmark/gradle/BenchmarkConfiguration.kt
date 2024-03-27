@@ -1,7 +1,7 @@
 package kotlinx.benchmark.gradle
 
+import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.tasks.*
-import org.jetbrains.kotlin.gradle.InternalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrCompilation
@@ -37,13 +37,13 @@ open class BenchmarkConfiguration(val extension: BenchmarksExtension, val name: 
         advanced[name] = value
     }
 
-    @InternalKotlinGradlePluginApi
+    @KotlinxBenchmarkPluginInternalApi
     fun capitalizedName() = if (name == "main") "" else name.capitalize()
 
-    @InternalKotlinGradlePluginApi
+    @KotlinxBenchmarkPluginInternalApi
     fun prefixName(suffix: String) = if (name == "main") suffix else name + suffix.capitalize()
 
-    @InternalKotlinGradlePluginApi
+    @KotlinxBenchmarkPluginInternalApi
     fun reportFileExt(): String = reportFormat?.toLowerCase() ?: "json"
 }
 
