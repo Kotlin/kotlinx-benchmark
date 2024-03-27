@@ -61,6 +61,10 @@ allprojects {
 apiValidation {
     ignoredProjects += [
             "examples",
+            "java",
+            "kotlin",
+            "kotlin-kts",
+            "kotlin-multiplatform",
             "integration",
     ]
 
