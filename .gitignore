@@ -1,9 +1,7 @@
-.idea
+.idea/
 *.iml
-.gradle
-.gradletasknamecache
-build
-out
-target
-local.properties
-node_modules
+.gradle/
+build/
+out/
+target/
+.DS_Store
