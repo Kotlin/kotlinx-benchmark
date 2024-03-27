@@ -1,6 +1,7 @@
 package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.BenchmarksPlugin.Companion.RUN_BENCHMARKS_TASKNAME
+import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
 import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Provider
@@ -11,6 +12,7 @@ import org.jetbrains.kotlin.gradle.targets.js.dsl.*
 import org.jetbrains.kotlin.gradle.targets.js.ir.*
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.*
 
+@KotlinxBenchmarkPluginInternalApi
 fun Project.createJsEngineBenchmarkExecTask(
     config: BenchmarkConfiguration,
     target: BenchmarkTarget,

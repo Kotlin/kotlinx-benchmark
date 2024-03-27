@@ -1,10 +1,14 @@
 package kotlinx.benchmark.gradle
 
+import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
 import org.gradle.util.*
 
 @Suppress("unused")
-class BenchmarksPlugin : Plugin<Project> {
+abstract class BenchmarksPlugin
+@KotlinxBenchmarkPluginInternalApi
+constructor() : Plugin<Project> {
+
     companion object {
         const val PLUGIN_ID = "org.jetbrains.kotlinx.benchmark"
         // This value is overridden by `overridePluginVersion` task during release builds.
@@ -49,7 +53,7 @@ class BenchmarksPlugin : Plugin<Project> {
         }
 
         // TODO: Design configuration avoidance
-        // I currently don't know how to do it correctly yet, so materialize all tasks after project evaluation. 
+        // I currently don't know how to do it correctly yet, so materialize all tasks after project evaluation.
         afterEvaluate {
             extension.configurations.forEach {
                 // Create empty task that will depend on all benchmark execution tasks to run all benchmarks in a project
@@ -69,7 +73,7 @@ class BenchmarksPlugin : Plugin<Project> {
             processConfigurations(extension)
         }
     }
-    
+
     private fun Project.processConfigurations(extension: BenchmarksExtension) {
         // Calling `all` on NDOC causes all items to materialize and be configured
         extension.targets.all { config ->

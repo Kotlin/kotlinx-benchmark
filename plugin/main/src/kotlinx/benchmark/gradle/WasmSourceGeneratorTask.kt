@@ -1,5 +1,6 @@
 package kotlinx.benchmark.gradle
 
+import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.*
@@ -10,10 +11,14 @@ import org.jetbrains.kotlin.storage.StorageManager
 import java.io.File
 import javax.inject.Inject
 
-@Suppress("UnstableApiUsage")
 @CacheableTask
 open class WasmSourceGeneratorTask
-@Inject constructor(private val workerExecutor: WorkerExecutor) : DefaultTask() {
+@KotlinxBenchmarkPluginInternalApi
+@Inject
+constructor(
+    private val workerExecutor: WorkerExecutor
+) : DefaultTask() {
+
     @Input
     lateinit var title: String
 
@@ -62,5 +67,3 @@ open class WasmSourceGeneratorTask
         return listOf(module)
     }
 }
-
-

@@ -2,6 +2,7 @@ package kotlinx.benchmark.gradle
 
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.jetbrains.kotlin.descriptors.*
 import org.jetbrains.kotlin.name.*
 import org.jetbrains.kotlin.resolve.*
@@ -12,6 +13,7 @@ import org.jetbrains.kotlin.resolve.scopes.*
 import org.jetbrains.kotlin.types.*
 import java.io.*
 
+@KotlinxBenchmarkPluginInternalApi
 enum class Platform(
     val executorClass: String,
     val suiteDescriptorClass: String,
@@ -44,7 +46,11 @@ enum class Platform(
     )
 }
 
+
+@KotlinxBenchmarkPluginInternalApi
 class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val output: File, val platform: Platform) {
+
+    @KotlinxBenchmarkPluginInternalApi
     companion object {
         val setupFunctionName = "setUp"
         val teardownFunctionName = "tearDown"
@@ -186,7 +192,7 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
                 /*
                       private fun parametrize(instance: ParamBenchmark, params: Map<String, String>) {
                           instance.data = (params["data"] ?: error("No parameter value provided for property 'data'")).toInt()
-                      }  
+                      }
                  */
                 function(parametersFunctionName) {
                     addModifiers(KModifier.PRIVATE)
@@ -200,14 +206,14 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
 
                 val defaultParameters = parameterProperties.associateBy({ it.name }, {
                     val annotation = it.annotations.findAnnotation(FqName(paramAnnotationFQN))!!
-                    val constant = annotation.argumentValue("value") 
+                    val constant = annotation.argumentValue("value")
                         ?: error("@Param annotation should have at least one default value")
                     @Suppress("UNCHECKED_CAST")
                     val values = constant.value as List<StringValue>?
                         ?: error("@Param annotation should have at least one default value")
                     values
                 })
-                
+
                 val defaultParametersString = defaultParameters.entries
                     .joinToString(prefix = "mapOf(", postfix = ")") { (key, value) ->
                         "\"${key}\" to ${value.joinToString(prefix = "listOf(", postfix = ")") { "\"\"\"${it.value.replace(' ', '·')}\"\"\"" }}"
@@ -289,28 +295,33 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
     }
 }
 
+@KotlinxBenchmarkPluginInternalApi
 inline fun codeBlock(builderAction: CodeBlock.Builder.() -> Unit): CodeBlock {
     return CodeBlock.builder().apply(builderAction).build()
 }
 
+@KotlinxBenchmarkPluginInternalApi
 inline fun FileSpec.Builder.declareObject(name: ClassName, builderAction: TypeSpec.Builder.() -> Unit): TypeSpec {
     return TypeSpec.objectBuilder(name).apply(builderAction).build().also {
         addType(it)
     }
 }
 
+@KotlinxBenchmarkPluginInternalApi
 inline fun FileSpec.Builder.declareClass(name: String, builderAction: TypeSpec.Builder.() -> Unit): TypeSpec {
     return TypeSpec.classBuilder(name).apply(builderAction).build().also {
         addType(it)
     }
 }
 
+@KotlinxBenchmarkPluginInternalApi
 inline fun FileSpec.Builder.declareClass(name: ClassName, builderAction: TypeSpec.Builder.() -> Unit): TypeSpec {
     return TypeSpec.classBuilder(name).apply(builderAction).build().also {
         addType(it)
     }
 }
 
+@KotlinxBenchmarkPluginInternalApi
 inline fun TypeSpec.Builder.property(
     name: String,
     type: ClassName,
@@ -321,6 +332,7 @@ inline fun TypeSpec.Builder.property(
     }
 }
 
+@KotlinxBenchmarkPluginInternalApi
 inline fun TypeSpec.Builder.function(
     name: String,
     builderAction: FunSpec.Builder.() -> Unit
@@ -330,6 +342,7 @@ inline fun TypeSpec.Builder.function(
     }
 }
 
+@KotlinxBenchmarkPluginInternalApi
 inline fun FileSpec.Builder.function(
     name: String,
     builderAction: FunSpec.Builder.() -> Unit
@@ -339,5 +352,6 @@ inline fun FileSpec.Builder.function(
     }
 }
 
+@KotlinxBenchmarkPluginInternalApi
 val KotlinType.nameIfStandardType: Name?
-    get() = constructor.declarationDescriptor?.name 
+    get() = constructor.declarationDescriptor?.name

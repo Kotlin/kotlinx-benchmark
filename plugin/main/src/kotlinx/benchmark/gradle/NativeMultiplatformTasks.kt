@@ -1,5 +1,6 @@
 package kotlinx.benchmark.gradle
 
+import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.tasks.*
@@ -11,13 +12,14 @@ import java.nio.file.Path
 import javax.inject.Inject
 import kotlin.io.path.*
 
+@KotlinxBenchmarkPluginInternalApi
 fun Project.processNativeCompilation(target: NativeBenchmarkTarget) {
     val compilation = target.compilation
     if (compilation.target.konanTarget != HostManager.host) {
         project.logger.warn("Skipping benchmarks for '${target.name}' because they cannot be run on current OS: Expected ${HostManager.host}, but was ${compilation.target.konanTarget}")
-        return        
+        return
     }
-    
+
     project.logger.info("Configuring benchmarks for '${target.name}' using Kotlin/Native")
 
     createNativeBenchmarkGenerateSourceTask(target)
@@ -104,6 +106,7 @@ private fun Project.createNativeBenchmarkCompileTask(target: NativeBenchmarkTarg
 }
 
 @OptIn(ExperimentalPathApi::class)
+@KotlinxBenchmarkPluginInternalApi
 fun Project.createNativeBenchmarkExecTask(
     config: BenchmarkConfiguration,
     target: NativeBenchmarkTarget,
@@ -142,7 +145,10 @@ fun Project.createNativeBenchmarkExecTask(
     }
 }
 
-open class NativeBenchmarkExec @Inject constructor(
+open class NativeBenchmarkExec
+@KotlinxBenchmarkPluginInternalApi
+@Inject
+constructor(
     private val execOperations: ExecOperations,
     private val objectFactory: ObjectFactory,
 ) : DefaultTask() {
