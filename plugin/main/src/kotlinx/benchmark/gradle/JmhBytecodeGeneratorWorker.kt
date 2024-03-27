@@ -15,6 +15,7 @@
  */
 package kotlinx.benchmark.gradle
 
+import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.workers.WorkAction
@@ -27,8 +28,10 @@ import java.io.*
 import java.net.*
 import java.util.*
 
+@KotlinxBenchmarkPluginInternalApi
 abstract class JmhBytecodeGeneratorWorker : WorkAction<JmhBytecodeGeneratorWorkParameters> {
 
+    @KotlinxBenchmarkPluginInternalApi
     companion object {
         private const val classSuffix = ".class"
     }
@@ -48,13 +51,13 @@ abstract class JmhBytecodeGeneratorWorker : WorkAction<JmhBytecodeGeneratorWorkP
 
         val currentThread = Thread.currentThread()
         val originalClassLoader = currentThread.contextClassLoader
-        
+
         // TODO: This is some magic I don't understand yet
         // Somehow Benchmark class is loaded into a Launcher/App class loader and not current context class loader
-        // Hence, if parent classloader is set to originalClassLoader then Benchmark annotation check doesn't work 
+        // Hence, if parent classloader is set to originalClassLoader then Benchmark annotation check doesn't work
         // inside JMH bytecode gen. This hack seem to work, but we need to understand
         val introspectionClassLoader = URLClassLoader(urls, benchmarkAnnotation.classLoader)
-        
+
 /*
         println("Original_Parent_ParentCL: ${originalClassLoader.parent.parent}")
         println("Original_ParentCL: ${originalClassLoader.parent}")
@@ -111,7 +114,7 @@ abstract class JmhBytecodeGeneratorWorker : WorkAction<JmhBytecodeGeneratorWorkP
     }
 }
 
-
+@KotlinxBenchmarkPluginInternalApi
 interface JmhBytecodeGeneratorWorkParameters : WorkParameters {
     val inputClasses: ConfigurableFileCollection
     val inputClasspath: ConfigurableFileCollection

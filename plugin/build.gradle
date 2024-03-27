@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+
 buildscript {
     ext.kotlinDevUrl = rootProject.properties["kotlin_repo_url"]
     repositories {
@@ -9,7 +12,6 @@ buildscript {
     }
     dependencies {
         classpath "kotlinx.team:kotlinx.team.infra:$infra_version"
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 
 }
@@ -18,10 +20,11 @@ plugins {
     id 'java-gradle-plugin'
     id 'maven-publish'
     id 'com.gradle.plugin-publish' version '0.21.0'
+    id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.15.0-Beta.1"
+    id("org.jetbrains.kotlin.jvm") version "$kotlin_version"
 }
 
-apply plugin: 'org.jetbrains.kotlin.jvm'
-apply plugin: 'kotlinx.team.infra'
+apply(plugin: 'kotlinx.team.infra')
 
 infra {
     teamcity {
@@ -75,10 +78,14 @@ sourceSets {
     }
 }
 
-compileKotlin {
-    kotlinOptions {
-        freeCompilerArgs += "-Xopt-in=kotlin.RequiresOptIn"
-        apiVersion = "1.4" // the version of Kotlin embedded in Gradle
+tasks.named("compileKotlin", KotlinCompilationTask.class) {
+    compilerOptions {
+        optIn.addAll(
+                "kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi",
+                "kotlin.RequiresOptIn",
+        )
+        //noinspection GrDeprecatedAPIUsage
+        apiVersion = KotlinVersion.KOTLIN_1_4 // the version of Kotlin embedded in Gradle
     }
 }
 
@@ -90,7 +97,7 @@ dependencies {
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-util-klib-metadata', version: kotlin_version
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-util-klib', version: kotlin_version
     implementation group: 'org.jetbrains.kotlin', name: 'kotlin-util-io', version: kotlin_version
-    
+
     compileOnly group: 'org.jetbrains.kotlin.multiplatform', name: 'org.jetbrains.kotlin.multiplatform.gradle.plugin', version: kotlin_version
     compileOnly "org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlin_version"
     compileOnly "org.openjdk.jmh:jmh-generator-bytecode:$jmhVersion" // used in worker
@@ -129,4 +136,8 @@ if (project.findProperty("publication_repository") == "space") {
             }
         }
     }
+}
+
+apiValidation {
+    nonPublicMarkers += ["kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi"]
 }

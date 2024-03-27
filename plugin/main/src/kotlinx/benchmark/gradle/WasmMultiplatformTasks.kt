@@ -1,9 +1,11 @@
 package kotlinx.benchmark.gradle
 
+import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.targets.js.dsl.*
 import org.jetbrains.kotlin.gradle.targets.js.ir.*
 
+@KotlinxBenchmarkPluginInternalApi
 fun Project.processWasmCompilation(target: WasmBenchmarkTarget) {
     project.logger.info("Configuring benchmarks for '${target.name}' using Kotlin/Wasm")
     val compilation = target.compilation

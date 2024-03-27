@@ -12,6 +12,10 @@ buildscript {
     }
 }
 
+plugins {
+    id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.15.0-Beta.1"
+}
+
 apply plugin: 'kotlinx.team.infra'
 
 infra {
@@ -35,15 +39,36 @@ repositories {
     mavenCentral()
 }
 
+// region Workarounds for https://github.com/gradle/gradle/issues/22335
+tasks.register("apiDump") {
+    it.dependsOn(gradle.includedBuild("plugin").task(":apiDump"))
+}
+
 afterEvaluate {
     gradle.includedBuilds.forEach { included ->
         project(":kotlinx-benchmark-runtime").tasks.named("publishToMavenLocal") { dependsOn(included.task(":publishToMavenLocal")) }
     }
 }
+//endregion
 
 allprojects {
     logger.info("Using Kotlin $kotlin_version for project $it")
     repositories {
         KotlinCommunity.addDevRepositoryIfEnabled(delegate, project)
+    }
+}
+
+apiValidation {
+    ignoredProjects += [
+            "examples",
+            "java",
+            "kotlin",
+            "kotlin-kts",
+            "kotlin-multiplatform",
+            "integration",
+    ]
+
+    klib {
+        it.enabled = true
     }
 }

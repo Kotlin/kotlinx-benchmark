@@ -1,5 +1,6 @@
 package kotlinx.benchmark.gradle
 
+import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
 import org.gradle.api.artifacts.*
 import org.gradle.api.file.*
@@ -8,6 +9,7 @@ import org.gradle.api.tasks.compile.*
 import org.gradle.jvm.tasks.*
 import java.io.*
 
+@KotlinxBenchmarkPluginInternalApi
 fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, compileClasspath: FileCollection) {
     val benchmarkBuildDir = benchmarkBuildDir(target)
     val compileTask = task<JavaCompile>(
@@ -33,9 +35,9 @@ fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, compileCla
         dependsOn("${target.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}")
         archiveClassifier.set("JMH")
         manifest.attributes["Main-Class"] = "org.openjdk.jmh.Main"
-        
+
         duplicatesStrategy = DuplicatesStrategy.WARN
-        
+
         from(project.provider {
             compileClasspath.map {
                 when {
@@ -61,6 +63,7 @@ fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, compileCla
     }
 }
 
+@KotlinxBenchmarkPluginInternalApi
 fun Project.createJmhGenerationRuntimeConfiguration(name: String, jmhVersion: String): Configuration {
     // This configuration defines classpath for JMH generator, it should have everything available via reflection
     return configurations.create("$name${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}CP").apply {
@@ -74,6 +77,7 @@ fun Project.createJmhGenerationRuntimeConfiguration(name: String, jmhVersion: St
     }
 }
 
+@KotlinxBenchmarkPluginInternalApi
 fun Project.createJvmBenchmarkGenerateSourceTask(
     target: BenchmarkTarget,
     workerClasspath: FileCollection,
@@ -97,6 +101,7 @@ fun Project.createJvmBenchmarkGenerateSourceTask(
     }
 }
 
+@KotlinxBenchmarkPluginInternalApi
 fun Project.createJvmBenchmarkExecTask(
     config: BenchmarkConfiguration,
     target: JvmBenchmarkTarget,

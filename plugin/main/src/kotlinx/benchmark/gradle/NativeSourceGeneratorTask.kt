@@ -1,5 +1,6 @@
 package kotlinx.benchmark.gradle
 
+import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
@@ -9,10 +10,14 @@ import org.jetbrains.kotlin.storage.*
 import java.io.*
 import javax.inject.*
 
-@Suppress("UnstableApiUsage")
 @CacheableTask
 open class NativeSourceGeneratorTask
-@Inject constructor(private val workerExecutor: WorkerExecutor) : DefaultTask() {
+@KotlinxBenchmarkPluginInternalApi
+@Inject
+constructor(
+    private val workerExecutor: WorkerExecutor
+) : DefaultTask() {
+
     @Input
     lateinit var title: String
 
@@ -48,6 +53,7 @@ open class NativeSourceGeneratorTask
     }
 }
 
+@KotlinxBenchmarkPluginInternalApi
 interface NativeSourceGeneratorWorkerParameters : WorkParameters {
     var title: String
     var target: String
@@ -57,6 +63,7 @@ interface NativeSourceGeneratorWorkerParameters : WorkParameters {
     var outputResourcesDir: File
 }
 
+@KotlinxBenchmarkPluginInternalApi
 abstract class NativeSourceGeneratorWorker : WorkAction<NativeSourceGeneratorWorkerParameters> {
     override fun execute() {
         cleanup(parameters.outputSourcesDir)

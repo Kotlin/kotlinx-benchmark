@@ -1,6 +1,7 @@
 package kotlinx.benchmark.gradle
 
 import groovy.lang.Closure
+import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -15,6 +16,7 @@ import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
+@KotlinxBenchmarkPluginInternalApi
 fun cleanup(file: File) {
     if (file.exists()) {
         val listing = file.listFiles()
@@ -27,12 +29,12 @@ fun cleanup(file: File) {
     }
 }
 
+@KotlinxBenchmarkPluginInternalApi
 inline fun <reified T : Task> Project.task(
     name: String,
     depends: String? = null,
     noinline configuration: T.() -> Unit
 ): TaskProvider<T> {
-    @Suppress("UnstableApiUsage")
     val task = tasks.register(name, T::class.java, Action(configuration))
     if (depends != null) {
         tasks.getByName(depends).dependsOn(task)
@@ -40,9 +42,11 @@ inline fun <reified T : Task> Project.task(
     return task
 }
 
+@KotlinxBenchmarkPluginInternalApi
 fun Project.benchmarkBuildDir(target: BenchmarkTarget): File =
     file(buildDir.resolve(target.extension.buildDir).resolve(target.name))
 
+@KotlinxBenchmarkPluginInternalApi
 fun Project.benchmarkReportsDir(config: BenchmarkConfiguration, target: BenchmarkTarget): File {
     val ext = project.extensions.extraProperties
     val time = if (ext.has("reportTime")) {
@@ -57,6 +61,7 @@ fun Project.benchmarkReportsDir(config: BenchmarkConfiguration, target: Benchmar
     return file(buildDir.resolve(target.extension.reportsDir).resolve(config.name).resolve(compatibleTime))
 }
 
+@KotlinxBenchmarkPluginInternalApi
 class KotlinClosure1<in T : Any?, V : Any>(
     val function: T.() -> V?,
     owner: Any? = null,
@@ -67,9 +72,11 @@ class KotlinClosure1<in T : Any?, V : Any>(
     fun doCall(it: T): V? = it.function()
 }
 
+@KotlinxBenchmarkPluginInternalApi
 fun <T> Any.closureOf(action: T.() -> Unit): Closure<Any?> =
     KotlinClosure1(action, this, this)
 
+@KotlinxBenchmarkPluginInternalApi
 fun <T> Any.tryGetClass(className: String): Class<T>? {
     val classLoader = javaClass.classLoader
     return try {
@@ -80,6 +87,7 @@ fun <T> Any.tryGetClass(className: String): Class<T>? {
     }
 }
 
+@KotlinxBenchmarkPluginInternalApi
 fun Task.setupReporting(target: BenchmarkTarget, config: BenchmarkConfiguration): File {
     extensions.extraProperties.set("idea.internal.test", project.getSystemProperty("idea.active"))
     val reportsDir = project.benchmarkReportsDir(config, target)
@@ -93,13 +101,16 @@ fun Task.setupReporting(target: BenchmarkTarget, config: BenchmarkConfiguration)
     return reportFile
 }
 
+@KotlinxBenchmarkPluginInternalApi
 fun Task.traceFormat(): String {
     val ideaActive = project.getSystemProperty("idea.active").toBoolean()
     return if (ideaActive) "xml" else "text"
 }
 
+@KotlinxBenchmarkPluginInternalApi
 val Path.absolutePath: String get() = toAbsolutePath().toFile().invariantSeparatorsPath
 
+@KotlinxBenchmarkPluginInternalApi
 fun writeParameters(
     name: String,
     reportFile: File,
@@ -178,12 +189,12 @@ private fun validateConfig(config: BenchmarkConfiguration) {
             "Invalid benchmark mode: '$it'. Accepted modes: ${ValidOptions.modes.joinToString(", ")} (e.g., mode = \"thrpt\")."
         }
     }
-    
+
     config.outputTimeUnit?.let {
         require(it in ValidOptions.timeUnits) {
             "Invalid outputTimeUnit: '$it'. Accepted units: ${ValidOptions.timeUnits.joinToString(", ")} (e.g., outputTimeUnit = \"ns\")."
         }
-    }    
+    }
 
     config.includes.forEach { pattern ->
         require(pattern.isNotBlank()) {
@@ -254,12 +265,14 @@ internal fun Project.getSystemProperty(key: String): String? {
     return providers.systemProperty(key).orNull
 }
 
+@KotlinxBenchmarkPluginInternalApi
 fun Project.javaCompilerProvider(): Provider<JavaCompiler> = provider {
     val toolchainService = extensions.findByType(JavaToolchainService::class.java) ?: return@provider null
     val javaExtension = extensions.findByType(JavaPluginExtension::class.java) ?: return@provider null
     toolchainService.compilerFor(javaExtension.toolchain).orNull
 }
 
+@KotlinxBenchmarkPluginInternalApi
 fun Project.javaLauncherProvider(): Provider<JavaLauncher> = provider {
     val toolchainService = extensions.findByType(JavaToolchainService::class.java) ?: return@provider null
     val javaExtension = extensions.findByType(JavaPluginExtension::class.java) ?: return@provider null
