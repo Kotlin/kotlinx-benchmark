@@ -1,7 +1,6 @@
 kotlin {
-    jvm {
-        jvmToolchain(21)
-    }
+    jvmToolchain(21)
+    jvm {}
 
     sourceSets {
         commonMain {
