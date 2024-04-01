@@ -101,6 +101,13 @@ constructor() : Plugin<Project> {
                 is JsBenchmarkTarget -> processJsCompilation(config)
                 is WasmBenchmarkTarget -> processWasmCompilation(config)
                 is NativeBenchmarkTarget -> processNativeCompilation(config)
+                is AndroidBenchmarkTarget -> {
+                    println("processConfigurations: AndroidBenchmarkTarget")
+                    config.target.compilations.all { compilation ->
+                        // This block is called for each compilation when they are materialized
+                        println("handling compilation: $compilation")
+                    }
+                }
             }
         }
     }

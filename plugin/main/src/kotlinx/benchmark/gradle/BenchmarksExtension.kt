@@ -7,6 +7,7 @@ import org.gradle.api.plugins.*
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJsCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
@@ -59,6 +60,9 @@ constructor(
             when {
                 multiplatform != null -> {
                     val target = multiplatform.targets.findByName(name)
+                    if (target is KotlinAndroidTarget) {
+                        return@container AndroidBenchmarkTarget(this, name, target)
+                    }
                     // We allow the name to be either a target or a source set
                     when (val compilation = target?.compilations?.findByName(KotlinCompilation.MAIN_COMPILATION_NAME)
                         ?: multiplatform.targets.flatMap { it.compilations }
