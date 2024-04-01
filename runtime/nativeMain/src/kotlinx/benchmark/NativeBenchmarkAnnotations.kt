@@ -1,5 +1,7 @@
 package kotlinx.benchmark
 
+import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
+
 actual enum class Scope {
     Benchmark
 }
@@ -24,6 +26,7 @@ actual enum class Mode {
     Throughput, AverageTime
 }
 
+@KotlinxBenchmarkRuntimeInternalApi
 enum class NativeFork {
     PerBenchmark, PerIteration
 }

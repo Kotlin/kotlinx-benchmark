@@ -1,5 +1,8 @@
 package kotlinx.benchmark
 
+import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
+
+@KotlinxBenchmarkRuntimeInternalApi
 object DefaultDescriptorParameters {
     val iterations = 5
     val warmups = 5
@@ -8,6 +11,7 @@ object DefaultDescriptorParameters {
     val mode = Mode.Throughput
 }
 
+@KotlinxBenchmarkRuntimeInternalApi
 open class SuiteDescriptor<T>(
     val name: String,
     val factory: () -> T,
@@ -34,4 +38,5 @@ open class SuiteDescriptor<T>(
     }
 }
 
+@KotlinxBenchmarkRuntimeInternalApi
 data class IterationTime(val value: Long, val timeUnit: BenchmarkTimeUnit)

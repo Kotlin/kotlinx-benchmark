@@ -48,6 +48,10 @@ kotlin {
             compilerOptions.options.with {
                 allWarningsAsErrors.set(true)
                 freeCompilerArgs.add("-Xexpect-actual-classes")
+                optIn.addAll(
+                        "kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi",
+                        "kotlin.RequiresOptIn",
+                )
             }
         }
     }

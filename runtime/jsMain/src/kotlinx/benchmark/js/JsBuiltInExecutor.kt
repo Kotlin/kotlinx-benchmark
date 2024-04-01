@@ -1,8 +1,10 @@
 package kotlinx.benchmark.js
 
 import kotlinx.benchmark.*
+import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 import kotlinx.benchmark.jsEngineSupport
 
+@KotlinxBenchmarkRuntimeInternalApi
 class JsBuiltInExecutor(
     name: String,
     @Suppress("UNUSED_PARAMETER") dummy_args: Array<out String>

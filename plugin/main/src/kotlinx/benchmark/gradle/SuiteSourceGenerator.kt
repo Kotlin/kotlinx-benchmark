@@ -75,6 +75,9 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
         val mainBenchmarkPackage = "kotlinx.benchmark.generated"
 
         val suppressUnusedParameter = AnnotationSpec.builder(Suppress::class).addMember("\"UNUSED_PARAMETER\"").build()
+        val optInRuntimeInternalApi = AnnotationSpec.builder(ClassName("kotlin", "OptIn")).addMember(
+            "kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi::class"
+        ).build()
     }
 
     private val executorType = ClassName.bestGuess(platform.executorClass)
@@ -90,6 +93,7 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
     private fun generateRunnerMain() {
         val file = FileSpec.builder(mainBenchmarkPackage, "BenchmarkSuite").apply {
             function("main") {
+                addAnnotation(optInRuntimeInternalApi)
                 val array = ClassName("kotlin", "Array")
                 val arrayOfStrings = array.parameterizedBy(WildcardTypeName.producerOf(String::class))
                 addParameter("args", arrayOfStrings)
@@ -170,6 +174,7 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
         val file = FileSpec.builder(benchmarkPackageName, benchmarkName).apply {
             declareObject(benchmarkClass) {
                 addAnnotation(suppressUnusedParameter)
+                addAnnotation(optInRuntimeInternalApi)
 
                 function(setupFunctionName) {
                     addModifiers(KModifier.PRIVATE)

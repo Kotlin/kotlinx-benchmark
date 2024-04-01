@@ -1,9 +1,11 @@
 package kotlinx.benchmark.native
 
 import kotlinx.benchmark.*
+import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 import kotlin.native.runtime.GC
 import kotlin.time.*
 
+@KotlinxBenchmarkRuntimeInternalApi
 class NativeExecutor(
     name: String,
     args: Array<out String>

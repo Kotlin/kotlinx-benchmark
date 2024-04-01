@@ -1,5 +1,7 @@
 package kotlinx.benchmark
 
+import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
+
 expect class Blackhole {
     fun consume(obj: Any?)
     fun consume(bool: Boolean)
@@ -12,4 +14,5 @@ expect class Blackhole {
     fun consume(d: Double)
 }
 
+@KotlinxBenchmarkRuntimeInternalApi
 expect fun Blackhole.flush()
