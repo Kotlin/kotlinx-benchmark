@@ -1,5 +1,7 @@
 package kotlinx.benchmark.gradle.internal
 
+import kotlin.RequiresOptIn.Level.WARNING
+
 /**
  * Marks declarations that are **internal** to the Kotlinx Benchmark project.
  *
@@ -11,6 +13,6 @@ package kotlinx.benchmark.gradle.internal
  * Please remove references to internal API to supported stable references.
  * If you still require access to these APIs, please raise an issue.
  */
-@RequiresOptIn
+@RequiresOptIn(level = WARNING)
 @MustBeDocumented
 annotation class KotlinxBenchmarkPluginInternalApi
