@@ -2,7 +2,7 @@ package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
-import org.gradle.util.*
+import org.gradle.util.GradleVersion
 
 @Suppress("unused")
 abstract class BenchmarksPlugin
@@ -11,6 +11,7 @@ constructor() : Plugin<Project> {
 
     companion object {
         const val PLUGIN_ID = "org.jetbrains.kotlinx.benchmark"
+
         // This value is overridden by `overridePluginVersion` task during release builds.
         const val PLUGIN_VERSION = "0.5.0-SNAPSHOT"
 

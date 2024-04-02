@@ -6,7 +6,12 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrCompilation
 
-open class BenchmarkConfiguration(val extension: BenchmarksExtension, val name: String) {
+open class BenchmarkConfiguration
+@KotlinxBenchmarkPluginInternalApi
+constructor(
+    val extension: BenchmarksExtension,
+    val name: String,
+) {
     var iterations: Int? = null
     var warmups: Int? = null
     var iterationTime: Long? = null
@@ -47,24 +52,35 @@ open class BenchmarkConfiguration(val extension: BenchmarksExtension, val name: 
     fun reportFileExt(): String = reportFormat?.toLowerCase() ?: "json"
 }
 
-open class BenchmarkTarget(val extension: BenchmarksExtension, val name: String) {
+open class BenchmarkTarget
+@KotlinxBenchmarkPluginInternalApi
+constructor(
+    val extension: BenchmarksExtension,
+    val name: String,
+) {
     var workingDir: String? = null
 }
 
-abstract class JvmBenchmarkTarget(
+abstract class JvmBenchmarkTarget
+@KotlinxBenchmarkPluginInternalApi
+constructor(
     extension: BenchmarksExtension,
     name: String
 ) : BenchmarkTarget(extension, name) {
     var jmhVersion: String = (extension.project.findProperty("benchmarks_jmh_version") as? String) ?: "1.21"
 }
 
-class JavaBenchmarkTarget(
+class JavaBenchmarkTarget
+@KotlinxBenchmarkPluginInternalApi
+constructor(
     extension: BenchmarksExtension,
     name: String,
     val sourceSet: SourceSet
 ) : JvmBenchmarkTarget(extension, name)
 
-open class KotlinJvmBenchmarkTarget(
+open class KotlinJvmBenchmarkTarget
+@KotlinxBenchmarkPluginInternalApi
+constructor(
     extension: BenchmarksExtension,
     name: String,
     val compilation: KotlinJvmCompilation
@@ -75,7 +91,9 @@ enum class JsBenchmarksExecutor {
     BuiltIn
 }
 
-class JsBenchmarkTarget(
+class JsBenchmarkTarget
+@KotlinxBenchmarkPluginInternalApi
+constructor(
     extension: BenchmarksExtension,
     name: String,
     val compilation: KotlinJsIrCompilation
@@ -83,13 +101,17 @@ class JsBenchmarkTarget(
     var jsBenchmarksExecutor: JsBenchmarksExecutor = JsBenchmarksExecutor.BenchmarkJs
 }
 
-class WasmBenchmarkTarget(
+class WasmBenchmarkTarget
+@KotlinxBenchmarkPluginInternalApi
+constructor(
     extension: BenchmarksExtension,
     name: String,
     val compilation: KotlinJsIrCompilation
 ) : BenchmarkTarget(extension, name)
 
-class NativeBenchmarkTarget(
+class NativeBenchmarkTarget
+@KotlinxBenchmarkPluginInternalApi
+constructor(
     extension: BenchmarksExtension,
     name: String,
     val compilation: KotlinNativeCompilation
