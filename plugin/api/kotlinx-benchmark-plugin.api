@@ -3,7 +3,6 @@ public class kotlinx/benchmark/gradle/BenchmarkConfiguration {
 	public final fun exclude (Ljava/lang/String;)V
 	public final fun getAdvanced ()Ljava/util/Map;
 	public final fun getExcludes ()Ljava/util/List;
-	public final fun getExtension ()Lkotlinx/benchmark/gradle/BenchmarksExtension;
 	public final fun getIncludes ()Ljava/util/List;
 	public final fun getIterationTime ()Ljava/lang/Long;
 	public final fun getIterationTimeUnit ()Ljava/lang/String;
@@ -30,7 +29,6 @@ public class kotlinx/benchmark/gradle/BenchmarkConfiguration {
 }
 
 public class kotlinx/benchmark/gradle/BenchmarkTarget {
-	public final fun getExtension ()Lkotlinx/benchmark/gradle/BenchmarksExtension;
 	public final fun getName ()Ljava/lang/String;
 	public final fun getWorkingDir ()Ljava/lang/String;
 	public final fun setWorkingDir (Ljava/lang/String;)V
@@ -78,7 +76,6 @@ public final class kotlinx/benchmark/gradle/BenchmarksPlugin$Companion {
 }
 
 public final class kotlinx/benchmark/gradle/JavaBenchmarkTarget : kotlinx/benchmark/gradle/JvmBenchmarkTarget {
-	public final fun getSourceSet ()Lorg/gradle/api/tasks/SourceSet;
 }
 
 public class kotlinx/benchmark/gradle/JmhBytecodeGeneratorTask : org/gradle/api/DefaultTask {
@@ -103,7 +100,6 @@ public class kotlinx/benchmark/gradle/JmhBytecodeGeneratorTask : org/gradle/api/
 }
 
 public final class kotlinx/benchmark/gradle/JsBenchmarkTarget : kotlinx/benchmark/gradle/BenchmarkTarget {
-	public final fun getCompilation ()Lorg/jetbrains/kotlin/gradle/targets/js/ir/KotlinJsIrCompilation;
 	public final fun getJsBenchmarksExecutor ()Lkotlinx/benchmark/gradle/JsBenchmarksExecutor;
 	public final fun setJsBenchmarksExecutor (Lkotlinx/benchmark/gradle/JsBenchmarksExecutor;)V
 }
@@ -142,7 +138,6 @@ public abstract class kotlinx/benchmark/gradle/JvmBenchmarkTarget : kotlinx/benc
 }
 
 public class kotlinx/benchmark/gradle/KotlinJvmBenchmarkTarget : kotlinx/benchmark/gradle/JvmBenchmarkTarget {
-	public final fun getCompilation ()Lorg/jetbrains/kotlin/gradle/plugin/mpp/KotlinJvmCompilation;
 }
 
 public class kotlinx/benchmark/gradle/NativeBenchmarkExec : org/gradle/api/DefaultTask {
@@ -169,7 +164,6 @@ public class kotlinx/benchmark/gradle/NativeBenchmarkExec : org/gradle/api/Defau
 }
 
 public final class kotlinx/benchmark/gradle/NativeBenchmarkTarget : kotlinx/benchmark/gradle/BenchmarkTarget {
-	public final fun getCompilation ()Lorg/jetbrains/kotlin/gradle/plugin/mpp/KotlinNativeCompilation;
 }
 
 public class kotlinx/benchmark/gradle/NativeSourceGeneratorTask : org/gradle/api/DefaultTask {
@@ -200,7 +194,6 @@ public final class kotlinx/benchmark/gradle/UtilsKt$sam$i$org_gradle_api_Action$
 }
 
 public final class kotlinx/benchmark/gradle/WasmBenchmarkTarget : kotlinx/benchmark/gradle/BenchmarkTarget {
-	public final fun getCompilation ()Lorg/jetbrains/kotlin/gradle/targets/js/ir/KotlinJsIrCompilation;
 }
 
 public class kotlinx/benchmark/gradle/WasmSourceGeneratorTask : org/gradle/api/DefaultTask {

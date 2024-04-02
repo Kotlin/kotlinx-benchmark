@@ -9,6 +9,7 @@ import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrCompilation
 open class BenchmarkConfiguration
 @KotlinxBenchmarkPluginInternalApi
 constructor(
+    @property:KotlinxBenchmarkPluginInternalApi
     val extension: BenchmarksExtension,
     val name: String,
 ) {
@@ -55,6 +56,7 @@ constructor(
 open class BenchmarkTarget
 @KotlinxBenchmarkPluginInternalApi
 constructor(
+    @property:KotlinxBenchmarkPluginInternalApi
     val extension: BenchmarksExtension,
     val name: String,
 ) {
@@ -75,6 +77,7 @@ class JavaBenchmarkTarget
 constructor(
     extension: BenchmarksExtension,
     name: String,
+    @property:KotlinxBenchmarkPluginInternalApi
     val sourceSet: SourceSet
 ) : JvmBenchmarkTarget(extension, name)
 
@@ -83,6 +86,7 @@ open class KotlinJvmBenchmarkTarget
 constructor(
     extension: BenchmarksExtension,
     name: String,
+    @property:KotlinxBenchmarkPluginInternalApi
     val compilation: KotlinJvmCompilation
 ) : JvmBenchmarkTarget(extension, name)
 
@@ -96,6 +100,7 @@ class JsBenchmarkTarget
 constructor(
     extension: BenchmarksExtension,
     name: String,
+    @property:KotlinxBenchmarkPluginInternalApi
     val compilation: KotlinJsIrCompilation
 ) : BenchmarkTarget(extension, name) {
     var jsBenchmarksExecutor: JsBenchmarksExecutor = JsBenchmarksExecutor.BenchmarkJs
@@ -106,6 +111,7 @@ class WasmBenchmarkTarget
 constructor(
     extension: BenchmarksExtension,
     name: String,
+    @property:KotlinxBenchmarkPluginInternalApi
     val compilation: KotlinJsIrCompilation
 ) : BenchmarkTarget(extension, name)
 
@@ -114,5 +120,6 @@ class NativeBenchmarkTarget
 constructor(
     extension: BenchmarksExtension,
     name: String,
+    @property:KotlinxBenchmarkPluginInternalApi
     val compilation: KotlinNativeCompilation
 ) : BenchmarkTarget(extension, name)
