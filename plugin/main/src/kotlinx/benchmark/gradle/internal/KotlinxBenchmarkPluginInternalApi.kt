@@ -13,6 +13,9 @@ import kotlin.RequiresOptIn.Level.WARNING
  * Please remove references to internal API to supported stable references.
  * If you still require access to these APIs, please raise an issue.
  */
-@RequiresOptIn(level = WARNING)
+@RequiresOptIn(
+    message = "Internal Kotlinx Benchmark API. It may be changed in future releases without notice.",
+    level = WARNING,
+)
 @MustBeDocumented
 annotation class KotlinxBenchmarkPluginInternalApi
