@@ -1,29 +1,50 @@
 package kotlinx.benchmark.gradle
 
+import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
-import org.gradle.util.*
+import org.gradle.util.GradleVersion
 
 @Suppress("unused")
-class BenchmarksPlugin : Plugin<Project> {
+abstract class BenchmarksPlugin
+@KotlinxBenchmarkPluginInternalApi
+constructor() : Plugin<Project> {
+
     companion object {
         const val PLUGIN_ID = "org.jetbrains.kotlinx.benchmark"
+
         // This value is overridden by `overridePluginVersion` task during release builds.
         const val PLUGIN_VERSION = "0.5.0-SNAPSHOT"
 
         const val BENCHMARKS_TASK_GROUP = "benchmark"
         const val BENCHMARK_EXTENSION_NAME = "benchmark"
 
-        const val BENCHMARK_GENERATE_SUFFIX = "BenchmarkGenerate"
-        const val BENCHMARK_COMPILE_SUFFIX = "BenchmarkCompile"
-        const val BENCHMARK_JAR_SUFFIX = "BenchmarkJar"
-        const val BENCHMARK_EXEC_SUFFIX = "Benchmark"
-        const val BENCHMARK_COMPILATION_SUFFIX = "Benchmark"
-
-        const val JMH_CORE_DEPENDENCY = "org.openjdk.jmh:jmh-core"
-        const val JMH_GENERATOR_DEPENDENCY = "org.openjdk.jmh:jmh-generator-bytecode:"
-
         const val RUN_BENCHMARKS_TASKNAME = "benchmark"
         const val ASSEMBLE_BENCHMARKS_TASKNAME = "assembleBenchmarks"
+
+        //region Internal constants
+        // Note that despite the @InternalApi annotation, `const val`s are still present in the API Dump
+        // https://github.com/Kotlin/binary-compatibility-validator/issues/90
+        @KotlinxBenchmarkPluginInternalApi
+        const val BENCHMARK_GENERATE_SUFFIX = "BenchmarkGenerate"
+
+        @KotlinxBenchmarkPluginInternalApi
+        const val BENCHMARK_COMPILE_SUFFIX = "BenchmarkCompile"
+
+        @KotlinxBenchmarkPluginInternalApi
+        const val BENCHMARK_JAR_SUFFIX = "BenchmarkJar"
+
+        @KotlinxBenchmarkPluginInternalApi
+        const val BENCHMARK_EXEC_SUFFIX = "Benchmark"
+
+        @KotlinxBenchmarkPluginInternalApi
+        const val BENCHMARK_COMPILATION_SUFFIX = "Benchmark"
+
+        @KotlinxBenchmarkPluginInternalApi
+        const val JMH_CORE_DEPENDENCY = "org.openjdk.jmh:jmh-core"
+
+        @KotlinxBenchmarkPluginInternalApi
+        const val JMH_GENERATOR_DEPENDENCY = "org.openjdk.jmh:jmh-generator-bytecode:"
+        //endregion
     }
 
     override fun apply(project: Project) = project.run {
@@ -49,7 +70,7 @@ class BenchmarksPlugin : Plugin<Project> {
         }
 
         // TODO: Design configuration avoidance
-        // I currently don't know how to do it correctly yet, so materialize all tasks after project evaluation. 
+        // I currently don't know how to do it correctly yet, so materialize all tasks after project evaluation.
         afterEvaluate {
             extension.configurations.forEach {
                 // Create empty task that will depend on all benchmark execution tasks to run all benchmarks in a project
@@ -69,7 +90,7 @@ class BenchmarksPlugin : Plugin<Project> {
             processConfigurations(extension)
         }
     }
-    
+
     private fun Project.processConfigurations(extension: BenchmarksExtension) {
         // Calling `all` on NDOC causes all items to materialize and be configured
         extension.targets.all { config ->
