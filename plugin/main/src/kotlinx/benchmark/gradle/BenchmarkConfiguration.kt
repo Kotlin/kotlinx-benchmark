@@ -1,10 +1,18 @@
 package kotlinx.benchmark.gradle
 
+import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.tasks.*
-import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrCompilation
 
-open class BenchmarkConfiguration(val extension: BenchmarksExtension, val name: String) {
+open class BenchmarkConfiguration
+@KotlinxBenchmarkPluginInternalApi
+constructor(
+    @property:KotlinxBenchmarkPluginInternalApi
+    val extension: BenchmarksExtension,
+    val name: String,
+) {
     var iterations: Int? = null
     var warmups: Int? = null
     var iterationTime: Long? = null
@@ -35,31 +43,50 @@ open class BenchmarkConfiguration(val extension: BenchmarksExtension, val name: 
         advanced[name] = value
     }
 
+    @KotlinxBenchmarkPluginInternalApi
     fun capitalizedName() = if (name == "main") "" else name.capitalize()
+
+    @KotlinxBenchmarkPluginInternalApi
     fun prefixName(suffix: String) = if (name == "main") suffix else name + suffix.capitalize()
+
+    @KotlinxBenchmarkPluginInternalApi
     fun reportFileExt(): String = reportFormat?.toLowerCase() ?: "json"
 }
 
-open class BenchmarkTarget(val extension: BenchmarksExtension, val name: String) {
+open class BenchmarkTarget
+@KotlinxBenchmarkPluginInternalApi
+constructor(
+    @property:KotlinxBenchmarkPluginInternalApi
+    val extension: BenchmarksExtension,
+    val name: String,
+) {
     var workingDir: String? = null
 }
 
-abstract class JvmBenchmarkTarget(
+abstract class JvmBenchmarkTarget
+@KotlinxBenchmarkPluginInternalApi
+constructor(
     extension: BenchmarksExtension,
     name: String
 ) : BenchmarkTarget(extension, name) {
     var jmhVersion: String = (extension.project.findProperty("benchmarks_jmh_version") as? String) ?: "1.21"
 }
 
-class JavaBenchmarkTarget(
+class JavaBenchmarkTarget
+@KotlinxBenchmarkPluginInternalApi
+constructor(
     extension: BenchmarksExtension,
     name: String,
+    @property:KotlinxBenchmarkPluginInternalApi
     val sourceSet: SourceSet
 ) : JvmBenchmarkTarget(extension, name)
 
-open class KotlinJvmBenchmarkTarget(
+open class KotlinJvmBenchmarkTarget
+@KotlinxBenchmarkPluginInternalApi
+constructor(
     extension: BenchmarksExtension,
     name: String,
+    @property:KotlinxBenchmarkPluginInternalApi
     val compilation: KotlinJvmCompilation
 ) : JvmBenchmarkTarget(extension, name)
 
@@ -68,22 +95,31 @@ enum class JsBenchmarksExecutor {
     BuiltIn
 }
 
-class JsBenchmarkTarget(
+class JsBenchmarkTarget
+@KotlinxBenchmarkPluginInternalApi
+constructor(
     extension: BenchmarksExtension,
     name: String,
+    @property:KotlinxBenchmarkPluginInternalApi
     val compilation: KotlinJsIrCompilation
 ) : BenchmarkTarget(extension, name) {
     var jsBenchmarksExecutor: JsBenchmarksExecutor = JsBenchmarksExecutor.BenchmarkJs
 }
 
-class WasmBenchmarkTarget(
+class WasmBenchmarkTarget
+@KotlinxBenchmarkPluginInternalApi
+constructor(
     extension: BenchmarksExtension,
     name: String,
+    @property:KotlinxBenchmarkPluginInternalApi
     val compilation: KotlinJsIrCompilation
 ) : BenchmarkTarget(extension, name)
 
-class NativeBenchmarkTarget(
+class NativeBenchmarkTarget
+@KotlinxBenchmarkPluginInternalApi
+constructor(
     extension: BenchmarksExtension,
     name: String,
+    @property:KotlinxBenchmarkPluginInternalApi
     val compilation: KotlinNativeCompilation
 ) : BenchmarkTarget(extension, name)
