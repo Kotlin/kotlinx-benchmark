@@ -45,7 +45,7 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
-                implementation project(":kotlinx-benchmark-runtime")
+                implementation project(":kotlinx-benchmark-core:kotlinx-benchmark-runtime")
             }
         }
 
