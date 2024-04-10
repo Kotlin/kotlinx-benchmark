@@ -1,6 +1,6 @@
 package kotlinx.benchmark
 
-@JsFun("(d, precision, useGrouping) => d.toLocaleString(undefined, { maximumFractionDigits: precision, minimumFractionDigits: precision, useGrouping: useGrouping } )")
+@JsFun("(d, precision, useGrouping) => d.toLocaleString('en-GB', { maximumFractionDigits: precision, minimumFractionDigits: precision, useGrouping: useGrouping } )")
 private external fun format(d: Double, precision: Int, useGrouping: Boolean): String
 
 internal actual fun Double.format(precision: Int, useGrouping: Boolean): String = format(this, precision, useGrouping)

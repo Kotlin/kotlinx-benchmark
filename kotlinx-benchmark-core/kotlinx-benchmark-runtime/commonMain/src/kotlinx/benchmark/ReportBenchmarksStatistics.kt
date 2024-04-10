@@ -86,6 +86,13 @@ class ReportBenchmarksStatistics(values: DoubleArray) {
     }
 }
 
+/**
+ * Pretty formats a number.
+ *
+ * The locale must be fixed, so that decimals will be consistently formatted.
+ * - `.` - decimal separator
+ * - `,` - thousands separator
+ */
 internal expect fun Double.format(precision: Int, useGrouping: Boolean = true): String
 
 fun Double.formatSignificant(precision: Int): String {
@@ -126,7 +133,7 @@ fun Double.sampleToText(mode: Mode, unit: BenchmarkTimeUnit): String {
 
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
 fun Double.nanosToSample(mode: Mode, unit: BenchmarkTimeUnit): Double {
-    val multiplier = unit.toMultiplier() // unit in nanos 
+    val multiplier = unit.toMultiplier() // unit in nanos
     return when (mode) {
         Mode.Throughput -> multiplier / this
         Mode.AverageTime -> this / multiplier
