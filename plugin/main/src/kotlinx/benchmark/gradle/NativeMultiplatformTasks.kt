@@ -30,8 +30,8 @@ fun Project.processNativeCompilation(target: NativeBenchmarkTarget) {
     }
 }
 
-private fun generateSourceTaskName(target: NativeBenchmarkTarget)
-        = target.name + BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX
+private fun generateSourceTaskName(target: NativeBenchmarkTarget) =
+    target.name + BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX
 
 private fun Project.createNativeBenchmarkGenerateSourceTask(target: NativeBenchmarkTarget) {
     val benchmarkBuildDir = benchmarkBuildDir(target)
@@ -133,7 +133,9 @@ fun Project.createNativeBenchmarkExecTask(
         this.workingDir = target.workingDir
         this.benchProgressPath = createTempFile("bench", ".txt").absolutePath
 
-        benchsDescriptionDir = file(project.buildDir.resolve(target.extension.benchsDescriptionDir).resolve(config.name))
+        benchsDescriptionDir = project.layout.buildDirectory
+            .dir("${target.extension.benchsDescriptionDir}/${config.name}")
+            .get().asFile
 
         reportFile = setupReporting(target, config)
         configFile = writeParameters(target.name, reportFile, traceFormat(), config)
@@ -145,7 +147,7 @@ fun Project.createNativeBenchmarkExecTask(
     }
 }
 
-open class NativeBenchmarkExec
+abstract class NativeBenchmarkExec
 @KotlinxBenchmarkPluginInternalApi
 @Inject
 constructor(
