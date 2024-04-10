@@ -1,10 +1,11 @@
 package kotlinx.benchmark
 
-import java.io.*
+import java.io.File
+import java.util.*
 
 internal actual fun Double.format(precision: Int, useGrouping: Boolean): String {
-    return if (useGrouping) "%,.0${precision}f".format(this)
-    else "%.0${precision}f".format(this)
+    return if (useGrouping) "%,.0${precision}f".format(Locale.ROOT, this)
+    else "%.0${precision}f".format(Locale.ROOT, this)
 }
 
 internal actual fun String.readFile(): String {

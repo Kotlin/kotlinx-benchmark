@@ -5,7 +5,7 @@ internal actual fun Double.format(precision: Int, useGrouping: Boolean): String 
     options.minimumFractionDigits = precision
     options.maximumFractionDigits = precision
     options.useGrouping = useGrouping
-    return this.asDynamic().toLocaleString(undefined, options) as String
+    return this.asDynamic().toLocaleString("en-GB", options) as String
 }
 
 internal actual fun String.writeFile(text: String): Unit = jsEngineSupport.writeFile(this, text)
