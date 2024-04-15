@@ -67,7 +67,7 @@ apiValidation {
             "kotlin-kts",
             "kotlin-multiplatform",
             "integration",
-            "kotlinx-benchmark-core",
+            "core",
     ]
 
     klib {
