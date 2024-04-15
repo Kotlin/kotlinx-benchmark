@@ -12,8 +12,8 @@ rootProject.name = 'kotlinx-benchmark'
 includeBuild("plugin")
 
 include(
-        ":kotlinx-benchmark-core:kotlinx-benchmark-generator",
-        ":kotlinx-benchmark-core:kotlinx-benchmark-runtime",
+        ":core:kotlinx-benchmark-generator",
+        ":core:kotlinx-benchmark-runtime",
 )
 
 include "integration"

@@ -22,7 +22,7 @@ configure<AllOpenExtension> {
 }
 
 dependencies {
-    implementation(project(":kotlinx-benchmark-core:kotlinx-benchmark-runtime"))
+    implementation(project(":core:kotlinx-benchmark-runtime"))
 }
 
 tasks.withType<JavaCompile> {

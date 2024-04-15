@@ -11,7 +11,7 @@ plugins {
 apply plugin: 'org.jetbrains.kotlinx.benchmark'
 
 dependencies {
-    implementation(project(":kotlinx-benchmark-core:kotlinx-benchmark-runtime"))
+    implementation(project(":core:kotlinx-benchmark-runtime"))
 }
 
 benchmark {

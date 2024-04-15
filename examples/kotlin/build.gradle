@@ -37,7 +37,7 @@ compileTestKotlin {
 // Propagate dependencies from main sourceSet
 // You can add "+ sourceSets.test.output" to include test output as well
 dependencies {
-    implementation(project(":kotlinx-benchmark-core:kotlinx-benchmark-runtime"))
+    implementation(project(":core:kotlinx-benchmark-runtime"))
     benchmarksImplementation sourceSets.main.output + sourceSets.main.runtimeClasspath
 }
 
