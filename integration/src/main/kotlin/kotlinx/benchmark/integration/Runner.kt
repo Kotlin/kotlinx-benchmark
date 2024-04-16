@@ -1,23 +1,22 @@
 package kotlinx.benchmark.integration
 
-import org.gradle.testkit.runner.*
-import java.io.*
+import kotlinx.benchmark.integration.GradleTestVersion.MinSupportedGradleVersion
+import org.gradle.testkit.runner.BuildResult
+import org.gradle.testkit.runner.GradleRunner
+import java.io.File
 
 class Runner(
     private val projectDir: File,
     private val print: Boolean,
     private val gradleVersion: GradleTestVersion? = null,
 ) {
-
     private fun gradle(vararg tasks: String): GradleRunner =
         GradleRunner.create()
             .withProjectDir(projectDir)
             .withArguments(*(defaultArguments() + tasks))
+            .withGradleVersion((gradleVersion ?: MinSupportedGradleVersion).versionString)
             .run {
                 if (print) forwardStdOutput(System.out.bufferedWriter()) else this
-            }
-            .run {
-                if (gradleVersion != null) withGradleVersion(gradleVersion.versionString) else this
             }
 
     fun run(vararg tasks: String, fn: BuildResult.() -> Unit = {}) {
