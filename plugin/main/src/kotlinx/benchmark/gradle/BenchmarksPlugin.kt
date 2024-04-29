@@ -1,5 +1,7 @@
 package kotlinx.benchmark.gradle
 
+import kotlinx.benchmark.gradle.internal.BenchmarksPluginConstants
+import kotlinx.benchmark.gradle.internal.BenchmarksPluginConstants.MIN_SUPPORTED_GRADLE_VERSION
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
 import org.gradle.util.GradleVersion
@@ -12,8 +14,7 @@ constructor() : Plugin<Project> {
     companion object {
         const val PLUGIN_ID = "org.jetbrains.kotlinx.benchmark"
 
-        // This value is overridden by `overridePluginVersion` task during release builds.
-        const val PLUGIN_VERSION = "0.5.0-SNAPSHOT"
+        const val PLUGIN_VERSION = BenchmarksPluginConstants.BENCHMARK_PLUGIN_VERSION
 
         const val BENCHMARKS_TASK_GROUP = "benchmark"
         const val BENCHMARK_EXTENSION_NAME = "benchmark"
@@ -51,8 +52,8 @@ constructor() : Plugin<Project> {
         // DO NOT use properties of an extension immediately, it will not contain any user-specified data
         val extension = extensions.create(BENCHMARK_EXTENSION_NAME, BenchmarksExtension::class.java, project)
 
-        if (GradleVersion.current() < GradleVersion.version("7.0")) {
-            logger.error("JetBrains Gradle Benchmarks plugin requires Gradle version 7.0 or higher")
+        if (GradleVersion.current() < GradleVersion.version(MIN_SUPPORTED_GRADLE_VERSION)) {
+            logger.error("JetBrains Gradle Benchmarks plugin requires Gradle version $MIN_SUPPORTED_GRADLE_VERSION or higher")
             return // TODO: Do we need to fail build at this point or just ignore benchmarks?
         }
 
