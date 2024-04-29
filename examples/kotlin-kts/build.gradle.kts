@@ -22,7 +22,7 @@ configure<AllOpenExtension> {
 }
 
 dependencies {
-    implementation(project(":kotlinx-benchmark-runtime"))
+    implementation(project(":core:kotlinx-benchmark-runtime"))
 }
 
 tasks.withType<JavaCompile> {
@@ -42,7 +42,7 @@ benchmark {
         named("main") {
             iterationTime = 5
             iterationTimeUnit = "sec"
-            
+
         }
     }
     targets {

@@ -6,9 +6,9 @@ repositories {
     mavenCentral()
 }
 
-evaluationDependsOn(":kotlinx-benchmark-runtime")
+evaluationDependsOn(":core:kotlinx-benchmark-runtime")
 
-val runtime get() = project(":kotlinx-benchmark-runtime")
+val runtime get() = project(":core:kotlinx-benchmark-runtime")
 val plugin get() = gradle.includedBuild("plugin")
 
 dependencies {

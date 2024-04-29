@@ -24,7 +24,8 @@ infra {
     }
 
     publishing {
-        include(":kotlinx-benchmark-runtime")
+        include(":core:kotlinx-benchmark-generator")
+        include(":core:kotlinx-benchmark-runtime")
 
         libraryRepoUrl = "https://github.com/Kotlin/kotlinx-benchmark"
 
@@ -46,7 +47,7 @@ tasks.register("apiDump") {
 
 afterEvaluate {
     gradle.includedBuilds.forEach { included ->
-        project(":kotlinx-benchmark-runtime").tasks.named("publishToMavenLocal") { dependsOn(included.task(":publishToMavenLocal")) }
+        project(":core:kotlinx-benchmark-runtime").tasks.named("publishToMavenLocal") { dependsOn(included.task(":publishToMavenLocal")) }
     }
 }
 //endregion
@@ -66,6 +67,7 @@ apiValidation {
             "kotlin-kts",
             "kotlin-multiplatform",
             "integration",
+            "core",
     ]
 
     klib {

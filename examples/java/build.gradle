@@ -11,12 +11,12 @@ plugins {
 apply plugin: 'org.jetbrains.kotlinx.benchmark'
 
 dependencies {
-    implementation(project(":kotlinx-benchmark-runtime"))
+    implementation(project(":core:kotlinx-benchmark-runtime"))
 }
 
 benchmark {
     configurations {
-        main { 
+        main {
             iterationTime = 300
             iterationTimeUnit = "ms"
         }
