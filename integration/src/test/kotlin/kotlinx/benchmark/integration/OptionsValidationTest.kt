@@ -59,10 +59,17 @@ class OptionsValidationTest : GradleTest() {
                 iterationTime = 0
                 iterationTimeUnit = "ms"
             }
+            configuration("missingIterationTimeUnit") {
+                iterations = 1
+                iterationTime = 1
+            }
         }
 
         runner.runAndFail("zeroIterationTimeBenchmark") {
             assertOutputContains("Invalid iterationTime: '0'. Expected a positive number (e.g., iterationTime = 300).")
+        }
+        runner.runAndFail("missingIterationTimeUnitBenchmark") {
+            assertOutputContains("Missing iterationTimeUnit. Please provide iterationTimeUnit when specifying iterationTime.")
         }
     }
 
@@ -79,6 +86,10 @@ class OptionsValidationTest : GradleTest() {
                 iterationTime = 1
                 iterationTimeUnit = "seconds"
             }
+            configuration("missingIterationTime") {
+                iterations = 1
+                iterationTimeUnit = "s"
+            }
         }
 
         runner.runAndFail("invalidIterationTimeUnitBenchmark") {
@@ -86,6 +97,9 @@ class OptionsValidationTest : GradleTest() {
         }
         runner.runAndFail("incorrectCaseIterationTimeUnitBenchmark") {
             assertOutputContains("Invalid iterationTimeUnit: 'seconds'. Accepted units: ${ValidOptions.timeUnits.joinToString(", ")} (e.g., iterationTimeUnit = \"ms\").")
+        }
+        runner.runAndFail("missingIterationTimeBenchmark") {
+            assertOutputContains("Missing iterationTime. Please provide iterationTime when specifying iterationTimeUnit.")
         }
     }
 
