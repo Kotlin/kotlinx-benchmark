@@ -1,5 +1,8 @@
 package kotlinx.benchmark
 
+import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
+
+@KotlinxBenchmarkRuntimeInternalApi
 abstract class CommonSuiteExecutor(
     executionName: String,
     configPath: String,

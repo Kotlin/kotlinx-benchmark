@@ -71,6 +71,8 @@ apiValidation {
             "integration",
     ]
 
+    nonPublicMarkers += ["kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi"]
+
     klib {
         it.enabled = true
     }

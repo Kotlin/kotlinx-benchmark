@@ -1,8 +1,10 @@
 package kotlinx.benchmark.js
 
 import kotlinx.benchmark.*
+import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 import kotlin.js.*
 
+@KotlinxBenchmarkRuntimeInternalApi
 class JsBenchmarkDescriptorWithNoBlackholeParameter<T>(
     name: String,
     suite: SuiteDescriptor<T>,
@@ -18,6 +20,7 @@ class JsBenchmarkDescriptorWithNoBlackholeParameter<T>(
     ) : this(name, suite, blackhole, function, true)
 }
 
+@KotlinxBenchmarkRuntimeInternalApi
 class JsBenchmarkDescriptorWithBlackholeParameter<T>(
     name: String,
     suite: SuiteDescriptor<T>,
@@ -33,6 +36,7 @@ class JsBenchmarkDescriptorWithBlackholeParameter<T>(
     ) : this(name, suite, blackhole, function, true)
 }
 
+@OptIn(KotlinxBenchmarkRuntimeInternalApi::class)
 internal val BenchmarkDescriptor<*>.isAsync get() = when (this) {
     is JsBenchmarkDescriptorWithNoBlackholeParameter<*> -> async
     is JsBenchmarkDescriptorWithBlackholeParameter<*> -> async

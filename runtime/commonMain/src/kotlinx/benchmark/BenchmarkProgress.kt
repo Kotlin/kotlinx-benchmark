@@ -1,5 +1,8 @@
 package kotlinx.benchmark
 
+import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
+
+@KotlinxBenchmarkRuntimeInternalApi
 abstract class BenchmarkProgress {
     abstract fun startSuite(suite: String)
     abstract fun endSuite(suite: String, summary: String)
@@ -9,6 +12,7 @@ abstract class BenchmarkProgress {
     abstract fun endBenchmarkException(suite: String, benchmark: String, error: String, stacktrace: String)
     abstract fun output(suite: String, benchmark: String, message: String)
 
+    @KotlinxBenchmarkRuntimeInternalApi
     companion object {
         fun create(format: String, xml: (() -> BenchmarkProgress)? = null) = when (format) {
             "xml" -> {
@@ -21,12 +25,14 @@ abstract class BenchmarkProgress {
         }
     }
 
+    @KotlinxBenchmarkRuntimeInternalApi
     enum class FinishStatus {
         Success,
         Failure
     }
 }
 
+@KotlinxBenchmarkRuntimeInternalApi
 open class IntelliJBenchmarkProgress : BenchmarkProgress() {
     private val rootId = "[root]"
 
@@ -81,6 +87,7 @@ open class IntelliJBenchmarkProgress : BenchmarkProgress() {
     }
 }
 
+@KotlinxBenchmarkRuntimeInternalApi
 class ConsoleBenchmarkProgress : BenchmarkProgress() {
     override fun startSuite(suite: String) {
 

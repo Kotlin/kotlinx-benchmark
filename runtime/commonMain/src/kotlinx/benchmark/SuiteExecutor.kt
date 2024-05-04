@@ -1,5 +1,8 @@
 package kotlinx.benchmark
 
+import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
+
+@KotlinxBenchmarkRuntimeInternalApi
 abstract class SuiteExecutor(
     val executionName: String,
     configPath: String,
@@ -63,6 +66,7 @@ abstract class SuiteExecutor(
     }
 }
 
+@KotlinxBenchmarkRuntimeInternalApi
 fun runWithParameters(
     names: List<String>,
     parameters: Map<String, List<String>>,

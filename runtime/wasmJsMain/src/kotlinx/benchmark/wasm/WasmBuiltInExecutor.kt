@@ -1,6 +1,7 @@
 package kotlinx.benchmark.wasm
 
 import kotlinx.benchmark.*
+import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 
 
 private external interface JsAny
@@ -14,6 +15,7 @@ private fun id(p: Any): Any {
     return jsId(p as JsAny)
 }
 
+@KotlinxBenchmarkRuntimeInternalApi
 class WasmBuiltInExecutor(
     name: String,
     @Suppress("UNUSED_PARAMETER") dummy_args: Array<out String>

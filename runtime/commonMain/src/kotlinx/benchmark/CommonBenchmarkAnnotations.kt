@@ -1,5 +1,7 @@
 package kotlinx.benchmark
 
+import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
+
 @Target(AnnotationTarget.FUNCTION)
 expect annotation class Setup()
 
@@ -30,6 +32,7 @@ expect enum class BenchmarkTimeUnit {
     NANOSECONDS, MICROSECONDS, MILLISECONDS, SECONDS, MINUTES
 }
 
+@KotlinxBenchmarkRuntimeInternalApi
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
 fun BenchmarkTimeUnit.toText() = when (this) {
     BenchmarkTimeUnit.NANOSECONDS -> "ns"
@@ -40,6 +43,7 @@ fun BenchmarkTimeUnit.toText() = when (this) {
     else -> throw UnsupportedOperationException("$this is not supported")
 }
 
+@KotlinxBenchmarkRuntimeInternalApi
 fun String.toMode() =
     when (this) {
         "thrpt", "Throughput" -> Mode.Throughput
@@ -48,6 +52,7 @@ fun String.toMode() =
     }
 
 
+@KotlinxBenchmarkRuntimeInternalApi
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
 fun Mode.toText() = when (this) {
     Mode.Throughput -> "thrpt"
@@ -55,6 +60,7 @@ fun Mode.toText() = when (this) {
     else -> throw UnsupportedOperationException("$this is not supported")
 }
 
+@KotlinxBenchmarkRuntimeInternalApi
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
 fun BenchmarkTimeUnit.toMultiplier() = when (this) {
     BenchmarkTimeUnit.NANOSECONDS -> 1
@@ -65,6 +71,7 @@ fun BenchmarkTimeUnit.toMultiplier() = when (this) {
     else -> throw UnsupportedOperationException("$this is not supported")
 }
 
+@KotlinxBenchmarkRuntimeInternalApi
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
 fun BenchmarkTimeUnit.toSecondsMultiplier() = when (this) {
     BenchmarkTimeUnit.NANOSECONDS -> 1.0 / 1_000_000_000
