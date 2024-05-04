@@ -41,7 +41,14 @@ kotlin {
     js("jsIr", IR) { nodejs() }
     wasm("wasmJs") { d8() }
 
-    applyDefaultHierarchyTemplate()
+    applyDefaultHierarchyTemplate { root ->
+        root.common { common ->
+            common.group("jsWasmJsShared") { group ->
+                group.withJs()
+                group.withWasm()
+            }
+        }
+    }
 
     targets.configureEach {
         compilations.configureEach {
