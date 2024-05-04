@@ -12,7 +12,7 @@ package kotlinx.benchmark.internal
  * If you still require access to these APIs, please raise an issue.
  */
 @RequiresOptIn(
-    message = "This API is internal to the Kotlinx Benchmark project and will be hidden in a future release.",
+    message = "Internal Kotlinx Benchmark API. It may be changed in future releases without notice.",
     level = RequiresOptIn.Level.WARNING
 )
 @MustBeDocumented
