@@ -36,8 +36,40 @@ class Runner(
     fun updateAnnotations(filePath: String, annotationsSpecifier: AnnotationsSpecifier.() -> Unit) {
         val annotations = AnnotationsSpecifier().also(annotationsSpecifier)
         val file = projectDir.resolve(filePath)
-        val updatedLines = file.readLines().map { annotations.replacementForLine(it) }
+
+        val updatedLines = file.readLines().map {
+            annotations.replaceClassAnnotation(it)
+        }
+        annotations.checkAllAnnotationsAreUsed()
+
         file.writeText(updatedLines.joinToString(separator = "\n"))
+        if (print) {
+            println(file.readText())
+        }
+    }
+
+    fun addAnnotation(filePath: String, annotationsSpecifier: AnnotationsSpecifier.() -> Unit) {
+        val annotations = AnnotationsSpecifier().also(annotationsSpecifier)
+        val file = projectDir.resolve(filePath)
+
+        val updatedLines = mutableListOf<String>()
+
+        file.readLines().forEach { line ->
+            val indentation = " ".repeat(line.length - line.trimStart().length)
+            annotations.annotationsForFunction(line).forEach { annotation ->
+                updatedLines.add(indentation + annotation)
+            }
+            annotations.annotationsForProperty(line).forEach { annotation ->
+                updatedLines.add(indentation + annotation)
+            }
+            updatedLines.add(line)
+        }
+        annotations.checkAllAnnotationsAreUsed()
+
+        file.writeText(updatedLines.joinToString(separator = "\n"))
+        if (print) {
+            println(file.readText())
+        }
     }
 
     fun generatedDir(targetName: String, filePath: String, fileTestAction: (File) -> Unit) {

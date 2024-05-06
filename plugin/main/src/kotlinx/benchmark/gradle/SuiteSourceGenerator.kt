@@ -139,6 +139,8 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
             .filterIsInstance<PropertyDescriptor>()
             .filter { it.annotations.any { it.fqName.toString() == paramAnnotationFQN } }
 
+        validateParameterProperties(parameterProperties)
+
         val measureAnnotation = original.annotations.singleOrNull { it.fqName.toString() == measureAnnotationFQN }
         val warmupAnnotation = original.annotations.singleOrNull { it.fqName.toString() == warmupAnnotationFQN }
         val outputTimeAnnotation = original.annotations.singleOrNull { it.fqName.toString() == outputTimeAnnotationFQN }
@@ -165,11 +167,17 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
         val benchmarkFunctions =
             functions.filter { it.annotations.any { it.fqName.toString() == benchmarkAnnotationFQN } }
 
+        validateBenchmarkFunctions(benchmarkFunctions)
+
         val setupFunctions = functions
             .filter { it.annotations.any { it.fqName.toString() == setupAnnotationFQN } }
 
+        validateSetupFunctions(setupFunctions)
+
         val teardownFunctions = functions
             .filter { it.annotations.any { it.fqName.toString() == teardownAnnotationFQN } }.reversed()
+
+        validateTeardownFunctions(teardownFunctions)
 
         val file = FileSpec.builder(benchmarkPackageName, benchmarkName).apply {
             declareObject(benchmarkClass) {
@@ -194,29 +202,21 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
                     }
                 }
 
-                /*
-                      private fun parametrize(instance: ParamBenchmark, params: Map<String, String>) {
-                          instance.data = (params["data"] ?: error("No parameter value provided for property 'data'")).toInt()
-                      }
-                 */
                 function(parametersFunctionName) {
                     addModifiers(KModifier.PRIVATE)
                     addParameter("instance", originalClass)
                     addParameter("params", MAP.parameterizedBy(STRING, STRING))
+                    
                     parameterProperties.forEach { property ->
-                        val type = property.type.nameIfStandardType ?: error("Only simple types are supported and `${property.type}` is not.")
+                        val type = property.type.nameIfStandardType!!
                         addStatement("instance.${property.name} = params.getValue(\"${property.name}\").to$type()")
                     }
                 }
 
                 val defaultParameters = parameterProperties.associateBy({ it.name }, {
                     val annotation = it.annotations.findAnnotation(FqName(paramAnnotationFQN))!!
-                    val constant = annotation.argumentValue("value")
-                        ?: error("@Param annotation should have at least one default value")
                     @Suppress("UNCHECKED_CAST")
-                    val values = constant.value as List<StringValue>?
-                        ?: error("@Param annotation should have at least one default value")
-                    values
+                    annotation.argumentValue("value")!!.value as List<StringValue>
                 })
 
                 val defaultParametersString = defaultParameters.entries

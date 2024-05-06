@@ -87,6 +87,8 @@ The key point to remember is that the `@Setup` method's execution time is not in
 results - the timer starts only when the `@Benchmark` method begins. This makes `@Setup` an ideal place
 for initialization tasks that should not impact the timing results of your benchmark.
 
+The method annotated with `@Setup` should be `public` and have no arguments.
+In Kotlin/JVM, these restrictions are slightly less strict.
 Refer to [JMH documentation of @Setup](https://javadoc.io/doc/org.openjdk.jmh/jmh-core/latest/org/openjdk/jmh/annotations/Setup.html)
 for details about the effect and restrictions of the annotation in Kotlin/JVM.
 
@@ -106,6 +108,8 @@ The `@TearDown` annotation is crucial for avoiding performance bias, ensuring th
 and preparing a clean environment for the next run. Similar to the `@Setup` method, the execution time of the
 `@TearDown` method is not included in the final benchmark results.
 
+The method annotated with `@TearDown` should be `public` and have no arguments.
+In Kotlin/JVM, these restrictions are slightly less strict.
 Refer to [JMH documentation of @TearDown](https://javadoc.io/doc/org.openjdk.jmh/jmh-core/latest/org/openjdk/jmh/annotations/TearDown.html)
 for more information on the effect and restrictions of the annotation in Kotlin/JVM.
 
@@ -118,7 +122,7 @@ It's the actual test you're running. The code you want to benchmark goes inside 
 All other annotations are employed to configure the benchmark's environment and execution.
 
 Benchmark methods may include only a single [Blackhole](#blackhole) type as an argument, or have no arguments at all.
-It's important to note that in Kotlin/JVM benchmark methods must always be `public`.
+It's important to note that benchmark methods should be `public`. In Kotlin/JVM, these restrictions are slightly less strict. 
 Refer to [JMH documentation of @Benchmark](https://javadoc.io/doc/org.openjdk.jmh/jmh-core/latest/org/openjdk/jmh/annotations/Benchmark.html)
 for details about restrictions for benchmark methods in Kotlin/JVM.
 
@@ -194,11 +198,15 @@ with each iteration lasting one second, for the final performance measurement.
 
 The `@Param` annotation is used to pass different parameters to your benchmark method.
 It allows you to run the same benchmark method with different input values, so you can see how these variations affect
-performance. The values you provide for the `@Param` annotation are the different inputs you want to use in your
-benchmark test. The benchmark will run once for each provided value.
+performance.
 
-The property marked with this annotation must be mutable (`var`) and not `private.`
+The values provided by the `@Param` annotation represent the different inputs you want to use in your benchmark.
+Since the benchmark runs once for each provided value, the annotation should have at least one argument.
+The annotation values are given in `String` and will be coerced as needed to match the property type.
+
+The property marked with this annotation should be mutable (`var`) and `public`.
 Additionally, only properties of primitive types or the `String` type can be annotated with `@Param`.
+In Kotlin/JVM, these restrictions are slightly less strict.
 Refer to [JMH documentation of @Param](https://javadoc.io/doc/org.openjdk.jmh/jmh-core/latest/org/openjdk/jmh/annotations/Param.html)
 for details about the effect and restrictions of the annotation in Kotlin/JVM.
 
