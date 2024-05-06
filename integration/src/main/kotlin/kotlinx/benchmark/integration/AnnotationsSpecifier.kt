@@ -12,6 +12,12 @@ class AnnotationsSpecifier {
         )
     }
 
+    fun warmup(iterations: Int, time: Int, timeUnit: String) {
+        classAnnotations.add(
+            Annotation("@Warmup", listOf(iterations, time, timeUnit))
+        )
+    }
+
     fun outputTimeUnit(timeUnit: String) {
         classAnnotations.add(
             Annotation("@OutputTimeUnit", listOf(timeUnit))
