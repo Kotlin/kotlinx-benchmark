@@ -6,8 +6,10 @@ import org.gradle.api.*
 import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.util.internal.VersionNumber
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.targets.js.d8.D8Exec
+import org.jetbrains.kotlin.gradle.targets.js.d8.D8RootExtension
 import org.jetbrains.kotlin.gradle.targets.js.dsl.*
 import org.jetbrains.kotlin.gradle.targets.js.ir.*
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.*
@@ -65,7 +67,7 @@ private fun Project.getExecutableFile(compilation: KotlinJsIrCompilation): Provi
 private val KotlinJsIrCompilation.isWasmCompilation: Boolean get() =
     target.platformType == KotlinPlatformType.wasm
 
-private fun MutableList<String>.addWasmArguments() {
+private fun MutableList<String>.addWasmGcArguments() {
     add("--experimental-wasm-gc")
 }
 
@@ -86,7 +88,15 @@ private fun Project.createNodeJsExec(
     inputFileProperty.set(getExecutableFile(compilation))
     with(nodeArgs) {
         if (compilation.isWasmCompilation) {
-            addWasmArguments()
+            val addGcArgs = project.extensions.findByType(NodeJsRootExtension::class.java)?.let {
+                val nodeVersion = VersionNumber.parse(it.nodeVersion)
+                // Starting from version 22, NodeJS is shipped with V8 versions
+                // that no longer accept --experimental-wasm-gc argument.
+                nodeVersion.major < 22
+            } ?: true
+            if (addGcArgs) {
+                addWasmGcArguments()
+            }
         } else {
             addJsArguments()
         }
@@ -106,7 +116,14 @@ private fun Project.createD8Exec(
     description = "Executes benchmark for '${target.name}' with D8"
     inputFileProperty.set(getExecutableFile(compilation))
     if (compilation.isWasmCompilation) {
-        d8Args.addWasmArguments()
+        val addGcArgs = project.extensions.findByType(D8RootExtension::class.java)?.let {
+            val d8Version = VersionNumber.parse(it.version)
+            // --experimental-wasm-gc flag was removed from V8 starting from ~ 12.3.68
+            d8Version < VersionNumber(12, 3, 68, null)
+        } ?: true
+        if (addGcArgs) {
+            d8Args.addWasmGcArguments()
+        }
     }
     val reportFile = setupReporting(target, config)
     args(writeParameters(target.name, reportFile, traceFormat(), config))
