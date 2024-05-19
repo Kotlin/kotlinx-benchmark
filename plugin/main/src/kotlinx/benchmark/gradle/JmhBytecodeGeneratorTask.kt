@@ -11,12 +11,11 @@ import javax.inject.*
 @CacheableTask
 open class JmhBytecodeGeneratorTask
 @Inject constructor(private val workerExecutor: WorkerExecutor) : DefaultTask() {
-    @InputFiles
-    @PathSensitive(PathSensitivity.RELATIVE)
+
+    @Classpath
     lateinit var inputClassesDirs: FileCollection
 
-    @InputFiles
-    @PathSensitive(PathSensitivity.RELATIVE)
+    @Classpath
     lateinit var inputCompileClasspath: FileCollection
 
     @OutputDirectory
@@ -25,8 +24,7 @@ open class JmhBytecodeGeneratorTask
     @OutputDirectory
     lateinit var outputSourcesDir: File
 
-    @InputFiles
-    @PathSensitive(PathSensitivity.RELATIVE)
+    @Classpath
     lateinit var runtimeClasspath: FileCollection
     
     @TaskAction
