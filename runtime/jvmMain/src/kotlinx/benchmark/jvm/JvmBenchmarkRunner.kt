@@ -118,8 +118,19 @@ class JmhOutputFormat(private val reporter: BenchmarkProgress, private val suite
     override fun endBenchmark(result: BenchmarkResult?) {
         if (result != null) {
             val benchmarkId = getBenchmarkId(result.params)
-            val value = result.primaryResult
-            val message = value.extendedInfo().trim()
+            val message = buildString {
+                appendLine("Result \"${result.params.benchmark}\":")
+                appendLine(result.primaryResult.extendedInfo())
+
+                for (r in result.secondaryResults.values) {
+                    val info = r.extendedInfo()
+                    if (info.trim().isNotEmpty()) {
+                        appendLine("Secondary result \"${result.params.benchmark}:${r.label}\":")
+                        appendLine(info)
+                    }
+                }
+            }
+
             reporter.endBenchmark(suiteName, benchmarkId, BenchmarkProgress.FinishStatus.Success, message)
         } else {
             reporter.endBenchmarkException(suiteName, lastBenchmarkStart, "<ERROR>", "")
@@ -146,7 +157,25 @@ class JmhOutputFormat(private val reporter: BenchmarkProgress, private val suite
     ) {
         when (params.type) {
             IterationType.WARMUP -> println("Warm-up $iteration: ${data.primaryResult}")
-            IterationType.MEASUREMENT -> println("Iteration $iteration: ${data.primaryResult}")
+            IterationType.MEASUREMENT -> {
+                val message = buildString {
+                    appendLine("Iteration $iteration: ${data.primaryResult}")
+
+                    if (data.secondaryResults.isNotEmpty()) {
+                        val prefix = " ".repeat(16)
+                        val maxKeyLen = data.secondaryResults.maxOf { it.key.length }
+
+                        for ((key, value) in data.secondaryResults) {
+                            append(prefix)
+                            append("%-${maxKeyLen + 1}s ".format("$key:"))
+                            appendLine(value)
+                        }
+                        appendLine()
+                    }
+                }
+
+                print(message)
+            }
             null -> throw UnsupportedOperationException("Iteration type not set")
         }
         flush()
