@@ -42,9 +42,17 @@ fun main(args: Array<String>) {
         jmhOptions.param(key, *value.toTypedArray())
     }
 
+    val reportFormat = ResultFormatType.valueOf(config.reportFormat.uppercase())
+    val reporter = BenchmarkProgress.create(config.traceFormat)
+    val output = JmhOutputFormat(reporter, config.name)
+
+    // "libasyncProfiler" is passed when a benchmark task is run from the IntelliJ Gradle panel with an embedded profiler.
     val runtimeMXBean = ManagementFactory.getRuntimeMXBean()
     val jvmArgs = runtimeMXBean.inputArguments
-    if (jvmArgs.any { it.contains("libasyncProfiler") }) {
+    val hasAttachedProfiler = jvmArgs.any { it.contains("libasyncProfiler") }
+    if (hasAttachedProfiler) {
+        // The attached profiler profiles this process, so don't fork the benchmark run to a separate process.
+        output.println("Warning: an IDE profiler is attached to this process, not forking benchmark run to a separate process.")
         jmhOptions.forks(0)
     } else {
         when (val jvmForks = config.advanced["jvmForks"]) {
@@ -59,23 +67,13 @@ fun main(args: Array<String>) {
     }
 
     val profilerName = config.advanced["jvmProfiler"]
-    when (profilerName) {
-        "gc" -> jmhOptions.addProfiler("gc")
-        "stack" -> jmhOptions.addProfiler("stack")
-        "cl" -> jmhOptions.addProfiler("cl")
-        "comp" -> jmhOptions.addProfiler("comp")
-        "perf" -> jmhOptions.addProfiler("perf")
-        "perfnorm" -> jmhOptions.addProfiler("perfnorm")
-        "perfasm" -> jmhOptions.addProfiler("perfasm")
-        "xperfasm" -> jmhOptions.addProfiler("xperfasm")
-        "dtraceasm" -> jmhOptions.addProfiler("dtraceasm")
-        null -> {}
-        else -> throw IllegalArgumentException("Invalid value for 'jvmProfiler': $profilerName. Accepted values: gc, stack, cl, comp")
+    if (profilerName != null) {
+        if (hasAttachedProfiler) {
+            output.println("Warning: an IDE profiler is attached to this process, ignoring jvmProfiler = $profilerName.")
+        } else {
+            jmhOptions.addProfiler(profilerName)
+        }
     }
-
-    val reportFormat = ResultFormatType.valueOf(config.reportFormat.uppercase())
-    val reporter = BenchmarkProgress.create(config.traceFormat)
-    val output = JmhOutputFormat(reporter, config.name)
     try {
         val runner = Runner(jmhOptions.build(), output)
         val results = runner.run()

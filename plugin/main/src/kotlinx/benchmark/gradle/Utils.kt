@@ -243,12 +243,12 @@ private fun validateConfig(config: BenchmarkConfiguration) {
             "jsUseBridge" -> require(value is Boolean) {
                 "Invalid value for 'jsUseBridge': '$value'. Expected a Boolean value."
             }
-            "jvmProfiler" -> {
-                require(value.toString() in ValidOptions.jvmProfilers) {
-                    "Invalid value for 'jvmProfiler': '$value'. Accepted values: ${ValidOptions.jvmProfilers.joinToString(", ")}."
-                }
+            "jvmProfiler" -> require(value is String) {
+                "Invalid value for 'jvmProfiler': '$value'. Expected a String value."
             }
-            else -> throw IllegalArgumentException("Invalid advanced option name: '$param'. Accepted options: \"nativeFork\", \"nativeGCAfterIteration\", \"jvmForks\", \"jsUseBridge\", \"jvmProfiler\".")
+            else -> throw IllegalArgumentException(
+                "Invalid advanced option name: '$param'. Accepted options: ${ValidOptions.advancedOptions.joinToString(", ") { "\"$it\"" }}."
+            )
         }
     }
 }
@@ -264,7 +264,7 @@ private object ValidOptions {
     )
     val modes = setOf("thrpt", "avgt", "Throughput", "AverageTime")
     val nativeForks = setOf("perBenchmark", "perIteration")
-    val jvmProfilers = setOf("stack", "gc", "cl", "comp", "perf", "perfnorm", "perfasm", "xperfasm", " dtraceasm")
+    val advancedOptions = setOf("nativeFork", "nativeGCAfterIteration", "jvmForks", "jsUseBridge", "jvmProfiler")
 }
 
 internal fun Project.getSystemProperty(key: String): String? {

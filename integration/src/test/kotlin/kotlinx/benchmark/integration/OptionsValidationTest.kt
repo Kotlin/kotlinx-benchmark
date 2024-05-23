@@ -206,6 +206,13 @@ class OptionsValidationTest : GradleTest() {
                 advanced(" ", "value")
             }
 
+            configuration("blankAdvancedConfigValue") {
+                iterations = 1
+                iterationTime = 100
+                iterationTimeUnit = "ms"
+                advanced("name", " ")
+            }
+
             configuration("invalidAdvancedConfigName") {
                 iterations = 1
                 iterationTime = 100
@@ -241,19 +248,30 @@ class OptionsValidationTest : GradleTest() {
                 advanced("jsUseBridge", "x")
             }
 
-            configuration("invalidJvmProfiler") {
+            configuration("nullJvmProfiler") {
                 iterations = 1
                 iterationTime = 100
                 iterationTimeUnit = "ms"
-                advanced("jvmProfiler", "x")
+                advanced("jvmProfiler", null)
+            }
+
+            configuration("notStringJvmProfiler") {
+                iterations = 1
+                iterationTime = 100
+                iterationTimeUnit = "ms"
+                advanced("jvmProfiler", 1)
             }
         }
 
         runner.runAndFail("blankAdvancedConfigNameBenchmark") {
             assertOutputContains("Invalid advanced option name: ' '. It must not be blank.")
         }
+        runner.runAndFail("blankAdvancedConfigValueBenchmark") {
+            assertOutputContains("Invalid value for advanced option 'name': ' '. Value should not be blank.")
+        }
         runner.runAndFail("invalidAdvancedConfigNameBenchmark") {
-            assertOutputContains("Invalid advanced option name: 'jsFork'. Accepted options: \"nativeFork\", \"nativeGCAfterIteration\", \"jvmForks\", \"jsUseBridge\".")
+            assertOutputContains("Invalid advanced option name: 'jsFork'. Accepted options: \"nativeFork\", " +
+                    "\"nativeGCAfterIteration\", \"jvmForks\", \"jsUseBridge\", \"jvmProfiler\".")
         }
         runner.runAndFail("invalidNativeForkBenchmark") {
             assertOutputContains("Invalid value for 'nativeFork': 'x'. Accepted values: ${ValidOptions.nativeForks.joinToString(", ")}.")
@@ -267,8 +285,11 @@ class OptionsValidationTest : GradleTest() {
         runner.runAndFail("invalidJsUseBridgeBenchmark") {
             assertOutputContains("Invalid value for 'jsUseBridge': 'x'. Expected a Boolean value.")
         }
-        runner.runAndFail("invalidJvmProfiler") {
-            assertOutputContains("Invalid value for 'jvmProfiler': 'x'. Accepted values: ${ValidOptions.jvmProfilers.joinToString(", ")}.")
+        runner.runAndFail("nullJvmProfiler") {
+            assertOutputContains("Invalid value for 'jvmProfiler': 'null'. Expected a String value.")
+        }
+        runner.runAndFail("notStringJvmProfiler") {
+            assertOutputContains("Invalid value for 'jvmProfiler': '1'. Expected a String value.")
         }
     }
 }
@@ -284,5 +305,4 @@ private object ValidOptions {
     )
     val modes = setOf("thrpt", "avgt", "Throughput", "AverageTime")
     val nativeForks = setOf("perBenchmark", "perIteration")
-    val jvmProfilers = setOf("stack", "gc", "cl", "comp", "perf", "perfnorm", "perfasm", "xperfasm", " dtraceasm")
 }
