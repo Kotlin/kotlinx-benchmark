@@ -25,12 +25,10 @@ constructor(
     @Input
     var useBenchmarkJs: Boolean = true
 
-    @InputFiles
-    @PathSensitive(PathSensitivity.RELATIVE)
+    @Classpath
     lateinit var inputClassesDirs: FileCollection
 
-    @InputFiles
-    @PathSensitive(PathSensitivity.RELATIVE)
+    @Classpath
     lateinit var inputDependencies: FileCollection
 
     @OutputDirectory
