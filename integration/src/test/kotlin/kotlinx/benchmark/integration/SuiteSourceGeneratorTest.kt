@@ -1,5 +1,6 @@
 package kotlinx.benchmark.integration
 
+import java.util.*
 import kotlin.test.*
 
 class SuiteSourceGeneratorTest : GradleTest() {
@@ -22,23 +23,36 @@ class SuiteSourceGeneratorTest : GradleTest() {
     }
 
     @Test
-    fun runBenchmarks() {
-        project("kotlin-multiplatform", true).let { runner ->
-            runner.run(":nativeBenchmarkGenerate")
+    fun generateAndCompileNativeBenchmarks() {
+        generateAndCompile("native")
+    }
 
-            runner.generatedDir("native", "RootBenchmark_Descriptor.kt") { descriptorFile ->
+    @Test
+    fun generateAndCompileJSBenchmarks() {
+        generateAndCompile("jsIr")
+    }
+
+    @Test
+    fun generateAndCompileWasmBenchmarks() {
+        generateAndCompile("wasmJs")
+    }
+
+    private fun generateAndCompile(target: String) {
+        project("kotlin-multiplatform", true).let { runner ->
+            runner.run(":${target}BenchmarkGenerate")
+
+            runner.generatedDir(target, "RootBenchmark_Descriptor.kt") { descriptorFile ->
                 val text = descriptorFile.readText()
-                println(text)
                 assertFalse(
                     text.contains("<root>"),
                     "Generated descriptor contains illegal characters '<root>' in $text"
                 )
             }
 
-            runner.run(
-                ":compileNativeBenchmarkKotlinNative",
-                ":linkNativeBenchmarkReleaseExecutableNative"
-            )
+            val capitalizedTarget = target.replaceFirstChar {
+                if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+            }
+            runner.run(":compile${capitalizedTarget}BenchmarkKotlin${capitalizedTarget}")
         }
     }
 }
