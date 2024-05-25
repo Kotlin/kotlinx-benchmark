@@ -21,9 +21,12 @@ abstract class GradleTest {
         name: String,
         print: Boolean = false,
         gradleVersion: GradleTestVersion? = null,
+        kotlinVersion: String? = null,
         build: ProjectBuilder.() -> Unit = {}
     ): Runner {
-        val builder = ProjectBuilder().apply(build)
+        val builder = ProjectBuilder().apply {
+            kotlinVersion?.let { this.kotlinVersion = it }
+        }.apply(build)
         templates.resolve(name).copyRecursively(rootProjectDir)
         file("build.gradle").modify(builder::build)
         val settingsFile = file("settings.gradle")
