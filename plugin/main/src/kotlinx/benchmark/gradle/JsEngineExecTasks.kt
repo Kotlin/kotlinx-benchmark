@@ -88,7 +88,7 @@ private fun Project.createNodeJsExec(
     inputFileProperty.set(getExecutableFile(compilation))
     with(nodeArgs) {
         if (compilation.isWasmCompilation) {
-            val addGcArgs = project.extensions.findByType(NodeJsRootExtension::class.java)?.let {
+            val addGcArgs = rootProject.extensions.findByType(NodeJsRootExtension::class.java)?.let {
                 val nodeVersion = VersionNumber.parse(it.nodeVersion)
                 // Starting from version 22, NodeJS is shipped with V8 versions
                 // that no longer accept --experimental-wasm-gc argument.
@@ -116,7 +116,7 @@ private fun Project.createD8Exec(
     description = "Executes benchmark for '${target.name}' with D8"
     inputFileProperty.set(getExecutableFile(compilation))
     if (compilation.isWasmCompilation) {
-        val addGcArgs = project.extensions.findByType(D8RootExtension::class.java)?.let {
+        val addGcArgs = rootProject.extensions.findByType(D8RootExtension::class.java)?.let {
             val d8Version = VersionNumber.parse(it.version)
             // --experimental-wasm-gc flag was removed from V8 starting from ~ 12.3.68
             d8Version < VersionNumber(12, 3, 68, null)
