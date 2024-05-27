@@ -4,6 +4,7 @@ import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.jetbrains.kotlin.descriptors.*
+import org.jetbrains.kotlin.descriptors.annotations.AnnotationDescriptor
 import org.jetbrains.kotlin.name.*
 import org.jetbrains.kotlin.resolve.*
 import org.jetbrains.kotlin.resolve.annotations.*
@@ -109,13 +110,49 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
 
     private fun processPackage(module: ModuleDescriptor, packageView: PackageViewDescriptor) {
         for (packageFragment in packageView.fragments.filter { it.module == module }) {
-            DescriptorUtils.getAllDescriptors(packageFragment.getMemberScope())
+            val classDescriptors = DescriptorUtils.getAllDescriptors(packageFragment.getMemberScope())
                 .filterIsInstance<ClassDescriptor>()
+
+            val inheritableClassDescriptors = classDescriptors.filter { it.modality != Modality.FINAL }
+
+            // Abstract classes which are annotated directly.
+            val directlyAnnotatedInheritableClassDescriptors = inheritableClassDescriptors
                 .filter { it.annotations.any { it.fqName.toString() == stateAnnotationFQN } }
-                .filter { it.modality != Modality.ABSTRACT }
-                .forEach {
-                    generateBenchmark(it)
+
+            // Contains both directly and indirectly annotated ClassDescriptors.
+            val annotatedInheritableClassDescriptors = inheritableClassDescriptors
+                .filter { inheritableClass ->
+                    directlyAnnotatedInheritableClassDescriptors.forEach { annotatedInheritableClass ->
+                        if (inheritableClass.isSubclassOf(annotatedInheritableClass)) {
+                            // If any benchmark class is not annotated but extended with an abstract class
+                            // annotated with @State, it should be included when generating benchmarks.
+                            return@filter true
+                        }
+                    }
+                    return@filter false
                 }
+
+            val annotatedClassDescriptors = mutableListOf<AnnotatedClassDescriptor>()
+                .apply {
+                    classDescriptors
+                        .filter { it.modality != Modality.ABSTRACT }
+                        .forEach {
+                            if (it.annotations.any {
+                                annotationDescriptor -> annotationDescriptor.fqName.toString() == stateAnnotationFQN
+                            }) {
+                                add(AnnotatedClassDescriptor(it))
+                            } else {
+                                val parent = it.getParentAnnotated(annotatedInheritableClassDescriptors)
+                                if (parent != null) {
+                                    add(AnnotatedClassDescriptor(it, parent))
+                                }
+                            }
+                        }
+                }
+
+            annotatedClassDescriptors.forEach {
+                generateBenchmark(it)
+            }
         }
 
         for (subpackageName in module.getSubPackagesOf(packageView.fqName, MemberScope.ALL_NAME_FILTER)) {
@@ -123,7 +160,49 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
         }
     }
 
-    private fun generateBenchmark(original: ClassDescriptor) {
+    /** @param annotatedInheritableClassDescriptors descriptors of classes which are inheritable and directly annotated.
+     * with [stateAnnotationFQN].
+     * @return Top most parent class descriptor which was annotated with [stateAnnotationFQN] and inherited by `this` class
+     * descriptor or null if none of its parent classes are not annotated.*/
+    private fun ClassDescriptor.getParentAnnotated(
+        annotatedInheritableClassDescriptors: List<ClassDescriptor>
+    ): ClassDescriptor? {
+        annotatedInheritableClassDescriptors.forEach { annotatedAbstractClass ->
+            if (this.isSubclassOf(annotatedAbstractClass)) {
+                return annotatedAbstractClass
+            }
+        }
+        return null
+    }
+
+    /** @param parentAnnotatedClassDescriptor if null, [original] is directly annotated with [stateAnnotationFQN].*/
+    private data class AnnotatedClassDescriptor(
+        val original: ClassDescriptor,
+        val parentAnnotatedClassDescriptor: ClassDescriptor? = null
+    )
+
+    private fun ClassDescriptor.getParameterProperties(): List<PropertyDescriptor> =
+        DescriptorUtils.getAllDescriptors(this.unsubstitutedMemberScope)
+            .filterIsInstance<PropertyDescriptor>()
+            .filter { it.annotations.any { it.fqName.toString() == paramAnnotationFQN } }
+
+    private fun ClassDescriptor.getMeasureAnnotation(): AnnotationDescriptor? =
+        this.annotations.singleOrNull { it.fqName.toString() == measureAnnotationFQN }
+
+    private fun ClassDescriptor.getWarmupAnnotation(): AnnotationDescriptor? =
+        this.annotations.singleOrNull { it.fqName.toString() == warmupAnnotationFQN }
+
+    private fun ClassDescriptor.getOutputTimeAnnotation(): AnnotationDescriptor? =
+        this.annotations.singleOrNull { it.fqName.toString() == outputTimeAnnotationFQN }
+
+    private fun ClassDescriptor.getModeAnnotation(): AnnotationDescriptor? =
+        this.annotations.singleOrNull { it.fqName.toString() == modeAnnotationFQN }
+
+
+    private fun generateBenchmark(classDescriptor: AnnotatedClassDescriptor) {
+        val original = classDescriptor.original
+        val parent = classDescriptor.parentAnnotatedClassDescriptor
+
         val originalPackage = original.fqNameSafe.parent()
         val originalName = original.fqNameSafe.shortName()
         val originalClass = ClassName(originalPackage.toString(), originalName.toString())
@@ -135,14 +214,13 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
         val functions = DescriptorUtils.getAllDescriptors(original.unsubstitutedMemberScope)
             .filterIsInstance<FunctionDescriptor>()
 
-        val parameterProperties = DescriptorUtils.getAllDescriptors(original.unsubstitutedMemberScope)
-            .filterIsInstance<PropertyDescriptor>()
-            .filter { it.annotations.any { it.fqName.toString() == paramAnnotationFQN } }
+        val parameterProperties = original.getParameterProperties()
 
-        val measureAnnotation = original.annotations.singleOrNull { it.fqName.toString() == measureAnnotationFQN }
-        val warmupAnnotation = original.annotations.singleOrNull { it.fqName.toString() == warmupAnnotationFQN }
-        val outputTimeAnnotation = original.annotations.singleOrNull { it.fqName.toString() == outputTimeAnnotationFQN }
-        val modeAnnotation = original.annotations.singleOrNull { it.fqName.toString() == modeAnnotationFQN }
+        // original's annotations are given higher priority than parent's annotation.
+        val measureAnnotation = original.getMeasureAnnotation() ?: parent?.getMeasureAnnotation()
+        val warmupAnnotation = original.getWarmupAnnotation() ?: parent?.getWarmupAnnotation()
+        val outputTimeAnnotation = original.getOutputTimeAnnotation() ?: parent?.getOutputTimeAnnotation()
+        val modeAnnotation = original.getModeAnnotation() ?: parent?.getModeAnnotation()
 
         val outputTimeUnitValue = outputTimeAnnotation?.argumentValue("value") as EnumValue?
         val outputTimeUnit = outputTimeUnitValue?.enumEntryName?.toString()
