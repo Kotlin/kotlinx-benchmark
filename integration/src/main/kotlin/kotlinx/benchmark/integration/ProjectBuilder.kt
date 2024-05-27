@@ -4,6 +4,8 @@ class ProjectBuilder {
     private val configurations = mutableMapOf<String, BenchmarkConfiguration>()
     private val targets = mutableMapOf<String, BenchmarkTarget>()
 
+    var kotlinVersion: String = System.getProperty("kotlin_version")
+
     fun configuration(name: String, configuration: BenchmarkConfiguration.() -> Unit = {}) {
         configurations[name] = BenchmarkConfiguration().apply(configuration)
     }
@@ -25,7 +27,7 @@ benchmark {
 }
             """.trimIndent()
 
-        return buildScript + "\n\n" + original + "\n\n" + script
+        return generateBuildScript(kotlinVersion) + "\n\n" + original + "\n\n" + script
     }
 }
 
@@ -33,7 +35,7 @@ private val kotlin_repo = System.getProperty("kotlin_repo_url").let {
     if (it.isNullOrBlank()) "" else "maven { url '$it' }"
 }
 
-private val buildScript =
+private fun generateBuildScript(kotlinVersion: String) =
     """
     buildscript {
         repositories {
@@ -42,7 +44,7 @@ private val buildScript =
             mavenCentral()
         }
         dependencies {
-            classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:${System.getProperty("kotlin_version")}'
+            classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion'
             classpath 'org.jetbrains.kotlinx:kotlinx-benchmark-plugin:0.5.0-SNAPSHOT'
         }
     }
