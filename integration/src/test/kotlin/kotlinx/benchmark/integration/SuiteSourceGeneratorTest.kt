@@ -20,4 +20,36 @@ class SuiteSourceGeneratorTest : GradleTest() {
             }
         }
     }
+
+    @Test
+    fun generateAndCompileNativeBenchmarks() {
+        generateAndCompile("native")
+    }
+
+    @Test
+    fun generateAndCompileJSBenchmarks() {
+        generateAndCompile("jsIr")
+    }
+
+    @Test
+    fun generateAndCompileWasmBenchmarks() {
+        generateAndCompile("wasmJs")
+    }
+
+    private fun generateAndCompile(target: String) {
+        project("kotlin-multiplatform", true).let { runner ->
+            runner.run(":${target}BenchmarkGenerate")
+
+            runner.generatedDir(target, "RootBenchmark_Descriptor.kt") { descriptorFile ->
+                val text = descriptorFile.readText()
+                assertFalse(
+                    text.contains("<root>"),
+                    "Generated descriptor contains illegal characters '<root>' in $text"
+                )
+            }
+
+            val capitalizedTarget = target.replaceFirstChar { it.uppercaseChar() }
+            runner.run(":compile${capitalizedTarget}BenchmarkKotlin${capitalizedTarget}")
+        }
+    }
 }

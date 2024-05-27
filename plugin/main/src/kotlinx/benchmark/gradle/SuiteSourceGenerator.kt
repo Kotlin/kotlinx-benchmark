@@ -124,12 +124,15 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
     }
 
     private fun generateBenchmark(original: ClassDescriptor) {
-        val originalPackage = original.fqNameSafe.parent()
-        val originalName = original.fqNameSafe.shortName()
-        val originalClass = ClassName(originalPackage.toString(), originalName.toString())
+        val originalFqName = original.fqNameSafe
+        val originalPackage = originalFqName.parent().let {
+            if (it.isRoot) "" else it.asString()
+        }
+        val originalName = originalFqName.shortName().toString()
+        val originalClass = ClassName(originalPackage, originalName)
 
-        val benchmarkPackageName = "$mainBenchmarkPackage.$originalPackage"
-        val benchmarkName = originalName.toString() + "_Descriptor"
+        val benchmarkPackageName = mainBenchmarkPackage + if (originalPackage.isNotEmpty()) ".$originalPackage" else ""
+        val benchmarkName = "${originalName}_Descriptor"
         val benchmarkClass = ClassName(benchmarkPackageName, benchmarkName)
 
         val functions = DescriptorUtils.getAllDescriptors(original.unsubstitutedMemberScope)
