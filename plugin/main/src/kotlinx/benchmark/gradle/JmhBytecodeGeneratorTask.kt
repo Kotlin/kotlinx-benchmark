@@ -17,12 +17,11 @@ constructor(
     private val workerExecutor: WorkerExecutor
 ) : DefaultTask() {
 
-    @InputFiles
-    @PathSensitive(PathSensitivity.RELATIVE)
+
+    @Classpath
     lateinit var inputClassesDirs: FileCollection
 
-    @InputFiles
-    @PathSensitive(PathSensitivity.RELATIVE)
+    @Classpath
     lateinit var inputCompileClasspath: FileCollection
 
     @OutputDirectory
@@ -31,8 +30,7 @@ constructor(
     @OutputDirectory
     lateinit var outputSourcesDir: File
 
-    @InputFiles
-    @PathSensitive(PathSensitivity.RELATIVE)
+    @Classpath
     lateinit var runtimeClasspath: FileCollection
 
     @Optional
