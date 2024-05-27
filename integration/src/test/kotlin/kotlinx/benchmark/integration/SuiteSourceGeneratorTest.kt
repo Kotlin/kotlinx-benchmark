@@ -1,6 +1,5 @@
 package kotlinx.benchmark.integration
 
-import java.util.*
 import kotlin.test.*
 
 class SuiteSourceGeneratorTest : GradleTest() {
