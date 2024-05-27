@@ -49,9 +49,7 @@ class SuiteSourceGeneratorTest : GradleTest() {
                 )
             }
 
-            val capitalizedTarget = target.replaceFirstChar {
-                if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
-            }
+            val capitalizedTarget = target.replaceFirstChar { it.uppercaseChar() }
             runner.run(":compile${capitalizedTarget}BenchmarkKotlin${capitalizedTarget}")
         }
     }
