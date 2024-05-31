@@ -4,11 +4,35 @@ plugins {
     id 'org.jetbrains.kotlin.multiplatform'
     id 'org.jetbrains.kotlin.plugin.allopen' version "1.9.21"
     id 'org.jetbrains.kotlinx.benchmark'
+    id 'com.android.library'
 }
 
 // how to apply plugin to a specific source set?
 allOpen {
     annotation("org.openjdk.jmh.annotations.State")
+}
+
+android {
+    compileSdk 34
+    namespace = "org.jetbrains.kotlinx.examples"
+
+    defaultConfig {
+        minSdk = 29
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
 }
 
 kotlin {
@@ -27,6 +51,9 @@ kotlin {
     macosArm64()
     linuxX64()
     mingwX64()
+
+    androidTarget {
+    }
 
     applyDefaultHierarchyTemplate()
 
@@ -59,6 +86,8 @@ kotlin {
         }
 
         nativeMain {}
+
+        androidMain {}
     }
 }
 
@@ -133,6 +162,7 @@ benchmark {
         register("macosArm64")
         register("linuxX64")
         register("mingwX64")
+        register("android")
     }
 }
 
