@@ -7,6 +7,7 @@ buildscript {
     repositories {
         maven("https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/maven")
         gradlePluginPortal()
+        google()
 
         addDevRepositoryIfEnabled(this, project)
     }
@@ -23,6 +24,7 @@ buildscript {
                 classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
             }
         }
+        classpath("com.android.tools.build:gradle:8.2.2")
     }
 }
 
