@@ -88,7 +88,7 @@ private fun Project.createNativeBenchmarkCompileTask(target: NativeBenchmarkTarg
     compilationTarget.apply {
         binaries {
             // The release build type is already optimized and non-debuggable.
-            executable(benchmarkCompilation.name, listOf(RELEASE)) {
+            executable(benchmarkCompilation.name, listOf(target.buildType)) {
                 this.compilation = benchmarkCompilation
                 this.outputDirectory = file("$benchmarkBuildDir/classes")
                 // A link task's name is linkReleaseExecutable<Target>.
@@ -120,7 +120,7 @@ fun Project.createNativeBenchmarkExecTask(
         description = "Executes benchmark for '${target.name}'"
 
         val binary =
-            benchmarkCompilation.target.binaries.getExecutable(benchmarkCompilation.name, NativeBuildType.RELEASE)
+            benchmarkCompilation.target.binaries.getExecutable(benchmarkCompilation.name, target.buildType)
         val linkTask = binary.linkTask
 
         dependsOn(linkTask)
