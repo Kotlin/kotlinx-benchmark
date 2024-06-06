@@ -97,6 +97,8 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
                 val array = ClassName("kotlin", "Array")
                 val arrayOfStrings = array.parameterizedBy(WildcardTypeName.producerOf(String::class))
                 addParameter("args", arrayOfStrings)
+                val errorMessage = "Runner arguments are missing. Check if the run configuration is correct."
+                addStatement("check(args.size >= 3) { %S }", errorMessage)
                 addStatement("val executor = %T(%S, args)", executorType, title)
                 for (benchmark in benchmarks) {
                     addStatement("executor.suite(%T.describe())", benchmark)
