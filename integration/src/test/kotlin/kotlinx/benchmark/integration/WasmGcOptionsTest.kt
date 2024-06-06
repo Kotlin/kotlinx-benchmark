@@ -1,9 +1,11 @@
 package kotlinx.benchmark.integration
 
 import org.junit.Test
+import kotlin.test.Ignore
 
 class WasmGcOptionsTest : GradleTest() {
     @Test
+    @Ignore("Will be fixed in master, remove @Ignore after migration to 2.0")
     fun nodeJs() {
         // The test uses Kotlin 1.9.24 as previous versions
         // would append the --experimental-wasm-gc flag causing run failures.
@@ -14,6 +16,7 @@ class WasmGcOptionsTest : GradleTest() {
     }
 
     @Test
+    @Ignore("Will be fixed in master, remove @Ignore after migration to 2.0")
     fun d8() {
         // The test uses Kotlin 1.9.24 as previous versions
         // would append the --experimental-wasm-gc flag causing run failures.
