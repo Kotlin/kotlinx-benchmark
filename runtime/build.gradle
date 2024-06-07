@@ -1,11 +1,36 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
+    id 'com.android.library'
 }
 
 repositories {
     mavenCentral()
+}
+
+android {
+    compileSdk 34
+    namespace = "org.jetbrains.kotlinx.examples"
+
+    defaultConfig {
+        minSdk = 29
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
 }
 
 kotlin {
@@ -41,11 +66,14 @@ kotlin {
     js("jsIr", IR) { nodejs() }
     wasm("wasmJs") { d8() }
 
+    androidTarget {}
+
     applyDefaultHierarchyTemplate { root ->
         root.common { common ->
             common.group("jsWasmJsShared") { group ->
                 group.withJs()
                 group.withWasm()
+                group.withAndroidTarget()
             }
         }
     }
@@ -95,6 +123,9 @@ kotlin {
         nativeMain {
             dependsOn(commonMain)
         }
+        androidMain {
+            dependsOn(commonMain)
+        }
     }
 }
 
@@ -127,4 +158,16 @@ tasks.withType(KotlinNativeCompile).configureEach {
             "-opt-in=kotlin.native.runtime.NativeRuntimeApi",
             "-opt-in=kotlinx.cinterop.ExperimentalForeignApi",
     )
+}
+
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_1_8)
+    }
 }
