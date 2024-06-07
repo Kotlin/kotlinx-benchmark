@@ -1,4 +1,5 @@
 import kotlinx.benchmark.gradle.JsBenchmarksExecutor
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id 'org.jetbrains.kotlin.multiplatform'
@@ -27,6 +28,8 @@ android {
 
     buildTypes {
         release {
+//            isMinifyEnabled = false
+//            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
     compileOptions {
@@ -35,7 +38,18 @@ android {
     }
 }
 
+// Could not determine the dependencies of task ':examples:kotlin-multiplatform:extractReleaseAnnotations'.
+// > Could not resolve all task dependencies for configuration ':examples:kotlin-multiplatform:detachedConfiguration1'.
+//    > Could not find com.android.tools.lint:lint-gradle:31.2.2.
+repositories {
+    google()
+}
+
 kotlin {
+    androidTarget {
+        // Android target does not have any compilations
+        println("android compilations: ${compilations.size()}")
+    }
     jvm {
         compilations.create('benchmark') { associateWith(compilations.main) }
     }
@@ -51,8 +65,6 @@ kotlin {
     macosArm64()
     linuxX64()
     mingwX64()
-
-    androidTarget {}
 
     applyDefaultHierarchyTemplate()
 
@@ -74,7 +86,19 @@ kotlin {
 
         nativeMain {}
 
-        androidMain {}
+        androidMain {
+            kotlin.setSrcDirs(["src/androidMain/kotlin"])
+        }
+
+        forEach {
+            // Android target has 3 source sets: androidMain, androidUnitTest, and androidInstrumentedTest
+            println("SourceSet: $it")
+            println(it.name)
+            println(it.kotlin)
+            println(it.kotlin.srcDirs)
+            println(it.kotlin.sourceDirectories)
+        }
+
     }
 }
 
@@ -150,5 +174,16 @@ benchmark {
         register("linuxX64")
         register("mingwX64")
         register("android")
+    }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_1_8)
     }
 }
