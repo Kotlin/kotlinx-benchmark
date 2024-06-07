@@ -52,8 +52,7 @@ kotlin {
     linuxX64()
     mingwX64()
 
-    androidTarget {
-    }
+    androidTarget {}
 
     applyDefaultHierarchyTemplate()
 

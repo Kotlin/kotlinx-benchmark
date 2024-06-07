@@ -2,6 +2,7 @@ package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.tasks.*
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
@@ -126,3 +127,11 @@ constructor(
 ) : BenchmarkTarget(extension, name) {
     var buildType: NativeBuildType = NativeBuildType.RELEASE
 }
+
+class AndroidBenchmarkTarget
+@KotlinxBenchmarkPluginInternalApi
+constructor(
+    extension: BenchmarksExtension,
+    name: String,
+    val target: KotlinAndroidTarget
+) : BenchmarkTarget(extension, name)
