@@ -11,6 +11,7 @@ plugins {
 
 repositories {
     mavenCentral()
+    google()
 }
 
 android {
