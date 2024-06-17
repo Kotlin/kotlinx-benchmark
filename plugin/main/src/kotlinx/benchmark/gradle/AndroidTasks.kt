@@ -3,8 +3,6 @@ package kotlinx.benchmark.gradle
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmAndroidCompilation
-import org.jetbrains.org.objectweb.asm.*
-import org.jetbrains.org.objectweb.asm.tree.*
 import java.io.File
 
 @KotlinxBenchmarkPluginInternalApi
@@ -42,33 +40,5 @@ fun Project.unpackAndProcessAar(target: KotlinJvmAndroidCompilation) {
         }
     } else {
         println("AAR file not found")
-    }
-}
-
-class AnnotationProcessor {
-
-    fun processClassFile(classFile: File) {
-        val classReader = ClassReader(classFile.readBytes())
-        val classNode = ClassNode()
-        classReader.accept(classNode, 0)
-
-        // Retrieve annotations from the class
-        classNode.visibleAnnotations?.forEach { annotationNode ->
-            println("Class annotation: ${annotationNode.desc}")
-        }
-
-        // Retrieve annotations from the methods
-        classNode.methods?.forEach { methodNode ->
-            methodNode.visibleAnnotations?.forEach { annotationNode ->
-                println("Method annotation in ${methodNode.name}: ${annotationNode.desc}")
-            }
-        }
-
-        // Retrieve annotations from the fields
-        classNode.fields?.forEach { fieldNode ->
-            fieldNode.visibleAnnotations?.forEach { annotationNode ->
-                println("Field annotation in ${fieldNode.name}: ${annotationNode.desc}")
-            }
-        }
     }
 }
