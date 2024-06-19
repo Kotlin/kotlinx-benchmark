@@ -4,72 +4,78 @@ import org.jetbrains.org.objectweb.asm.*
 import org.jetbrains.org.objectweb.asm.tree.*
 import java.io.File
 
+data class AnnotationData(
+    val parameters: Map<String, Any?>
+)
+
 class AnnotationProcessor {
+
+    private val classAnnotations = mutableMapOf<String, MutableMap<String, AnnotationData>>()
 
     fun processClassFile(classFile: File) {
         val classReader = ClassReader(classFile.readBytes())
         val classNode = ClassNode()
         classReader.accept(classNode, 0)
 
+        val annotations = mutableMapOf<String, AnnotationData>()
+
         classNode.visibleAnnotations?.forEach { annotationNode ->
-            println("Class annotation: ${annotationNode.desc}")
             if (annotationNode.desc != "Lkotlin/Metadata;") {
-                printAnnotationValues(annotationNode)
-            } else {
-                println("Ignoring kotlin.Metadata annotation for readability.")
+                val annotationData = parseAnnotation(annotationNode)
+                annotations[annotationNode.desc] = annotationData
             }
         }
 
         classNode.methods?.forEach { methodNode ->
             methodNode.visibleAnnotations?.forEach { annotationNode ->
-                println("Method annotation in ${methodNode.name}: ${annotationNode.desc}")
                 if (annotationNode.desc != "Lkotlin/Metadata;") {
-                    printAnnotationValues(annotationNode)
-                } else {
-                    println("Ignoring kotlin.Metadata annotation for readability.")
+                    val annotationData = parseAnnotation(annotationNode)
+                    annotations[annotationNode.desc] = annotationData
                 }
             }
         }
 
         classNode.fields?.forEach { fieldNode ->
             fieldNode.visibleAnnotations?.forEach { annotationNode ->
-                println("Field annotation in ${fieldNode.name}: ${annotationNode.desc}")
                 if (annotationNode.desc != "Lkotlin/Metadata;") {
-                    printAnnotationValues(annotationNode)
-                } else {
-                    println("Ignoring kotlin.Metadata annotation for readability.")
+                    val annotationData = parseAnnotation(annotationNode)
+                    annotations[annotationNode.desc] = annotationData
                 }
             }
         }
+
+        classAnnotations[classNode.name] = annotations
     }
 
-    private fun printAnnotationValues(annotationNode: AnnotationNode) {
+    private fun parseAnnotation(annotationNode: AnnotationNode): AnnotationData {
+        val parameters = mutableMapOf<String, Any?>()
         annotationNode.values?.let { values ->
             for (i in values.indices step 2) {
-                val name = values[i]
+                val name = values[i] as String
                 val value = values[i + 1]
-                println("Annotation parameter: $name = ${formatAnnotationValue(value)}")
+                parameters[name] = formatAnnotationValue(value)
             }
         }
+        return AnnotationData(parameters)
     }
 
-    private fun formatAnnotationValue(value: Any?): String {
+    private fun formatAnnotationValue(value: Any?): Any? {
         return when (value) {
-            is List<*> -> value.joinToString(prefix = "[", postfix = "]") { formatAnnotationValue(it) }
-            is Array<*> -> value.joinToString(prefix = "[", postfix = "]") { formatAnnotationValue(it) }
+            is List<*> -> value.map { formatAnnotationValue(it) }
+            is Array<*> -> value.map { formatAnnotationValue(it) }
             is TypePath -> value.toString()
             is AnnotationNode -> formatAnnotationNode(value)
             is Type -> value.className
-            is String -> "\"${value.replace("\"", "\\\"")}\""
-            is ByteArray -> value.joinToString(prefix = "[", postfix = "]") { it.toString() }
-            is CharArray -> value.joinToString(prefix = "[", postfix = "]") { "\"${it}\"" }
-            is ShortArray -> value.joinToString(prefix = "[", postfix = "]") { it.toString() }
-            is IntArray -> value.joinToString(prefix = "[", postfix = "]") { it.toString() }
-            is LongArray -> value.joinToString(prefix = "[", postfix = "]") { it.toString() }
-            is FloatArray -> value.joinToString(prefix = "[", postfix = "]") { it.toString() }
-            is DoubleArray -> value.joinToString(prefix = "[", postfix = "]") { it.toString() }
-            is BooleanArray -> value.joinToString(prefix = "[", postfix = "]") { it.toString() }
-            else -> value.toString()
+            is String -> value.replace("\"", "\\\"")
+            is ByteArray -> value.toList()
+            is CharArray -> value.map { it.toString() }
+            is ShortArray -> value.toList()
+            is IntArray -> value.toList()
+            is LongArray -> value.toList()
+            is FloatArray -> value.toList()
+            is DoubleArray -> value.toList()
+            is BooleanArray -> value.toList()
+            else -> value
         }
     }
 
@@ -87,5 +93,9 @@ class AnnotationProcessor {
         }
         sb.append(")")
         return sb.toString()
+    }
+
+    fun getClassAnnotations(): Map<String, Map<String, AnnotationData>> {
+        return classAnnotations
     }
 }
