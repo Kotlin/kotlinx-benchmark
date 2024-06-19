@@ -35,6 +35,19 @@ fun Project.unpackAndProcessAar(target: KotlinJvmAndroidCompilation) {
                     annotationProcessor.processClassFile(file)
                 }
             }
+
+            val annotations = annotationProcessor.getClassAnnotations()
+            // Use the annotations data
+            annotations.forEach { (className, classAnnotations) ->
+                println("Annotations for class: $className")
+                classAnnotations.forEach { (annotationName, annotationData) ->
+                    println("  - Annotation: $annotationName")
+                    annotationData.parameters.forEach { (paramName, paramValue) ->
+                        println("    - $paramName: $paramValue")
+                    }
+                }
+            }
+
         } else {
             println("classes.jar not found in AAR file")
         }
