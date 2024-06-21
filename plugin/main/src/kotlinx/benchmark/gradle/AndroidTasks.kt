@@ -37,13 +37,31 @@ fun Project.unpackAndProcessAar(target: KotlinJvmAndroidCompilation) {
             }
 
             val annotations = annotationProcessor.getClassAnnotations()
-            // Use the annotations data
             annotations.forEach { (className, classAnnotations) ->
-                println("Annotations for class: $className")
-                classAnnotations.forEach { (annotationName, annotationData) ->
-                    println("  - Annotation: $annotationName")
-                    annotationData.parameters.forEach { (paramName, paramValue) ->
-                        println("    - $paramName: $paramValue")
+                println("Annotation for class: $className")
+
+                classAnnotations.classAnnotations.forEach { (annotationDesc, annotationData) ->
+                    println("Class annotation: $annotationDesc")
+                    annotationData.parameters.forEach { (name, value) ->
+                        println("  - $name: $value")
+                    }
+                }
+
+                classAnnotations.methodAnnotations.forEach { (methodName, methodAnnotationMap) ->
+                    methodAnnotationMap.forEach { (annotationDesc, annotationData) ->
+                        println("Method annotation in $methodName: $annotationDesc")
+                        annotationData.parameters.forEach { (name, value) ->
+                            println("  - $name: $value")
+                        }
+                    }
+                }
+
+                classAnnotations.fieldAnnotations.forEach { (fieldName, fieldAnnotationMap) ->
+                    fieldAnnotationMap.forEach { (annotationDesc, annotationData) ->
+                        println("Field annotation in $fieldName: $annotationDesc")
+                        annotationData.parameters.forEach { (name, value) ->
+                            println("  - $name: $value")
+                        }
                     }
                 }
             }
