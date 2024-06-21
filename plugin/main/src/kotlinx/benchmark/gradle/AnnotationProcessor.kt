@@ -8,21 +8,29 @@ data class AnnotationData(
     val parameters: Map<String, Any?>
 )
 
+data class ClassAnnotations(
+    val classAnnotations: Map<String, AnnotationData>,
+    val methodAnnotations: Map<String, Map<String, AnnotationData>>,
+    val fieldAnnotations: Map<String, Map<String, AnnotationData>>
+)
+
 class AnnotationProcessor {
 
-    private val classAnnotations = mutableMapOf<String, MutableMap<String, AnnotationData>>()
+    private val classAnnotationsMap = mutableMapOf<String, ClassAnnotations>()
 
     fun processClassFile(classFile: File) {
         val classReader = ClassReader(classFile.readBytes())
         val classNode = ClassNode()
         classReader.accept(classNode, 0)
 
-        val annotations = mutableMapOf<String, AnnotationData>()
+        val classAnnotations = mutableMapOf<String, AnnotationData>()
+        val methodAnnotations = mutableMapOf<String, MutableMap<String, AnnotationData>>()
+        val fieldAnnotations = mutableMapOf<String, MutableMap<String, AnnotationData>>()
 
         classNode.visibleAnnotations?.forEach { annotationNode ->
             if (annotationNode.desc != "Lkotlin/Metadata;") {
                 val annotationData = parseAnnotation(annotationNode)
-                annotations[annotationNode.desc] = annotationData
+                classAnnotations[annotationNode.desc] = annotationData
             }
         }
 
@@ -30,7 +38,7 @@ class AnnotationProcessor {
             methodNode.visibleAnnotations?.forEach { annotationNode ->
                 if (annotationNode.desc != "Lkotlin/Metadata;") {
                     val annotationData = parseAnnotation(annotationNode)
-                    annotations[annotationNode.desc] = annotationData
+                    methodAnnotations.getOrPut(methodNode.name) { mutableMapOf() }[annotationNode.desc] = annotationData
                 }
             }
         }
@@ -39,12 +47,12 @@ class AnnotationProcessor {
             fieldNode.visibleAnnotations?.forEach { annotationNode ->
                 if (annotationNode.desc != "Lkotlin/Metadata;") {
                     val annotationData = parseAnnotation(annotationNode)
-                    annotations[annotationNode.desc] = annotationData
+                    fieldAnnotations.getOrPut(fieldNode.name) { mutableMapOf() }[annotationNode.desc] = annotationData
                 }
             }
         }
 
-        classAnnotations[classNode.name] = annotations
+        classAnnotationsMap[classNode.name] = ClassAnnotations(classAnnotations, methodAnnotations, fieldAnnotations)
     }
 
     private fun parseAnnotation(annotationNode: AnnotationNode): AnnotationData {
@@ -95,7 +103,7 @@ class AnnotationProcessor {
         return sb.toString()
     }
 
-    fun getClassAnnotations(): Map<String, Map<String, AnnotationData>> {
-        return classAnnotations
+    fun getClassAnnotations(): Map<String, ClassAnnotations> {
+        return classAnnotationsMap
     }
 }
