@@ -4,6 +4,7 @@ import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmAndroidCompilation
 import java.io.File
+import java.util.jar.JarFile
 
 @KotlinxBenchmarkPluginInternalApi
 fun Project.unpackAndProcessAar(target: KotlinJvmAndroidCompilation) {
@@ -12,7 +13,6 @@ fun Project.unpackAndProcessAar(target: KotlinJvmAndroidCompilation) {
     if (aarFile.exists()) {
         val unpackedDir = File("${project.projectDir}/build/outputs/unpacked-aar/${target.name}")
         val classesJar = File(unpackedDir, "classes.jar")
-        val unzipDir = File("${project.projectDir}/build/outputs/unzipped-classes/${target.name}")
 
         // Unpack AAR file
         project.copy {
@@ -21,46 +21,51 @@ fun Project.unpackAndProcessAar(target: KotlinJvmAndroidCompilation) {
         }
 
         if (classesJar.exists()) {
-            project.copy {
-                it.from(project.zipTree(classesJar))
-                it.into(unzipDir)
-            }
-            println("Unzipped classes.jar to: $unzipDir")
+            println("Processing classes.jar for ${target.name}")
+            val jar = JarFile(classesJar)
+            val entries = jar.entries()
 
-            // Process the .class files to retrieve annotation data
             val annotationProcessor = AnnotationProcessor()
-            unzipDir.walk().forEach { file ->
-                if (file.extension == "class") {
-                    println("Processing class file: $file")
-                    annotationProcessor.processClassFile(file)
+
+            while (entries.hasMoreElements()) {
+                val entry = entries.nextElement()
+                if (entry.name.endsWith(".class")) {
+                    val inputStream = jar.getInputStream(entry)
+                    val classBytes = inputStream.readBytes()
+                    annotationProcessor.processClassBytes(classBytes)
                 }
             }
+            jar.close()
 
-            val annotations = annotationProcessor.getClassAnnotations()
-            annotations.forEach { (className, classAnnotations) ->
-                println("Annotation for class: $className")
+            val classAnnotationsDescriptors = annotationProcessor.getClassDescriptors()
+            println("Class annotations for ${target.name}:")
 
-                classAnnotations.classAnnotations.forEach { (annotationDesc, annotationData) ->
-                    println("Class annotation: $annotationDesc")
-                    annotationData.parameters.forEach { (name, value) ->
-                        println("  - $name: $value")
+            classAnnotationsDescriptors.forEach { descriptor ->
+                println("Class: ${descriptor.name}")
+                println("  Visibility: ${descriptor.visibility}")
+                descriptor.annotations.forEach { annotation ->
+                    println("  Annotation: ${annotation.name}")
+                    annotation.parameters.forEach { (key, value) ->
+                        println("    $key: $value")
                     }
                 }
-
-                classAnnotations.methodAnnotations.forEach { (methodName, methodAnnotationMap) ->
-                    methodAnnotationMap.forEach { (annotationDesc, annotationData) ->
-                        println("Method annotation in $methodName: $annotationDesc")
-                        annotationData.parameters.forEach { (name, value) ->
-                            println("  - $name: $value")
+                descriptor.methods.forEach { method ->
+                    println("  Method: ${method.name}")
+                    println("    Visibility: ${method.visibility}")
+                    method.annotations.forEach { annotation ->
+                        println("    Annotation: ${annotation.name}")
+                        annotation.parameters.forEach { (key, value) ->
+                            println("      $key: $value")
                         }
                     }
                 }
-
-                classAnnotations.fieldAnnotations.forEach { (fieldName, fieldAnnotationMap) ->
-                    fieldAnnotationMap.forEach { (annotationDesc, annotationData) ->
-                        println("Field annotation in $fieldName: $annotationDesc")
-                        annotationData.parameters.forEach { (name, value) ->
-                            println("  - $name: $value")
+                descriptor.fields.forEach { field ->
+                    println("  Field: ${field.name}")
+                    println("    Visibility: ${field.visibility}")
+                    field.annotations.forEach { annotation ->
+                        println("    Annotation: ${annotation.name}")
+                        annotation.parameters.forEach { (key, value) ->
+                            println("      $key: $value")
                         }
                     }
                 }
