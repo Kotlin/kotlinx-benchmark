@@ -2,57 +2,74 @@ package kotlinx.benchmark.gradle
 
 import org.jetbrains.org.objectweb.asm.*
 import org.jetbrains.org.objectweb.asm.tree.*
-import java.io.File
 
 data class AnnotationData(
+    val name: String,
     val parameters: Map<String, Any?>
 )
 
-data class ClassAnnotations(
-    val classAnnotations: Map<String, AnnotationData>,
-    val methodAnnotations: Map<String, Map<String, AnnotationData>>,
-    val fieldAnnotations: Map<String, Map<String, AnnotationData>>
+data class ClassAnnotationsDescriptor(
+    val packageName: String,
+    val name: String,
+    val visibility: String,
+    val annotations: List<AnnotationData>,
+    val methods: List<MethodAnnotationsDescriptor>,
+    val fields: List<FieldAnnotationsDescriptor>
+)
+
+data class MethodAnnotationsDescriptor(
+    val name: String,
+    val visibility: String,
+    val annotations: List<AnnotationData>
+)
+
+data class FieldAnnotationsDescriptor(
+    val name: String,
+    val visibility: String,
+    val annotations: List<AnnotationData>
 )
 
 class AnnotationProcessor {
 
-    private val classAnnotationsMap = mutableMapOf<String, ClassAnnotations>()
+    private val classAnnotationsDescriptors = mutableListOf<ClassAnnotationsDescriptor>()
 
-    fun processClassFile(classFile: File) {
-        val classReader = ClassReader(classFile.readBytes())
+    fun processClassBytes(classBytes: ByteArray) {
+        val classReader = ClassReader(classBytes)
         val classNode = ClassNode()
         classReader.accept(classNode, 0)
 
-        val classAnnotations = mutableMapOf<String, AnnotationData>()
-        val methodAnnotations = mutableMapOf<String, MutableMap<String, AnnotationData>>()
-        val fieldAnnotations = mutableMapOf<String, MutableMap<String, AnnotationData>>()
+        val classAnnotations = classNode.visibleAnnotations
+            ?.filter { it.desc != "Lkotlin/Metadata;" }
+            ?.map { parseAnnotation(it) }
+            ?: emptyList()
 
-        classNode.visibleAnnotations?.forEach { annotationNode ->
-            if (annotationNode.desc != "Lkotlin/Metadata;") {
-                val annotationData = parseAnnotation(annotationNode)
-                classAnnotations[annotationNode.desc] = annotationData
-            }
+        val methodDescriptors = classNode.methods.map { methodNode ->
+            val methodAnnotations = methodNode.visibleAnnotations
+                ?.filter { it.desc != "Lkotlin/Metadata;" }
+                ?.map { parseAnnotation(it) }
+                ?: emptyList()
+            MethodAnnotationsDescriptor(methodNode.name, getVisibility(methodNode.access), methodAnnotations)
         }
 
-        classNode.methods?.forEach { methodNode ->
-            methodNode.visibleAnnotations?.forEach { annotationNode ->
-                if (annotationNode.desc != "Lkotlin/Metadata;") {
-                    val annotationData = parseAnnotation(annotationNode)
-                    methodAnnotations.getOrPut(methodNode.name) { mutableMapOf() }[annotationNode.desc] = annotationData
-                }
-            }
+        val fieldDescriptors = classNode.fields.map { fieldNode ->
+            val fieldAnnotations = fieldNode.visibleAnnotations
+                ?.filter { it.desc != "Lkotlin/Metadata;" }
+                ?.map { parseAnnotation(it) }
+                ?: emptyList()
+            FieldAnnotationsDescriptor(fieldNode.name, getFieldVisibility(classNode, fieldNode), fieldAnnotations)
         }
 
-        classNode.fields?.forEach { fieldNode ->
-            fieldNode.visibleAnnotations?.forEach { annotationNode ->
-                if (annotationNode.desc != "Lkotlin/Metadata;") {
-                    val annotationData = parseAnnotation(annotationNode)
-                    fieldAnnotations.getOrPut(fieldNode.name) { mutableMapOf() }[annotationNode.desc] = annotationData
-                }
-            }
-        }
+        val packageName = classNode.name.substringBeforeLast('/', "").replace('/', '.')
+        val classDescriptor = ClassAnnotationsDescriptor(
+            packageName,
+            classNode.name.replace('/', '.').substringAfterLast('/'),
+            getVisibility(classNode.access),
+            classAnnotations,
+            methodDescriptors,
+            fieldDescriptors
+        )
 
-        classAnnotationsMap[classNode.name] = ClassAnnotations(classAnnotations, methodAnnotations, fieldAnnotations)
+        classAnnotationsDescriptors.add(classDescriptor)
     }
 
     private fun parseAnnotation(annotationNode: AnnotationNode): AnnotationData {
@@ -64,7 +81,7 @@ class AnnotationProcessor {
                 parameters[name] = formatAnnotationValue(value)
             }
         }
-        return AnnotationData(parameters)
+        return AnnotationData(annotationNode.desc.removePrefix("L").removeSuffix(";").replace('/', '.'), parameters)
     }
 
     private fun formatAnnotationValue(value: Any?): Any? {
@@ -103,7 +120,38 @@ class AnnotationProcessor {
         return sb.toString()
     }
 
-    fun getClassAnnotations(): Map<String, ClassAnnotations> {
-        return classAnnotationsMap
+    private fun getVisibility(access: Int): String {
+        return when {
+            (access and Opcodes.ACC_PUBLIC) != 0 -> "public"
+            (access and Opcodes.ACC_PROTECTED) != 0 -> "protected"
+            (access and Opcodes.ACC_PRIVATE) != 0 -> "private"
+            else -> "package-private"
+        }
+    }
+
+    private fun getFieldVisibility(classNode: ClassNode, fieldNode: FieldNode): String {
+        val getterName = "get${fieldNode.name.capitalize()}"
+        val setterName = "set${fieldNode.name.capitalize()}"
+
+        val getterMethod = classNode.methods.find { it.name == getterName }
+        val setterMethod = classNode.methods.find { it.name == setterName }
+
+        return if (getterMethod != null && setterMethod != null) {
+            val getterVisibility = getVisibility(getterMethod.access)
+            val setterVisibility = getVisibility(setterMethod.access)
+            if (getterVisibility == setterVisibility) getterVisibility else "package-private"
+        } else {
+            getVisibility(fieldNode.access)
+        }
+    }
+
+    fun getClassDescriptors(): List<ClassAnnotationsDescriptor> {
+        return classAnnotationsDescriptors
+    }
+
+    fun getClassAnnotations(packageName: String, className: String): List<AnnotationData> {
+        return classAnnotationsDescriptors
+            .filter { it.packageName == packageName && it.name == className }
+            .flatMap { it.annotations }
     }
 }
