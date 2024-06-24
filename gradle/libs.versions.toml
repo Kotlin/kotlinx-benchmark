@@ -1,3 +1,38 @@
 [versions]
 
+kotlin = "1.9.21"
+kotlinx-binaryCompatibilityValidator = "0.15.0-Beta.1"
+kotlinx-teamInfra = "0.3.0-dev-74"
+squareup-kotlinpoet = "1.3.0"
+jmh = "1.21"
+gradle-pluginPublish = "0.21.0"
+
 minSupportedGradle = "7.4"
+
+[libraries]
+
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect" }
+
+kotlin-utilKlibMetadata = { module = "org.jetbrains.kotlin:kotlin-util-klib-metadata" }
+kotlin-utilKlib = { module = "org.jetbrains.kotlin:kotlin-util-klib" }
+kotlin-utilIo = { module = "org.jetbrains.kotlin:kotlin-util-io" }
+
+kotlin-compilerEmbeddable = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin" }
+
+kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+
+kotlinx-teamInfraGradlePlugin = { module = "kotlinx.team:kotlinx.team.infra", version.ref = "kotlinx-teamInfra" }
+
+squareup-kotlinpoet = { module = "com.squareup:kotlinpoet", version.ref = "squareup-kotlinpoet" }
+
+jmh-core = { module = "org.openjdk.jmh:jmh-core", version.ref = "jmh" }
+jmh-generatorBytecode = { module = "org.openjdk.jmh:jmh-generator-bytecode", version.ref = "jmh" }
+
+[plugins]
+
+kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlinx-binaryCompatibilityValidator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "kotlinx-binaryCompatibilityValidator" }
+kotlinx-teamInfraGradlePlugin = { id = "kotlinx.team.infra", version.ref = "kotlinx-teamInfra" }
+
+gradle-pluginPublish = { id = "com.gradle.plugin-publish", version.ref = "gradle-pluginPublish" }

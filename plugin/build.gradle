@@ -10,20 +10,20 @@ buildscript {
             maven { url = kotlinDevUrl }
         }
     }
+
     dependencies {
-        classpath "kotlinx.team:kotlinx.team.infra:$infra_version"
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath(libs.kotlinx.teamInfraGradlePlugin)
     }
 }
 
 plugins {
     id 'java-gradle-plugin'
     id 'maven-publish'
-    id 'com.gradle.plugin-publish' version '0.21.0'
-    id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.15.0-Beta.2"
+    alias(libs.plugins.gradle.pluginPublish)
+    alias(libs.plugins.kotlinx.binaryCompatibilityValidator)
+    alias(libs.plugins.kotlin.jvm)
 }
 
-apply(plugin: 'org.jetbrains.kotlin.jvm')
 apply(plugin: 'kotlinx.team.infra')
 
 infra {
@@ -37,7 +37,7 @@ infra {
     }
 }
 
-logger.info("Using Kotlin $kotlin_version for project ${project.name}")
+logger.info("Using Kotlin ${libs.versions.kotlin.get()} for project ${project.name}")
 
 repositories {
     mavenCentral()
@@ -90,17 +90,17 @@ tasks.named("compileKotlin", KotlinCompilationTask.class) {
 }
 
 dependencies {
-    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-reflect', version: kotlin_version
+    implementation(libs.kotlin.reflect)
 
-    implementation 'com.squareup:kotlinpoet:1.3.0'
+    implementation(libs.squareup.kotlinpoet)
 
-    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-util-klib-metadata', version: kotlin_version
-    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-util-klib', version: kotlin_version
-    implementation group: 'org.jetbrains.kotlin', name: 'kotlin-util-io', version: kotlin_version
+    implementation(libs.kotlin.utilKlibMetadata)
+    implementation(libs.kotlin.utilKlib)
+    implementation(libs.kotlin.utilIo)
 
-    compileOnly group: 'org.jetbrains.kotlin.multiplatform', name: 'org.jetbrains.kotlin.multiplatform.gradle.plugin', version: kotlin_version
-    compileOnly "org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlin_version"
-    compileOnly "org.openjdk.jmh:jmh-generator-bytecode:$jmhVersion" // used in worker
+    compileOnly(libs.kotlin.gradlePlugin)
+    compileOnly(libs.kotlin.compilerEmbeddable)
+    compileOnly(libs.jmh.generatorBytecode) // used in worker
 }
 
 def generatePluginConstants = tasks.register("generatePluginConstants") {
