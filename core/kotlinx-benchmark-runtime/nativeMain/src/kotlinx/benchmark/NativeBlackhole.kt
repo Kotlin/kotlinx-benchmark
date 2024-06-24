@@ -1,5 +1,6 @@
 package kotlinx.benchmark
 
+import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 import kotlinx.cinterop.toByte
 import kotlin.concurrent.Volatile
 import kotlin.native.identityHashCode
@@ -7,22 +8,31 @@ import kotlin.random.Random
 
 @OptIn(ExperimentalStdlibApi::class)
 actual class Blackhole {
+    @KotlinxBenchmarkRuntimeInternalApi
     @Volatile
     var i0: Int = Random.nextInt()
+    @KotlinxBenchmarkRuntimeInternalApi
     var i1 = i0 + 1
 
+    @KotlinxBenchmarkRuntimeInternalApi
     @Volatile
     var l0 = Random.nextLong()
+    @KotlinxBenchmarkRuntimeInternalApi
     var l1 = l0 + 1L
 
+    @KotlinxBenchmarkRuntimeInternalApi
     @Volatile
     var f0 = Random.nextFloat()
+    @KotlinxBenchmarkRuntimeInternalApi
     var f1 = f0 + 1.0f
 
     @Volatile
+    @KotlinxBenchmarkRuntimeInternalApi
     var d0 = Random.nextDouble()
+    @KotlinxBenchmarkRuntimeInternalApi
     var d1 = d0 + 1.0
 
+    @KotlinxBenchmarkRuntimeInternalApi
     @Volatile
     var bh: Blackhole? = null
 
@@ -87,4 +97,5 @@ actual class Blackhole {
     }
 }
 
+@KotlinxBenchmarkRuntimeInternalApi
 actual fun Blackhole.flush() = Unit

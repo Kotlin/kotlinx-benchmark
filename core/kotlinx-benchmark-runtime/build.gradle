@@ -41,13 +41,24 @@ kotlin {
     js("jsIr", IR) { nodejs() }
     wasm("wasmJs") { d8() }
 
-    applyDefaultHierarchyTemplate()
+    applyDefaultHierarchyTemplate { root ->
+        root.common { common ->
+            common.group("jsWasmJsShared") { group ->
+                group.withJs()
+                group.withWasm()
+            }
+        }
+    }
 
     targets.configureEach {
         compilations.configureEach {
             compilerOptions.options.with {
                 allWarningsAsErrors.set(true)
                 freeCompilerArgs.add("-Xexpect-actual-classes")
+                optIn.addAll(
+                        "kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi",
+                        "kotlin.RequiresOptIn",
+                )
             }
         }
     }

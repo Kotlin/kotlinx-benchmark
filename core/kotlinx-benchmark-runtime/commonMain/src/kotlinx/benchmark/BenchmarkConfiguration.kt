@@ -1,5 +1,8 @@
 package kotlinx.benchmark
 
+import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
+
+@KotlinxBenchmarkRuntimeInternalApi
 class BenchmarkConfiguration private constructor(
     val iterations: Int,
     val warmups: Int,
@@ -25,6 +28,7 @@ class BenchmarkConfiguration private constructor(
                 "mode=${mode.toText()}" +
                 advanced.entries.joinToString(prefix = ", ", separator = ", ") { "advanced:${it.key}=${it.value}" }
 
+    @KotlinxBenchmarkRuntimeInternalApi
     companion object {
         fun parse(description: String): BenchmarkConfiguration {
             val parameters = description.parseMap()

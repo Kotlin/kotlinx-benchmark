@@ -1,7 +1,11 @@
 package kotlinx.benchmark
 
+import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
+
 private const val MAGIC_SIZE: Int = 13
 
+// TODO: Drop this class once it becomes internal
+@KotlinxBenchmarkRuntimeInternalApi
 open class CommonBlackhole {
     private val arrayOfAny: Array<Any?> = arrayOfNulls(MAGIC_SIZE)
     private var currentAnyPosition: Int = 0

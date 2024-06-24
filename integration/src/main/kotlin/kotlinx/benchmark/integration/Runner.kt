@@ -1,23 +1,22 @@
 package kotlinx.benchmark.integration
 
-import org.gradle.testkit.runner.*
-import java.io.*
+import kotlinx.benchmark.integration.GradleTestVersion.MinSupportedGradleVersion
+import org.gradle.testkit.runner.BuildResult
+import org.gradle.testkit.runner.GradleRunner
+import java.io.File
 
 class Runner(
     private val projectDir: File,
     private val print: Boolean,
     private val gradleVersion: GradleTestVersion? = null,
 ) {
-
     private fun gradle(vararg tasks: String): GradleRunner =
         GradleRunner.create()
             .withProjectDir(projectDir)
             .withArguments(*(defaultArguments() + tasks))
+            .withGradleVersion((gradleVersion ?: MinSupportedGradleVersion).versionString)
             .run {
                 if (print) forwardStdOutput(System.out.bufferedWriter()) else this
-            }
-            .run {
-                if (gradleVersion != null) withGradleVersion(gradleVersion.versionString) else this
             }
 
     fun run(vararg tasks: String, fn: BuildResult.() -> Unit = {}) {
@@ -37,8 +36,40 @@ class Runner(
     fun updateAnnotations(filePath: String, annotationsSpecifier: AnnotationsSpecifier.() -> Unit) {
         val annotations = AnnotationsSpecifier().also(annotationsSpecifier)
         val file = projectDir.resolve(filePath)
-        val updatedLines = file.readLines().map { annotations.replacementForLine(it) }
+
+        val updatedLines = file.readLines().map {
+            annotations.replaceClassAnnotation(it)
+        }
+        annotations.checkAllAnnotationsAreUsed()
+
         file.writeText(updatedLines.joinToString(separator = "\n"))
+        if (print) {
+            println(file.readText())
+        }
+    }
+
+    fun addAnnotation(filePath: String, annotationsSpecifier: AnnotationsSpecifier.() -> Unit) {
+        val annotations = AnnotationsSpecifier().also(annotationsSpecifier)
+        val file = projectDir.resolve(filePath)
+
+        val updatedLines = mutableListOf<String>()
+
+        file.readLines().forEach { line ->
+            val indentation = " ".repeat(line.length - line.trimStart().length)
+            annotations.annotationsForFunction(line).forEach { annotation ->
+                updatedLines.add(indentation + annotation)
+            }
+            annotations.annotationsForProperty(line).forEach { annotation ->
+                updatedLines.add(indentation + annotation)
+            }
+            updatedLines.add(line)
+        }
+        annotations.checkAllAnnotationsAreUsed()
+
+        file.writeText(updatedLines.joinToString(separator = "\n"))
+        if (print) {
+            println(file.readText())
+        }
     }
 
     fun generatedDir(targetName: String, filePath: String, fileTestAction: (File) -> Unit) {

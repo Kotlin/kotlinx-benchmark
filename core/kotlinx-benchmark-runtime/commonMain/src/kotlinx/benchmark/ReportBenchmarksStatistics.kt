@@ -1,7 +1,9 @@
 package kotlinx.benchmark
 
+import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 import kotlin.math.*
 
+@KotlinxBenchmarkRuntimeInternalApi
 class ReportBenchmarksStatistics(values: DoubleArray) {
     val values = values.sortedArray()
     val size: Int get() = values.size
@@ -50,6 +52,7 @@ class ReportBenchmarksStatistics(values: DoubleArray) {
         return sqrt(variance)
     }
 
+    @KotlinxBenchmarkRuntimeInternalApi
     companion object {
         fun createResult(
             benchmark: BenchmarkDescriptor<*>,
@@ -95,15 +98,21 @@ class ReportBenchmarksStatistics(values: DoubleArray) {
  */
 internal expect fun Double.format(precision: Int, useGrouping: Boolean = true): String
 
+@KotlinxBenchmarkRuntimeInternalApi
 fun Double.formatSignificant(precision: Int): String {
     val d = (precision - ceil(log10(this)).toInt()).coerceAtLeast(0) // display 4 significant digits
     return format(d)
 }
 
 private val zeroThreshold = 1.0 / 10.0.pow(3) / 2 // from jmh
+
+@KotlinxBenchmarkRuntimeInternalApi
 fun Double.isNaNOrZero(): Boolean = isNaN() || isApproximateZero()
+
+@KotlinxBenchmarkRuntimeInternalApi
 fun Double.isApproximateZero(): Boolean = this < zeroThreshold
 
+@KotlinxBenchmarkRuntimeInternalApi
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
 fun Double.nanosToText(mode: Mode, unit: BenchmarkTimeUnit): String {
     val value = nanosToSample(mode, unit)
@@ -114,6 +123,7 @@ fun Double.nanosToText(mode: Mode, unit: BenchmarkTimeUnit): String {
     }
 }
 
+@KotlinxBenchmarkRuntimeInternalApi
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
 fun unitText(mode: Mode, unit: BenchmarkTimeUnit) = when (mode) {
     Mode.Throughput -> "ops/${unit.toText()}"
@@ -121,6 +131,7 @@ fun unitText(mode: Mode, unit: BenchmarkTimeUnit) = when (mode) {
     else -> throw UnsupportedOperationException("$mode is not supported")
 }
 
+@KotlinxBenchmarkRuntimeInternalApi
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
 fun Double.sampleToText(mode: Mode, unit: BenchmarkTimeUnit): String {
     val value = this
@@ -131,6 +142,7 @@ fun Double.sampleToText(mode: Mode, unit: BenchmarkTimeUnit): String {
     }
 }
 
+@KotlinxBenchmarkRuntimeInternalApi
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
 fun Double.nanosToSample(mode: Mode, unit: BenchmarkTimeUnit): Double {
     val multiplier = unit.toMultiplier() // unit in nanos

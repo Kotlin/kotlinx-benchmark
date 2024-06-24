@@ -103,24 +103,39 @@ dependencies {
     compileOnly "org.openjdk.jmh:jmh-generator-bytecode:$jmhVersion" // used in worker
 }
 
-tasks.register("overridePluginVersion") {
-    description = "Overrides BenchmarksPlugin.PLUGIN_VERSION during release builds"
-    onlyIf {
-        project.findProperty("releaseVersion") != null
-    }
+def generatePluginConstants = tasks.register("generatePluginConstants") {
+    description = "Generates constants file used by BenchmarksPlugin"
+
+    File outputDir = temporaryDir
+    outputs.dir(outputDir).withPropertyName("outputDir")
+
+    File constantsKtFile = new File(outputDir, "BenchmarksPluginConstants.kt")
+
+    Provider<String> benchmarkPluginVersion = project.providers.gradleProperty("releaseVersion")
+            .orElse(project.version.toString())
+    inputs.property("benchmarkPluginVersion", benchmarkPluginVersion)
+
+    Provider<String> minSupportedGradleVersion = libs.versions.minSupportedGradle
+    inputs.property("minSupportedGradleVersion", minSupportedGradleVersion)
+
     doLast {
-        def benchmarksPluginFile = "${projectDir}/main/src/kotlinx/benchmark/gradle/BenchmarksPlugin.kt"
-        def releaseVersion = project.findProperty("releaseVersion")
-        ant.replaceregexp(
-                file: benchmarksPluginFile,
-                match: "const val PLUGIN_VERSION = \"[\\d.]+-SNAPSHOT\"",
-                replace: "const val PLUGIN_VERSION = \"$releaseVersion\"",
-                encoding: "UTF-8"
+        constantsKtFile.write(
+                """|package kotlinx.benchmark.gradle.internal
+                |
+                |internal object BenchmarksPluginConstants {
+                |  const val BENCHMARK_PLUGIN_VERSION = "${benchmarkPluginVersion.get()}"
+                |  const val MIN_SUPPORTED_GRADLE_VERSION = "${minSupportedGradleVersion.get()}"
+                |}
+                |""".stripMargin()
         )
     }
 }
 
-tasks.compileKotlin.dependsOn overridePluginVersion
+sourceSets {
+    main {
+        kotlin.srcDir(generatePluginConstants)
+    }
+}
 
 if (project.findProperty("publication_repository") == "space") {
     // publish to Space repository

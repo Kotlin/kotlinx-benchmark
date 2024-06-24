@@ -1,0 +1,25 @@
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsRootExtension
+
+kotlin {
+    wasm('wasmJs') {
+        nodejs()
+    }
+
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.5.0-SNAPSHOT")
+            }
+        }
+        wasmJsMain {
+        }
+    }
+}
+
+benchmark {
+    targets {
+        register("wasmJs")
+    }
+}
+
+rootProject.extensions.getByType(NodeJsRootExtension).nodeVersion = "22.1.0"

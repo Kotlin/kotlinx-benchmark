@@ -1,3 +1,5 @@
+import tasks.CheckReadmeTask
+
 buildscript {
     repositories {
         maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/maven' }
@@ -13,6 +15,7 @@ buildscript {
 }
 
 plugins {
+    id("base")
     id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.15.0-Beta.1"
 }
 
@@ -70,7 +73,18 @@ apiValidation {
             "core",
     ]
 
+    nonPublicMarkers += ["kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi"]
+
     klib {
         it.enabled = true
     }
+}
+
+tasks.register("checkReadme", CheckReadmeTask) {
+    minSupportedGradleVersion = libs.versions.minSupportedGradle
+    readme = file("README.md")
+}
+
+tasks.check {
+    dependsOn(tasks.named("checkReadme"))
 }

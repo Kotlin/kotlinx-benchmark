@@ -21,12 +21,10 @@ constructor(
     @Input
     lateinit var title: String
 
-    @InputFiles
-    @PathSensitive(PathSensitivity.RELATIVE)
+    @Classpath
     lateinit var inputClassesDirs: FileCollection
 
-    @InputFiles
-    @PathSensitive(PathSensitivity.RELATIVE)
+    @Classpath
     lateinit var inputDependencies: FileCollection
 
     @OutputDirectory

@@ -4,6 +4,7 @@ import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
+import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrCompilation
 
 open class BenchmarkConfiguration
@@ -122,4 +123,6 @@ constructor(
     name: String,
     @property:KotlinxBenchmarkPluginInternalApi
     val compilation: KotlinNativeCompilation
-) : BenchmarkTarget(extension, name)
+) : BenchmarkTarget(extension, name) {
+    var buildType: NativeBuildType = NativeBuildType.RELEASE
+}

@@ -1,0 +1,3 @@
+[versions]
+
+minSupportedGradle = "7.4"

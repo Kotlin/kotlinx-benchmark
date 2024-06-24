@@ -59,6 +59,20 @@ The options listed in the following sections allow you to tailor the benchmark e
 | `advanced("nativeFork", "value")`             | Executes iterations within the same process ("perBenchmark") or each iteration in a separate process ("perIteration"). | `"perBenchmark"`, `"perIteration"` | `"perBenchmark"` |
 | `advanced("nativeGCAfterIteration", value)`   | Whether to trigger garbage collection after each iteration.                                                            | `true`, `false`                    | `false`          |
 
+By default, to run benchmarks, the library uses a release type of native binary, which is optimized one and without debug information.
+It is possibly to change the type to debug by setting it during benchmark targets configuration:
+
+```Kotlin
+benchmark {
+    targets {
+        register("native") {
+            this as NativeBenchmarkTarget
+            buildType = NativeBuildType.DEBUG
+        }
+    }
+}
+```
+
 ### Kotlin/JVM
 | Option                                      | Description                                                | Possible Values                        | Default Value  |
 |---------------------------------------------|------------------------------------------------------------|----------------------------------------|----------------|
