@@ -2,6 +2,7 @@ package kotlinx.benchmark.gradle
 
 import org.jetbrains.org.objectweb.asm.*
 import org.jetbrains.org.objectweb.asm.tree.*
+import java.util.jar.*
 
 data class AnnotationData(
     val name: String,
@@ -12,6 +13,7 @@ data class ClassAnnotationsDescriptor(
     val packageName: String,
     val name: String,
     val visibility: String,
+    val isAbstract: Boolean,
     val annotations: List<AnnotationData>,
     val methods: List<MethodAnnotationsDescriptor>,
     val fields: List<FieldAnnotationsDescriptor>
@@ -33,7 +35,20 @@ class AnnotationProcessor {
 
     private val classAnnotationsDescriptors = mutableListOf<ClassAnnotationsDescriptor>()
 
-    fun processClassBytes(classBytes: ByteArray) {
+    fun processJarFile(jarFile: JarFile) {
+        val entries = jarFile.entries()
+
+        while (entries.hasMoreElements()) {
+            val entry = entries.nextElement()
+            if (entry.name.endsWith(".class")) {
+                val inputStream = jarFile.getInputStream(entry)
+                val classBytes = inputStream.readBytes()
+                processClassBytes(classBytes)
+            }
+        }
+    }
+
+    private fun processClassBytes(classBytes: ByteArray) {
         val classReader = ClassReader(classBytes)
         val classNode = ClassNode()
         classReader.accept(classNode, 0)
@@ -64,6 +79,7 @@ class AnnotationProcessor {
             packageName,
             classNode.name.replace('/', '.').substringAfterLast('/'),
             getVisibility(classNode.access),
+            isAbstract(classNode.access),
             classAnnotations,
             methodDescriptors,
             fieldDescriptors
@@ -145,13 +161,17 @@ class AnnotationProcessor {
         }
     }
 
+    private fun isAbstract(access: Int): Boolean {
+        return (access and Opcodes.ACC_ABSTRACT) != 0
+    }
+
     fun getClassDescriptors(): List<ClassAnnotationsDescriptor> {
         return classAnnotationsDescriptors
     }
 
-    fun getClassAnnotations(packageName: String, className: String): List<AnnotationData> {
-        return classAnnotationsDescriptors
-            .filter { it.packageName == packageName && it.name == className }
-            .flatMap { it.annotations }
+    fun getPublicClassNames(): List<Pair<String, String>> {
+        return classAnnotationsDescriptors.filter { it.visibility == "public" && !it.isAbstract }
+            .map { it.packageName to it.name }
     }
+
 }

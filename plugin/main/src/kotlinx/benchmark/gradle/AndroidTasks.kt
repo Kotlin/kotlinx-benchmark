@@ -23,18 +23,8 @@ fun Project.unpackAndProcessAar(target: KotlinJvmAndroidCompilation) {
         if (classesJar.exists()) {
             println("Processing classes.jar for ${target.name}")
             val jar = JarFile(classesJar)
-            val entries = jar.entries()
-
             val annotationProcessor = AnnotationProcessor()
-
-            while (entries.hasMoreElements()) {
-                val entry = entries.nextElement()
-                if (entry.name.endsWith(".class")) {
-                    val inputStream = jar.getInputStream(entry)
-                    val classBytes = inputStream.readBytes()
-                    annotationProcessor.processClassBytes(classBytes)
-                }
-            }
+            annotationProcessor.processJarFile(jar)
             jar.close()
 
             val classAnnotationsDescriptors = annotationProcessor.getClassDescriptors()
