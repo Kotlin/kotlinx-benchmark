@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
 
 plugins {
-    id 'org.jetbrains.kotlin.multiplatform'
+    alias(libs.plugins.kotlin.multiplatform)
 }
 
 repositories {
@@ -80,12 +80,12 @@ kotlin {
         jvmMain {
             dependsOn(commonMain)
             dependencies {
-                compileOnly "org.openjdk.jmh:jmh-core:$jmhVersion"
+                compileOnly(libs.jmh.core)
             }
         }
         jvmTest {
             dependencies {
-                implementation "org.openjdk.jmh:jmh-core:$jmhVersion"
+                implementation(libs.jmh.core)
             }
         }
         jsMain {

@@ -9,14 +9,14 @@ buildscript {
     }
 
     dependencies {
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath "kotlinx.team:kotlinx.team.infra:$infra_version"
+        classpath(libs.kotlinx.teamInfraGradlePlugin)
     }
 }
 
 plugins {
     id("base")
-    id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.15.0-Beta.1"
+    alias(libs.plugins.kotlin.multiplatform) apply false
+    alias(libs.plugins.kotlinx.binaryCompatibilityValidator)
 }
 
 apply plugin: 'kotlinx.team.infra'
@@ -55,7 +55,7 @@ afterEvaluate {
 //endregion
 
 allprojects {
-    logger.info("Using Kotlin $kotlin_version for project $it")
+    logger.info("Using Kotlin ${libs.versions.kotlin.get()} for project $it")
     repositories {
         KotlinCommunity.addDevRepositoryIfEnabled(delegate, project)
     }
