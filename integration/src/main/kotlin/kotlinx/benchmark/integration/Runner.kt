@@ -8,13 +8,16 @@ import java.io.File
 class Runner(
     private val projectDir: File,
     private val print: Boolean,
-    private val gradleVersion: GradleTestVersion? = null,
+    gradleVersion: GradleTestVersion? = null,
 ) {
+    /** Defaults to the minimum Gradle version specified in [kotlinx.benchmark.gradle.BenchmarksPlugin] */
+    private val gradleVersion: GradleTestVersion = gradleVersion ?: MinSupportedGradleVersion
+
     private fun gradle(vararg tasks: String): GradleRunner =
         GradleRunner.create()
             .withProjectDir(projectDir)
             .withArguments(*(defaultArguments() + tasks))
-            .withGradleVersion((gradleVersion ?: MinSupportedGradleVersion).versionString)
+            .withGradleVersion(gradleVersion.versionString)
             .run {
                 if (print) forwardStdOutput(System.out.bufferedWriter()) else this
             }
