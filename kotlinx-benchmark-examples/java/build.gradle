@@ -1,0 +1,28 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlinx.benchmark'
+}
+
+dependencies {
+    implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime")
+}
+
+benchmark {
+    configurations {
+        main {
+            iterationTime = 300
+            iterationTimeUnit = "ms"
+        }
+        singleParam {
+            iterationTime = 300
+            iterationTimeUnit = "ms"
+            param("stringValue", "C", "D")
+            param("intValue", 1, 10)
+        }
+    }
+    targets {
+        register("main") {
+            jmhVersion = "1.21"
+        }
+    }
+}
