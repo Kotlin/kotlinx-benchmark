@@ -18,6 +18,7 @@ fun Project.processAndroidCompilation(target: KotlinJvmAndroidCompilation) {
         it.dependsOn("bundle${target.name.capitalize(Locale.getDefault())}Aar")
         it.doLast {
             unpackAndProcessAar(target)
+            generateAndroidExecFile()
         }
     }
 }
