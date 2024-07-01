@@ -12,7 +12,7 @@ data class AnnotationData(
 data class ClassAnnotationsDescriptor(
     val packageName: String,
     val name: String,
-    val visibility: String,
+    val visibility: Visibility,
     val isAbstract: Boolean,
     val annotations: List<AnnotationData>,
     val methods: List<MethodAnnotationsDescriptor>,
@@ -21,15 +21,19 @@ data class ClassAnnotationsDescriptor(
 
 data class MethodAnnotationsDescriptor(
     val name: String,
-    val visibility: String,
+    val visibility: Visibility,
     val annotations: List<AnnotationData>
 )
 
 data class FieldAnnotationsDescriptor(
     val name: String,
-    val visibility: String,
+    val visibility: Visibility,
     val annotations: List<AnnotationData>
 )
+
+enum class Visibility {
+    PUBLIC, PROTECTED, PRIVATE, PACKAGE_PRIVATE
+}
 
 class AnnotationProcessor {
 
@@ -58,13 +62,15 @@ class AnnotationProcessor {
             ?.map { parseAnnotation(it) }
             ?: emptyList()
 
-        val methodDescriptors = classNode.methods.map { methodNode ->
-            val methodAnnotations = methodNode.visibleAnnotations
-                ?.filter { it.desc != "Lkotlin/Metadata;" }
-                ?.map { parseAnnotation(it) }
-                ?: emptyList()
-            MethodAnnotationsDescriptor(methodNode.name, getVisibility(methodNode.access), methodAnnotations)
-        }
+        val methodDescriptors = classNode.methods
+            .filterNot { it.name.startsWith("get") || it.name.startsWith("set") || it.name == "<init>" }
+            .map { methodNode ->
+                val methodAnnotations = methodNode.visibleAnnotations
+                    ?.filter { it.desc != "Lkotlin/Metadata;" }
+                    ?.map { parseAnnotation(it) }
+                    ?: emptyList()
+                MethodAnnotationsDescriptor(methodNode.name, getVisibility(methodNode.access), methodAnnotations)
+            }
 
         val fieldDescriptors = classNode.fields.map { fieldNode ->
             val fieldAnnotations = fieldNode.visibleAnnotations
@@ -75,9 +81,10 @@ class AnnotationProcessor {
         }
 
         val packageName = classNode.name.substringBeforeLast('/', "").replace('/', '.')
+        val className = classNode.name.substringAfterLast('/')
         val classDescriptor = ClassAnnotationsDescriptor(
             packageName,
-            classNode.name.replace('/', '.').substringAfterLast('/'),
+            className,
             getVisibility(classNode.access),
             isAbstract(classNode.access),
             classAnnotations,
@@ -136,28 +143,36 @@ class AnnotationProcessor {
         return sb.toString()
     }
 
-    private fun getVisibility(access: Int): String {
+    private fun getVisibility(access: Int): Visibility {
         return when {
-            (access and Opcodes.ACC_PUBLIC) != 0 -> "public"
-            (access and Opcodes.ACC_PROTECTED) != 0 -> "protected"
-            (access and Opcodes.ACC_PRIVATE) != 0 -> "private"
-            else -> "package-private"
+            (access and Opcodes.ACC_PUBLIC) != 0 -> Visibility.PUBLIC
+            (access and Opcodes.ACC_PROTECTED) != 0 -> Visibility.PROTECTED
+            (access and Opcodes.ACC_PRIVATE) != 0 -> Visibility.PRIVATE
+            else -> Visibility.PACKAGE_PRIVATE
         }
     }
 
-    private fun getFieldVisibility(classNode: ClassNode, fieldNode: FieldNode): String {
+    private fun getFieldVisibility(classNode: ClassNode, fieldNode: FieldNode): Visibility {
         val getterName = "get${fieldNode.name.capitalize()}"
         val setterName = "set${fieldNode.name.capitalize()}"
 
         val getterMethod = classNode.methods.find { it.name == getterName }
         val setterMethod = classNode.methods.find { it.name == setterName }
 
-        return if (getterMethod != null && setterMethod != null) {
-            val getterVisibility = getVisibility(getterMethod.access)
-            val setterVisibility = getVisibility(setterMethod.access)
-            if (getterVisibility == setterVisibility) getterVisibility else "package-private"
-        } else {
-            getVisibility(fieldNode.access)
+        val getterVisibility = getterMethod?.let { getVisibility(it.access) }
+        val setterVisibility = setterMethod?.let { getVisibility(it.access) }
+
+        return when {
+            getterVisibility != null && setterVisibility != null -> {
+                if (getterVisibility == setterVisibility) {
+                    getterVisibility
+                } else {
+                    getVisibility(fieldNode.access)
+                }
+            }
+            getterVisibility != null -> getterVisibility
+            setterVisibility != null -> setterVisibility
+            else -> getVisibility(fieldNode.access)
         }
     }
 
@@ -169,9 +184,11 @@ class AnnotationProcessor {
         return classAnnotationsDescriptors
     }
 
-    fun getPublicClassNames(): List<Pair<String, String>> {
-        return classAnnotationsDescriptors.filter { it.visibility == "public" && !it.isAbstract }
-            .map { it.packageName to it.name }
+    fun getMethodDescriptors(className: String): List<MethodAnnotationsDescriptor> {
+        return classAnnotationsDescriptors.find { it.name == className }?.methods ?: emptyList()
     }
 
+    fun getFieldDescriptors(className: String): List<FieldAnnotationsDescriptor> {
+        return classAnnotationsDescriptors.find { it.name == className }?.fields ?: emptyList()
+    }
 }
