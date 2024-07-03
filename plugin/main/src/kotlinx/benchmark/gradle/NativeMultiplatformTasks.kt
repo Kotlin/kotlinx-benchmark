@@ -15,8 +15,10 @@ import kotlin.io.path.*
 @KotlinxBenchmarkPluginInternalApi
 fun Project.processNativeCompilation(target: NativeBenchmarkTarget) {
     val compilation = target.compilation
-    if (compilation.target.konanTarget != HostManager.host) {
-        project.logger.warn("Skipping benchmarks for '${target.name}' because they cannot be run on current OS: Expected ${compilation.target.konanTarget}, but was ${HostManager.host}")
+    val expectedHost = compilation.target.konanTarget
+    val actualHost = HostManager.host
+    if (expectedHost != actualHost) {
+        project.logger.warn("Skipping benchmarks for '${target.name}' because they cannot be run on current OS: Expected $expectedHost, but was $actualHost")
         return
     }
 
