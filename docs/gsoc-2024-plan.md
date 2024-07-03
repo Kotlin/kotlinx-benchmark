@@ -96,3 +96,21 @@ When an Android target is registered for benchmarking, the `kotlinx-benchmark` p
 8. What Android specific configurations options should be introduced?
    1. Ahead-of-time vs Just-in-time compilation.
 
+## Expected outcomes
+
+### First part (steps 1 through 5): Exploratory phase
+
+The mentee will explore and learn about:
+* The `kotlinx-benchmark` library, including its plugin, annotations and runtime.
+* Kotlin Multiplatform targets and their support in `kotlinx-benchmark`.
+* Android compilations and their outputs.
+* Deserialization of compiled benchmark code.
+* Retrieval of metadata from benchmark annotations.
+* Generation of Kotlin code, possibly using the `kotlinpoet` library.
+* Execution of the generated code on an Android emulator or a connected device, including detection of the device or emulator.
+* Execution of a Gradle task of a separate project, potentially through a shell command.
+* The `androidx.benchmark` library and its capabilities.
+
+### Second part (steps 6 through 8): Implementation phase
+
+The learnings from the first part will be applied in the actual implementation of the GSoC project.
