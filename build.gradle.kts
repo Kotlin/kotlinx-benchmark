@@ -61,12 +61,12 @@ allprojects {
 
 apiValidation {
     ignoredProjects += listOf(
-            "examples",
-            "java",
-            "kotlin",
-            "kotlin-kts",
-            "kotlin-multiplatform",
-            "integration",
+        "examples",
+        "java",
+        "kotlin",
+        "kotlin-kts",
+        "kotlin-multiplatform",
+        "integration",
     )
 
     nonPublicMarkers += listOf("kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi")
@@ -85,3 +85,11 @@ val checkReadme by tasks.registering(CheckReadmeTask::class) {
 tasks.check {
     dependsOn(checkReadme)
 }
+
+//region Workaround for TeamCity build failure:
+//   Task ':plugin:publishBenchmarkPluginPluginMarkerMavenPublicationToBuildLocalRepository'
+//   uses this output of task ':plugin:signPluginMavenPublication' without declaring an explicit or implicit dependency.
+tasks.withType<AbstractPublishToMaven>().configureEach {
+    dependsOn(tasks.withType<Sign>())
+}
+//endregion
