@@ -76,6 +76,9 @@ When an Android target is registered for benchmarking, the `kotlinx-benchmark` p
     * [Creation of the Gradle task for generating source code](https://github.com/Kotlin/kotlinx-benchmark/blob/619f67d4f52dcfec7b6d4eecd33e19aa01de55da/plugin/main/src/kotlinx/benchmark/gradle/NativeMultiplatformTasks.kt#L36).
     * [The class that retrieve annotation data and generates code](https://github.com/Kotlin/kotlinx-benchmark/blob/619f67d4f52dcfec7b6d4eecd33e19aa01de55da/plugin/main/src/kotlinx/benchmark/gradle/SuiteSourceGenerator.kt#L51).
     * [Creation of the Gradle task for running the generated source code](https://github.com/Kotlin/kotlinx-benchmark/blob/619f67d4f52dcfec7b6d4eecd33e19aa01de55da/plugin/main/src/kotlinx/benchmark/gradle/NativeMultiplatformTasks.kt#L110).
+* An example of transforming benchmarks from [kotlinx-benchmark](https://github.com/Kotlin/kotlinx-io/blob/android-benchmarks/benchmarks/src/commonMain/kotlin/BufferOps.kt)
+  to [androidx.benchmark](https://github.com/Kotlin/kotlinx-io/blob/android-benchmarks/benchmarks-android/src/androidTest/java/kotlinx/io/benchmark/android/BufferOps.kt).
+  * This is just for reference and exploration purposes. Our implementation may generate code following a different pattern.
 
 ### Proposed steps for implementing the project
 
