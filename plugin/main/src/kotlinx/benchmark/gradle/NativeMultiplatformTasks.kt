@@ -16,7 +16,7 @@ import kotlin.io.path.*
 fun Project.processNativeCompilation(target: NativeBenchmarkTarget) {
     val compilation = target.compilation
     if (compilation.target.konanTarget != HostManager.host) {
-        project.logger.warn("Skipping benchmarks for '${target.name}' because they cannot be run on current OS: Expected ${HostManager.host}, but was ${compilation.target.konanTarget}")
+        project.logger.warn("Skipping benchmarks for '${target.name}' because they cannot be run on current OS: Expected ${compilation.target.konanTarget}, but was ${HostManager.host}")
         return
     }
 
