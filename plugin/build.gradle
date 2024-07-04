@@ -118,6 +118,9 @@ def generatePluginConstants = tasks.register("generatePluginConstants") {
     Provider<String> minSupportedGradleVersion = libs.versions.minSupportedGradle
     inputs.property("minSupportedGradleVersion", minSupportedGradleVersion)
 
+    Provider<String> kotlinCompilerVersion = libs.versions.kotlin
+    inputs.property("kotlinCompilerVersion", kotlinCompilerVersion)
+
     doLast {
         constantsKtFile.write(
                 """|package kotlinx.benchmark.gradle.internal
@@ -125,6 +128,7 @@ def generatePluginConstants = tasks.register("generatePluginConstants") {
                 |internal object BenchmarksPluginConstants {
                 |  const val BENCHMARK_PLUGIN_VERSION = "${benchmarkPluginVersion.get()}"
                 |  const val MIN_SUPPORTED_GRADLE_VERSION = "${minSupportedGradleVersion.get()}"
+                |  const val DEFAULT_KOTLIN_COMPILER_VERSION = "${kotlinCompilerVersion.get()}"
                 |}
                 |""".stripMargin()
         )

@@ -1,6 +1,7 @@
 package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.SuiteSourceGenerator.Companion.paramAnnotationFQN
+import kotlinx.benchmark.gradle.internal.generator.RequiresKotlinCompilerEmbeddable
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.builtins.UnsignedTypes
 import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
@@ -10,6 +11,7 @@ import org.jetbrains.kotlin.js.descriptorUtils.getKotlinTypeFqName
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.resolve.annotations.argumentValue
 
+@RequiresKotlinCompilerEmbeddable
 internal fun validateBenchmarkFunctions(functions: List<FunctionDescriptor>) {
     functions.forEach { function ->
         if (function.visibility != DescriptorVisibilities.PUBLIC) {
@@ -30,6 +32,7 @@ internal fun validateBenchmarkFunctions(functions: List<FunctionDescriptor>) {
     }
 }
 
+@RequiresKotlinCompilerEmbeddable
 internal fun validateSetupFunctions(functions: List<FunctionDescriptor>) {
     functions.forEach { function ->
         if (function.visibility != DescriptorVisibilities.PUBLIC) {
@@ -44,6 +47,7 @@ internal fun validateSetupFunctions(functions: List<FunctionDescriptor>) {
     }
 }
 
+@RequiresKotlinCompilerEmbeddable
 internal fun validateTeardownFunctions(functions: List<FunctionDescriptor>) {
     functions.forEach { function ->
         if (function.visibility != DescriptorVisibilities.PUBLIC) {
@@ -58,6 +62,7 @@ internal fun validateTeardownFunctions(functions: List<FunctionDescriptor>) {
     }
 }
 
+@RequiresKotlinCompilerEmbeddable
 internal fun validateParameterProperties(properties: List<PropertyDescriptor>) {
     properties.forEach { property ->
         if (!property.isVar) {

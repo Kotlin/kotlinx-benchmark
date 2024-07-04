@@ -16,32 +16,43 @@
 package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
-import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.*
+import org.gradle.api.logging.*
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
-import org.openjdk.jmh.annotations.*
-import org.openjdk.jmh.generators.core.*
-import org.openjdk.jmh.generators.reflection.*
-import org.openjdk.jmh.util.*
-import java.io.*
-import java.net.*
-import java.util.*
+import org.openjdk.jmh.annotations.Benchmark
+import org.openjdk.jmh.generators.core.BenchmarkGenerator
+import org.openjdk.jmh.generators.core.FileSystemDestination
+import org.openjdk.jmh.generators.reflection.RFGeneratorSource
+import org.openjdk.jmh.util.FileUtils
+import java.io.File
+import java.net.URL
+import java.net.URLClassLoader
 
 @KotlinxBenchmarkPluginInternalApi
+// TODO Make visibility of JmhBytecodeGeneratorWorker `internal` in version 1.0.
+//      Move to package kotlinx.benchmark.gradle.internal.generator.workers, alongside the other workers.
 abstract class JmhBytecodeGeneratorWorker : WorkAction<JmhBytecodeGeneratorWorkParameters> {
 
-    @KotlinxBenchmarkPluginInternalApi
-    companion object {
+    // TODO in version 1.0 replace JmhBytecodeGeneratorWorkParameters with this interface:
+    //internal interface Parameters : WorkParameters {
+    //    val inputClasses: ConfigurableFileCollection
+    //    val inputClasspath: ConfigurableFileCollection
+    //    val outputSourceDirectory: DirectoryProperty
+    //    val outputResourceDirectory: DirectoryProperty
+    //}
+
+    internal companion object {
         private const val classSuffix = ".class"
+        private val logger = Logging.getLogger(JmhBytecodeGeneratorWorker::class.java)
     }
 
     private val outputSourceDirectory: File get() = parameters.outputSourceDirectory.get().asFile
     private val outputResourceDirectory: File get() = parameters.outputResourceDirectory.get().asFile
 
     override fun execute() {
-        cleanup(outputSourceDirectory)
-        cleanup(outputResourceDirectory)
+        outputSourceDirectory.deleteRecursively()
+        outputResourceDirectory.deleteRecursively()
 
         val urls = (parameters.inputClasses + parameters.inputClasspath).map { it.toURI().toURL() }.toTypedArray()
 
@@ -58,13 +69,13 @@ abstract class JmhBytecodeGeneratorWorker : WorkAction<JmhBytecodeGeneratorWorkP
         // inside JMH bytecode gen. This hack seem to work, but we need to understand
         val introspectionClassLoader = URLClassLoader(urls, benchmarkAnnotation.classLoader)
 
-/*
-        println("Original_Parent_ParentCL: ${originalClassLoader.parent.parent}")
-        println("Original_ParentCL: ${originalClassLoader.parent}")
-        println("OriginalCL: $originalClassLoader")
-        println("IntrospectCL: $introspectionClassLoader")
-        println("BenchmarkCL: ${benchmarkAnnotation.classLoader}")
-*/
+        /*
+                println("Original_Parent_ParentCL: ${originalClassLoader.parent.parent}")
+                println("Original_ParentCL: ${originalClassLoader.parent}")
+                println("OriginalCL: $originalClassLoader")
+                println("IntrospectCL: $introspectionClassLoader")
+                println("BenchmarkCL: ${benchmarkAnnotation.classLoader}")
+        */
 
         try {
             currentThread.contextClassLoader = introspectionClassLoader
@@ -97,7 +108,7 @@ abstract class JmhBytecodeGeneratorWorker : WorkAction<JmhBytecodeGeneratorWorkP
             }
         }
 
-        println("Writing out Java source to $outputSourceDirectory and resources to $outputResourceDirectory")
+        logger.lifecycle("Writing out Java source to $outputSourceDirectory and resources to $outputResourceDirectory")
         val gen = BenchmarkGenerator()
         gen.generate(source, destination)
         gen.complete(source, destination)
@@ -109,12 +120,15 @@ abstract class JmhBytecodeGeneratorWorker : WorkAction<JmhBytecodeGeneratorWorkP
                 errCount++
                 sb.append("  - ").append(e.toString()).append("\n")
             }
-            throw RuntimeException("Generation of JMH bytecode failed with " + errCount + " errors:\n" + sb)
+            throw RuntimeException("Generation of JMH bytecode failed with $errCount errors:\n$sb")
         }
     }
 }
 
 @KotlinxBenchmarkPluginInternalApi
+// TODO In version 1.0:
+//     - Make internal
+//     - Move to a nested interface inside of JmhBytecodeGeneratorWorker (like the other workers)
 interface JmhBytecodeGeneratorWorkParameters : WorkParameters {
     val inputClasses: ConfigurableFileCollection
     val inputClasspath: ConfigurableFileCollection
