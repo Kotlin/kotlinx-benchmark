@@ -12,7 +12,6 @@ import org.gradle.jvm.toolchain.JavaCompiler
 import org.gradle.jvm.toolchain.JavaLauncher
 import org.gradle.jvm.toolchain.JavaToolchainService
 import java.io.File
-import java.nio.file.Files
 import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -45,9 +44,7 @@ inline fun <reified T : Task> Project.task(
 
 @KotlinxBenchmarkPluginInternalApi
 fun Project.benchmarkBuildDir(target: BenchmarkTarget): File =
-    layout.buildDirectory.dir("${target.extension.buildDir}/${target.name}")
-        .get()
-        .asFile
+    file(buildDir.resolve(target.extension.buildDir).resolve(target.name))
 
 @KotlinxBenchmarkPluginInternalApi
 fun Project.benchmarkReportsDir(config: BenchmarkConfiguration, target: BenchmarkTarget): File {
@@ -61,10 +58,7 @@ fun Project.benchmarkReportsDir(config: BenchmarkConfiguration, target: Benchmar
     }
     val timestamp = time.format(DateTimeFormatter.ISO_DATE_TIME)
     val compatibleTime = timestamp.replace(":", ".") // Windows doesn't allow ':' in path
-
-    return layout.buildDirectory.dir("${target.extension.reportsDir}/${config.name}/${compatibleTime}")
-        .get()
-        .asFile
+    return file(buildDir.resolve(target.extension.reportsDir).resolve(config.name).resolve(compatibleTime))
 }
 
 @KotlinxBenchmarkPluginInternalApi
@@ -124,7 +118,7 @@ fun writeParameters(
     config: BenchmarkConfiguration
 ): File {
     validateConfig(config)
-    val file = Files.createTempFile("benchmarks", "txt").toFile()
+    val file = createTempFile("benchmarks")
     file.writeText(buildString {
         appendLine("name:$name")
         appendLine("reportFile:$reportFile")
