@@ -66,9 +66,9 @@ constructor(
 }
 
 @KotlinxBenchmarkPluginInternalApi
-// TODO In version 1.0:
-//     - Make internal
-//     - Move to a nested interface inside of JmhBytecodeGeneratorWorker (like the other workers)
+// TODO https://github.com/Kotlin/kotlinx-benchmark/issues/211
+//      Replace NativeSourceGeneratorWorkerParameters with NativeSourceGeneratorWorker.Parameters,
+//      so that it is like the other workers.
 interface NativeSourceGeneratorWorkerParameters : WorkParameters {
     var title: String
     var target: String
@@ -80,11 +80,13 @@ interface NativeSourceGeneratorWorkerParameters : WorkParameters {
 
 @KotlinxBenchmarkPluginInternalApi
 @RequiresKotlinCompilerEmbeddable
-// TODO Make visibility of NativeSourceGeneratorWorker `internal` in version 1.0.
+// TODO https://github.com/Kotlin/kotlinx-benchmark/issues/211
+//      Change visibility of NativeSourceGeneratorWorker to `internal`
 //      Move to package kotlinx.benchmark.gradle.internal.generator.workers, alongside the other workers.
 abstract class NativeSourceGeneratorWorker : WorkAction<NativeSourceGeneratorWorkerParameters> {
 
-    // TODO in version 1.0 replace NativeSourceGeneratorWorkerParameters with this interface:
+    // TODO https://github.com/Kotlin/kotlinx-benchmark/issues/211
+    //      replace NativeSourceGeneratorWorkerParameters with this interface:
     //internal interface Parameters : WorkParameters {
     //    val title: Property<String>
     //    val target: Property<String>
