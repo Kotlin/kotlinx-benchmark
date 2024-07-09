@@ -30,7 +30,8 @@ import java.net.URL
 import java.net.URLClassLoader
 
 @KotlinxBenchmarkPluginInternalApi
-// TODO Make visibility of JmhBytecodeGeneratorWorker `internal` in version 1.0.
+// TODO https://github.com/Kotlin/kotlinx-benchmark/issues/211
+//      Change visibility of JmhBytecodeGeneratorWorker `internal`
 //      Move to package kotlinx.benchmark.gradle.internal.generator.workers, alongside the other workers.
 abstract class JmhBytecodeGeneratorWorker : WorkAction<JmhBytecodeGeneratorWorkParameters> {
 
@@ -126,9 +127,8 @@ abstract class JmhBytecodeGeneratorWorker : WorkAction<JmhBytecodeGeneratorWorkP
 }
 
 @KotlinxBenchmarkPluginInternalApi
-// TODO In version 1.0:
-//     - Make internal
-//     - Move to a nested interface inside of JmhBytecodeGeneratorWorker (like the other workers)
+// TODO https://github.com/Kotlin/kotlinx-benchmark/issues/211
+//      Move to a nested interface inside of JmhBytecodeGeneratorWorker (like the other workers)
 interface JmhBytecodeGeneratorWorkParameters : WorkParameters {
     val inputClasses: ConfigurableFileCollection
     val inputClasspath: ConfigurableFileCollection
