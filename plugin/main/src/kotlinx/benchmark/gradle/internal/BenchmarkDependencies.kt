@@ -20,7 +20,7 @@ internal class BenchmarkDependencies(
     private val benchmarkGenerator: Configuration =
         project.configurations.create("benchmarkGenerator") {
             it.description =
-                "Internal Kotlinx Benchmarks Configuration. Contains declared dependencies required for running benchmark generators."
+                "Internal kotlinx-benchmark Configuration. Contains declared dependencies required for running benchmark generators."
             it.declarable()
 
             it.defaultDependencies { deps ->
@@ -36,7 +36,7 @@ internal class BenchmarkDependencies(
         project.configurations.create("benchmarkGenerator.resolver") {
             // The name has a dot, to prevent Gradle from generating a Kotlin DSL accessor.
             it.description =
-                "Internal Kotlinx Benchmarks Configuration. Resolves dependencies required for running benchmark generators."
+                "Internal kotlinx-benchmark Configuration. Resolves dependencies required for running benchmark generators."
             it.resolvable()
 
             it.extendsFrom(benchmarkGenerator)
