@@ -12,4 +12,4 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = 'kotlinx-benchmark-plugin'
+rootProject.name = "kotlinx-benchmark-plugin"

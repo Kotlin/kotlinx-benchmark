@@ -1,11 +1,13 @@
+import kotlinx.team.infra.InfraExtension
+import kotlinx.validation.ExperimentalBCVApi
 import tasks.CheckReadmeTask
 
 buildscript {
     repositories {
-        maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/maven' }
+        maven("https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/maven")
         gradlePluginPortal()
 
-        KotlinCommunity.addDevRepositoryIfEnabled(delegate, project)
+        addDevRepositoryIfEnabled(this, project)
     }
 
     dependencies {
@@ -19,9 +21,9 @@ plugins {
     alias(libs.plugins.kotlinx.binaryCompatibilityValidator)
 }
 
-apply plugin: 'kotlinx.team.infra'
+apply(plugin = "kotlinx.team.infra")
 
-infra {
+extensions.configure<InfraExtension> {
     teamcity {
         libraryStagingRepoDescription = project.name
     }
@@ -44,45 +46,42 @@ repositories {
 
 // region Workarounds for https://github.com/gradle/gradle/issues/22335
 tasks.register("apiDump") {
-    it.dependsOn(gradle.includedBuild("plugin").task(":apiDump"))
+    dependsOn(gradle.includedBuild("plugin").task(":apiDump"))
 }
-
-afterEvaluate {
-    gradle.includedBuilds.forEach { included ->
-        project(":kotlinx-benchmark-runtime").tasks.named("publishToMavenLocal") { dependsOn(included.task(":publishToMavenLocal")) }
-    }
+tasks.register("publishToMavenLocal") {
+    dependsOn(gradle.includedBuild("plugin").task(":publishToMavenLocal"))
 }
 //endregion
 
 allprojects {
-    logger.info("Using Kotlin ${libs.versions.kotlin.get()} for project $it")
     repositories {
-        KotlinCommunity.addDevRepositoryIfEnabled(delegate, project)
+        addDevRepositoryIfEnabled(this, project)
     }
 }
 
 apiValidation {
-    ignoredProjects += [
+    ignoredProjects += listOf(
             "examples",
             "java",
             "kotlin",
             "kotlin-kts",
             "kotlin-multiplatform",
             "integration",
-    ]
+    )
 
-    nonPublicMarkers += ["kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi"]
+    nonPublicMarkers += listOf("kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi")
 
+    @OptIn(ExperimentalBCVApi::class)
     klib {
-        it.enabled = true
+        enabled = true
     }
 }
 
-tasks.register("checkReadme", CheckReadmeTask) {
+val checkReadme by tasks.registering(CheckReadmeTask::class) {
     minSupportedGradleVersion = libs.versions.minSupportedGradle
     readme = file("README.md")
 }
 
 tasks.check {
-    dependsOn(tasks.named("checkReadme"))
+    dependsOn(checkReadme)
 }

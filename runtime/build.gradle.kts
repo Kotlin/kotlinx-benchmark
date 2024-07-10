@@ -1,4 +1,7 @@
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
+import java.util.*
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
@@ -39,33 +42,35 @@ kotlin {
 
     jvm()
     js("jsIr", IR) { nodejs() }
+    @OptIn(ExperimentalWasmDsl::class)
     wasm("wasmJs") { d8() }
 
-    applyDefaultHierarchyTemplate { root ->
-        root.common { common ->
-            common.group("jsWasmJsShared") { group ->
-                group.withJs()
-                group.withWasm()
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    applyDefaultHierarchyTemplate {
+        common {
+            group("jsWasmJsShared") {
+                withJs()
+                withWasm()
             }
         }
     }
 
     targets.configureEach {
         compilations.configureEach {
-            compilerOptions.options.with {
-                allWarningsAsErrors.set(true)
+            compilerOptions.configure {
+                allWarningsAsErrors = true
                 freeCompilerArgs.add("-Xexpect-actual-classes")
                 optIn.addAll(
-                        "kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi",
-                        "kotlin.RequiresOptIn",
+                    "kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi",
+                    "kotlin.RequiresOptIn",
                 )
             }
         }
     }
 
     sourceSets.configureEach {
-        kotlin.srcDirs = ["$it.name/src"]
-        resources.srcDirs = ["$it.name/resources"]
+        kotlin.srcDirs(listOf("$name/src"))
+        resources.srcDirs(listOf("$name/resources"))
         languageSettings {
             progressiveMode = true
         }
@@ -74,11 +79,10 @@ kotlin {
     sourceSets {
         commonTest {
             dependencies {
-                implementation 'org.jetbrains.kotlin:kotlin-test'
+                implementation("org.jetbrains.kotlin:kotlin-test")
             }
         }
         jvmMain {
-            dependsOn(commonMain)
             dependencies {
                 compileOnly(libs.jmh.core)
             }
@@ -88,12 +92,8 @@ kotlin {
                 implementation(libs.jmh.core)
             }
         }
-        jsMain {
-            dependsOn(commonMain)
-            jsIrMain.dependsOn(it)
-        }
-        nativeMain {
-            dependsOn(commonMain)
+        val jsIrMain by getting {
+            dependsOn(jsMain.get())
         }
     }
 }
@@ -104,10 +104,10 @@ if (project.findProperty("publication_repository") == "space") {
         repositories {
             maven {
                 name = "space"
-                url = "https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/dev"
+                url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/dev")
                 credentials {
-                    username = project.findProperty("space.user")
-                    password = project.findProperty("space.token")
+                    username = project.findProperty("space.user") as? String?
+                    password = project.findProperty("space.token") as? String?
                 }
             }
         }
@@ -117,14 +117,14 @@ if (project.findProperty("publication_repository") == "space") {
 // Workaround for TeamCity build failure:
 // Task 'compileTestKotlinLinuxX64' uses this output of task 'signLinuxX64Publication' without declaring an explicit or implicit dependency.
 // TODO: Find out and fix the issue
-tasks.withType(KotlinNativeCompile).matching { it.name.toLowerCase().contains("test") }.configureEach {
-    it.dependsOn(tasks.withType(Sign))
+tasks.withType(KotlinNativeCompile::class).matching { it.name.lowercase(Locale.ROOT).contains("test") }.configureEach {
+    dependsOn(tasks.withType(Sign::class))
 }
 
-tasks.withType(KotlinNativeCompile).configureEach {
+tasks.withType(KotlinNativeCompile::class).configureEach {
     compilerOptions.freeCompilerArgs.addAll(
-            "-opt-in=kotlin.experimental.ExperimentalNativeApi",
-            "-opt-in=kotlin.native.runtime.NativeRuntimeApi",
-            "-opt-in=kotlinx.cinterop.ExperimentalForeignApi",
+        "-opt-in=kotlin.experimental.ExperimentalNativeApi",
+        "-opt-in=kotlin.native.runtime.NativeRuntimeApi",
+        "-opt-in=kotlinx.cinterop.ExperimentalForeignApi",
     )
 }
