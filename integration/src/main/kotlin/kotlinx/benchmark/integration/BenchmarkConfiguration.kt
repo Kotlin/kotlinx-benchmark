@@ -11,7 +11,7 @@ class BenchmarkConfiguration {
     private var includes: MutableList<String> = mutableListOf()
     private var excludes: MutableList<String> = mutableListOf()
     private var params: MutableMap<String, MutableList<Any>> = mutableMapOf()
-    private var advanced: MutableMap<String, Any> = mutableMapOf()
+    private var advanced: MutableMap<String, Any?> = mutableMapOf()
 
     fun include(pattern: String) {
         includes.add(pattern)
@@ -26,7 +26,7 @@ class BenchmarkConfiguration {
         values.addAll(value)
     }
 
-    fun advanced(name: String, value: Any) {
+    fun advanced(name: String, value: Any?) {
         advanced[name] = value
     }
 

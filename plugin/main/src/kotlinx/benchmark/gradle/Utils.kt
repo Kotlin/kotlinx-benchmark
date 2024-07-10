@@ -249,7 +249,12 @@ private fun validateConfig(config: BenchmarkConfiguration) {
             "jsUseBridge" -> require(value is Boolean) {
                 "Invalid value for 'jsUseBridge': '$value'. Expected a Boolean value."
             }
-            else -> throw IllegalArgumentException("Invalid advanced option name: '$param'. Accepted options: \"nativeFork\", \"nativeGCAfterIteration\", \"jvmForks\", \"jsUseBridge\".")
+            "jvmProfiler" -> require(value is String) {
+                "Invalid value for 'jvmProfiler': '$value'. Expected a String value."
+            }
+            else -> throw IllegalArgumentException(
+                "Invalid advanced option name: '$param'. Accepted options: ${ValidOptions.advancedOptions.joinToString(", ") { "\"$it\"" }}."
+            )
         }
     }
 }
@@ -265,6 +270,7 @@ private object ValidOptions {
     )
     val modes = setOf("thrpt", "avgt", "Throughput", "AverageTime")
     val nativeForks = setOf("perBenchmark", "perIteration")
+    val advancedOptions = setOf("nativeFork", "nativeGCAfterIteration", "jvmForks", "jsUseBridge", "jvmProfiler")
 }
 
 internal fun Project.getSystemProperty(key: String): String? {

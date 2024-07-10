@@ -42,9 +42,17 @@ fun main(args: Array<String>) {
         jmhOptions.param(key, *value.toTypedArray())
     }
 
+    val reportFormat = ResultFormatType.valueOf(config.reportFormat.uppercase())
+    val reporter = BenchmarkProgress.create(config.traceFormat)
+    val output = JmhOutputFormat(reporter, config.name)
+
+    // "libasyncProfiler" is passed when a benchmark task is run from the IntelliJ Gradle panel with an embedded profiler.
     val runtimeMXBean = ManagementFactory.getRuntimeMXBean()
     val jvmArgs = runtimeMXBean.inputArguments
-    if (jvmArgs.any { it.contains("libasyncProfiler") }) {
+    val hasAttachedProfiler = jvmArgs.any { it.contains("libasyncProfiler") }
+    if (hasAttachedProfiler) {
+        // The attached profiler profiles this process, so don't fork the benchmark run to a separate process.
+        output.println("Warning: an IDE profiler is attached to this process, not forking benchmark run to a separate process.")
         jmhOptions.forks(0)
     } else {
         when (val jvmForks = config.advanced["jvmForks"]) {
@@ -58,9 +66,14 @@ fun main(args: Array<String>) {
         }
     }
 
-    val reportFormat = ResultFormatType.valueOf(config.reportFormat.uppercase())
-    val reporter = BenchmarkProgress.create(config.traceFormat)
-    val output = JmhOutputFormat(reporter, config.name)
+    val profilerName = config.advanced["jvmProfiler"]
+    if (profilerName != null) {
+        if (hasAttachedProfiler) {
+            output.println("Warning: an IDE profiler is attached to this process, ignoring jvmProfiler = $profilerName.")
+        } else {
+            jmhOptions.addProfiler(profilerName)
+        }
+    }
     try {
         val runner = Runner(jmhOptions.build(), output)
         val results = runner.run()
@@ -105,8 +118,19 @@ class JmhOutputFormat(private val reporter: BenchmarkProgress, private val suite
     override fun endBenchmark(result: BenchmarkResult?) {
         if (result != null) {
             val benchmarkId = getBenchmarkId(result.params)
-            val value = result.primaryResult
-            val message = value.extendedInfo().trim()
+            val message = buildString {
+                appendLine("Result \"${result.params.benchmark}\":")
+                appendLine(result.primaryResult.extendedInfo())
+
+                for (r in result.secondaryResults.values) {
+                    val info = r.extendedInfo()
+                    if (info.trim().isNotEmpty()) {
+                        appendLine("Secondary result \"${result.params.benchmark}:${r.label}\":")
+                        appendLine(info)
+                    }
+                }
+            }
+
             reporter.endBenchmark(suiteName, benchmarkId, BenchmarkProgress.FinishStatus.Success, message)
         } else {
             reporter.endBenchmarkException(suiteName, lastBenchmarkStart, "<ERROR>", "")
@@ -133,7 +157,25 @@ class JmhOutputFormat(private val reporter: BenchmarkProgress, private val suite
     ) {
         when (params.type) {
             IterationType.WARMUP -> println("Warm-up $iteration: ${data.primaryResult}")
-            IterationType.MEASUREMENT -> println("Iteration $iteration: ${data.primaryResult}")
+            IterationType.MEASUREMENT -> {
+                val message = buildString {
+                    appendLine("Iteration $iteration: ${data.primaryResult}")
+
+                    if (data.secondaryResults.isNotEmpty()) {
+                        val prefix = " ".repeat(16)
+                        val maxKeyLen = data.secondaryResults.maxOf { it.key.length }
+
+                        for ((key, value) in data.secondaryResults) {
+                            append(prefix)
+                            append("%-${maxKeyLen + 1}s ".format("$key:"))
+                            appendLine(value)
+                        }
+                        appendLine()
+                    }
+                }
+
+                print(message)
+            }
             null -> throw UnsupportedOperationException("Iteration type not set")
         }
         flush()

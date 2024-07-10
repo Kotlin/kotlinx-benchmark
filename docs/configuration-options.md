@@ -74,14 +74,22 @@ benchmark {
 ```
 
 ### Kotlin/JVM
-| Option                                      | Description                                                | Possible Values                        | Default Value  |
-|---------------------------------------------|------------------------------------------------------------|----------------------------------------|----------------|
-| `advanced("jvmForks", value)`               | Specifies the number of times the harness should fork.     | Non-negative Integer, `"definedByJmh"` | `1`            |
+| Option                                      | Description                                            | Possible Values                        | Default Value        |
+|---------------------------------------------|--------------------------------------------------------|----------------------------------------|----------------------|
+| `advanced("jvmForks", value)`               | Specifies the number of times the harness should fork. | Non-negative Integer, `"definedByJmh"` | `1`                  |
+| `advanced("jvmProfiler", "value")`          | Specifies the profiler to be used during benchmarking. | String identifier of the profiler      | `null` (No profiler) |
 
 **Notes on "jvmForks":**
 - **0** - "no fork", i.e., no subprocesses are forked to run benchmarks.
 - A positive integer value – the amount used for all benchmarks in this configuration.
 - **"definedByJmh"** – Let JMH determine the amount, using the value in the [`@Fork` annotation](https://javadoc.io/doc/org.openjdk.jmh/jmh-core/latest/org/openjdk/jmh/annotations/Fork.html) for the benchmark function or its enclosing class. If not specified by `@Fork`, it defaults to [Defaults.MEASUREMENT_FORKS (`5`)](https://javadoc.io/doc/org.openjdk.jmh/jmh-core/latest/org/openjdk/jmh/runner/Defaults.html#MEASUREMENT_FORKS).
+
+**Notes on "jvmProfiler":**
+- This option corresponds to the `-prof` command line option when running JMH benchmarks from console.
+  Some examples of possible values include `gc`, `stack`, `cl`, `perf`, and `dtraceasm`.
+- You can learn about profilers provided by the latest JMH [here](https://javadoc.io/doc/org.openjdk.jmh/jmh-core/latest/org/openjdk/jmh/profile/package-summary.html).
+- A sample illustrating the output format of the profilers can be found [here](https://github.com/openjdk/jmh/blob/1.37/jmh-samples/src/main/java/org/openjdk/jmh/samples/JMHSample_35_Profilers.java).
+- Some profilers may require root privileges.
 
 The library offers the flexibility to specify the version of the Java Microbenchmark Harness (JMH) to use when running benchmarks on the JVM.
 The default version is set to `1.21`, but you can customize it while registering a JVM target for benchmarking:

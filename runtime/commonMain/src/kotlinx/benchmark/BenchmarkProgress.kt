@@ -105,7 +105,7 @@ class ConsoleBenchmarkProgress : BenchmarkProgress() {
     }
 
     override fun endBenchmark(suite: String, benchmark: String, status: FinishStatus, message: String) {
-        println("  $status: $message")
+        println(message)
     }
 
     override fun endBenchmarkException(suite: String, benchmark: String, error: String, stacktrace: String) {
