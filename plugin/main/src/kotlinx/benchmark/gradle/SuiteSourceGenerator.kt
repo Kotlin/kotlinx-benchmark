@@ -3,15 +3,19 @@ package kotlinx.benchmark.gradle
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
+import kotlinx.benchmark.gradle.internal.generator.RequiresKotlinCompilerEmbeddable
 import org.jetbrains.kotlin.descriptors.*
-import org.jetbrains.kotlin.name.*
-import org.jetbrains.kotlin.resolve.*
-import org.jetbrains.kotlin.resolve.annotations.*
-import org.jetbrains.kotlin.resolve.constants.*
-import org.jetbrains.kotlin.resolve.descriptorUtil.*
-import org.jetbrains.kotlin.resolve.scopes.*
-import org.jetbrains.kotlin.types.*
-import java.io.*
+import org.jetbrains.kotlin.name.FqName
+import org.jetbrains.kotlin.name.Name
+import org.jetbrains.kotlin.resolve.DescriptorUtils
+import org.jetbrains.kotlin.resolve.annotations.argumentValue
+import org.jetbrains.kotlin.resolve.constants.EnumValue
+import org.jetbrains.kotlin.resolve.constants.StringValue
+import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameSafe
+import org.jetbrains.kotlin.resolve.descriptorUtil.module
+import org.jetbrains.kotlin.resolve.scopes.MemberScope
+import org.jetbrains.kotlin.types.KotlinType
+import java.io.File
 
 @KotlinxBenchmarkPluginInternalApi
 enum class Platform(
@@ -46,9 +50,14 @@ enum class Platform(
     )
 }
 
-
 @KotlinxBenchmarkPluginInternalApi
-class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val output: File, val platform: Platform) {
+@RequiresKotlinCompilerEmbeddable
+class SuiteSourceGenerator(
+    val title: String,
+    val module: ModuleDescriptor,
+    val output: File,
+    val platform: Platform
+) {
 
     @KotlinxBenchmarkPluginInternalApi
     companion object {
@@ -209,7 +218,7 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
                     addModifiers(KModifier.PRIVATE)
                     addParameter("instance", originalClass)
                     addParameter("params", MAP.parameterizedBy(STRING, STRING))
-                    
+
                     parameterProperties.forEach { property ->
                         val type = property.type.nameIfStandardType!!
                         addStatement("instance.${property.name} = params.getValue(\"${property.name}\").to$type()")
@@ -224,7 +233,10 @@ class SuiteSourceGenerator(val title: String, val module: ModuleDescriptor, val 
 
                 val defaultParametersString = defaultParameters.entries
                     .joinToString(prefix = "mapOf(", postfix = ")") { (key, value) ->
-                        "\"${key}\" to ${value.joinToString(prefix = "listOf(", postfix = ")") { "\"\"\"${it.value.replace(' ', '·')}\"\"\"" }}"
+                        val joinedValues = value.joinToString {
+                            "\"\"\"${it.value.replace(' ', '·')}\"\"\""
+                        }
+                        "\"${key}\" to listOf($joinedValues)"
                     }
 
                 val timeUnitClass = ClassName.bestGuess(timeUnitFQN)
@@ -361,5 +373,6 @@ inline fun FileSpec.Builder.function(
 }
 
 @KotlinxBenchmarkPluginInternalApi
+@RequiresKotlinCompilerEmbeddable
 val KotlinType.nameIfStandardType: Name?
     get() = constructor.declarationDescriptor?.name

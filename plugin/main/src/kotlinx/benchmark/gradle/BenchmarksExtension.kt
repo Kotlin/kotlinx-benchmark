@@ -4,6 +4,7 @@ import groovy.lang.Closure
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
 import org.gradle.api.plugins.*
+import org.gradle.api.provider.*
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
@@ -16,7 +17,7 @@ fun Project.benchmark(configure: Action<BenchmarksExtension>) {
     extensions.configure(BenchmarksExtension::class.java, configure)
 }
 
-open class BenchmarksExtension
+abstract class BenchmarksExtension
 @KotlinxBenchmarkPluginInternalApi
 constructor(
     val project: Project
@@ -27,6 +28,8 @@ constructor(
     var benchsDescriptionDir: String = "benchsDescription"
 
     val version = BenchmarksPlugin.PLUGIN_VERSION
+
+    abstract val kotlinCompilerVersion: Property<String>
 
     fun configurations(configureClosure: Closure<NamedDomainObjectContainer<BenchmarkConfiguration>>): NamedDomainObjectContainer<BenchmarkConfiguration> {
         return configurations.configure(configureClosure)
@@ -46,7 +49,8 @@ constructor(
 
     val targets: NamedDomainObjectContainer<BenchmarkTarget> = run {
         project.container(BenchmarkTarget::class.java) { name ->
-            val multiplatformClass = tryGetClass<KotlinMultiplatformExtension>("org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension")
+            val multiplatformClass =
+                tryGetClass<KotlinMultiplatformExtension>("org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension")
             val multiplatform = multiplatformClass?.let { project.extensions.findByType(it) }
             val javaExtension = project.extensions.findByType(JavaPluginExtension::class.java)
 

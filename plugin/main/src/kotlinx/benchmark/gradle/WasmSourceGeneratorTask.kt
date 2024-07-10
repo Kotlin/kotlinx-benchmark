@@ -1,18 +1,17 @@
 package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
-import org.gradle.api.DefaultTask
-import org.gradle.api.file.FileCollection
+import kotlinx.benchmark.gradle.internal.generator.RequiresKotlinCompilerEmbeddable
+import kotlinx.benchmark.gradle.internal.generator.workers.GenerateWasmSourceWorker
+import org.gradle.api.*
+import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.workers.WorkerExecutor
-import org.jetbrains.kotlin.descriptors.ModuleDescriptor
-import org.jetbrains.kotlin.storage.LockBasedStorageManager
-import org.jetbrains.kotlin.storage.StorageManager
 import java.io.File
 import javax.inject.Inject
 
 @CacheableTask
-open class WasmSourceGeneratorTask
+abstract class WasmSourceGeneratorTask
 @KotlinxBenchmarkPluginInternalApi
 @Inject
 constructor(
@@ -34,34 +33,27 @@ constructor(
     @OutputDirectory
     lateinit var outputSourcesDir: File
 
+    @get:Classpath
+    abstract val runtimeClasspath: ConfigurableFileCollection
+
     @TaskAction
     fun generate() {
-        cleanup(outputSourcesDir)
-        cleanup(outputResourcesDir)
-
-        inputClassesDirs.files.forEach { lib: File ->
-            generateSources(lib)
+        val workQueue = workerExecutor.classLoaderIsolation {
+            it.classpath.from(runtimeClasspath)
         }
-    }
 
-    private fun generateSources(lib: File) {
-        val modules = loadIr(lib, LockBasedStorageManager("Inspect"))
-        modules.forEach { module ->
-            val generator = SuiteSourceGenerator(
-                title,
-                module,
-                outputSourcesDir,
-                Platform.WasmBuiltIn
-            )
-            generator.generate()
+        @OptIn(RequiresKotlinCompilerEmbeddable::class)
+        workQueue.submit(GenerateWasmSourceWorker::class.java) {
+            it.title.set(title)
+            it.inputClasses.from(inputClassesDirs)
+            it.inputDependencies.from(inputDependencies)
+            it.outputSourcesDir.set(outputSourcesDir)
+            it.outputResourcesDir.set(outputResourcesDir)
         }
-    }
 
-    private fun loadIr(lib: File, storageManager: StorageManager): List<ModuleDescriptor> {
-        //skip processing of empty dirs (fail if not to do it)
-        if (lib.listFiles() == null) return emptyList()
-        val dependencies = inputDependencies.files.filterNot { it.extension == "js" }.toSet()
-        val module = KlibResolver.JS.createModuleDescriptor(lib, dependencies, storageManager)
-        return listOf(module)
+        workQueue.await() // I'm not sure if waiting is necessary,
+        // but I suspect that the task dependencies aren't configured correctly,
+        // so: better-safe-than-sorry.
+        // Try removing await() when Benchmarks follows Gradle best practices.
     }
 }
