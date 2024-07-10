@@ -18,7 +18,7 @@ buildscript {
 
 plugins {
     id("base")
-    id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.15.0-Beta.1"
+    id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.15.0-20240704150100-2.1-SNAPSHOT"
 }
 
 apply plugin: 'kotlinx.team.infra'
