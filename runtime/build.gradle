@@ -1,5 +1,13 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
 
+buildscript {
+    dependencies {
+        // Temporary workaround required to dump and validate KLib ABI using BCV
+        // On the BCV side, the issue is tracked as https://github.com/Kotlin/binary-compatibility-validator/issues/208
+        classpath("org.jetbrains.kotlin:kotlin-compiler-embeddable:$kotlin_version")
+    }
+}
+
 plugins {
     id 'org.jetbrains.kotlin.multiplatform'
 }
@@ -8,7 +16,6 @@ repositories {
     mavenCentral()
     maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlin/dev' }
     mavenLocal()
-
 }
 
 kotlin {
