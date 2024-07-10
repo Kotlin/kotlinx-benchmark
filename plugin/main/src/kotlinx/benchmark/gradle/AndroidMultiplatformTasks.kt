@@ -18,7 +18,24 @@ fun Project.processAndroidCompilation(target: KotlinJvmAndroidCompilation) {
         it.dependsOn("bundle${target.name.capitalize(Locale.getDefault())}Aar")
         it.doLast {
             unpackAndProcessAar(target)
-            generateAndroidExecFile()
+            //generateAndroidExecFile()
+            detectAndroidDevice()
         }
     }
+}
+
+fun Project.detectAndroidDevice() {
+    val devices = ProcessBuilder("adb", "devices")
+        .start()
+        .inputStream
+        .bufferedReader()
+        .useLines { lines ->
+            lines.filter { it.endsWith("device") }
+                .map { it.substringBefore("\t") }
+                .toList()
+        }
+    devices.takeIf { it.isNotEmpty() }
+        ?.let {
+            println("Connected Android devices/emulators:\n\t${it.joinToString("\n\t")}")
+        } ?: throw RuntimeException("No Android devices/emulators found, please start an emulator or connect a device.")
 }
