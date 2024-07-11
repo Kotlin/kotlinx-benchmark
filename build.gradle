@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapperKt
 import tasks.CheckReadmeTask
 
 buildscript {
@@ -10,6 +11,13 @@ buildscript {
 
     dependencies {
         classpath(libs.kotlinx.teamInfraGradlePlugin)
+
+        String kotlinVersion = providers.gradleProperty("kotlin_version").orNull
+        if (kotlinVersion != null && !kotlinVersion.isBlank()) {
+            constraints {
+                classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+            }
+        }
     }
 }
 
@@ -54,8 +62,15 @@ afterEvaluate {
 }
 //endregion
 
+String kgpVersion = KotlinPluginWrapperKt.getKotlinPluginVersion(project)
+logger.info("Using Kotlin ${KotlinPluginWrapperKt.getKotlinPluginVersion(it)}")
+
+String kotlinVersion = providers.gradleProperty("kotlin_version").orNull
+if (kotlinVersion != null && kgpVersion != kotlinVersion) {
+    throw IllegalStateException("Expected that Kotlin version is overridden to $kotlinVersion, but is actually $kgpVersion")
+}
+
 allprojects {
-    logger.info("Using Kotlin ${libs.versions.kotlin.get()} for project $it")
     repositories {
         KotlinCommunity.addDevRepositoryIfEnabled(delegate, project)
     }

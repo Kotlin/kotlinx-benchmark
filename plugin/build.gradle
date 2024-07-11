@@ -13,6 +13,10 @@ buildscript {
 
     dependencies {
         classpath(libs.kotlinx.teamInfraGradlePlugin)
+        // Note: unlike the root project, don't override KGP version in this project.
+        // Gradle plugins should only use the embedded-kotlin version.
+        // kotlinx-benchmark uses an external KGP the moment... but that should be fixed
+        // https://github.com/Kotlin/kotlinx-benchmark/issues/244
     }
 }
 
