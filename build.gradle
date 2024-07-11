@@ -63,7 +63,7 @@ afterEvaluate {
 //endregion
 
 String kgpVersion = KotlinPluginWrapperKt.getKotlinPluginVersion(project)
-logger.info("Using Kotlin ${KotlinPluginWrapperKt.getKotlinPluginVersion(it)}")
+logger.info("Using Kotlin ${KotlinPluginWrapperKt.getKotlinPluginVersion(project)}")
 
 String kotlinVersion = providers.gradleProperty("kotlin_version").orNull
 if (kotlinVersion != null && kgpVersion != kotlinVersion) {
