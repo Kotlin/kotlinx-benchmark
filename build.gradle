@@ -62,12 +62,19 @@ afterEvaluate {
 }
 //endregion
 
-String kgpVersion = KotlinPluginWrapperKt.getKotlinPluginVersion(project)
-logger.info("Using Kotlin ${KotlinPluginWrapperKt.getKotlinPluginVersion(project)}")
+String currentKgpVersion = KotlinPluginWrapperKt.getKotlinPluginVersion(project)
+logger.info("Using Kotlin Gradle Plugin ${currentKgpVersion}")
 
-String kotlinVersion = providers.gradleProperty("kotlin_version").orNull
-if (kotlinVersion != null && kgpVersion != kotlinVersion) {
-    throw IllegalStateException("Expected that Kotlin version is overridden to $kotlinVersion, but is actually $kgpVersion")
+String kotlinVersionOverride = providers.gradleProperty("kotlin_version").getOrNull()
+
+if (kotlinVersionOverride != null) {
+    String versionCatalogKotlinVersion = libs.versions.kotlin.get()
+    if (kotlinVersionOverride != versionCatalogKotlinVersion) {
+        throw new IllegalStateException("Kotlin version in Version Catalog was not overridden. Expected:$kotlinVersionOverride, actual:$versionCatalogKotlinVersion.")
+    }
+    if (kotlinVersionOverride != currentKgpVersion) {
+        throw new IllegalStateException("Kotlin Gradle Plugin version was not overridden. Expected:$kotlinVersionOverride, actual:$currentKgpVersion.")
+    }
 }
 
 allprojects {

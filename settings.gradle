@@ -7,6 +7,17 @@ pluginManagement {
     }
 }
 
+dependencyResolutionManagement {
+    versionCatalogs {
+        create("libs") {
+            String kotlinVersion = providers.gradleProperty("kotlin_version").orNull
+            if (kotlinVersion != null && !kotlinVersion.isBlank()) {
+                version("kotlin", kotlinVersion)
+            }
+        }
+    }
+}
+
 rootProject.name = 'kotlinx-benchmark'
 
 includeBuild("plugin")
