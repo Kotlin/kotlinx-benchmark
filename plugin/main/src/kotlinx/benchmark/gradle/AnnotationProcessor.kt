@@ -22,7 +22,8 @@ data class ClassAnnotationsDescriptor(
 data class MethodAnnotationsDescriptor(
     val name: String,
     val visibility: Visibility,
-    val annotations: List<AnnotationData>
+    val annotations: List<AnnotationData>,
+    val parameters: List<String>
 )
 
 data class FieldAnnotationsDescriptor(
@@ -63,13 +64,28 @@ class AnnotationProcessor {
             ?: emptyList()
 
         val methodDescriptors = classNode.methods
-            .filterNot { it.name.startsWith("get") || it.name.startsWith("set") || it.name == "<init>" }
+            .filterNot { it.name == "<init>" }
+            .filter { methodNode ->
+                methodNode.visibleAnnotations?.any { it.desc != "Lkotlin/Metadata;" } == true
+            }
             .map { methodNode ->
                 val methodAnnotations = methodNode.visibleAnnotations
                     ?.filter { it.desc != "Lkotlin/Metadata;" }
                     ?.map { parseAnnotation(it) }
                     ?: emptyList()
-                MethodAnnotationsDescriptor(methodNode.name, getVisibility(methodNode.access), methodAnnotations)
+                val parameters = Type.getArgumentTypes(methodNode.desc).map { it.className }
+//                println("Method: ${methodNode.name}, Annotations: $methodAnnotations, Parameters: $parameters")
+//                methodAnnotations.forEach { annotation ->
+//                    println("Annotation: ${annotation.name}")
+//                    annotation.parameters.forEach { (key, value) ->
+//                        println("  $key: $value")
+//                    }
+//                }
+                MethodAnnotationsDescriptor(
+                    methodNode.name,
+                    getVisibility(methodNode.access),
+                    methodAnnotations,
+                    parameters)
             }
 
         val fieldDescriptors = classNode.fields.map { fieldNode ->
@@ -93,6 +109,10 @@ class AnnotationProcessor {
         )
 
         classAnnotationsDescriptors.add(classDescriptor)
+        println("Class: ${classDescriptor.name}")
+        classDescriptor.methods.forEach { method ->
+            println("Method: ${method.name}, Annotations: ${method.annotations}, Parameters: ${method.parameters}")
+        }
     }
 
     private fun parseAnnotation(annotationNode: AnnotationNode): AnnotationData {

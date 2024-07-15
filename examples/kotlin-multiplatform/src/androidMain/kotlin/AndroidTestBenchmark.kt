@@ -12,6 +12,11 @@ class AndroidTestBenchmark {
         data = 3.0
     }
 
+    @TearDown
+    fun teardown() {
+        // println("Teardown!")
+    }
+
     @Benchmark
     fun sqrtBenchmark(): Double {
         return sqrt(data)
@@ -22,5 +27,3 @@ class AndroidTestBenchmark {
         return cos(data)
     }
 }
-
-

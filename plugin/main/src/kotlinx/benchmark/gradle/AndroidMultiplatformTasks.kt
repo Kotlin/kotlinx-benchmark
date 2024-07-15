@@ -17,8 +17,9 @@ fun Project.processAndroidCompilation(target: KotlinJvmAndroidCompilation) {
         it.description = "Processes the Android compilation '${target.name}' for benchmarks"
         it.dependsOn("bundle${target.name.capitalize(Locale.getDefault())}Aar")
         it.doLast {
-            unpackAndProcessAar(target)
-            //generateAndroidExecFile()
+            unpackAndProcessAar(target) { classDescriptors ->
+                generateBenchmarkSourceFiles(classDescriptors)
+            }
             detectAndroidDevice()
         }
     }
