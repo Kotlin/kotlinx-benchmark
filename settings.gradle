@@ -12,6 +12,9 @@ dependencyResolutionManagement {
         create("libs") {
             String kotlinVersion = providers.gradleProperty("kotlin_version").orNull
             if (kotlinVersion != null && !kotlinVersion.isBlank()) {
+                // Override the default Kotlin version.
+                // The only intended use-case is for testing dev Kotlin builds using kotlinx-benchmark.
+                // The Kotlin version should not be overridden during regular development.
                 version("kotlin", kotlinVersion)
             }
         }

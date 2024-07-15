@@ -14,6 +14,9 @@ buildscript {
 
         String kotlinVersion = providers.gradleProperty("kotlin_version").orNull
         if (kotlinVersion != null && !kotlinVersion.isBlank()) {
+            // In addition to overriding the Kotlin version in the Version Catalog,
+            // also enforce the KGP version using a dependency constraint.
+            // Constraints are stricter than Version Catalog.
             constraints {
                 classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
             }
