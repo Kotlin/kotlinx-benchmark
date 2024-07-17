@@ -75,20 +75,23 @@ Set up a separate benchmark source set by following these simple steps:
     }
     ```
 
-2. **Propagate Dependencies**
+2. **Associate compilations**
 
-    Next, propagate dependencies and output from the `main` source set to your `benchmark` source set. 
-    This ensures the `benchmark` source set has access to classes and resources from the `main` source set.
+    We then associate the benchmark compilation with the main compilation. This will allow the 
+    benchmark compilation to access internal APIs from 'main' as well as propagate dependencies
 
     ```kotlin
     // build.gradle.kts
-    dependencies {
-        add("benchmarkImplementation", sourceSets.main.get().output + sourceSets.main.get().runtimeClasspath)
+    kotlin {
+        target {
+            compilations.getByName("benchmark")
+                .associateWith(compilations.getByName("main"))
+        }
     }
     ```
 
-    You can also add output and `compileClasspath` from `sourceSets.test` in the same way 
-    if you wish to reuse some of the test infrastructure.
+    You can associate the benchmark compilation with the "test" compilation as well if you would like
+    to re-use test-code in benchmarks.
 
 3. **Register Benchmark Source Set**
 
