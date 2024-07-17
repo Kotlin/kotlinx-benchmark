@@ -10,7 +10,8 @@ fun Project.generateBenchmarkSourceFiles(
     classDescriptors: List<ClassAnnotationsDescriptor>,
 ) {
 
-    val targetPath = "E:/Android/AndroidProjects/kotlin-qualification-task/composeApp"
+    // TODO: Path needs to generate files
+    val targetPath = "E:/Android/AndroidProjects/kotlin-qualification-task/microbenchmark"
     val androidTestDir = File(targetPath).resolve("src/androidTest/kotlin")
     if (!androidTestDir.exists()) {
         androidTestDir.mkdirs()
@@ -41,6 +42,7 @@ private fun generateDescriptorFile(descriptor: ClassAnnotationsDescriptor, andro
         .addImport("org.junit", "Test")
         .addImport("org.junit.runner", "RunWith")
         .addImport("androidx.benchmark.junit4", "BenchmarkRule")
+        .addImport("androidx.benchmark.junit4", "measureRepeated")
 
     val typeSpecBuilder = TypeSpec.classBuilder(descriptorName)
         .addAnnotation(
@@ -83,11 +85,41 @@ private fun addBenchmarkMethods(typeSpecBuilder: TypeSpec.Builder, descriptor: C
             method.annotations.any { annotation -> annotation.name == "kotlinx.benchmark.Param" }
         }
         .forEach { method ->
-            val methodSpecBuilder = FunSpec.builder("benchmark_${descriptor.name}_${method.name}")
-                .addAnnotation(ClassName("org.junit", "Test"))
-                .addStatement("$propertyName.${method.name}()")
-            typeSpecBuilder.addFunction(methodSpecBuilder.build())
+            when {
+                method.annotations.any { it.name == "kotlinx.benchmark.Setup" || it.name == "kotlinx.benchmark.TearDown" } -> {
+                    generateNonMeasurableMethod(descriptor, method, propertyName, typeSpecBuilder)
+                }
+                else -> {
+                    generateMeasurableMethod(descriptor, method, propertyName, typeSpecBuilder)
+                }
+            }
         }
+}
+
+private fun generateMeasurableMethod(
+    descriptor: ClassAnnotationsDescriptor,
+    method: MethodAnnotationsDescriptor,
+    propertyName: String,
+    typeSpecBuilder: TypeSpec.Builder
+) {
+    val methodSpecBuilder = FunSpec.builder("benchmark_${descriptor.name}_${method.name}")
+        .addAnnotation(ClassName("org.junit", "Test"))
+        .addStatement("benchmarkRule.measureRepeated {")
+        .addStatement("  $propertyName.${method.name}()")
+        .addStatement("}")
+    typeSpecBuilder.addFunction(methodSpecBuilder.build())
+}
+
+private fun generateNonMeasurableMethod(
+    descriptor: ClassAnnotationsDescriptor,
+    method: MethodAnnotationsDescriptor,
+    propertyName: String,
+    typeSpecBuilder: TypeSpec.Builder
+) {
+    val methodSpecBuilder = FunSpec.builder("benchmark_${descriptor.name}_${method.name}")
+        .addAnnotation(ClassName("org.junit", "Test"))
+        .addStatement("$propertyName.${method.name}()")
+    typeSpecBuilder.addFunction(methodSpecBuilder.build())
 }
 
 private fun updateAndroidDependencies(buildGradleFile: File, dependencies: List<Pair<String, String?>>) {
