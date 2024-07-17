@@ -26,10 +26,10 @@ Follow these steps to set up a separate source set for benchmarks:
 
     ```kotlin
     // build.gradle.kts
-    kotlin { 
-        jvm { 
-            compilations.create('benchmark') {
-                associateWith(compilations.main)
+    kotlin {
+        jvm {
+            compilations.create("benchmark") {
+                associateWith(this@jvm.compilations.getByName("main"))
             }
         }
     }
