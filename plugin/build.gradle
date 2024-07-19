@@ -22,7 +22,7 @@ plugins {
     id 'java-gradle-plugin'
     id 'maven-publish'
     id 'com.gradle.plugin-publish' version '0.21.0'
-    id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.15.0-Beta.2"
+    id("org.jetbrains.kotlinx.binary-compatibility-validator") version "0.16.1"
 }
 
 apply(plugin: 'org.jetbrains.kotlin.jvm')
