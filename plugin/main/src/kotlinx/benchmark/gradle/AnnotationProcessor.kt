@@ -109,9 +109,9 @@ class AnnotationProcessor {
         )
 
         classAnnotationsDescriptors.add(classDescriptor)
-        println("Class: ${classDescriptor.name}")
+        println("Class: ${classDescriptor.name}, Annotations: ${classDescriptor.annotations}")
         classDescriptor.methods.forEach { method ->
-            println("Method: ${method.name}, Annotations: ${method.annotations}, Parameters: ${method.parameters}")
+            println("Method: ${method.name}, Annotations: ${method.annotations},Annotation Parameters: ${method.parameters}")
         }
     }
 
@@ -124,17 +124,37 @@ class AnnotationProcessor {
                 parameters[name] = formatAnnotationValue(value)
             }
         }
-        return AnnotationData(annotationNode.desc.removePrefix("L").removeSuffix(";").replace('/', '.'), parameters)
+        return AnnotationData(formatDescriptor(annotationNode.desc), parameters)
     }
 
     private fun formatAnnotationValue(value: Any?): Any? {
         return when (value) {
-            is List<*> -> value.map { formatAnnotationValue(it) }
-            is Array<*> -> value.map { formatAnnotationValue(it) }
+            is List<*> -> value.flatMap {
+                val formattedValue = formatAnnotationValue(it)
+                if (formattedValue is List<*>) {
+                    formattedValue
+                } else {
+                    listOf(formattedValue)
+                }
+            }
+            is Array<*> -> value.flatMap {
+                val formattedValue = formatAnnotationValue(it)
+                if (formattedValue is List<*>) {
+                    formattedValue
+                } else {
+                    listOf(formattedValue)
+                }
+            }
             is TypePath -> value.toString()
             is AnnotationNode -> formatAnnotationNode(value)
-            is Type -> value.className
-            is String -> value.replace("\"", "\\\"")
+            is Type -> value.className.replace('/', '.')
+            is String -> {
+                if (value.startsWith("L") && value.endsWith(";")) {
+                    formatDescriptor(value)
+                } else {
+                    value
+                }
+            }
             is ByteArray -> value.toList()
             is CharArray -> value.map { it.toString() }
             is ShortArray -> value.toList()
@@ -148,7 +168,7 @@ class AnnotationProcessor {
     }
 
     private fun formatAnnotationNode(annotationNode: AnnotationNode): String {
-        val sb = StringBuilder("@${annotationNode.desc}(")
+        val sb = StringBuilder("@${formatDescriptor(annotationNode.desc)}(")
         annotationNode.values?.let { values ->
             for (i in values.indices step 2) {
                 val name = values[i]
@@ -161,6 +181,10 @@ class AnnotationProcessor {
         }
         sb.append(")")
         return sb.toString()
+    }
+
+    private fun formatDescriptor(descriptor: String): String {
+        return descriptor.removePrefix("L").removeSuffix(";").replace('/', '.')
     }
 
     private fun getVisibility(access: Int): Visibility {
