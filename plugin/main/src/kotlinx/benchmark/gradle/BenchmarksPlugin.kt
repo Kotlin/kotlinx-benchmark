@@ -30,8 +30,6 @@ constructor(
         const val ASSEMBLE_BENCHMARKS_TASKNAME = "assembleBenchmarks"
 
         //region Internal constants
-        // Note that despite the @InternalApi annotation, `const val`s are still present in the API Dump
-        // https://github.com/Kotlin/binary-compatibility-validator/issues/90
         @KotlinxBenchmarkPluginInternalApi
         const val BENCHMARK_GENERATE_SUFFIX = "BenchmarkGenerate"
 
