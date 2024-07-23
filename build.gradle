@@ -58,6 +58,10 @@ tasks.register("apiDump") {
     it.dependsOn(gradle.includedBuild("plugin").task(":apiDump"))
 }
 
+tasks.register("apiCheck") {
+    it.dependsOn(gradle.includedBuild("plugin").task(":apiCheck"))
+}
+
 afterEvaluate {
     gradle.includedBuilds.forEach { included ->
         project(":kotlinx-benchmark-runtime").tasks.named("publishToMavenLocal") { dependsOn(included.task(":publishToMavenLocal")) }
@@ -110,4 +114,5 @@ tasks.register("checkReadme", CheckReadmeTask) {
 
 tasks.check {
     dependsOn(tasks.named("checkReadme"))
+    dependsOn(tasks.named("apiCheck"))
 }
