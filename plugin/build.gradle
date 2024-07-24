@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapperKt
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 
 buildscript {
@@ -15,10 +16,16 @@ buildscript {
 
     dependencies {
         classpath(libs.kotlinx.teamInfraGradlePlugin)
-        // Note: unlike the root project, don't override KGP version in this project.
-        // Gradle plugins should only use the embedded-kotlin version.
-        // kotlinx-benchmark uses an external KGP the moment... but that should be fixed
-        // https://github.com/Kotlin/kotlinx-benchmark/issues/244
+
+        String kotlinVersion = providers.gradleProperty("kotlin_version").orNull
+        if (kotlinVersion != null && !kotlinVersion.isBlank()) {
+            // In addition to overriding the Kotlin version in the Version Catalog,
+            // also enforce the KGP version using a dependency constraint.
+            // Constraints are stricter than Version Catalog.
+            constraints {
+                classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+            }
+        }
     }
 }
 
@@ -43,7 +50,20 @@ infra {
     }
 }
 
-logger.info("Using Kotlin ${libs.versions.kotlin.get()} for project ${project.name}")
+String currentKgpVersion = KotlinPluginWrapperKt.getKotlinPluginVersion(project)
+logger.info("Using Kotlin Gradle Plugin ${currentKgpVersion} for project ${project.name}")
+
+String kotlinVersionOverride = providers.gradleProperty("kotlin_version").getOrNull()
+
+if (kotlinVersionOverride != null) {
+    String versionCatalogKotlinVersion = libs.versions.kotlin.get()
+    if (kotlinVersionOverride != versionCatalogKotlinVersion) {
+        throw new IllegalStateException("Kotlin version in Version Catalog was not overridden. Expected:$kotlinVersionOverride, actual:$versionCatalogKotlinVersion.")
+    }
+    if (kotlinVersionOverride != currentKgpVersion) {
+        throw new IllegalStateException("Kotlin Gradle Plugin version was not overridden. Expected:$kotlinVersionOverride, actual:$currentKgpVersion.")
+    }
+}
 
 repositories {
     mavenCentral()
