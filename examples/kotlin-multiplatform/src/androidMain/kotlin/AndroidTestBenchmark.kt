@@ -4,6 +4,8 @@ import kotlinx.benchmark.*
 import kotlin.math.*
 
 @State(Scope.Benchmark)
+@Warmup(iterations = 3, time = 1, timeUnit = BenchmarkTimeUnit.SECONDS)
+@Measurement(iterations = 3, time = 1, timeUnit = BenchmarkTimeUnit.SECONDS)
 class AndroidTestBenchmark {
     private var data = 0.0
 

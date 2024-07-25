@@ -81,6 +81,7 @@ private fun addBenchmarkMethods(typeSpecBuilder: TypeSpec.Builder, descriptor: C
                 method.annotations.any { it.name == "kotlinx.benchmark.Setup" || it.name == "kotlinx.benchmark.TearDown" } -> {
                     generateNonMeasurableMethod(descriptor, method, propertyName, typeSpecBuilder)
                 }
+
                 else -> {
                     generateMeasurableMethod(descriptor, method, propertyName, typeSpecBuilder)
                 }
@@ -95,8 +96,12 @@ private fun generateMeasurableMethod(
     typeSpecBuilder: TypeSpec.Builder
 ) {
 
-    val measurementAnnotation = descriptor.annotations.find { it.name == "kotlinx.benchmark.Measurement" }
-    val iterations = measurementAnnotation?.parameters?.get("iterations") as? Int ?: 5
+    val measurementIterations = descriptor.annotations
+        .find { it.name == "kotlinx.benchmark.Measurement" }
+        ?.parameters?.get("iterations") as? Int ?: 5
+    val warmupIterations = descriptor.annotations
+        .find { it.name == "kotlinx.benchmark.Warmup" }
+        ?.parameters?.get("iterations") as? Int ?: 5
 
     val methodSpecBuilder = FunSpec.builder("benchmark_${descriptor.name}_${method.name}")
         .addAnnotation(ClassName("org.junit", "Test"))
@@ -106,7 +111,10 @@ private fun generateMeasurableMethod(
                 .build()
         )
         // TODO: Add warmupCount and repeatCount parameters
-        .addStatement("val state = %T(warmupCount = 5, repeatCount = $iterations)", ClassName("androidx.benchmark", "BenchmarkState"))
+        .addStatement(
+            "val state = %T(warmupCount = $warmupIterations, repeatCount = $measurementIterations)",
+            ClassName("androidx.benchmark", "BenchmarkState")
+        )
         .beginControlFlow("while (state.keepRunning())")
         .addStatement("$propertyName.${method.name}()")
         .endControlFlow()
@@ -126,6 +134,7 @@ private fun generateNonMeasurableMethod(
                 .addStatement("$propertyName.${method.name}()")
             typeSpecBuilder.addFunction(methodSpecBuilder.build())
         }
+
         "kotlinx.benchmark.TearDown" -> {
             val methodSpecBuilder = FunSpec.builder("benchmark_${descriptor.name}_tearDown")
                 .addAnnotation(ClassName("org.junit", "After"))
@@ -152,10 +161,12 @@ private fun updateAndroidDependencies(buildGradleFile: File, dependencies: List<
                 val updatedAndroidBlockContent = if (androidBlockContent.contains("dependencies {")) {
                     val dependenciesBlockStart = androidBlockContent.indexOf("dependencies {")
                     val dependenciesBlockEnd = androidBlockContent.indexOf("}", dependenciesBlockStart) + 1
-                    val dependenciesBlockContent = androidBlockContent.substring(dependenciesBlockStart, dependenciesBlockEnd)
+                    val dependenciesBlockContent =
+                        androidBlockContent.substring(dependenciesBlockStart, dependenciesBlockEnd)
 
                     val newDependenciesString = newDependencies.joinToString("\n        ") { (dependency, version) ->
-                        version?.let { """androidTestImplementation("$dependency:$version")""" } ?: """androidTestImplementation(files("$dependency"))"""
+                        version?.let { """androidTestImplementation("$dependency:$version")""" }
+                            ?: """androidTestImplementation(files("$dependency"))"""
                     }
                     androidBlockContent.replace(
                         dependenciesBlockContent,
@@ -166,12 +177,14 @@ private fun updateAndroidDependencies(buildGradleFile: File, dependencies: List<
                     )
                 } else {
                     val newDependenciesString = newDependencies.joinToString("\n        ") { (dependency, version) ->
-                        version?.let { """androidTestImplementation("$dependency:$version")""" } ?: """androidTestImplementation(files("$dependency"))"""
+                        version?.let { """androidTestImplementation("$dependency:$version")""" }
+                            ?: """androidTestImplementation(files("$dependency"))"""
                     }
                     androidBlockContent.replace("{", "{\n    dependencies {\n        $newDependenciesString\n    }\n")
                 }
 
-                val updatedBuildGradleContent = buildGradleContent.replace(androidBlockContent, updatedAndroidBlockContent)
+                val updatedBuildGradleContent =
+                    buildGradleContent.replace(androidBlockContent, updatedAndroidBlockContent)
                 buildGradleFile.writeText(updatedBuildGradleContent)
             }
         }
