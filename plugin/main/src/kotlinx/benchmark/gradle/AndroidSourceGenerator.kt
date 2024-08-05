@@ -12,7 +12,7 @@ fun Project.generateBenchmarkSourceFiles(
 ) {
 
     // TODO: Path needs to generate files
-    val targetPath = "E:/Android/AndroidProjects/kotlin-qualification-task/microbenchmark"
+    val targetPath = "/Users/abduqodiri.qurbonzoda_1/AndroidStudioProjects/kotlin-qualification-task/microbenchmark"
     val androidTestDir = File(targetPath).resolve("src/androidTest/kotlin")
     if (!androidTestDir.exists()) {
         androidTestDir.mkdirs()
