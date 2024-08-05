@@ -72,7 +72,12 @@ fun Project.createAndroidBenchmarkExecTask(target: KotlinJvmAndroidCompilation, 
                     .redirectError(ProcessBuilder.Redirect.PIPE)
                     .start()
 
-                val outputGobbler = StreamGobbler(process.inputStream) { println(it) }
+                val outputGobbler = StreamGobbler(process.inputStream) { line ->
+                    if (line.contains("Iteration") || line.contains("run finished")) {
+                        println(line)
+                    }
+                }
+
                 val errorGobbler = StreamGobbler(process.errorStream) { System.err.println(it) }
 
                 outputGobbler.start()
