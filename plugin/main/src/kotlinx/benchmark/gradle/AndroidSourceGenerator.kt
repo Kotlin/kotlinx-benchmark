@@ -4,6 +4,7 @@ import com.squareup.kotlinpoet.*
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
 import java.io.File
+import java.util.*
 
 @KotlinxBenchmarkPluginInternalApi
 fun Project.generateBenchmarkSourceFiles(
@@ -61,7 +62,7 @@ private fun generateDescriptorFile(descriptor: ClassAnnotationsDescriptor, andro
 
 private fun addBenchmarkMethods(typeSpecBuilder: TypeSpec.Builder, descriptor: ClassAnnotationsDescriptor) {
     val className = "${descriptor.packageName}.${descriptor.name}"
-    val propertyName = descriptor.name.decapitalize()
+    val propertyName = descriptor.name.decapitalize(Locale.getDefault())
 
     typeSpecBuilder.addProperty(
         PropertySpec.builder(propertyName, ClassName.bestGuess(className))
@@ -81,7 +82,6 @@ private fun addBenchmarkMethods(typeSpecBuilder: TypeSpec.Builder, descriptor: C
                 method.annotations.any { it.name == "kotlinx.benchmark.Setup" || it.name == "kotlinx.benchmark.TearDown" } -> {
                     generateNonMeasurableMethod(descriptor, method, propertyName, typeSpecBuilder)
                 }
-
                 else -> {
                     generateMeasurableMethod(descriptor, method, propertyName, typeSpecBuilder)
                 }
@@ -95,7 +95,6 @@ private fun generateMeasurableMethod(
     propertyName: String,
     typeSpecBuilder: TypeSpec.Builder
 ) {
-
     val measurementIterations = descriptor.annotations
         .find { it.name == "kotlinx.benchmark.Measurement" }
         ?.parameters?.get("iterations") as? Int ?: 5
@@ -117,6 +116,10 @@ private fun generateMeasurableMethod(
         )
         .beginControlFlow("while (state.keepRunning())")
         .addStatement("$propertyName.${method.name}()")
+        .endControlFlow()
+        .addStatement("val measurementResult = state.getMeasurementTimeNs()")
+        .beginControlFlow("measurementResult.forEachIndexed { index, time ->")
+        .addStatement("println(\"Iteration \${index + 1}: \$time ns\")")
         .endControlFlow()
     typeSpecBuilder.addFunction(methodSpecBuilder.build())
 }
