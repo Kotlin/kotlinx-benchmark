@@ -1,33 +1,21 @@
 package kotlinx.benchmark.gradle
 
-import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmAndroidCompilation
 import java.io.File
 import java.util.jar.JarFile
 
-@KotlinxBenchmarkPluginInternalApi
-fun Project.unpackAndProcessAar(
-    target: KotlinJvmAndroidCompilation,
-    onProcessed: (List<ClassAnnotationsDescriptor>) -> Unit
-) {
-    println("Unpacking AAR file for ${target.name}")
-    val aarFile = getAarFile(target)
-    if (aarFile.exists()) {
-        val unpackedDir = unpackAarFile(aarFile, target)
-        processClassesJar(unpackedDir, target, onProcessed)
-    } else {
-        println("AAR file not found")
-    }
+internal fun Project.getAarFile(compilation: KotlinJvmAndroidCompilation): File {
+    return File("${project.projectDir}/build/outputs/aar/${project.name}-${compilation.name}.aar")
 }
 
-private fun Project.getAarFile(target: KotlinJvmAndroidCompilation): File {
-    return File("${project.projectDir}/build/outputs/aar/${project.name}-${target.name}.aar")
+internal fun Project.getUnpackAarDir(compilation: KotlinJvmAndroidCompilation): File {
+    return File("${project.projectDir}/build/outputs/unpacked-aar/${compilation.name}")
 }
 
-private fun Project.unpackAarFile(aarFile: File, target: KotlinJvmAndroidCompilation): File {
-    val unpackedDir = File("${project.projectDir}/build/outputs/unpacked-aar/${target.name}")
-    project.copy {
+internal fun Project.unpackAarFile(aarFile: File, compilation: KotlinJvmAndroidCompilation): File {
+    val unpackedDir = getUnpackAarDir(compilation)
+    project.sync {
         it.from(project.zipTree(aarFile))
         it.into(unpackedDir)
     }
@@ -43,13 +31,13 @@ private fun Project.unpackAarFile(aarFile: File, target: KotlinJvmAndroidCompila
     return unpackedDir
 }
 
-private fun Project.processClassesJar(
+internal fun processClassesJar(
     unpackedDir: File,
-    target: KotlinJvmAndroidCompilation,
+    compilation: KotlinJvmAndroidCompilation,
     onProcessed: (List<ClassAnnotationsDescriptor>) -> Unit) {
     val classesJar = File(unpackedDir, "classes.jar")
     if (classesJar.exists()) {
-        println("Processing classes.jar for ${target.name}")
+        println("Processing classes.jar for ${compilation.name}")
         val jar = JarFile(classesJar)
         val annotationProcessor = AnnotationProcessor()
         annotationProcessor.processJarFile(jar)
