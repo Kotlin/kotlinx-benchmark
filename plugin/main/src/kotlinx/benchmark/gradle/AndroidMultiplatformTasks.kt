@@ -1,35 +1,108 @@
 package kotlinx.benchmark.gradle
 
-import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
-import org.gradle.api.tasks.TaskProvider
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmAndroidCompilation
 import java.io.InputStream
 import java.util.*
 import java.util.concurrent.TimeUnit
 
+private const val GENERATED_ANDROID_PROJECT_NAME = "GeneratedAndroidProject"
 
-@KotlinxBenchmarkPluginInternalApi
-fun Project.processAndroidCompilation(target: KotlinJvmAndroidCompilation) {
-    project.logger.info("Configuring benchmarks for '${target.name}' using Kotlin/Android")
-    println("processAndroidCompilation: ${target.name}")
-    val compilation = target.target.compilations.names.let(::println)
+internal fun Project.processAndroidCompilation(target: AndroidBenchmarkTarget, compilation: KotlinJvmAndroidCompilation) {
+    project.logger.info("Configuring benchmarks for '${compilation.name}' using $target")
 
-    val generateSourcesTask = tasks.register("processAndroid${target.name.capitalize(Locale.getDefault())}Compilation", DefaultTask::class.java) {
-        it.group = "benchmark"
-        it.description = "Processes the Android compilation '${target.name}' for benchmarks"
-        it.dependsOn("bundle${target.name.capitalize(Locale.getDefault())}Aar")
-        it.doLast {
-            unpackAndProcessAar(target) { classDescriptors ->
-                generateBenchmarkSourceFiles(classDescriptors)
+    createUnpackAarTask(target, compilation)
+    createSetupAndroidProjectTask(target, compilation)
+    createAndroidBenchmarkGenerateSourceTask(target, compilation)
+    createAndroidBenchmarkExecTask(target, compilation)
+}
+
+private fun Project.androidBenchmarkBuildDir(target: AndroidBenchmarkTarget, compilation: KotlinJvmAndroidCompilation) =
+    benchmarkBuildDir(target).resolve(compilation.name)
+
+private fun Project.generatedAndroidProjectDir(target: AndroidBenchmarkTarget, compilation: KotlinJvmAndroidCompilation) =
+    androidBenchmarkBuildDir(target, compilation).resolve(GENERATED_ANDROID_PROJECT_NAME)
+
+private fun Project.createSetupAndroidProjectTask(target: AndroidBenchmarkTarget, compilation: KotlinJvmAndroidCompilation) {
+    task<DefaultTask>("setup${compilation.name.capitalize()}AndroidProject") {
+        group = "benchmark"
+        description = "Sets up an empty android project to generate benchmarks into"
+
+        doFirst {
+            sync {
+                it.apply {
+                    val pluginJarPath = BenchmarksPlugin::class.java.protectionDomain.codeSource.location.path
+                    from(project.zipTree(pluginJarPath))
+                    into(androidBenchmarkBuildDir(target, compilation))
+                    include("$GENERATED_ANDROID_PROJECT_NAME/**")
+                }
+            }
+        }
+        doLast {
+            val generatedAndroidProjectDir = generatedAndroidProjectDir(target, compilation)
+            logger.info("Setting up an empty Android project at $generatedAndroidProjectDir")
+
+            generatedAndroidProjectDir.resolve("microbenchmark/build.gradle.kts").let {
+                val unpackedDir = getUnpackAarDir(compilation)
+                val newText = it.readText().replace(
+                    "<<BENCHMARK_CLASSES_JAR_PATH>>",
+                    unpackedDir.resolve("classes.jar").absolutePath
+                )
+                it.writeText(newText)
             }
         }
     }
-
-    createAndroidBenchmarkExecTask(target, generateSourcesTask)
 }
 
-fun Project.detectAndroidDevice() {
+private fun Project.createUnpackAarTask(target: AndroidBenchmarkTarget, compilation: KotlinJvmAndroidCompilation) {
+    // TODO: capitalize(Locale.ROOT) everywhere in the project. For toLower/UpperCase() as well.
+    task<DefaultTask>("unpack${compilation.name.capitalize()}Aar") {
+        group = "benchmark"
+        description = "Unpacks the AAR file produced by ${target.name} compilation '${compilation.name}'"
+        dependsOn("bundle${compilation.name.capitalize()}Aar")
+        doLast {
+            logger.info("Unpacking AAR file produced by ${target.name} compilation '${compilation.name}'")
+
+            val aarFile = getAarFile(compilation)
+
+            if (!aarFile.exists()) {
+                throw IllegalStateException("AAR file not found: ${aarFile.absolutePath}")
+            }
+
+            // TODO: Register the unpacked dir as an output of this task
+            // TODO: Delete the directory if exists before unpacking
+            unpackAarFile(aarFile, compilation)
+        }
+    }
+}
+
+private fun generateSourcesTaskName(target: AndroidBenchmarkTarget, compilation: KotlinJvmAndroidCompilation): String {
+    return "${target.name}${compilation.name.capitalize()}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}"
+}
+
+private fun Project.createAndroidBenchmarkGenerateSourceTask(target: AndroidBenchmarkTarget, compilation: KotlinJvmAndroidCompilation) {
+    task<DefaultTask>(generateSourcesTaskName(target, compilation)) {
+        group = "benchmark"
+        description = "Generates Android source files for ${target.name} compilation '${compilation.name}'"
+        dependsOn("unpack${compilation.name.capitalize()}Aar")
+        dependsOn("setup${compilation.name.capitalize()}AndroidProject")
+
+        doLast {
+
+            val unpackedDir = getUnpackAarDir(compilation)
+            processClassesJar(unpackedDir, compilation) { classDescriptors ->
+                val targetDir = generatedAndroidProjectDir(target, compilation)
+                    .resolve("microbenchmark/src/androidTest/kotlin")
+
+                check(targetDir.exists())
+
+                generateBenchmarkSourceFiles(targetDir, classDescriptors)
+            }
+        }
+    }
+}
+
+private fun detectAndroidDevice() {
     println("Detect running Android devices...")
     val devices = ProcessBuilder("adb", "devices")
         .start()
@@ -48,16 +121,16 @@ fun Project.detectAndroidDevice() {
 
 
 // Use shell command to execute separate project gradle task
-fun Project.createAndroidBenchmarkExecTask(target: KotlinJvmAndroidCompilation, generateSourcesTask: TaskProvider<*>) {
-    tasks.register("android${target.name.capitalize(Locale.getDefault())}Benchmark", DefaultTask::class.java) {
-        it.group = "benchmark"
-        it.description = "Processes the Android compilation '${target.name}' for benchmarks"
-        it.dependsOn(generateSourcesTask)
-        it.doLast {
+private fun Project.createAndroidBenchmarkExecTask(target: AndroidBenchmarkTarget, compilation: KotlinJvmAndroidCompilation) {
+    task<DefaultTask>("android${compilation.name.capitalize()}Benchmark") {
+        group = "benchmark"
+        description = "Executes benchmarks for ${target.name} compilation '${compilation.name}'"
+        dependsOn(generateSourcesTaskName(target, compilation))
+        doLast {
             detectAndroidDevice()
 
             // TODO: Project path needs to execute benchmark task
-            val executeBenchmarkPath = "/Users/abduqodiri.qurbonzoda_1/AndroidStudioProjects/kotlin-qualification-task"
+            val executeBenchmarkPath = generatedAndroidProjectDir(target, compilation).path
             // Using ./gradlew on Windows shows error:
             // CreateProcess error=193, %1 is not a valid Win32 application
             val osName = System.getProperty("os.name").toLowerCase(Locale.ROOT)
@@ -92,7 +165,7 @@ fun Project.createAndroidBenchmarkExecTask(target: KotlinJvmAndroidCompilation, 
     }
 }
 
-class StreamGobbler(private val inputStream: InputStream, private val consumer: (String) -> Unit) : Thread() {
+private class StreamGobbler(private val inputStream: InputStream, private val consumer: (String) -> Unit) : Thread() {
     override fun run() {
         inputStream.bufferedReader().lines().forEach(consumer)
     }

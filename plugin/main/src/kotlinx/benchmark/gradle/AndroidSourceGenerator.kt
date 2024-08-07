@@ -1,35 +1,15 @@
 package kotlinx.benchmark.gradle
 
 import com.squareup.kotlinpoet.*
-import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
-import org.gradle.api.*
 import java.io.File
 
-@KotlinxBenchmarkPluginInternalApi
-fun Project.generateBenchmarkSourceFiles(
+internal fun generateBenchmarkSourceFiles(
+    targetDir: File,
     classDescriptors: List<ClassAnnotationsDescriptor>,
 ) {
-
-    // TODO: Path needs to generate files
-    val targetPath = "/Users/abduqodiri.qurbonzoda_1/AndroidStudioProjects/kotlin-qualification-task/microbenchmark"
-    val androidTestDir = File(targetPath).resolve("src/androidTest/kotlin")
-    if (!androidTestDir.exists()) {
-        androidTestDir.mkdirs()
-    }
-
-    val buildGradleFile = File(targetPath).resolve("build.gradle.kts")
-    val dependencyPaths = listOf(
-        "${project.projectDir}/build/outputs/unpacked-aar/release/classes.jar".replace("\\", "/") to null,
-        "androidx.benchmark:benchmark-junit4" to "1.2.4",
-        "androidx.test.ext:junit-ktx" to "1.2.1",
-        "junit:junit" to "4.13.2"
-    )
-
-    updateAndroidDependencies(buildGradleFile, dependencyPaths)
-
     classDescriptors.forEach { descriptor ->
         if (descriptor.visibility == Visibility.PUBLIC && !descriptor.isAbstract) {
-            generateDescriptorFile(descriptor, androidTestDir)
+            generateDescriptorFile(descriptor, targetDir)
         }
     }
 }
