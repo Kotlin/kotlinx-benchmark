@@ -3,6 +3,7 @@ package kotlinx.benchmark.gradle
 import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmAndroidCompilation
 import java.io.InputStream
+import java.net.URLDecoder
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -24,7 +25,7 @@ private fun Project.generatedAndroidProjectDir(target: AndroidBenchmarkTarget, c
     androidBenchmarkBuildDir(target, compilation).resolve(GENERATED_ANDROID_PROJECT_NAME)
 
 private fun Project.createSetupAndroidProjectTask(target: AndroidBenchmarkTarget, compilation: KotlinJvmAndroidCompilation) {
-    task<DefaultTask>("setup${compilation.name.capitalize()}AndroidProject") {
+    task<DefaultTask>("setup${compilation.name.capitalize(Locale.ROOT)}AndroidProject") {
         group = "benchmark"
         description = "Sets up an empty android project to generate benchmarks into"
 
@@ -32,7 +33,7 @@ private fun Project.createSetupAndroidProjectTask(target: AndroidBenchmarkTarget
             sync {
                 it.apply {
                     val pluginJarPath = BenchmarksPlugin::class.java.protectionDomain.codeSource.location.path
-                    from(project.zipTree(pluginJarPath))
+                    from(project.zipTree(URLDecoder.decode(pluginJarPath, "UTF-8")))
                     into(androidBenchmarkBuildDir(target, compilation))
                     include("$GENERATED_ANDROID_PROJECT_NAME/**")
                 }
@@ -55,11 +56,10 @@ private fun Project.createSetupAndroidProjectTask(target: AndroidBenchmarkTarget
 }
 
 private fun Project.createUnpackAarTask(target: AndroidBenchmarkTarget, compilation: KotlinJvmAndroidCompilation) {
-    // TODO: capitalize(Locale.ROOT) everywhere in the project. For toLower/UpperCase() as well.
-    task<DefaultTask>("unpack${compilation.name.capitalize()}Aar") {
+    task<DefaultTask>("unpack${compilation.name.capitalize(Locale.ROOT)}Aar") {
         group = "benchmark"
         description = "Unpacks the AAR file produced by ${target.name} compilation '${compilation.name}'"
-        dependsOn("bundle${compilation.name.capitalize()}Aar")
+        dependsOn("bundle${compilation.name.capitalize(Locale.ROOT)}Aar")
         doLast {
             logger.info("Unpacking AAR file produced by ${target.name} compilation '${compilation.name}'")
 
@@ -77,15 +77,15 @@ private fun Project.createUnpackAarTask(target: AndroidBenchmarkTarget, compilat
 }
 
 private fun generateSourcesTaskName(target: AndroidBenchmarkTarget, compilation: KotlinJvmAndroidCompilation): String {
-    return "${target.name}${compilation.name.capitalize()}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}"
+    return "${target.name}${compilation.name.capitalize(Locale.ROOT)}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}"
 }
 
 private fun Project.createAndroidBenchmarkGenerateSourceTask(target: AndroidBenchmarkTarget, compilation: KotlinJvmAndroidCompilation) {
     task<DefaultTask>(generateSourcesTaskName(target, compilation)) {
         group = "benchmark"
         description = "Generates Android source files for ${target.name} compilation '${compilation.name}'"
-        dependsOn("unpack${compilation.name.capitalize()}Aar")
-        dependsOn("setup${compilation.name.capitalize()}AndroidProject")
+        dependsOn("unpack${compilation.name.capitalize(Locale.ROOT)}Aar")
+        dependsOn("setup${compilation.name.capitalize(Locale.ROOT)}AndroidProject")
 
         doLast {
 
@@ -94,7 +94,7 @@ private fun Project.createAndroidBenchmarkGenerateSourceTask(target: AndroidBenc
                 val targetDir = generatedAndroidProjectDir(target, compilation)
                     .resolve("microbenchmark/src/androidTest/kotlin")
 
-                check(targetDir.exists())
+                targetDir.mkdirs()
 
                 generateBenchmarkSourceFiles(targetDir, classDescriptors)
             }
@@ -122,7 +122,7 @@ private fun detectAndroidDevice() {
 
 // Use shell command to execute separate project gradle task
 private fun Project.createAndroidBenchmarkExecTask(target: AndroidBenchmarkTarget, compilation: KotlinJvmAndroidCompilation) {
-    task<DefaultTask>("android${compilation.name.capitalize()}Benchmark") {
+    task<DefaultTask>("android${compilation.name.capitalize(Locale.ROOT)}Benchmark") {
         group = "benchmark"
         description = "Executes benchmarks for ${target.name} compilation '${compilation.name}'"
         dependsOn(generateSourcesTaskName(target, compilation))
