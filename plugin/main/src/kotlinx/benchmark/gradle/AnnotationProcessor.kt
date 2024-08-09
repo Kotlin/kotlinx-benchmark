@@ -2,6 +2,7 @@ package kotlinx.benchmark.gradle
 
 import org.jetbrains.org.objectweb.asm.*
 import org.jetbrains.org.objectweb.asm.tree.*
+import java.util.*
 import java.util.jar.*
 
 data class AnnotationData(
@@ -197,8 +198,8 @@ class AnnotationProcessor {
     }
 
     private fun getFieldVisibility(classNode: ClassNode, fieldNode: FieldNode): Visibility {
-        val getterName = "get${fieldNode.name.capitalize()}"
-        val setterName = "set${fieldNode.name.capitalize()}"
+        val getterName = "get${fieldNode.name.capitalize(Locale.ROOT)}"
+        val setterName = "set${fieldNode.name.capitalize(Locale.ROOT)}"
 
         val getterMethod = classNode.methods.find { it.name == getterName }
         val setterMethod = classNode.methods.find { it.name == setterName }

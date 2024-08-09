@@ -2,6 +2,7 @@ package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
+import java.util.*
 
 @KotlinxBenchmarkPluginInternalApi
 fun Project.processJavaSourceSet(target: JavaBenchmarkTarget) {
@@ -43,7 +44,7 @@ private fun Project.configureJmhDependency(target: JavaBenchmarkTarget) {
     val dependencyConfiguration = if (target.name == "main")
         configurationRoot
     else
-        "${target.name}${configurationRoot.capitalize()}"
+        "${target.name}${configurationRoot.capitalize(Locale.ROOT)}"
 
     dependencies.add(dependencyConfiguration, jmhCore)
 }
