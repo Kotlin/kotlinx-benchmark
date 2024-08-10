@@ -64,37 +64,54 @@ class AnnotationProcessor {
             ?.map { parseAnnotation(it) }
             ?: emptyList()
 
-        val methodDescriptors = classNode.methods
+        val methodAnnotationsMap: Map<String, List<AnnotationData>> = classNode.methods
             .filterNot { it.name == "<init>" }
+            .filter { methodNode ->
+                methodNode.name.matches(Regex("^get[A-Z].*\\\$annotations\$")) &&
+                        methodNode.visibleAnnotations?.isNotEmpty() == true
+            }
+            .associate { methodNode ->
+                val fieldName = methodNode.name
+                    .removePrefix("get")
+                    .removeSuffix("\$annotations")
+                    .decapitalize(Locale.ROOT)
+
+                val methodAnnotations = methodNode.visibleAnnotations
+                    ?.filter { it.desc != "Lkotlin/Metadata;" }
+                    ?.map { parseAnnotation(it) }
+                    ?: emptyList()
+
+                fieldName to methodAnnotations
+            }
+
+        val methodDescriptors = classNode.methods
             .filter { methodNode ->
                 methodNode.visibleAnnotations?.any { it.desc != "Lkotlin/Metadata;" } == true
             }
+            .filterNot { it.name == "<init>" }
+            .filterNot { it.name.matches(Regex("^get[A-Z].*\\\$annotations\$")) }
             .map { methodNode ->
                 val methodAnnotations = methodNode.visibleAnnotations
                     ?.filter { it.desc != "Lkotlin/Metadata;" }
                     ?.map { parseAnnotation(it) }
                     ?: emptyList()
                 val parameters = Type.getArgumentTypes(methodNode.desc).map { it.className }
-//                println("Method: ${methodNode.name}, Annotations: $methodAnnotations, Parameters: $parameters")
-//                methodAnnotations.forEach { annotation ->
-//                    println("Annotation: ${annotation.name}")
-//                    annotation.parameters.forEach { (key, value) ->
-//                        println("  $key: $value")
-//                    }
-//                }
                 MethodAnnotationsDescriptor(
                     methodNode.name,
                     getVisibility(methodNode.access),
                     methodAnnotations,
-                    parameters)
+                    parameters
+                )
             }
 
         val fieldDescriptors = classNode.fields.map { fieldNode ->
-            val fieldAnnotations = fieldNode.visibleAnnotations
-                ?.filter { it.desc != "Lkotlin/Metadata;" }
-                ?.map { parseAnnotation(it) }
-                ?: emptyList()
-            FieldAnnotationsDescriptor(fieldNode.name, getFieldVisibility(classNode, fieldNode), fieldAnnotations)
+            val fieldAnnotations = methodAnnotationsMap.getOrDefault(fieldNode.name, emptyList())
+
+            FieldAnnotationsDescriptor(
+                fieldNode.name,
+                getFieldVisibility(classNode, fieldNode),
+                fieldAnnotations
+            )
         }
 
         val packageName = classNode.name.substringBeforeLast('/', "").replace('/', '.')
@@ -112,7 +129,10 @@ class AnnotationProcessor {
         classAnnotationsDescriptors.add(classDescriptor)
         println("Class: ${classDescriptor.name}, Annotations: ${classDescriptor.annotations}")
         classDescriptor.methods.forEach { method ->
-            println("Method: ${method.name}, Annotations: ${method.annotations},Annotation Parameters: ${method.parameters}")
+            println("Method: ${method.name}, Annotations: ${method.annotations},Method Parameters: ${method.parameters}")
+        }
+        classDescriptor.fields.forEach { field ->
+            println("Field: ${field.name}, Visibility: ${field.visibility}, Annotations: ${field.annotations}")
         }
     }
 
