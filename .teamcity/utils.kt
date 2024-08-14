@@ -3,7 +3,7 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-import jetbrains.buildServer.configs.kotlin.v2019_2.*
+import jetbrains.buildServer.configs.kotlin.*
 
 const val versionSuffixParameter = "versionSuffix"
 const val teamcitySuffixParameter = "teamcitySuffix"
@@ -12,7 +12,7 @@ const val releaseVersionParameter = "releaseVersion"
 const val libraryStagingRepoDescription = "kotlinx-benchmark"
 
 val platforms = Platform.values()
-const val jdk = "JDK_18"
+const val jdk = "JDK_18_x64"
 
 enum class Platform {
     Windows, Linux, MacOS;
@@ -68,7 +68,6 @@ fun Project.buildType(name: String, platform: Platform, configure: BuildType.() 
     params {
         // This parameter is needed for macOS agent to be compatible
         if (platform == Platform.MacOS) param("env.JDK_17", "")
-        if (platform == Platform.MacOS) param("env.JDK_16", "")
     }
 
     commonConfigure()
