@@ -1,5 +1,8 @@
 package kotlinx.benchmark.gradle
 
+import kotlinx.benchmark.gradle.SuiteSourceGenerator.Companion.setupAnnotationFQN
+import kotlinx.benchmark.gradle.SuiteSourceGenerator.Companion.teardownAnnotationFQN
+import kotlinx.benchmark.gradle.internal.generator.RequiresKotlinCompilerEmbeddable
 import org.jetbrains.org.objectweb.asm.*
 import org.jetbrains.org.objectweb.asm.tree.*
 import java.util.*
@@ -30,7 +33,8 @@ data class MethodAnnotationsDescriptor(
 data class FieldAnnotationsDescriptor(
     val name: String,
     val visibility: Visibility,
-    val annotations: List<AnnotationData>
+    val annotations: List<AnnotationData>,
+    val type: String
 )
 
 enum class Visibility {
@@ -106,11 +110,13 @@ class AnnotationProcessor {
 
         val fieldDescriptors = classNode.fields.map { fieldNode ->
             val fieldAnnotations = methodAnnotationsMap.getOrDefault(fieldNode.name, emptyList())
+            val fieldType = Type.getType(fieldNode.desc).className
 
             FieldAnnotationsDescriptor(
                 fieldNode.name,
                 getFieldVisibility(classNode, fieldNode),
-                fieldAnnotations
+                fieldAnnotations,
+                fieldType
             )
         }
 
@@ -132,7 +138,7 @@ class AnnotationProcessor {
             println("Method: ${method.name}, Annotations: ${method.annotations},Method Parameters: ${method.parameters}")
         }
         classDescriptor.fields.forEach { field ->
-            println("Field: ${field.name}, Visibility: ${field.visibility}, Annotations: ${field.annotations}")
+            println("Field: ${field.name}, Visibility: ${field.visibility}, Annotations: ${field.annotations}, Type: ${field.type}")
         }
     }
 
@@ -248,12 +254,17 @@ class AnnotationProcessor {
     fun getClassDescriptors(): List<ClassAnnotationsDescriptor> {
         return classAnnotationsDescriptors
     }
+}
 
-    fun getMethodDescriptors(className: String): List<MethodAnnotationsDescriptor> {
-        return classAnnotationsDescriptors.find { it.name == className }?.methods ?: emptyList()
+internal fun ClassAnnotationsDescriptor.getSpecificField(annotationName: String): List<FieldAnnotationsDescriptor> {
+    return fields.filter { field ->
+        field.annotations.any { it.name == annotationName }
     }
+}
 
-    fun getFieldDescriptors(className: String): List<FieldAnnotationsDescriptor> {
-        return classAnnotationsDescriptors.find { it.name == className }?.fields ?: emptyList()
+@OptIn(RequiresKotlinCompilerEmbeddable::class)
+internal fun ClassAnnotationsDescriptor.hasSetupOrTeardownMethods(): Boolean {
+    return methods.any { method ->
+        method.annotations.any { it.name == setupAnnotationFQN || it.name == teardownAnnotationFQN }
     }
 }

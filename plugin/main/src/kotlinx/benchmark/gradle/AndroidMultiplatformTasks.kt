@@ -47,7 +47,7 @@ private fun Project.createSetupAndroidProjectTask(target: AndroidBenchmarkTarget
                 val unpackedDir = getUnpackAarDir(compilation)
                 val newText = it.readText().replace(
                     "<<BENCHMARK_CLASSES_JAR_PATH>>",
-                    unpackedDir.resolve("classes.jar").absolutePath
+                    unpackedDir.resolve("classes.jar").absolutePath.replace("\\", "/")
                 )
                 it.writeText(newText)
             }
