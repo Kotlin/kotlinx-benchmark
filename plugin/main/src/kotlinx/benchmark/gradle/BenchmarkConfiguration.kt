@@ -1,6 +1,7 @@
 package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
@@ -134,5 +135,9 @@ class AndroidBenchmarkTarget
 constructor(
     extension: BenchmarksExtension,
     name: String,
-    val target: KotlinAndroidTarget
-) : BenchmarkTarget(extension, name)
+    val target: KotlinAndroidTarget,
+) : BenchmarkTarget(extension, name) {
+    val sdkDir: Property<String> = extension.project.objects.property(String::class.java).convention(
+        System.getenv("ANDROID_HOME") ?: ""
+    )
+}
