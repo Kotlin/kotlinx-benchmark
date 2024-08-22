@@ -51,6 +51,16 @@ private fun Project.createSetupAndroidProjectTask(target: AndroidBenchmarkTarget
                 )
                 it.writeText(newText)
             }
+
+            generatedAndroidProjectDir.resolve("local.properties").let {
+                val sdkPath = target.sdkDir.orNull
+                if (sdkPath.isNullOrBlank()) {
+                    throw GradleException("Android SDK path is not set. Please set ANDROID_HOME environment variable or specify sdkPath in the build script.")
+                } else {
+                    it.writeText("sdk.dir=${sdkPath.replace("\\", "/")}\n")
+                    logger.info("SDK path written to local.properties: ${it.readText()}")
+                }
+            }
         }
     }
 }
