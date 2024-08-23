@@ -155,13 +155,8 @@ private fun Project.createAndroidBenchmarkExecTask(target: AndroidBenchmarkTarge
                     .redirectError(ProcessBuilder.Redirect.PIPE)
                     .start()
 
-                val outputGobbler = StreamGobbler(process.inputStream) { line ->
-                    if (line.contains("Iteration") || line.contains("run finished")) {
-                        println(line)
-                    }
-                }
-
-                val errorGobbler = StreamGobbler(process.errorStream) { System.err.println(it) }
+                val outputGobbler = StreamGobbler(process.inputStream) { }
+                val errorGobbler = StreamGobbler(process.errorStream) { }
 
                 outputGobbler.start()
                 errorGobbler.start()
@@ -184,14 +179,23 @@ private fun Project.createAndroidBenchmarkExecTask(target: AndroidBenchmarkTarge
 
 private fun captureLogcatOutput() {
     try {
-        val logcatProcess = ProcessBuilder("adb", "logcat", "-v", "time")
+        val logcatProcess = ProcessBuilder("adb", "logcat", "TestRunner:D", "KotlinBenchmark:D", "*:S")
             .redirectErrorStream(true)
             .start()
 
         val logcatGobbler = StreamGobbler(logcatProcess.inputStream) { line ->
             when {
+                line.contains("started") ->
+                    println(
+                        "Android: " +
+                                line.substringAfter("started: ")
+                                    .substringBefore("(")
+                                    .replace(Regex("\\[\\d+: "), "[")
+                    )
+
                 line.contains("Iteration") -> println(line.substring(line.indexOf("Iteration")))
                 line.contains("run finished") -> println(line.substring(line.indexOf("run finished")))
+                line.contains("finished") -> println()
             }
         }
 

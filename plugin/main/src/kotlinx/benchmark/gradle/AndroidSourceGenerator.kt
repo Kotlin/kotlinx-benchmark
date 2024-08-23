@@ -39,6 +39,7 @@ private fun generateDescriptorFile(descriptor: ClassAnnotationsDescriptor, andro
         .addImport("org.junit.runner", "RunWith")
         .addImport("androidx.benchmark", "BenchmarkState")
         .addImport("androidx.benchmark", "ExperimentalBenchmarkStateApi")
+        .addImport("android.util", "Log")
 
     if (descriptor.hasSetupOrTeardownMethods()) {
         fileSpecBuilder
@@ -68,18 +69,13 @@ private fun generateParameterizedDescriptorFile(descriptor: ClassAnnotationsDesc
         .addImport("androidx.benchmark", "BenchmarkState")
         .addImport("androidx.benchmark", "ExperimentalBenchmarkStateApi")
         .addImport("org.junit", "Test")
+        .addImport("android.util", "Log")
 
     if (descriptor.hasSetupOrTeardownMethods()) {
         fileSpecBuilder
             .addImport("org.junit", "Before")
             .addImport("org.junit", "After")
     }
-
-    fileSpecBuilder.addAnnotation(
-        AnnotationSpec.builder(ClassName("org.junit.runner", "RunWith"))
-            .addMember("%T::class", ClassName("org.junit.runners", "Parameterized"))
-            .build()
-    )
 
     // Generate constructor
     val constructorSpec = FunSpec.constructorBuilder()
@@ -89,6 +85,11 @@ private fun generateParameterizedDescriptorFile(descriptor: ClassAnnotationsDesc
     }
 
     val typeSpecBuilder = TypeSpec.classBuilder(descriptorName)
+        .addAnnotation(
+            AnnotationSpec.builder(ClassName("org.junit.runner", "RunWith"))
+                .addMember("%T::class", ClassName("org.junit.runners", "Parameterized"))
+                .build()
+        )
         .primaryConstructor(constructorSpec.build())
         .addProperties(paramFields.map { param ->
             PropertySpec.builder(param.name, getTypeName(param.type))
@@ -114,7 +115,7 @@ private fun generateParametersFunction(paramFields: List<FieldAnnotationsDescrip
     val dataFunctionBuilder = FunSpec.builder("data")
         .addAnnotation(JvmStatic::class)
         .returns(
-            ClassName("java.util", "Collection")
+            ClassName("kotlin.collections", "Collection")
                 .parameterizedBy(
                     ClassName("kotlin", "Array")
                         .parameterizedBy(ANY)
@@ -222,8 +223,6 @@ private fun generateCommonMeasurableMethod(
         .find { it.name == warmupAnnotationFQN }
         ?.parameters?.get("iterations") as? Int ?: 5
 
-    val methodName = "${descriptor.packageName}.${descriptor.name}.${method.name}"
-
     val methodSpecBuilder = FunSpec.builder("benchmark_${descriptor.name}_${method.name}")
         .addAnnotation(ClassName("org.junit", "Test"))
         .addAnnotation(
@@ -243,13 +242,12 @@ private fun generateCommonMeasurableMethod(
             "val state = %T(warmupCount = $warmupIterations, repeatCount = $measurementIterations)",
             ClassName("androidx.benchmark", "BenchmarkState")
         )
-        .addStatement("println(\"Android: $methodName\")")
         .beginControlFlow("while (state.keepRunning())")
         .addStatement("$propertyName.${method.name}()")
         .endControlFlow()
         .addStatement("val measurementResult = state.getMeasurementTimeNs()")
         .beginControlFlow("measurementResult.forEachIndexed { index, time ->")
-        .addStatement("println(\"Iteration \${index + 1}: \$time ns\")")
+        .addStatement("Log.d(\"KotlinBenchmark\", \"Iteration \${index + 1}: \$time ns\")")
         .endControlFlow()
 
     typeSpecBuilder.addFunction(methodSpecBuilder.build())
@@ -307,6 +305,7 @@ private fun getTypeName(type: String): TypeName {
         "char" -> Char::class.asTypeName()
         "byte" -> Byte::class.asTypeName()
         "short" -> Short::class.asTypeName()
+        "java.lang.String" -> String::class.asTypeName()
         else -> ClassName.bestGuess(type)
     }
 }
