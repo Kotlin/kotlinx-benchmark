@@ -32,7 +32,7 @@ class AnnotationsValidationTest : GradleTest() {
                 assertOutputContains(error)
             }
         } else {
-            runner.run(platformBenchmarkTask) {
+            runner.runAndSucceed(platformBenchmarkTask) {
                 assertOutputContains("BUILD SUCCESSFUL")
             }
         }
@@ -44,7 +44,7 @@ class AnnotationsValidationTest : GradleTest() {
                 assertOutputContains(jvmSpecificError)
             }
         } else {
-            runner.run("jvmBenchmark") {
+            runner.runAndSucceed("jvmBenchmark") {
                 assertOutputContains("BUILD SUCCESSFUL")
             }
         }

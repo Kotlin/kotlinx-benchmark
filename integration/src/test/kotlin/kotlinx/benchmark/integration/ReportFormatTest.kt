@@ -24,7 +24,7 @@ class ReportFormatTest : GradleTest() {
         formats.forEach { format ->
             val name = format ?: "jsonDefault"
             val ext = format ?: "json"
-            runner.run("${name}Benchmark")
+            runner.runAndSucceed("${name}Benchmark")
             val reports = reports(name)
             assertEquals(targets.size, reports.size)
             assertEquals(targets.map { "$it.$ext" }.toSet(), reports.map(File::getName).toSet())

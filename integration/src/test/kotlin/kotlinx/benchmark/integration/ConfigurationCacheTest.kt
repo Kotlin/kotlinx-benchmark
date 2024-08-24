@@ -15,18 +15,18 @@ class ConfigurationCacheTest : GradleTest() {
             }
         }
 
-        project.run(*invokedTasks.toTypedArray(), "--configuration-cache") {
+        project.runAndSucceed(*invokedTasks.toTypedArray(), "--configuration-cache") {
             assertTasksExecuted(invokedTasks + executedTasks)
             assertConfigurationCacheStored()
         }
-        project.run("clean", "--configuration-cache") {
+        project.runAndSucceed("clean", "--configuration-cache") {
             assertConfigurationCacheStored()
         }
-        project.run(*invokedTasks.toTypedArray(), "--configuration-cache") {
+        project.runAndSucceed(*invokedTasks.toTypedArray(), "--configuration-cache") {
             assertTasksExecuted(invokedTasks + executedTasks)
             assertConfigurationCacheReused()
         }
-        project.run(*invokedTasks.toTypedArray(), "--configuration-cache") {
+        project.runAndSucceed(*invokedTasks.toTypedArray(), "--configuration-cache") {
             assertTasksUpToDate(executedTasks)
             assertConfigurationCacheReused()
         }

@@ -9,7 +9,7 @@ class JvmToolchainsTest : GradleTest() {
     fun testJvmToolchainSetup() {
         val runner = project("kmp-with-toolchain", true, GradleTestVersion.v8_0) {
         }
-        runner.run("benchmark") {
+        runner.runAndSucceed("benchmark") {
             assertEquals(TaskOutcome.SUCCESS, task(":jvmBenchmark")!!.outcome)
             assertOutputDoesNotContain("<failure>")
         }
