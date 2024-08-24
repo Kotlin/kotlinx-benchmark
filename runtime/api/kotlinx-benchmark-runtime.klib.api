@@ -1,5 +1,5 @@
 // Klib ABI Dump
-// Targets: [androidNativeArm32, androidNativeArm64, androidNativeX64, androidNativeX86, iosArm64, iosSimulatorArm64, iosX64, js.jsIr, linuxArm64, linuxX64, macosArm64, macosX64, mingwX64, tvosArm64, tvosSimulatorArm64, tvosX64, wasmJs, watchosArm32, watchosArm64, watchosDeviceArm64, watchosSimulatorArm64, watchosX64]
+// Targets: [androidNativeArm32, androidNativeArm64, androidNativeX64, androidNativeX86, iosArm64, iosSimulatorArm64, iosX64, js, linuxArm64, linuxX64, macosArm64, macosX64, mingwX64, tvosArm64, tvosSimulatorArm64, tvosX64, wasmJs, watchosArm32, watchosArm64, watchosDeviceArm64, watchosSimulatorArm64, watchosX64]
 // Rendering settings:
 // - Signature version: 2
 // - Show manifest properties: true
@@ -124,9 +124,9 @@ final class kotlinx.benchmark/Blackhole { // kotlinx.benchmark/Blackhole|null[0]
     final inline fun consume(kotlin/Long) // kotlinx.benchmark/Blackhole.consume|consume(kotlin.Long){}[0]
     final inline fun consume(kotlin/Short) // kotlinx.benchmark/Blackhole.consume|consume(kotlin.Short){}[0]
 
-    // Targets: [js.jsIr, wasmJs]
+    // Targets: [js, wasmJs]
     final fun consumeAny(kotlin/Any?) // kotlinx.benchmark/Blackhole.consumeAny|consumeAny(kotlin.Any?){}[0]
 
-    // Targets: [js.jsIr, wasmJs]
+    // Targets: [js, wasmJs]
     final fun consumeInt(kotlin/Int) // kotlinx.benchmark/Blackhole.consumeInt|consumeInt(kotlin.Int){}[0]
 }

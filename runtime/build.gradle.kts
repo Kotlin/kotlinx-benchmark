@@ -41,7 +41,7 @@ kotlin {
     watchosDeviceArm64()
 
     jvm()
-    js("jsIr", IR) { nodejs() }
+    js { nodejs() }
     @OptIn(ExperimentalWasmDsl::class)
     wasm("wasmJs") { d8() }
 
@@ -91,9 +91,6 @@ kotlin {
             dependencies {
                 implementation(libs.jmh.core)
             }
-        }
-        val jsIrMain by getting {
-            dependsOn(jsMain.get())
         }
     }
 }

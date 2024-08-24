@@ -15,7 +15,7 @@ kotlin {
     jvm {
         compilations.create('benchmark') { associateWith(compilations.main) }
     }
-    js(IR) {
+    js {
         nodejs()
         compilations.create("defaultExecutor") { associateWith(compilations.main) }
         compilations.create("builtInExecutor") { associateWith(compilations.main) }
