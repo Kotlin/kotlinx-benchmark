@@ -159,7 +159,7 @@ class SuiteSourceGeneratorTest : GradleTest() {
 
     @Test
     fun generateAndCompileJSBenchmarks() {
-        generateAndCompile("jsIr")
+        generateAndCompile("js")
     }
 
     @Test

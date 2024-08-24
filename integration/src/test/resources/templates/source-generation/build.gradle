@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.konan.target.HostManager
 
 kotlin {
     jvm { }
-    js('jsIr', IR) { nodejs() }
+    js { nodejs() }
     wasm('wasmJs') { d8() }
 
     if (HostManager.hostIsLinux) linuxX64('native')
@@ -19,7 +19,7 @@ kotlin {
         }
         jvmMain {
         }
-        jsIrMain {
+        jsMain {
         }
         wasmJsMain {
         }
@@ -31,7 +31,7 @@ kotlin {
 benchmark {
     targets {
         register("jvm")
-        register("jsIr")
+        register("js")
         register("wasmJs")
         register("native")
     }
