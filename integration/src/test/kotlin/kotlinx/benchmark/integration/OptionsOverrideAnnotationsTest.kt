@@ -12,7 +12,7 @@ class OptionsOverrideAnnotationsTest : GradleTest() {
             configuration("config") {
                 setupBlock()
             }
-        }.run("nativeConfigBenchmark") {
+        }.runAndSucceed("nativeConfigBenchmark") {
             val reportText = reports("config").single().readText()
             checkBlock(reportText, output)
         }

@@ -30,7 +30,7 @@ class SupportedGradleVersionTest : GradleTest() {
     fun `when using min supported Gradle version, expect no warning`() {
         val runner = project("kotlin-multiplatform", gradleVersion = GradleTestVersion.MinSupportedGradleVersion)
 
-        runner.run(":help", "-q") {
+        runner.runAndSucceed(":help", "-q") {
             assertOutputDoesNotContain(warningMessage)
         }
     }
@@ -39,7 +39,7 @@ class SupportedGradleVersionTest : GradleTest() {
     fun `when using unsupported Gradle version, expect warning`() {
         val runner = project("kotlin-multiplatform", gradleVersion = GradleTestVersion.UnsupportedGradleVersion)
 
-        runner.run(":help", "-q") {
+        runner.runAndSucceed(":help", "-q") {
             assertOutputContains(warningMessage)
         }
     }

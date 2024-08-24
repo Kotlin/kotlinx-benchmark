@@ -21,7 +21,7 @@ class SourceSetAsBenchmarkTargetTest : GradleTest() {
                 register(jvmBenchmark) { jmhVersion = "1.21" }
             }
 
-        runner.run("${configuration}Benchmark")
+        runner.runAndSucceed("${configuration}Benchmark")
         val reports = reports(configuration)
         assertEquals(targets.size, reports.size)
         assertEquals(targets.map { "$it.json" }.toSet(), reports.map(File::getName).toSet())

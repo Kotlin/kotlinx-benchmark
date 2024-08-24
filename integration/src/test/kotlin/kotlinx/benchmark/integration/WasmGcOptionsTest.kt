@@ -10,7 +10,7 @@ class WasmGcOptionsTest : GradleTest() {
         val runner = project(
             "wasm-gc-non-experimental/wasm-nodejs", true, kotlinVersion = "1.9.24"
         )
-        runner.run("wasmJsBenchmark")
+        runner.runAndSucceed("wasmJsBenchmark")
     }
 
     @Test
@@ -20,6 +20,6 @@ class WasmGcOptionsTest : GradleTest() {
         val runner = project(
             "wasm-gc-non-experimental/wasm-d8", true, kotlinVersion = "1.9.24"
         )
-        runner.run( "wasmJsBenchmark")
+        runner.runAndSucceed( "wasmJsBenchmark")
     }
 }

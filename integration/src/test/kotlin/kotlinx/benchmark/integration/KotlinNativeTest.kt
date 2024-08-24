@@ -9,9 +9,9 @@ class KotlinNativeTest : GradleTest() {
             val target = "native"
             val capitalizedTarget = target.replaceFirstChar { it.uppercaseChar() }
 
-            runner.run(":${target}BenchmarkGenerate")
-            runner.run(":compile${capitalizedTarget}BenchmarkKotlin${capitalizedTarget}")
-            runner.run(":${capitalizedTarget}Benchmark")
+            runner.runAndSucceed(":${target}BenchmarkGenerate")
+            runner.runAndSucceed(":compile${capitalizedTarget}BenchmarkKotlin${capitalizedTarget}")
+            runner.runAndSucceed(":${capitalizedTarget}Benchmark")
         }
     }
 }

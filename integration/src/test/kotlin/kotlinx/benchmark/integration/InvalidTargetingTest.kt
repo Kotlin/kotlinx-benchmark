@@ -7,7 +7,7 @@ class InvalidTargetingTest : GradleTest() {
     @Test
     fun testWasmNodeJs() {
         val runner = project("invalid-target/wasm-nodejs", true)
-        runner.run("wasmJsBenchmark") // Successful
+        runner.runAndSucceed("wasmJsBenchmark")
     }
 
     @Test

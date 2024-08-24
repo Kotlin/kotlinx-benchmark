@@ -14,7 +14,7 @@ class SuiteSourceGeneratorTest : GradleTest() {
     private inline fun testSourceGenerator(setupBlock: Runner.() -> Unit, checkBlock: Runner.() -> Unit) {
         project("source-generation").apply {
             setupBlock()
-            run("nativeBenchmarkGenerate")
+            runAndSucceed("nativeBenchmarkGenerate")
             checkBlock()
         }
     }
@@ -169,7 +169,7 @@ class SuiteSourceGeneratorTest : GradleTest() {
 
     private fun generateAndCompile(target: String) {
         project("kotlin-multiplatform", true).let { runner ->
-            runner.run(":${target}BenchmarkGenerate")
+            runner.runAndSucceed(":${target}BenchmarkGenerate")
 
             runner.generatedDir(target, "RootBenchmark_Descriptor.kt") { descriptorFile ->
                 val text = descriptorFile.readText()
@@ -180,7 +180,7 @@ class SuiteSourceGeneratorTest : GradleTest() {
             }
 
             val capitalizedTarget = target.replaceFirstChar { it.uppercaseChar() }
-            runner.run(":compile${capitalizedTarget}BenchmarkKotlin${capitalizedTarget}")
+            runner.runAndSucceed(":compile${capitalizedTarget}BenchmarkKotlin${capitalizedTarget}")
         }
     }
 }

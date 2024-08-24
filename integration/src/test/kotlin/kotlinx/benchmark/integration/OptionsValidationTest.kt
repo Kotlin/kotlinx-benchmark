@@ -113,7 +113,7 @@ class OptionsValidationTest : GradleTest() {
                 mode = "AverageTime"
             }
         }
-        runner.run("validOptionsBenchmark") // Successful
+        runner.runAndSucceed("validOptionsBenchmark")
     }
 
     @Test
