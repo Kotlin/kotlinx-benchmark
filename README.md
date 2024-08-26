@@ -180,7 +180,7 @@ To run benchmarks in Kotlin/JVM:
     ```kotlin
     // build.gradle.kts
     plugins {
-        kotlin("plugin.allopen") version "1.9.20"
+        kotlin("plugin.allopen") version "2.0.20"
     }
 
     allOpen {
@@ -213,7 +213,7 @@ To run benchmarks in Kotlin/JVM:
     ```kotlin
     // build.gradle.kts
     plugins {
-        kotlin("plugin.allopen") version "1.9.20"
+        kotlin("plugin.allopen") version "2.0.20"
     }
 
     allOpen {

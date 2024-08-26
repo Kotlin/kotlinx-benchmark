@@ -7,6 +7,7 @@ import kotlin.native.identityHashCode
 import kotlin.random.Random
 
 @OptIn(ExperimentalStdlibApi::class)
+@Suppress("NOTHING_TO_INLINE")
 actual class Blackhole {
     @KotlinxBenchmarkRuntimeInternalApi
     @Volatile
