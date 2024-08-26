@@ -1,7 +1,7 @@
 [versions]
 
 # Note: Kotlin version can be overridden by passing `-Pkotlin_version=<version>`
-kotlin = "1.9.21"
+kotlin = "2.0.20"
 kotlinx-binaryCompatibilityValidator = "0.16.2"
 kotlinx-teamInfra = "0.4.0-dev-81"
 squareup-kotlinpoet = "1.3.0"

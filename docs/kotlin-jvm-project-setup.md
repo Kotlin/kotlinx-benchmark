@@ -114,7 +114,7 @@ To configure Kotlin/JVM and Java projects for benchmarking, follow these steps:
     ```kotlin
     // build.gradle.kts
     plugins {
-        kotlin("plugin.allopen") version "1.9.20"
+        kotlin("plugin.allopen") version "2.0.20"
     }
 
     allOpen {
@@ -129,7 +129,7 @@ To configure Kotlin/JVM and Java projects for benchmarking, follow these steps:
     ```groovy
     // build.gradle
     plugins {
-        id 'org.jetbrains.kotlin.plugin.allopen' version "1.9.20"
+        id 'org.jetbrains.kotlin.plugin.allopen' version "2.0.20"
     }
     
     allOpen {
@@ -164,7 +164,7 @@ To configure Kotlin/JVM and Java projects for benchmarking, follow these steps:
     ```kotlin
     // build.gradle.kts
     plugins {
-        kotlin("plugin.allopen") version "1.9.20"
+        kotlin("plugin.allopen") version "2.0.20"
     }
 
     allOpen {
