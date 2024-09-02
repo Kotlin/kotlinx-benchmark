@@ -100,7 +100,8 @@ abstract class NativeSourceGeneratorWorker : WorkAction<NativeSourceGeneratorWor
         parameters.outputSourcesDir.deleteRecursively()
         parameters.outputResourcesDir.deleteRecursively()
         parameters.inputClassesDirs
-            .filter { it.exists() && it.name.endsWith(KLIB_FILE_EXTENSION_WITH_DOT) }
+            // expect either a packed .klib file or non-packed klib directory
+            .filter { it.exists() && it.name.endsWith(KLIB_FILE_EXTENSION_WITH_DOT) || it.isDirectory && it.resolve("default/manifest").isFile }
             .forEach { lib ->
                 if (parameters.target.isEmpty())
                     throw Exception("nativeTarget should be specified for API generator for native targets")
