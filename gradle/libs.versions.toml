@@ -9,6 +9,7 @@ jmh = "1.21"
 gradle-pluginPublish = "0.21.0"
 
 minSupportedGradle = "7.4"
+minSupportedKotlin = "2.0.0"
 
 [libraries]
 

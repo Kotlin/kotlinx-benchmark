@@ -123,6 +123,9 @@ val generatePluginConstants by tasks.registering {
     val minSupportedGradleVersion = libs.versions.minSupportedGradle
     inputs.property("minSupportedGradleVersion", minSupportedGradleVersion)
 
+    val minSupportedKotlinVersion = libs.versions.minSupportedKotlin
+    inputs.property("minSupportedKotlinVersion", minSupportedKotlinVersion)
+
     val kotlinCompilerVersion = libs.versions.kotlin
     inputs.property("kotlinCompilerVersion", kotlinCompilerVersion)
 
@@ -133,6 +136,7 @@ val generatePluginConstants by tasks.registering {
                 |internal object BenchmarksPluginConstants {
                 |  const val BENCHMARK_PLUGIN_VERSION = "${benchmarkPluginVersion.get()}"
                 |  const val MIN_SUPPORTED_GRADLE_VERSION = "${minSupportedGradleVersion.get()}"
+                |  const val MIN_SUPPORTED_KOTLIN_VERSION = "${minSupportedKotlinVersion.get()}"
                 |  const val DEFAULT_KOTLIN_COMPILER_VERSION = "${kotlinCompilerVersion.get()}"
                 |}
                 |""".trimMargin()
