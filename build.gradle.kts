@@ -115,6 +115,7 @@ apiValidation {
 
 val checkReadme by tasks.registering(CheckReadmeTask::class) {
     minSupportedGradleVersion = libs.versions.minSupportedGradle
+    minSupportedKotlinVersion = libs.versions.minSupportedKotlin
     readme = file("README.md")
 }
 

@@ -9,6 +9,8 @@ import org.gradle.api.tasks.PathSensitivity.*
 abstract class CheckReadmeTask : DefaultTask() {
     @get:Input
     abstract val minSupportedGradleVersion: Property<String>
+    @get:Input
+    abstract val minSupportedKotlinVersion: Property<String>
 
     @get:InputFile
     @get:PathSensitive(RELATIVE)
@@ -20,23 +22,26 @@ abstract class CheckReadmeTask : DefaultTask() {
         val readmeContents = readme.readText()
 
         val minSupportedGradleVersion = minSupportedGradleVersion.get()
+        val minSupportedKotlinVersion = minSupportedKotlinVersion.get()
 
-        val matches = Regex("Gradle (?<version>[^ ]+) or newer").findAll(readmeContents).toList()
+        val matches = Regex("Kotlin (?<kotlinVersion>[^ ]+) or newer and Gradle (?<gradleVersion>[^ ]+) or newer")
+            .findAll(readmeContents).toList()
 
         require(matches.size >= 1) {
             """
-            $readme does not contain correct min supported Gradle version.
+            $readme does not contain correct min supported Kotlin and Gradle versions.
             ${matches.size} matches found.
             """.trimIndent()
         }
 
         matches.forEach { match ->
-            val version = match.groups["version"]?.value ?: error("Regex failed - could not find version")
-            require(minSupportedGradleVersion == version) {
+            val kotlinVersion = match.groups["kotlinVersion"]?.value ?: error("Regex failed - could not find kotlinVersion")
+            val gradleVersion = match.groups["gradleVersion"]?.value ?: error("Regex failed - could not find gradleVersion")
+            require(minSupportedKotlinVersion == kotlinVersion && minSupportedGradleVersion == gradleVersion) {
                 """
-                $readme does not contain correct min supported Gradle version
+                $readme does not contain correct min supported Kotlin and Gradle versions.
                 Actual:   ${match.value}
-                Expected: Gradle $minSupportedGradleVersion or newer
+                Expected: Kotlin $minSupportedKotlinVersion or newer and Gradle $minSupportedGradleVersion or newer
                 """.trimIndent()
             }
         }

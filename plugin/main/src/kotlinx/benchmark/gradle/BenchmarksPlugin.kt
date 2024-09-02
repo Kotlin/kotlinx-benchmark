@@ -4,6 +4,7 @@ import kotlinx.benchmark.gradle.internal.BenchmarkDependencies
 import kotlinx.benchmark.gradle.internal.BenchmarksPluginConstants
 import kotlinx.benchmark.gradle.internal.BenchmarksPluginConstants.DEFAULT_KOTLIN_COMPILER_VERSION
 import kotlinx.benchmark.gradle.internal.BenchmarksPluginConstants.MIN_SUPPORTED_GRADLE_VERSION
+import kotlinx.benchmark.gradle.internal.BenchmarksPluginConstants.MIN_SUPPORTED_KOTLIN_VERSION
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
 import org.gradle.api.provider.*
@@ -64,8 +65,8 @@ constructor(
 
         plugins.withType(org.jetbrains.kotlin.gradle.plugin.KotlinBasePlugin::class.java) { kotlinPlugin ->
             logger.info("Detected Kotlin plugin version '${kotlinPlugin.pluginVersion}'")
-            if (!getKotlinVersion(kotlinPlugin.pluginVersion).isAtLeast(1, 9, 20)) {
-                logger.error("JetBrains Gradle Benchmarks plugin requires Kotlin version 1.9.20 or higher")
+            if (getKotlinVersion(kotlinPlugin.pluginVersion) < getKotlinVersion(MIN_SUPPORTED_KOTLIN_VERSION)) {
+                logger.error("JetBrains Gradle Benchmarks plugin requires Kotlin version $MIN_SUPPORTED_KOTLIN_VERSION or higher")
             }
             extension.kotlinCompilerVersion.set(kotlinPlugin.pluginVersion)
         }

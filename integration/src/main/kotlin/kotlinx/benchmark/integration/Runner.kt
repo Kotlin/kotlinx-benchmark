@@ -22,6 +22,13 @@ class Runner(
                 if (print) forwardStdOutput(System.out.bufferedWriter()) else this
             }
 
+    fun run(vararg tasks: String, fn: BuildResult.() -> Unit) {
+        val gradle = gradle(*tasks)
+        @Suppress("UnstableApiUsage")
+        val buildResult = gradle.run()
+        buildResult.fn()
+    }
+
     fun runAndSucceed(vararg tasks: String, fn: BuildResult.() -> Unit = {}) {
         val gradle = gradle(*tasks)
         val buildResult = gradle.build()

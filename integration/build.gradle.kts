@@ -26,4 +26,5 @@ tasks.test {
     systemProperty("kotlin_repo_url", rootProject.properties["kotlin_repo_url"])
     systemProperty("kotlin_version", libs.versions.kotlin.get())
     systemProperty("minSupportedGradleVersion", libs.versions.minSupportedGradle.get())
+    systemProperty("minSupportedKotlinVersion", libs.versions.minSupportedKotlin.get())
 }
