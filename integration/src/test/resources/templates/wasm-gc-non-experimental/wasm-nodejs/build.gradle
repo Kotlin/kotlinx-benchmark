@@ -22,4 +22,4 @@ benchmark {
     }
 }
 
-rootProject.extensions.getByType(NodeJsRootExtension).nodeVersion = "22.1.0"
+rootProject.extensions.getByType(NodeJsRootExtension).nodeVersion = "21.7.3"
