@@ -87,17 +87,7 @@ private fun Project.createNodeJsExec(
     description = "Executes benchmark for '${target.name}' with NodeJS"
     inputFileProperty.set(getExecutableFile(compilation))
     with(nodeArgs) {
-        if (compilation.isWasmCompilation) {
-            val addGcArgs = rootProject.extensions.findByType(NodeJsRootExtension::class.java)?.let {
-                val nodeVersion = VersionNumber.parse(it.nodeVersion)
-                // Starting from version 22, NodeJS is shipped with V8 versions
-                // that no longer accept --experimental-wasm-gc argument.
-                nodeVersion.major < 22
-            } ?: true
-            if (addGcArgs) {
-                addWasmGcArguments()
-            }
-        } else {
+        if (!compilation.isWasmCompilation) {
             addJsArguments()
         }
     }
