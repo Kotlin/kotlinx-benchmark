@@ -123,7 +123,7 @@ val generatePluginConstants by tasks.registering {
     val minSupportedGradleVersion = libs.versions.minSupportedGradle
     inputs.property("minSupportedGradleVersion", minSupportedGradleVersion)
 
-    Provider<String> kotlinCompilerVersion = libs.versions.kotlin
+    val kotlinCompilerVersion = libs.versions.kotlin
     inputs.property("kotlinCompilerVersion", kotlinCompilerVersion)
 
     doLast {

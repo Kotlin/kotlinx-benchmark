@@ -1,6 +1,6 @@
 import kotlinx.team.infra.InfraExtension
 import kotlinx.validation.ExperimentalBCVApi
-import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapperKt
+import org.jetbrains.kotlin.gradle.plugin.getKotlinPluginVersion
 import tasks.CheckReadmeTask
 
 buildscript {
@@ -14,8 +14,8 @@ buildscript {
     dependencies {
         classpath(libs.kotlinx.teamInfraGradlePlugin)
 
-        String kotlinVersion = providers.gradleProperty("kotlin_version").orNull
-        if (kotlinVersion != null && !kotlinVersion.isBlank()) {
+        val kotlinVersion = providers.gradleProperty("kotlin_version").orNull
+        if (!kotlinVersion.isNullOrBlank()) {
             // In addition to overriding the Kotlin version in the Version Catalog,
             // also enforce the KGP version using a dependency constraint.
             // Constraints are stricter than Version Catalog.
@@ -61,7 +61,7 @@ tasks.register("apiDump") {
 }
 
 tasks.register("apiCheck") {
-    it.dependsOn(gradle.includedBuild("plugin").task(":apiCheck"))
+    dependsOn(gradle.includedBuild("plugin").task(":apiCheck"))
 }
 
 afterEvaluate {
@@ -74,18 +74,18 @@ tasks.register("publishToMavenLocal") {
 }
 //endregion
 
-String currentKgpVersion = KotlinPluginWrapperKt.getKotlinPluginVersion(project)
-logger.info("Using Kotlin Gradle Plugin ${currentKgpVersion}")
+val currentKgpVersion = getKotlinPluginVersion()
+logger.info("Using Kotlin Gradle Plugin $currentKgpVersion")
 
-String kotlinVersionOverride = providers.gradleProperty("kotlin_version").getOrNull()
+val kotlinVersionOverride = providers.gradleProperty("kotlin_version").getOrNull()
 
 if (kotlinVersionOverride != null) {
-    String versionCatalogKotlinVersion = libs.versions.kotlin.get()
+    val versionCatalogKotlinVersion = libs.versions.kotlin.get()
     if (kotlinVersionOverride != versionCatalogKotlinVersion) {
-        throw new IllegalStateException("Kotlin version in Version Catalog was not overridden. Expected:$kotlinVersionOverride, actual:$versionCatalogKotlinVersion.")
+        throw IllegalStateException("Kotlin version in Version Catalog was not overridden. Expected:$kotlinVersionOverride, actual:$versionCatalogKotlinVersion.")
     }
     if (kotlinVersionOverride != currentKgpVersion) {
-        throw new IllegalStateException("Kotlin Gradle Plugin version was not overridden. Expected:$kotlinVersionOverride, actual:$currentKgpVersion.")
+        throw IllegalStateException("Kotlin Gradle Plugin version was not overridden. Expected:$kotlinVersionOverride, actual:$currentKgpVersion.")
     }
 }
 
@@ -97,12 +97,12 @@ allprojects {
 
 apiValidation {
     ignoredProjects += listOf(
-            "examples",
-            "java",
-            "kotlin",
-            "kotlin-kts",
-            "kotlin-multiplatform",
-            "integration",
+        "examples",
+        "java",
+        "kotlin",
+        "kotlin-kts",
+        "kotlin-multiplatform",
+        "integration",
     )
 
     nonPublicMarkers += listOf("kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi")
