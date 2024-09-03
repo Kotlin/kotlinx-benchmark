@@ -2,12 +2,10 @@ package kotlinx.benchmark.gradle
 
 import groovy.lang.Closure
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
-import org.gradle.api.Action
-import org.gradle.api.Project
-import org.gradle.api.Task
-import org.gradle.api.plugins.JavaPluginExtension
-import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.TaskProvider
+import org.gradle.api.*
+import org.gradle.api.plugins.*
+import org.gradle.api.provider.*
+import org.gradle.api.tasks.*
 import org.gradle.jvm.toolchain.JavaCompiler
 import org.gradle.jvm.toolchain.JavaLauncher
 import org.gradle.jvm.toolchain.JavaToolchainService
@@ -18,16 +16,9 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 @KotlinxBenchmarkPluginInternalApi
+@Deprecated("Unused - replace with Kotlin stdlib function", ReplaceWith("file.deleteRecursively()"))
 fun cleanup(file: File) {
-    if (file.exists()) {
-        val listing = file.listFiles()
-        if (listing != null) {
-            for (sub in listing) {
-                cleanup(sub)
-            }
-        }
-        file.delete()
-    }
+    file.deleteRecursively()
 }
 
 @KotlinxBenchmarkPluginInternalApi
@@ -234,21 +225,26 @@ private fun validateConfig(config: BenchmarkConfiguration) {
         when (param) {
             "nativeFork" -> {
                 require(value.toString() in ValidOptions.nativeForks) {
-                    "Invalid value for 'nativeFork': '$value'. Accepted values: ${ValidOptions.nativeForks.joinToString(", ")}."
+                    "Invalid value for 'nativeFork': '$value'. " +
+                            "Accepted values: ${ValidOptions.nativeForks.joinToString(", ")}."
                 }
             }
+
             "nativeGCAfterIteration" -> require(value is Boolean) {
                 "Invalid value for 'nativeGCAfterIteration': '$value'. Expected a Boolean value."
             }
+
             "jvmForks" -> {
                 val intValue = value.toString().toIntOrNull()
                 require(intValue != null && intValue >= 0 || value.toString() == "definedByJmh") {
                     "Invalid value for 'jvmForks': '$value'. Expected a non-negative integer or \"definedByJmh\"."
                 }
             }
+
             "jsUseBridge" -> require(value is Boolean) {
                 "Invalid value for 'jsUseBridge': '$value'. Expected a Boolean value."
             }
+
             else -> throw IllegalArgumentException("Invalid advanced option name: '$param'. Accepted options: \"nativeFork\", \"nativeGCAfterIteration\", \"jvmForks\", \"jsUseBridge\".")
         }
     }

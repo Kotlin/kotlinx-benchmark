@@ -1,5 +1,6 @@
 import kotlinx.team.infra.InfraExtension
 import kotlinx.validation.ExperimentalBCVApi
+import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapperKt
 import tasks.CheckReadmeTask
 
 buildscript {
@@ -12,6 +13,16 @@ buildscript {
 
     dependencies {
         classpath(libs.kotlinx.teamInfraGradlePlugin)
+
+        String kotlinVersion = providers.gradleProperty("kotlin_version").orNull
+        if (kotlinVersion != null && !kotlinVersion.isBlank()) {
+            // In addition to overriding the Kotlin version in the Version Catalog,
+            // also enforce the KGP version using a dependency constraint.
+            // Constraints are stricter than Version Catalog.
+            constraints {
+                classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+            }
+        }
     }
 }
 
@@ -48,10 +59,35 @@ repositories {
 tasks.register("apiDump") {
     dependsOn(gradle.includedBuild("plugin").task(":apiDump"))
 }
+
+tasks.register("apiCheck") {
+    it.dependsOn(gradle.includedBuild("plugin").task(":apiCheck"))
+}
+
+afterEvaluate {
+    gradle.includedBuilds.forEach { included ->
+        project(":kotlinx-benchmark-runtime").tasks.named("publishToMavenLocal") { dependsOn(included.task(":publishToMavenLocal")) }
+    }
+}
 tasks.register("publishToMavenLocal") {
     dependsOn(gradle.includedBuild("plugin").task(":publishToMavenLocal"))
 }
 //endregion
+
+String currentKgpVersion = KotlinPluginWrapperKt.getKotlinPluginVersion(project)
+logger.info("Using Kotlin Gradle Plugin ${currentKgpVersion}")
+
+String kotlinVersionOverride = providers.gradleProperty("kotlin_version").getOrNull()
+
+if (kotlinVersionOverride != null) {
+    String versionCatalogKotlinVersion = libs.versions.kotlin.get()
+    if (kotlinVersionOverride != versionCatalogKotlinVersion) {
+        throw new IllegalStateException("Kotlin version in Version Catalog was not overridden. Expected:$kotlinVersionOverride, actual:$versionCatalogKotlinVersion.")
+    }
+    if (kotlinVersionOverride != currentKgpVersion) {
+        throw new IllegalStateException("Kotlin Gradle Plugin version was not overridden. Expected:$kotlinVersionOverride, actual:$currentKgpVersion.")
+    }
+}
 
 allprojects {
     repositories {
@@ -84,4 +120,5 @@ val checkReadme by tasks.registering(CheckReadmeTask::class) {
 
 tasks.check {
     dependsOn(checkReadme)
+    dependsOn(tasks.named("apiCheck"))
 }

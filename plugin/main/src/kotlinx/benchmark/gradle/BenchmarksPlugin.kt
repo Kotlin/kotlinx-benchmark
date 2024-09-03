@@ -1,15 +1,22 @@
 package kotlinx.benchmark.gradle
 
+import kotlinx.benchmark.gradle.internal.BenchmarkDependencies
 import kotlinx.benchmark.gradle.internal.BenchmarksPluginConstants
+import kotlinx.benchmark.gradle.internal.BenchmarksPluginConstants.DEFAULT_KOTLIN_COMPILER_VERSION
 import kotlinx.benchmark.gradle.internal.BenchmarksPluginConstants.MIN_SUPPORTED_GRADLE_VERSION
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
+import org.gradle.api.provider.*
 import org.gradle.util.GradleVersion
+import javax.inject.Inject
 
 @Suppress("unused")
 abstract class BenchmarksPlugin
 @KotlinxBenchmarkPluginInternalApi
-constructor() : Plugin<Project> {
+@Inject
+constructor(
+    private val providers: ProviderFactory,
+) : Plugin<Project> {
 
     companion object {
         const val PLUGIN_ID = "org.jetbrains.kotlinx.benchmark"
@@ -23,8 +30,6 @@ constructor() : Plugin<Project> {
         const val ASSEMBLE_BENCHMARKS_TASKNAME = "assembleBenchmarks"
 
         //region Internal constants
-        // Note that despite the @InternalApi annotation, `const val`s are still present in the API Dump
-        // https://github.com/Kotlin/binary-compatibility-validator/issues/90
         @KotlinxBenchmarkPluginInternalApi
         const val BENCHMARK_GENERATE_SUFFIX = "BenchmarkGenerate"
 
@@ -50,7 +55,7 @@ constructor() : Plugin<Project> {
 
     override fun apply(project: Project) = project.run {
         // DO NOT use properties of an extension immediately, it will not contain any user-specified data
-        val extension = extensions.create(BENCHMARK_EXTENSION_NAME, BenchmarksExtension::class.java, project)
+        val extension = createBenchmarksExtension(project)
 
         if (GradleVersion.current() < GradleVersion.version(MIN_SUPPORTED_GRADLE_VERSION)) {
             logger.error("JetBrains Gradle Benchmarks plugin requires Gradle version $MIN_SUPPORTED_GRADLE_VERSION or higher")
@@ -62,19 +67,24 @@ constructor() : Plugin<Project> {
             if (!getKotlinVersion(kotlinPlugin.pluginVersion).isAtLeast(1, 9, 20)) {
                 logger.error("JetBrains Gradle Benchmarks plugin requires Kotlin version 1.9.20 or higher")
             }
+            extension.kotlinCompilerVersion.set(kotlinPlugin.pluginVersion)
         }
 
-        // Create empty task that will depend on all benchmark building tasks to build all benchmarks in a project
+        // Create a lifecycle task that will depend on all benchmark building tasks to build all benchmarks in a project
         val assembleBenchmarks = task<DefaultTask>(ASSEMBLE_BENCHMARKS_TASKNAME) {
             group = BENCHMARKS_TASK_GROUP
             description = "Generate and build all benchmarks in a project"
         }
 
+        val benchmarkDependencies = BenchmarkDependencies(project, extension)
+
+        configureBenchmarkTaskConventions(project, benchmarkDependencies)
+
         // TODO: Design configuration avoidance
         // I currently don't know how to do it correctly yet, so materialize all tasks after project evaluation.
         afterEvaluate {
             extension.configurations.forEach {
-                // Create empty task that will depend on all benchmark execution tasks to run all benchmarks in a project
+                // Create a lifecycle task that will depend on all benchmark execution tasks to run all benchmarks in a project
                 task<DefaultTask>(it.prefixName(RUN_BENCHMARKS_TASKNAME)) {
                     group = BENCHMARKS_TASK_GROUP
                     description = "Execute all benchmarks in a project"
@@ -92,6 +102,12 @@ constructor() : Plugin<Project> {
         }
     }
 
+    private fun createBenchmarksExtension(project: Project): BenchmarksExtension {
+        return project.extensions.create(BENCHMARK_EXTENSION_NAME, BenchmarksExtension::class.java, project).apply {
+            kotlinCompilerVersion.convention(DEFAULT_KOTLIN_COMPILER_VERSION)
+        }
+    }
+
     private fun Project.processConfigurations(extension: BenchmarksExtension) {
         // Calling `all` on NDOC causes all items to materialize and be configured
         extension.targets.all { config ->
@@ -102,6 +118,21 @@ constructor() : Plugin<Project> {
                 is WasmBenchmarkTarget -> processWasmCompilation(config)
                 is NativeBenchmarkTarget -> processNativeCompilation(config)
             }
+        }
+    }
+
+    private fun configureBenchmarkTaskConventions(
+        project: Project,
+        benchmarkDependencies: BenchmarkDependencies,
+    ) {
+        project.tasks.withType(NativeSourceGeneratorTask::class.java).configureEach {
+            it.runtimeClasspath.from(benchmarkDependencies.benchmarkGeneratorResolver)
+        }
+        project.tasks.withType(WasmSourceGeneratorTask::class.java).configureEach {
+            it.runtimeClasspath.from(benchmarkDependencies.benchmarkGeneratorResolver)
+        }
+        project.tasks.withType(JsSourceGeneratorTask::class.java).configureEach {
+            it.runtimeClasspath.from(benchmarkDependencies.benchmarkGeneratorResolver)
         }
     }
 }

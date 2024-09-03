@@ -1,17 +1,20 @@
 package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
+import kotlinx.benchmark.gradle.internal.generator.RequiresKotlinCompilerEmbeddable
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
-import org.gradle.workers.*
-import org.jetbrains.kotlin.library.*
-import org.jetbrains.kotlin.storage.*
-import java.io.*
-import javax.inject.*
+import org.gradle.workers.WorkAction
+import org.gradle.workers.WorkParameters
+import org.gradle.workers.WorkerExecutor
+import org.jetbrains.kotlin.library.KLIB_FILE_EXTENSION_WITH_DOT
+import org.jetbrains.kotlin.storage.LockBasedStorageManager
+import java.io.File
+import javax.inject.Inject
 
 @CacheableTask
-open class NativeSourceGeneratorTask
+abstract class NativeSourceGeneratorTask
 @KotlinxBenchmarkPluginInternalApi
 @Inject
 constructor(
@@ -36,22 +39,36 @@ constructor(
     @Input
     lateinit var nativeTarget: String
 
+    @get:Classpath
+    abstract val runtimeClasspath: ConfigurableFileCollection
+
     @TaskAction
     fun generate() {
-        val workQueue = workerExecutor.classLoaderIsolation()
-        workQueue.submit(NativeSourceGeneratorWorker::class.java) { parameters ->
-            parameters.title = title
-            parameters.target = nativeTarget
-            parameters.inputClassesDirs = inputClassesDirs.files
-            parameters.inputDependencies = inputDependencies.files
-            parameters.outputSourcesDir = outputSourcesDir
-            parameters.outputResourcesDir = outputResourcesDir
+        val workQueue = workerExecutor.classLoaderIsolation {
+            it.classpath.from(runtimeClasspath)
         }
-        workQueue.await()
+
+        @OptIn(RequiresKotlinCompilerEmbeddable::class)
+        workQueue.submit(NativeSourceGeneratorWorker::class.java) {
+            it.title = title
+            it.target = nativeTarget
+            it.inputClassesDirs = inputClassesDirs.files
+            it.inputDependencies = inputDependencies.files
+            it.outputSourcesDir = outputSourcesDir
+            it.outputResourcesDir = outputResourcesDir
+        }
+
+        workQueue.await() // I'm not sure if waiting is necessary,
+        // but I suspect that the task dependencies aren't configured correctly,
+        // so: better-safe-than-sorry.
+        // Try removing await() when Benchmarks follows Gradle best practices.
     }
 }
 
 @KotlinxBenchmarkPluginInternalApi
+// TODO https://github.com/Kotlin/kotlinx-benchmark/issues/211
+//      Replace NativeSourceGeneratorWorkerParameters with NativeSourceGeneratorWorker.Parameters,
+//      so that it is like the other workers.
 interface NativeSourceGeneratorWorkerParameters : WorkParameters {
     var title: String
     var target: String
@@ -62,10 +79,26 @@ interface NativeSourceGeneratorWorkerParameters : WorkParameters {
 }
 
 @KotlinxBenchmarkPluginInternalApi
+@RequiresKotlinCompilerEmbeddable
+// TODO https://github.com/Kotlin/kotlinx-benchmark/issues/211
+//      Change visibility of NativeSourceGeneratorWorker to `internal`
+//      Move to package kotlinx.benchmark.gradle.internal.generator.workers, alongside the other workers.
 abstract class NativeSourceGeneratorWorker : WorkAction<NativeSourceGeneratorWorkerParameters> {
+
+    // TODO https://github.com/Kotlin/kotlinx-benchmark/issues/211
+    //      replace NativeSourceGeneratorWorkerParameters with this interface:
+    //internal interface Parameters : WorkParameters {
+    //    val title: Property<String>
+    //    val target: Property<String>
+    //    val inputClassesDirs: ConfigurableFileCollection
+    //    val inputDependencies: ConfigurableFileCollection
+    //    val outputSourcesDir: DirectoryProperty
+    //    val outputResourcesDir: DirectoryProperty
+    //}
+
     override fun execute() {
-        cleanup(parameters.outputSourcesDir)
-        cleanup(parameters.outputResourcesDir)
+        parameters.outputSourcesDir.deleteRecursively()
+        parameters.outputResourcesDir.deleteRecursively()
         parameters.inputClassesDirs
             .filter { it.exists() && it.name.endsWith(KLIB_FILE_EXTENSION_WITH_DOT) }
             .forEach { lib ->
@@ -73,7 +106,8 @@ abstract class NativeSourceGeneratorWorker : WorkAction<NativeSourceGeneratorWor
                     throw Exception("nativeTarget should be specified for API generator for native targets")
 
                 val storageManager = LockBasedStorageManager("Inspect")
-                val module = KlibResolver.Native.createModuleDescriptor(lib, parameters.inputDependencies, storageManager)
+                val module =
+                    KlibResolver.Native.createModuleDescriptor(lib, parameters.inputDependencies, storageManager)
                 val generator = SuiteSourceGenerator(
                     parameters.title,
                     module,

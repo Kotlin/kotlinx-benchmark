@@ -6,61 +6,24 @@
 // - Show declarations: true
 
 // Library unique name: <org.jetbrains.kotlinx:kotlinx-benchmark-runtime>
-final class kotlinx.benchmark/Blackhole { // kotlinx.benchmark/Blackhole|null[0]
-    constructor <init>() // kotlinx.benchmark/Blackhole.<init>|<init>(){}[0]
-    final inline fun consume(kotlin/Any?) // kotlinx.benchmark/Blackhole.consume|consume(kotlin.Any?){}[0]
-    final inline fun consume(kotlin/Boolean) // kotlinx.benchmark/Blackhole.consume|consume(kotlin.Boolean){}[0]
-    final inline fun consume(kotlin/Byte) // kotlinx.benchmark/Blackhole.consume|consume(kotlin.Byte){}[0]
-    final inline fun consume(kotlin/Char) // kotlinx.benchmark/Blackhole.consume|consume(kotlin.Char){}[0]
-    final inline fun consume(kotlin/Double) // kotlinx.benchmark/Blackhole.consume|consume(kotlin.Double){}[0]
-    final inline fun consume(kotlin/Float) // kotlinx.benchmark/Blackhole.consume|consume(kotlin.Float){}[0]
-    final inline fun consume(kotlin/Int) // kotlinx.benchmark/Blackhole.consume|consume(kotlin.Int){}[0]
-    final inline fun consume(kotlin/Long) // kotlinx.benchmark/Blackhole.consume|consume(kotlin.Long){}[0]
-    final inline fun consume(kotlin/Short) // kotlinx.benchmark/Blackhole.consume|consume(kotlin.Short){}[0]
-    // Targets: [js.jsIr, wasmJs]
-    final fun consumeAny(kotlin/Any?) // kotlinx.benchmark/Blackhole.consumeAny|consumeAny(kotlin.Any?){}[0]
-    // Targets: [js.jsIr, wasmJs]
-    final fun consumeInt(kotlin/Int) // kotlinx.benchmark/Blackhole.consumeInt|consumeInt(kotlin.Int){}[0]
-}
-final enum class kotlinx.benchmark/BenchmarkTimeUnit : kotlin/Enum<kotlinx.benchmark/BenchmarkTimeUnit> { // kotlinx.benchmark/BenchmarkTimeUnit|null[0]
-    enum entry MICROSECONDS // kotlinx.benchmark/BenchmarkTimeUnit.MICROSECONDS|null[0]
-    enum entry MILLISECONDS // kotlinx.benchmark/BenchmarkTimeUnit.MILLISECONDS|null[0]
-    enum entry MINUTES // kotlinx.benchmark/BenchmarkTimeUnit.MINUTES|null[0]
-    enum entry NANOSECONDS // kotlinx.benchmark/BenchmarkTimeUnit.NANOSECONDS|null[0]
-    enum entry SECONDS // kotlinx.benchmark/BenchmarkTimeUnit.SECONDS|null[0]
-    final fun valueOf(kotlin/String): kotlinx.benchmark/BenchmarkTimeUnit // kotlinx.benchmark/BenchmarkTimeUnit.valueOf|valueOf#static(kotlin.String){}[0]
-    final fun values(): kotlin/Array<kotlinx.benchmark/BenchmarkTimeUnit> // kotlinx.benchmark/BenchmarkTimeUnit.values|values#static(){}[0]
-    final val entries // kotlinx.benchmark/BenchmarkTimeUnit.entries|#static{}entries[0]
-        final fun <get-entries>(): kotlin.enums/EnumEntries<kotlinx.benchmark/BenchmarkTimeUnit> // kotlinx.benchmark/BenchmarkTimeUnit.entries.<get-entries>|<get-entries>#static(){}[0]
-}
-final enum class kotlinx.benchmark/Mode : kotlin/Enum<kotlinx.benchmark/Mode> { // kotlinx.benchmark/Mode|null[0]
-    enum entry AverageTime // kotlinx.benchmark/Mode.AverageTime|null[0]
-    enum entry Throughput // kotlinx.benchmark/Mode.Throughput|null[0]
-    final fun valueOf(kotlin/String): kotlinx.benchmark/Mode // kotlinx.benchmark/Mode.valueOf|valueOf#static(kotlin.String){}[0]
-    final fun values(): kotlin/Array<kotlinx.benchmark/Mode> // kotlinx.benchmark/Mode.values|values#static(){}[0]
-    final val entries // kotlinx.benchmark/Mode.entries|#static{}entries[0]
-        final fun <get-entries>(): kotlin.enums/EnumEntries<kotlinx.benchmark/Mode> // kotlinx.benchmark/Mode.entries.<get-entries>|<get-entries>#static(){}[0]
-}
-final enum class kotlinx.benchmark/Scope : kotlin/Enum<kotlinx.benchmark/Scope> { // kotlinx.benchmark/Scope|null[0]
-    enum entry Benchmark // kotlinx.benchmark/Scope.Benchmark|null[0]
-    final fun valueOf(kotlin/String): kotlinx.benchmark/Scope // kotlinx.benchmark/Scope.valueOf|valueOf#static(kotlin.String){}[0]
-    final fun values(): kotlin/Array<kotlinx.benchmark/Scope> // kotlinx.benchmark/Scope.values|values#static(){}[0]
-    final val entries // kotlinx.benchmark/Scope.entries|#static{}entries[0]
-        final fun <get-entries>(): kotlin.enums/EnumEntries<kotlinx.benchmark/Scope> // kotlinx.benchmark/Scope.entries.<get-entries>|<get-entries>#static(){}[0]
-}
 open annotation class kotlinx.benchmark.internal/KotlinxBenchmarkRuntimeInternalApi : kotlin/Annotation { // kotlinx.benchmark.internal/KotlinxBenchmarkRuntimeInternalApi|null[0]
     constructor <init>() // kotlinx.benchmark.internal/KotlinxBenchmarkRuntimeInternalApi.<init>|<init>(){}[0]
 }
+
 open annotation class kotlinx.benchmark/Benchmark : kotlin/Annotation { // kotlinx.benchmark/Benchmark|null[0]
     constructor <init>() // kotlinx.benchmark/Benchmark.<init>|<init>(){}[0]
 }
+
 open annotation class kotlinx.benchmark/BenchmarkMode : kotlin/Annotation { // kotlinx.benchmark/BenchmarkMode|null[0]
     constructor <init>(kotlin/Array<out kotlinx.benchmark/Mode>...) // kotlinx.benchmark/BenchmarkMode.<init>|<init>(kotlin.Array<out|kotlinx.benchmark.Mode>...){}[0]
+
     final val value // kotlinx.benchmark/BenchmarkMode.value|{}value[0]
         final fun <get-value>(): kotlin/Array<out kotlinx.benchmark/Mode> // kotlinx.benchmark/BenchmarkMode.value.<get-value>|<get-value>(){}[0]
 }
+
 open annotation class kotlinx.benchmark/Measurement : kotlin/Annotation { // kotlinx.benchmark/Measurement|null[0]
     constructor <init>(kotlin/Int =..., kotlin/Int =..., kotlinx.benchmark/BenchmarkTimeUnit =..., kotlin/Int =...) // kotlinx.benchmark/Measurement.<init>|<init>(kotlin.Int;kotlin.Int;kotlinx.benchmark.BenchmarkTimeUnit;kotlin.Int){}[0]
+
     final val batchSize // kotlinx.benchmark/Measurement.batchSize|{}batchSize[0]
         final fun <get-batchSize>(): kotlin/Int // kotlinx.benchmark/Measurement.batchSize.<get-batchSize>|<get-batchSize>(){}[0]
     final val iterations // kotlinx.benchmark/Measurement.iterations|{}iterations[0]
@@ -70,29 +33,39 @@ open annotation class kotlinx.benchmark/Measurement : kotlin/Annotation { // kot
     final val timeUnit // kotlinx.benchmark/Measurement.timeUnit|{}timeUnit[0]
         final fun <get-timeUnit>(): kotlinx.benchmark/BenchmarkTimeUnit // kotlinx.benchmark/Measurement.timeUnit.<get-timeUnit>|<get-timeUnit>(){}[0]
 }
+
 open annotation class kotlinx.benchmark/OutputTimeUnit : kotlin/Annotation { // kotlinx.benchmark/OutputTimeUnit|null[0]
     constructor <init>(kotlinx.benchmark/BenchmarkTimeUnit) // kotlinx.benchmark/OutputTimeUnit.<init>|<init>(kotlinx.benchmark.BenchmarkTimeUnit){}[0]
+
     final val value // kotlinx.benchmark/OutputTimeUnit.value|{}value[0]
         final fun <get-value>(): kotlinx.benchmark/BenchmarkTimeUnit // kotlinx.benchmark/OutputTimeUnit.value.<get-value>|<get-value>(){}[0]
 }
+
 open annotation class kotlinx.benchmark/Param : kotlin/Annotation { // kotlinx.benchmark/Param|null[0]
     constructor <init>(kotlin/Array<out kotlin/String>...) // kotlinx.benchmark/Param.<init>|<init>(kotlin.Array<out|kotlin.String>...){}[0]
+
     final val value // kotlinx.benchmark/Param.value|{}value[0]
         final fun <get-value>(): kotlin/Array<out kotlin/String> // kotlinx.benchmark/Param.value.<get-value>|<get-value>(){}[0]
 }
+
 open annotation class kotlinx.benchmark/Setup : kotlin/Annotation { // kotlinx.benchmark/Setup|null[0]
     constructor <init>() // kotlinx.benchmark/Setup.<init>|<init>(){}[0]
 }
+
 open annotation class kotlinx.benchmark/State : kotlin/Annotation { // kotlinx.benchmark/State|null[0]
     constructor <init>(kotlinx.benchmark/Scope) // kotlinx.benchmark/State.<init>|<init>(kotlinx.benchmark.Scope){}[0]
+
     final val value // kotlinx.benchmark/State.value|{}value[0]
         final fun <get-value>(): kotlinx.benchmark/Scope // kotlinx.benchmark/State.value.<get-value>|<get-value>(){}[0]
 }
+
 open annotation class kotlinx.benchmark/TearDown : kotlin/Annotation { // kotlinx.benchmark/TearDown|null[0]
     constructor <init>() // kotlinx.benchmark/TearDown.<init>|<init>(){}[0]
 }
+
 open annotation class kotlinx.benchmark/Warmup : kotlin/Annotation { // kotlinx.benchmark/Warmup|null[0]
     constructor <init>(kotlin/Int =..., kotlin/Int =..., kotlinx.benchmark/BenchmarkTimeUnit =..., kotlin/Int =...) // kotlinx.benchmark/Warmup.<init>|<init>(kotlin.Int;kotlin.Int;kotlinx.benchmark.BenchmarkTimeUnit;kotlin.Int){}[0]
+
     final val batchSize // kotlinx.benchmark/Warmup.batchSize|{}batchSize[0]
         final fun <get-batchSize>(): kotlin/Int // kotlinx.benchmark/Warmup.batchSize.<get-batchSize>|<get-batchSize>(){}[0]
     final val iterations // kotlinx.benchmark/Warmup.iterations|{}iterations[0]
@@ -101,4 +74,59 @@ open annotation class kotlinx.benchmark/Warmup : kotlin/Annotation { // kotlinx.
         final fun <get-time>(): kotlin/Int // kotlinx.benchmark/Warmup.time.<get-time>|<get-time>(){}[0]
     final val timeUnit // kotlinx.benchmark/Warmup.timeUnit|{}timeUnit[0]
         final fun <get-timeUnit>(): kotlinx.benchmark/BenchmarkTimeUnit // kotlinx.benchmark/Warmup.timeUnit.<get-timeUnit>|<get-timeUnit>(){}[0]
+}
+
+final enum class kotlinx.benchmark/BenchmarkTimeUnit : kotlin/Enum<kotlinx.benchmark/BenchmarkTimeUnit> { // kotlinx.benchmark/BenchmarkTimeUnit|null[0]
+    enum entry MICROSECONDS // kotlinx.benchmark/BenchmarkTimeUnit.MICROSECONDS|null[0]
+    enum entry MILLISECONDS // kotlinx.benchmark/BenchmarkTimeUnit.MILLISECONDS|null[0]
+    enum entry MINUTES // kotlinx.benchmark/BenchmarkTimeUnit.MINUTES|null[0]
+    enum entry NANOSECONDS // kotlinx.benchmark/BenchmarkTimeUnit.NANOSECONDS|null[0]
+    enum entry SECONDS // kotlinx.benchmark/BenchmarkTimeUnit.SECONDS|null[0]
+
+    final val entries // kotlinx.benchmark/BenchmarkTimeUnit.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<kotlinx.benchmark/BenchmarkTimeUnit> // kotlinx.benchmark/BenchmarkTimeUnit.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): kotlinx.benchmark/BenchmarkTimeUnit // kotlinx.benchmark/BenchmarkTimeUnit.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<kotlinx.benchmark/BenchmarkTimeUnit> // kotlinx.benchmark/BenchmarkTimeUnit.values|values#static(){}[0]
+}
+
+final enum class kotlinx.benchmark/Mode : kotlin/Enum<kotlinx.benchmark/Mode> { // kotlinx.benchmark/Mode|null[0]
+    enum entry AverageTime // kotlinx.benchmark/Mode.AverageTime|null[0]
+    enum entry Throughput // kotlinx.benchmark/Mode.Throughput|null[0]
+
+    final val entries // kotlinx.benchmark/Mode.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<kotlinx.benchmark/Mode> // kotlinx.benchmark/Mode.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): kotlinx.benchmark/Mode // kotlinx.benchmark/Mode.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<kotlinx.benchmark/Mode> // kotlinx.benchmark/Mode.values|values#static(){}[0]
+}
+
+final enum class kotlinx.benchmark/Scope : kotlin/Enum<kotlinx.benchmark/Scope> { // kotlinx.benchmark/Scope|null[0]
+    enum entry Benchmark // kotlinx.benchmark/Scope.Benchmark|null[0]
+
+    final val entries // kotlinx.benchmark/Scope.entries|#static{}entries[0]
+        final fun <get-entries>(): kotlin.enums/EnumEntries<kotlinx.benchmark/Scope> // kotlinx.benchmark/Scope.entries.<get-entries>|<get-entries>#static(){}[0]
+
+    final fun valueOf(kotlin/String): kotlinx.benchmark/Scope // kotlinx.benchmark/Scope.valueOf|valueOf#static(kotlin.String){}[0]
+    final fun values(): kotlin/Array<kotlinx.benchmark/Scope> // kotlinx.benchmark/Scope.values|values#static(){}[0]
+}
+
+final class kotlinx.benchmark/Blackhole { // kotlinx.benchmark/Blackhole|null[0]
+    constructor <init>() // kotlinx.benchmark/Blackhole.<init>|<init>(){}[0]
+
+    final inline fun consume(kotlin/Any?) // kotlinx.benchmark/Blackhole.consume|consume(kotlin.Any?){}[0]
+    final inline fun consume(kotlin/Boolean) // kotlinx.benchmark/Blackhole.consume|consume(kotlin.Boolean){}[0]
+    final inline fun consume(kotlin/Byte) // kotlinx.benchmark/Blackhole.consume|consume(kotlin.Byte){}[0]
+    final inline fun consume(kotlin/Char) // kotlinx.benchmark/Blackhole.consume|consume(kotlin.Char){}[0]
+    final inline fun consume(kotlin/Double) // kotlinx.benchmark/Blackhole.consume|consume(kotlin.Double){}[0]
+    final inline fun consume(kotlin/Float) // kotlinx.benchmark/Blackhole.consume|consume(kotlin.Float){}[0]
+    final inline fun consume(kotlin/Int) // kotlinx.benchmark/Blackhole.consume|consume(kotlin.Int){}[0]
+    final inline fun consume(kotlin/Long) // kotlinx.benchmark/Blackhole.consume|consume(kotlin.Long){}[0]
+    final inline fun consume(kotlin/Short) // kotlinx.benchmark/Blackhole.consume|consume(kotlin.Short){}[0]
+
+    // Targets: [js.jsIr, wasmJs]
+    final fun consumeAny(kotlin/Any?) // kotlinx.benchmark/Blackhole.consumeAny|consumeAny(kotlin.Any?){}[0]
+
+    // Targets: [js.jsIr, wasmJs]
+    final fun consumeInt(kotlin/Int) // kotlinx.benchmark/Blackhole.consumeInt|consumeInt(kotlin.Int){}[0]
 }
