@@ -22,7 +22,7 @@ open annotation class kotlinx.benchmark/BenchmarkMode : kotlin/Annotation { // k
 }
 
 open annotation class kotlinx.benchmark/Measurement : kotlin/Annotation { // kotlinx.benchmark/Measurement|null[0]
-    constructor <init>(kotlin/Int =..., kotlin/Int =..., kotlinx.benchmark/BenchmarkTimeUnit =..., kotlin/Int =...) // kotlinx.benchmark/Measurement.<init>|<init>(kotlin.Int;kotlin.Int;kotlinx.benchmark.BenchmarkTimeUnit;kotlin.Int){}[0]
+    constructor <init>(kotlin/Int = ..., kotlin/Int = ..., kotlinx.benchmark/BenchmarkTimeUnit = ..., kotlin/Int = ...) // kotlinx.benchmark/Measurement.<init>|<init>(kotlin.Int;kotlin.Int;kotlinx.benchmark.BenchmarkTimeUnit;kotlin.Int){}[0]
 
     final val batchSize // kotlinx.benchmark/Measurement.batchSize|{}batchSize[0]
         final fun <get-batchSize>(): kotlin/Int // kotlinx.benchmark/Measurement.batchSize.<get-batchSize>|<get-batchSize>(){}[0]
@@ -64,7 +64,7 @@ open annotation class kotlinx.benchmark/TearDown : kotlin/Annotation { // kotlin
 }
 
 open annotation class kotlinx.benchmark/Warmup : kotlin/Annotation { // kotlinx.benchmark/Warmup|null[0]
-    constructor <init>(kotlin/Int =..., kotlin/Int =..., kotlinx.benchmark/BenchmarkTimeUnit =..., kotlin/Int =...) // kotlinx.benchmark/Warmup.<init>|<init>(kotlin.Int;kotlin.Int;kotlinx.benchmark.BenchmarkTimeUnit;kotlin.Int){}[0]
+    constructor <init>(kotlin/Int = ..., kotlin/Int = ..., kotlinx.benchmark/BenchmarkTimeUnit = ..., kotlin/Int = ...) // kotlinx.benchmark/Warmup.<init>|<init>(kotlin.Int;kotlin.Int;kotlinx.benchmark.BenchmarkTimeUnit;kotlin.Int){}[0]
 
     final val batchSize // kotlinx.benchmark/Warmup.batchSize|{}batchSize[0]
         final fun <get-batchSize>(): kotlin/Int // kotlinx.benchmark/Warmup.batchSize.<get-batchSize>|<get-batchSize>(){}[0]
