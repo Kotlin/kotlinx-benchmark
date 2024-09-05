@@ -12,6 +12,8 @@ repositories {
 }
 
 kotlin {
+    jvmToolchain(8)
+
     // According to https://kotlinlang.org/docs/native-target-support.html
 
     // Tier 1

@@ -86,11 +86,11 @@ sourceSets {
 }
 
 kotlin {
+    jvmToolchain(8)
+
     @OptIn(ExperimentalBuildToolsApi::class, ExperimentalKotlinGradlePluginApi::class)
     compilerVersion = libs.versions.kotlin.`for`.gradle.plugin.get()
-}
 
-tasks.compileKotlin {
     compilerOptions {
         optIn.addAll(
                 "kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi",

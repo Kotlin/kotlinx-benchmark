@@ -1,0 +1,18 @@
+kotlin {
+    jvmToolchain(8)
+    jvm {}
+
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.5.0-SNAPSHOT")
+            }
+        }
+    }
+}
+
+benchmark {
+    targets {
+        register("jvm")
+    }
+}
