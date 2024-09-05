@@ -2,6 +2,7 @@ package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
+import org.jetbrains.kotlin.gradle.dsl.JsModuleKind
 import org.jetbrains.kotlin.gradle.targets.js.dsl.*
 import org.jetbrains.kotlin.gradle.targets.js.ir.*
 
@@ -57,9 +58,9 @@ private fun Project.createJsBenchmarkCompileTask(target: JsBenchmarkTarget): Kot
                 //destinationDir = file("$benchmarkBuildDir/classes")
                 dependsOn("${target.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}")
 
-                kotlinOptions.apply {
-                    sourceMap = true
-                    moduleKind = "umd"
+                compilerOptions {
+                    sourceMap.set(true)
+                    moduleKind.set(JsModuleKind.MODULE_UMD)
                 }
             }
         }
