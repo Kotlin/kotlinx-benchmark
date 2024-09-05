@@ -100,7 +100,7 @@ apiValidation {
         "examples",
         "java",
         "kotlin-jvm-separate-benchmark-source-set",
-        "kotlin-kts",
+        "kotlin-jvm",
         "kotlin-multiplatform",
         "integration",
     )

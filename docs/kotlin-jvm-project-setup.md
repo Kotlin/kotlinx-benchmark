@@ -289,5 +289,5 @@ Refer to our [detailed documentation](separate-benchmark-source-set.md) on confi
 
 ## Examples
 
-Explore sample [Kotlin/JVM](/examples/kotlin) and [Java](/examples/java) benchmarking projects that use `kotlinx-benchmark`.
+Explore sample [Kotlin/JVM](/examples/kotlin-jvm) and [Java](/examples/java) benchmarking projects that use `kotlinx-benchmark`.
 These examples showcase how to structure benchmarking projects using `kotlinx-benchmark`.
