@@ -112,4 +112,4 @@ Set up a separate benchmark source set by following these simple steps:
    Place your benchmark code into the benchmark source set.
    Refer to our [writing benchmarks guide](writing-benchmarks.md) for a comprehensive guide on writing benchmarks.
 
-[Here is a sample Kotlin/JVM project](/examples/kotlin) with custom source set for benchmarks.
+[Here is a sample Kotlin/JVM project](/examples/kotlin-jvm-separate-benchmark-source-set) with custom source set for benchmarks.
