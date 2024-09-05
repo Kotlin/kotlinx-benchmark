@@ -94,8 +94,6 @@ tasks.named("compileKotlin", KotlinCompilationTask.class) {
 }
 
 dependencies {
-    implementation(libs.kotlin.reflect)
-
     implementation(libs.squareup.kotlinpoet)
 
     implementation(libs.kotlin.utilKlibMetadata)
