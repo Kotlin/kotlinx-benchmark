@@ -88,12 +88,14 @@ private fun Project.createNativeBenchmarkCompileTask(target: NativeBenchmarkTarg
                 this.compilation = benchmarkCompilation
                 this.outputDirectory = file("$benchmarkBuildDir/classes")
                 // A link task's name is linkReleaseExecutable<Target>.
-                linkTask.apply {
-                    group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
-                    description = "Compile Native benchmark source files for '${compilationTarget.name}'"
-                    dependsOn(generateSourceTaskName(target))
+                linkTaskProvider.configure {
+                    it.apply {
+                        group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
+                        description = "Compile Native benchmark source files for '${compilationTarget.name}'"
+                        dependsOn(generateSourceTaskName(target))
+                    }
                 }
-                tasks.getByName(BenchmarksPlugin.ASSEMBLE_BENCHMARKS_TASKNAME).dependsOn(linkTask)
+                tasks.getByName(BenchmarksPlugin.ASSEMBLE_BENCHMARKS_TASKNAME).dependsOn(linkTaskProvider)
                 entryPoint("kotlinx.benchmark.generated.main")
             }
         }
@@ -117,11 +119,11 @@ fun Project.createNativeBenchmarkExecTask(
 
         val binary =
             benchmarkCompilation.target.binaries.getExecutable(benchmarkCompilation.name, target.buildType)
-        val linkTask = binary.linkTask
+        val linkTask = binary.linkTaskProvider
 
         dependsOn(linkTask)
 
-        val executableFile = linkTask.outputFile.get()
+        val executableFile = linkTask.get().outputFile.get()
         onlyIf { executableFile.exists() }
 
         this.executable = executableFile
