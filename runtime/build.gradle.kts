@@ -50,7 +50,7 @@ kotlin {
         common {
             group("jsWasmJsShared") {
                 withJs()
-                withWasm()
+                withWasmJs()
             }
         }
     }
