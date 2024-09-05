@@ -99,7 +99,7 @@ apiValidation {
     ignoredProjects += listOf(
         "examples",
         "java",
-        "kotlin",
+        "kotlin-jvm-separate-benchmark-source-set",
         "kotlin-kts",
         "kotlin-multiplatform",
         "integration",
