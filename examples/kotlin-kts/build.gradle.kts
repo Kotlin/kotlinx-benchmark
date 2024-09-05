@@ -2,11 +2,9 @@
 
 import kotlinx.benchmark.gradle.*
 import org.jetbrains.kotlin.allopen.gradle.*
-import org.jetbrains.kotlin.gradle.tasks.*
 
 
 plugins {
-    java
     kotlin("jvm")
     kotlin("plugin.allopen") version "2.0.20"
     id("org.jetbrains.kotlinx.benchmark")
@@ -25,16 +23,8 @@ dependencies {
     implementation(project(":kotlinx-benchmark-runtime"))
 }
 
-tasks.withType<JavaCompile> {
-    sourceCompatibility = "1.8"
-    targetCompatibility = "1.8"
-}
-
-
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
+kotlin {
+    jvmToolchain(8)
 }
 
 benchmark {
