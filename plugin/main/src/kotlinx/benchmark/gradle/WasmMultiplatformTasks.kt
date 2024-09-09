@@ -2,6 +2,7 @@ package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
+import org.jetbrains.kotlin.gradle.targets.js.KotlinWasmTargetType
 import org.jetbrains.kotlin.gradle.targets.js.dsl.*
 import org.jetbrains.kotlin.gradle.targets.js.ir.*
 
@@ -15,7 +16,8 @@ fun Project.processWasmCompilation(target: WasmBenchmarkTarget) {
     val benchmarkCompilation = createWasmBenchmarkCompileTask(target)
 
     target.extension.configurations.forEach {
-        createJsEngineBenchmarkExecTask(it, target, benchmarkCompilation)
+        createJsEngineBenchmarkExecTask(it, target, benchmarkCompilation, KotlinJsBinaryMode.PRODUCTION)
+        createJsEngineBenchmarkExecTask(it, target, benchmarkCompilation, KotlinJsBinaryMode.DEVELOPMENT)
     }
 }
 
@@ -28,7 +30,18 @@ private fun Project.createWasmBenchmarkCompileTask(target: WasmBenchmarkTarget):
     val kotlinTarget = compilation.target
     check(kotlinTarget is KotlinJsTargetDsl)
 
-    kotlinTarget.binaries.executable(benchmarkCompilation)
+    kotlinTarget.binaries.executable(benchmarkCompilation).forEach {
+        if (kotlinTarget is KotlinJsIrTarget &&
+            kotlinTarget.wasmTargetType == KotlinWasmTargetType.JS &&
+            it.mode == KotlinJsBinaryMode.PRODUCTION) {
+            (it as ExecutableWasm).let { x ->
+                x.linkSyncTask.configure { y ->
+                    y.dependsOn(x.optimizeTask)
+                    y.from.from(x.optimizeTask.flatMap { it.outputFileProperty.map { it.asFile.parentFile } })
+                }
+            }
+        }
+    }
 
     benchmarkCompilation.apply {
         val sourceSet = kotlinSourceSets.single()
