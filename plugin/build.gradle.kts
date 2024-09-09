@@ -1,13 +1,13 @@
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
+import kotlinx.team.infra.InfraExtension
 
 buildscript {
-    ext.kotlinDevUrl = rootProject.properties["kotlin_repo_url"]
     repositories {
-        maven { url 'https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/maven' }
+        maven("https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/maven")
         mavenCentral()
-        if (kotlinDevUrl != null) {
-            maven { url = kotlinDevUrl }
+        val kotlinRepoUrl = providers.gradleProperty("kotlin_repo_url").orNull
+        if (kotlinRepoUrl != null) {
+            maven(kotlinRepoUrl)
         }
     }
 
@@ -21,16 +21,16 @@ buildscript {
 }
 
 plugins {
-    id 'java-gradle-plugin'
-    id 'maven-publish'
+    `java-gradle-plugin`
+    `maven-publish`
     alias(libs.plugins.gradle.pluginPublish)
     alias(libs.plugins.kotlinx.binaryCompatibilityValidator)
     alias(libs.plugins.kotlin.jvm)
 }
 
-apply(plugin: 'kotlinx.team.infra')
+apply(plugin = "kotlinx.team.infra")
 
-infra {
+extensions.configure<InfraExtension> {
     teamcity {
         libraryStagingRepoDescription = project.name
     }
@@ -47,20 +47,21 @@ repositories {
     mavenCentral()
     gradlePluginPortal()
 
-    if (kotlinDevUrl != null) {
-        maven { url = kotlinDevUrl }
+    val kotlinRepoUrl = providers.gradleProperty("kotlin_repo_url").orNull
+    if (kotlinRepoUrl != null) {
+        maven(kotlinRepoUrl)
     }
 }
 
 pluginBundle {
-    website = 'https://github.com/Kotlin/kotlinx-benchmark'
-    vcsUrl = 'https://github.com/Kotlin/kotlinx-benchmark.git'
-    tags = ['benchmarking', 'multiplatform', 'kotlin']
+    website = "https://github.com/Kotlin/kotlinx-benchmark"
+    vcsUrl = "https://github.com/Kotlin/kotlinx-benchmark.git"
+    tags = listOf("benchmarking", "multiplatform", "kotlin")
 }
 
 gradlePlugin {
     plugins {
-        benchmarkPlugin {
+        register("benchmarkPlugin") {
             id = "org.jetbrains.kotlinx.benchmark"
             implementationClass = "kotlinx.benchmark.gradle.BenchmarksPlugin"
             displayName = "Gradle plugin for benchmarking"
@@ -71,24 +72,24 @@ gradlePlugin {
 
 sourceSets {
     main {
-        kotlin.srcDirs = ['main/src']
-        java.srcDirs = ['main/src']
-        resources.srcDirs = ['main/resources']
+        kotlin.srcDirs(listOf("main/src"))
+        java.srcDirs(listOf("main/src"))
+        resources.srcDirs(listOf("main/resources"))
     }
     test {
-        kotlin.srcDirs = ['test/src']
-        java.srcDirs = ['test/src']
-        resources.srcDirs = ['test/resources']
+        kotlin.srcDirs("test/src")
+        java.srcDirs("test/src")
+        resources.srcDirs("test/resources")
     }
 }
 
-tasks.named("compileKotlin", KotlinCompilationTask.class) {
+tasks.compileKotlin {
     compilerOptions {
         optIn.addAll(
                 "kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi",
                 "kotlin.RequiresOptIn",
         )
-        //noinspection GrDeprecatedAPIUsage
+        @Suppress("DEPRECATION")
         apiVersion = KotlinVersion.KOTLIN_1_4 // the version of Kotlin embedded in Gradle
     }
 }
@@ -107,26 +108,26 @@ dependencies {
     compileOnly(libs.jmh.generatorBytecode) // used in worker
 }
 
-def generatePluginConstants = tasks.register("generatePluginConstants") {
+val generatePluginConstants by tasks.registering {
     description = "Generates constants file used by BenchmarksPlugin"
 
-    File outputDir = temporaryDir
+    val outputDir = temporaryDir
     outputs.dir(outputDir).withPropertyName("outputDir")
 
-    File constantsKtFile = new File(outputDir, "BenchmarksPluginConstants.kt")
+    val constantsKtFile = File(outputDir, "BenchmarksPluginConstants.kt")
 
-    Provider<String> benchmarkPluginVersion = project.providers.gradleProperty("releaseVersion")
+    val benchmarkPluginVersion = project.providers.gradleProperty("releaseVersion")
             .orElse(project.version.toString())
     inputs.property("benchmarkPluginVersion", benchmarkPluginVersion)
 
-    Provider<String> minSupportedGradleVersion = libs.versions.minSupportedGradle
+    val minSupportedGradleVersion = libs.versions.minSupportedGradle
     inputs.property("minSupportedGradleVersion", minSupportedGradleVersion)
 
-    Provider<String> kotlinCompilerVersion = libs.versions.kotlin
+    val kotlinCompilerVersion = libs.versions.kotlin
     inputs.property("kotlinCompilerVersion", kotlinCompilerVersion)
 
     doLast {
-        constantsKtFile.write(
+        constantsKtFile.writeText(
                 """|package kotlinx.benchmark.gradle.internal
                 |
                 |internal object BenchmarksPluginConstants {
@@ -134,7 +135,7 @@ def generatePluginConstants = tasks.register("generatePluginConstants") {
                 |  const val MIN_SUPPORTED_GRADLE_VERSION = "${minSupportedGradleVersion.get()}"
                 |  const val DEFAULT_KOTLIN_COMPILER_VERSION = "${kotlinCompilerVersion.get()}"
                 |}
-                |""".stripMargin()
+                |""".trimMargin()
         )
     }
 }
@@ -151,10 +152,10 @@ if (project.findProperty("publication_repository") == "space") {
         repositories {
             maven {
                 name = "space"
-                url = "https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/dev"
+                url = uri("https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/dev")
                 credentials {
-                    username = project.findProperty("space.user")
-                    password = project.findProperty("space.token")
+                    username = project.findProperty("space.user") as? String?
+                    password = project.findProperty("space.token") as? String?
                 }
             }
         }
@@ -162,5 +163,5 @@ if (project.findProperty("publication_repository") == "space") {
 }
 
 apiValidation {
-    nonPublicMarkers += ["kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi"]
+    nonPublicMarkers += listOf("kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi")
 }

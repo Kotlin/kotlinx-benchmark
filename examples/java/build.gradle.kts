@@ -1,14 +1,9 @@
-buildscript {
-    dependencies {
-        classpath "org.jetbrains.kotlinx:kotlinx-benchmark-plugin"
-    }
-}
+import kotlinx.benchmark.gradle.JvmBenchmarkTarget
 
 plugins {
-    id 'java'
+    java
+    id("org.jetbrains.kotlinx.benchmark")
 }
-
-apply plugin: 'org.jetbrains.kotlinx.benchmark'
 
 dependencies {
     implementation(project(":kotlinx-benchmark-runtime"))
@@ -16,11 +11,11 @@ dependencies {
 
 benchmark {
     configurations {
-        main { 
+        named("main") {
             iterationTime = 300
             iterationTimeUnit = "ms"
         }
-        singleParam {
+        create("singleParam") {
             iterationTime = 300
             iterationTimeUnit = "ms"
             param("stringValue", "C", "D")
@@ -29,6 +24,7 @@ benchmark {
     }
     targets {
         register("main") {
+            this as JvmBenchmarkTarget
             jmhVersion = "1.21"
         }
     }

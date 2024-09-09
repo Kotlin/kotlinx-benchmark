@@ -6,3 +6,4 @@ out/
 target/
 .DS_Store
 local.properties
+.kotlin/

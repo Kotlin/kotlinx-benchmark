@@ -42,7 +42,7 @@ dependencies {
 benchmark {
     targets {
         register("benchmarks") {
-            if(this is JvmBenchmarkTarget) {
+            if (this is JvmBenchmarkTarget) {
                 jmhVersion = "1.21"
             }
         }
