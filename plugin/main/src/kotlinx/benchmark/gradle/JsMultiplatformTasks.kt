@@ -15,7 +15,7 @@ fun Project.processJsCompilation(target: JsBenchmarkTarget) {
     val benchmarkCompilation = createJsBenchmarkCompileTask(target)
 
     target.extension.configurations.forEach {
-        createJsEngineBenchmarkExecTask(it, target, benchmarkCompilation)
+        createJsEngineBenchmarkExecTask(it, target, benchmarkCompilation, KotlinJsBinaryMode.PRODUCTION)
     }
 }
 

@@ -85,10 +85,14 @@ fun <T> Any.tryGetClass(className: String): Class<T>? {
 }
 
 @KotlinxBenchmarkPluginInternalApi
-fun Task.setupReporting(target: BenchmarkTarget, config: BenchmarkConfiguration): File {
+fun Task.setupReporting(target: BenchmarkTarget, config: BenchmarkConfiguration): File =
+    setupReporting(target, config, "", "")
+
+@KotlinxBenchmarkPluginInternalApi
+fun Task.setupReporting(target: BenchmarkTarget, config: BenchmarkConfiguration, fileNamePrefix: String, fileNamePostfix: String): File {
     extensions.extraProperties.set("idea.internal.test", project.getSystemProperty("idea.active"))
     val reportsDir = project.benchmarkReportsDir(config, target)
-    val reportFile = reportsDir.resolve("${target.name}.${config.reportFileExt()}")
+    val reportFile = reportsDir.resolve("$fileNamePrefix${target.name}$fileNamePostfix.${config.reportFileExt()}")
     val configName = config.name
     val targetName = target.name
     doFirst {
