@@ -5,6 +5,7 @@ class ProjectBuilder {
     private val targets = mutableMapOf<String, BenchmarkTarget>()
 
     var kotlinVersion: String = System.getProperty("kotlin_version")
+    var jvmToolchain: Int = 8
 
     fun configuration(name: String, configuration: BenchmarkConfiguration.() -> Unit = {}) {
         configurations[name] = BenchmarkConfiguration().apply(configuration)
@@ -27,7 +28,7 @@ benchmark {
 }
             """.trimIndent()
 
-        return generateBuildScript(kotlinVersion) + "\n\n" + original + "\n\n" + script
+        return generateBuildScript(kotlinVersion, jvmToolchain) + "\n\n" + original + "\n\n" + script
     }
 }
 
@@ -35,7 +36,7 @@ private val kotlin_repo = System.getProperty("kotlin_repo_url").let {
     if (it.isNullOrBlank()) "" else "maven { url '$it' }"
 }
 
-private fun generateBuildScript(kotlinVersion: String) =
+private fun generateBuildScript(kotlinVersion: String, jvmToolchain: Int) =
     """
     buildscript {
         repositories {
@@ -56,5 +57,9 @@ private fun generateBuildScript(kotlinVersion: String) =
         $kotlin_repo
         maven { url '${System.getProperty("runtime_repo_url")}' }
         mavenCentral()
+    }
+    
+    kotlin {
+        jvmToolchain($jvmToolchain)
     }
     """.trimIndent()

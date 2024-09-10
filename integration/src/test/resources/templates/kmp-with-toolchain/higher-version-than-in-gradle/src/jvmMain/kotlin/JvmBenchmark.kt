@@ -1,7 +1,6 @@
 package test
 
 import kotlinx.benchmark.*
-import kotlin.math.*
 
 // Don't really need to measure anything here, just check that the benchmark works
 @State(Scope.Benchmark)
@@ -9,7 +8,16 @@ import kotlin.math.*
 @Measurement(iterations = 1, time = 100, timeUnit = BenchmarkTimeUnit.MILLISECONDS)
 @OutputTimeUnit(BenchmarkTimeUnit.MILLISECONDS)
 @BenchmarkMode(Mode.Throughput)
-open class CommonBenchmark {
+open class JvmBenchmark {
+    private val arrayList = java.util.ArrayList<Int>()
+
+    @Setup
+    fun setup() {
+        // Methods from JDK21
+        arrayList.addFirst(0)
+        arrayList.addLast(1)
+    }
+
     @Benchmark
-    open fun mathBenchmark() = 3.14
+    open fun benchmark() = arrayList.size
 }

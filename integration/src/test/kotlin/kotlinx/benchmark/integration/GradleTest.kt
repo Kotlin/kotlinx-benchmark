@@ -22,11 +22,14 @@ abstract class GradleTest {
         print: Boolean = false,
         gradleVersion: GradleTestVersion? = null,
         kotlinVersion: String? = null,
+        jvmToolchain: Int? = null,
         build: ProjectBuilder.() -> Unit = {}
     ): Runner {
         val builder = ProjectBuilder().apply {
             kotlinVersion?.let { this.kotlinVersion = it }
+            jvmToolchain?.let { this.jvmToolchain = it }
         }.apply(build)
+        rootProjectDir.deleteRecursively()
         templates.resolve(name).copyRecursively(rootProjectDir)
         file("build.gradle").modify(builder::build)
         val settingsFile = file("settings.gradle")
