@@ -1,5 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import kotlinx.team.infra.InfraExtension
+import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 buildscript {
     repositories {
@@ -41,7 +43,7 @@ extensions.configure<InfraExtension> {
     }
 }
 
-logger.info("Using Kotlin ${libs.versions.kotlin.get()} for project ${project.name}")
+logger.info("Using Kotlin ${libs.versions.kotlin.asProvider().get()} for project ${project.name}")
 
 repositories {
     mavenCentral()
@@ -83,14 +85,26 @@ sourceSets {
     }
 }
 
+kotlin {
+    @OptIn(ExperimentalBuildToolsApi::class, ExperimentalKotlinGradlePluginApi::class)
+    compilerVersion = libs.versions.kotlin.`for`.gradle.plugin.get()
+}
+
 tasks.compileKotlin {
     compilerOptions {
         optIn.addAll(
                 "kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi",
                 "kotlin.RequiresOptIn",
         )
-        @Suppress("DEPRECATION")
-        apiVersion = KotlinVersion.KOTLIN_1_4 // the version of Kotlin embedded in Gradle
+        /**
+         * Those versions are configured according to https://docs.gradle.org/current/userguide/compatibility.html
+         * and the Kotlin compiler compatibility policy stating that Kotlin 1.4 is compatible with 1.5 binaries
+         */
+        @Suppress("DEPRECATION", "DEPRECATION_ERROR")
+        run {
+            languageVersion = KotlinVersion.KOTLIN_1_5
+            apiVersion = KotlinVersion.KOTLIN_1_4
+        }
     }
 }
 
@@ -126,7 +140,7 @@ val generatePluginConstants by tasks.registering {
     val minSupportedKotlinVersion = libs.versions.minSupportedKotlin
     inputs.property("minSupportedKotlinVersion", minSupportedKotlinVersion)
 
-    val kotlinCompilerVersion = libs.versions.kotlin
+    val kotlinCompilerVersion = libs.versions.kotlin.asProvider()
     inputs.property("kotlinCompilerVersion", kotlinCompilerVersion)
 
     doLast {
