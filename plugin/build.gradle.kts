@@ -1,5 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import kotlinx.team.infra.InfraExtension
+import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
+import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 buildscript {
     repositories {
@@ -83,14 +85,23 @@ sourceSets {
     }
 }
 
+kotlin {
+    @OptIn(ExperimentalBuildToolsApi::class, ExperimentalKotlinGradlePluginApi::class)
+    compilerVersion = "2.0.20" // Kotlin 2.1 removes support for the used language version / api version: KT-60521
+}
+
 tasks.compileKotlin {
     compilerOptions {
         optIn.addAll(
                 "kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi",
                 "kotlin.RequiresOptIn",
         )
-        @Suppress("DEPRECATION")
-        apiVersion = KotlinVersion.KOTLIN_1_4 // the version of Kotlin embedded in Gradle
+        /*
+         * Those versions are configured according to https://docs.gradle.org/current/userguide/compatibility.html
+         * and the Kotlin compiler compatibility policy stating that Kotlin 1.4 is compatible with 1.5 binaries
+         */
+        languageVersion = KotlinVersion.KOTLIN_1_5
+        apiVersion = KotlinVersion.KOTLIN_1_4
     }
 }
 
