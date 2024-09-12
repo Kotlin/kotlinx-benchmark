@@ -80,7 +80,7 @@ logger.info("Using Kotlin Gradle Plugin $currentKgpVersion")
 val kotlinVersionOverride = providers.gradleProperty("kotlin_version").getOrNull()
 
 if (kotlinVersionOverride != null) {
-    val versionCatalogKotlinVersion = libs.versions.kotlin.get()
+    val versionCatalogKotlinVersion = libs.versions.kotlin.asProvider().get()
     if (kotlinVersionOverride != versionCatalogKotlinVersion) {
         throw IllegalStateException("Kotlin version in Version Catalog was not overridden. Expected:$kotlinVersionOverride, actual:$versionCatalogKotlinVersion.")
     }
