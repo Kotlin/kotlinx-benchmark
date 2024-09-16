@@ -41,20 +41,24 @@ private fun generateBuildScript(kotlinVersion: String) =
         repositories {
             $kotlin_repo
             maven { url '${System.getProperty("plugin_repo_url")}' }
+            google()
             mavenCentral()
         }
         dependencies {
             classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion'
             classpath 'org.jetbrains.kotlinx:kotlinx-benchmark-plugin:0.5.0-SNAPSHOT'
+            classpath 'com.android.tools.build:gradle:7.3.1'
         }
     }
     
     apply plugin: 'kotlin-multiplatform'
     apply plugin: 'org.jetbrains.kotlinx.benchmark'
+    apply plugin: 'com.android.library'
     
     repositories {
         $kotlin_repo
         maven { url '${System.getProperty("runtime_repo_url")}' }
+        google()
         mavenCentral()
     }
     """.trimIndent()
