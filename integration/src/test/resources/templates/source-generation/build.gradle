@@ -1,10 +1,29 @@
 import org.jetbrains.kotlin.konan.target.KonanTarget
 import org.jetbrains.kotlin.konan.target.HostManager
 
+android {
+    compileSdk 34
+
+    defaultConfig {
+        minSdk = 29
+        targetSdk = 34
+    }
+
+
+    buildTypes {
+        release {}
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+}
+
 kotlin {
     jvm { }
     js { nodejs() }
     wasmJs { d8() }
+    androidTarget {}
 
     if (HostManager.hostIsLinux) linuxX64('native')
     if (HostManager.hostIsMingw) mingwX64('native')
@@ -18,5 +37,6 @@ benchmark {
         register("js")
         register("wasmJs")
         register("native")
+        register("android")
     }
 }
