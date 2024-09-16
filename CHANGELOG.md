@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 0.4.12
+
+- Support debug build configuration for K/N [#189](https://github.com/Kotlin/kotlinx-benchmark/issues/189)
+- Improve the warning message on incompatible host for a registered native target [#231](https://github.com/Kotlin/kotlinx-benchmark/pull/231)
+
 ## 0.4.11
 
 - Take into consideration `jvmToolchain` when running benchmarks [#176](https://github.com/Kotlin/kotlinx-benchmark/issues/176)
