@@ -26,7 +26,7 @@ buildscript {
                 classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
             }
         }
-        classpath("com.android.tools.build:gradle:8.2.2")
+        classpath("com.android.tools.build:gradle:8.5.1")
     }
 }
 

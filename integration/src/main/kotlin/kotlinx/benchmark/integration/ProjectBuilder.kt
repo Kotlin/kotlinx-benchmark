@@ -57,7 +57,7 @@ private fun generateBuildScript(kotlinVersion: String, jvmToolchain: Int) =
         dependencies {
             classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion'
             classpath 'org.jetbrains.kotlinx:kotlinx-benchmark-plugin:0.5.0-SNAPSHOT'
-            classpath 'com.android.tools.build:gradle:7.3.1'
+            classpath 'com.android.tools.build:gradle:8.5.1'
         }
     }
     
