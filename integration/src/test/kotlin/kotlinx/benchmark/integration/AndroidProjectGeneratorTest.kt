@@ -5,7 +5,7 @@ import kotlin.test.assertTrue
 
 class AndroidProjectGeneratorTest: GradleTest() {
     private fun testAndroidProjectGeneration(setupBlock: Runner.() -> Unit, checkBlock: Runner.() -> Unit) {
-        project("source-generation").apply {
+        project("source-generation", print = true, gradleVersion = GradleTestVersion.v8_7).apply {
             setupBlock()
             runAndSucceed("androidReleaseBenchmarkGenerate")
             checkBlock()
