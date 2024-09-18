@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.konan.target.HostManager
 
 android {
     compileSdk 34
+    namespace = "org.jetbrains.kotlinx.tests"
 
     defaultConfig {
         minSdk = 29
@@ -20,6 +21,8 @@ android {
 }
 
 kotlin {
+    jvmToolchain(8)
+
     jvm { }
     js { nodejs() }
     wasmJs { d8() }
