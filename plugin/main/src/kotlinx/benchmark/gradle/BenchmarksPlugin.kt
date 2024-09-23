@@ -123,8 +123,9 @@ constructor(
                     println("processConfigurations: AndroidBenchmarkTarget")
                     config.target.compilations.all { compilation ->
                         // This block is called for each compilation when they are materialized
-                        println("handling compilation: $compilation")
-                        processAndroidCompilation(config, compilation)
+                        if (compilation.compilationName == "release") {
+                            processAndroidCompilation(config, compilation)
+                        }
                     }
                 }
             }

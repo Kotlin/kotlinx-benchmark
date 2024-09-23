@@ -239,7 +239,7 @@ private fun generateCommonMeasurableMethod(
 
     methodSpecBuilder
         .addStatement(
-            "val state = %T(warmupCount = $warmupIterations, repeatCount = $measurementIterations)",
+            "val state = %T(repeatCount = ${warmupIterations + measurementIterations})",
             ClassName("androidx.benchmark", "BenchmarkState")
         )
         .beginControlFlow("while (state.keepRunning())")
@@ -247,7 +247,11 @@ private fun generateCommonMeasurableMethod(
         .endControlFlow()
         .addStatement("val measurementResult = state.getMeasurementTimeNs()")
         .beginControlFlow("measurementResult.forEachIndexed { index, time ->")
-        .addStatement("Log.d(\"KotlinBenchmark\", \"Iteration \${index + 1}: \$time ns\")")
+        .beginControlFlow("if (index < $warmupIterations)")
+        .addStatement("Log.d(\"KotlinBenchmark\", \"Warmup \${index + 1}: \$time ns\")")
+        .nextControlFlow("else")
+        .addStatement("Log.d(\"KotlinBenchmark\", \"Iteration \${index - $warmupIterations + 1}: \$time ns\")")
+        .endControlFlow()
         .endControlFlow()
 
     typeSpecBuilder.addFunction(methodSpecBuilder.build())
