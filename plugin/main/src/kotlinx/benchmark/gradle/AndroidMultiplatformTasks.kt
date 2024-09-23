@@ -104,6 +104,9 @@ private fun Project.createAndroidBenchmarkGenerateSourceTask(target: AndroidBenc
                 val targetDir = generatedAndroidProjectDir(target, compilation)
                     .resolve("microbenchmark/src/androidTest/kotlin")
 
+                if (targetDir.exists()) {
+                    targetDir.deleteRecursively()
+                }
                 targetDir.mkdirs()
 
                 generateBenchmarkSourceFiles(targetDir, classDescriptors)
@@ -193,6 +196,7 @@ private fun captureLogcatOutput() {
                                     .replace(Regex("\\[\\d+: "), "[")
                     )
 
+                line.contains("Warmup") -> println(line.substring(line.indexOf("Warmup")))
                 line.contains("Iteration") -> println(line.substring(line.indexOf("Iteration")))
                 line.contains("run finished") -> println(line.substring(line.indexOf("run finished")))
                 line.contains("finished") -> println()
