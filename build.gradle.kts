@@ -1,6 +1,8 @@
 import kotlinx.team.infra.InfraExtension
 import kotlinx.validation.ExperimentalBCVApi
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.plugin.getKotlinPluginVersion
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
 import tasks.CheckReadmeTask
 
 buildscript {
@@ -90,6 +92,20 @@ if (kotlinVersionOverride != null) {
 allprojects {
     repositories {
         addDevRepositoryIfEnabled(this, project)
+    }
+
+    tasks.withType<KotlinCompilationTask<*>>().configureEach {
+        compilerOptions {
+            getOverriddenKotlinLanguageVersion(project)?.let {
+                languageVersion = KotlinVersion.fromVersion(it)
+            }
+            getOverriddenKotlinApiVersion(project)?.let {
+                apiVersion = KotlinVersion.fromVersion(it)
+            }
+
+            progressiveMode = true
+            allWarningsAsErrors = true
+        }
     }
 }
 

@@ -25,16 +25,32 @@ benchmark {
     }
 }
 
-private val kotlin_repo = System.getProperty("kotlin_repo_url").let {
-    if (it.isNullOrBlank()) "" else "maven { url '$it' }"
+private val kotlin_repo = System.getProperty("kotlin_repo_url")?.let {
+    "maven { url '$it' }"
+}.orEmpty()
+
+private val plugin_repo_url = System.getProperty("plugin_repo_url")!!.let {
+    "maven { url '$it' }"
 }
+
+private val runtime_repo_url = System.getProperty("runtime_repo_url")!!.let {
+    "maven { url '$it' }"
+}
+
+private val kotlin_language_version = System.getProperty("kotlin_language_version")?.let {
+    "languageVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.fromVersion('$it')"
+}.orEmpty()
+
+private val kotlin_api_version = System.getProperty("kotlin_api_version")?.let {
+    "apiVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.fromVersion('$it')"
+}.orEmpty()
 
 private fun generateBuildScript(kotlinVersion: String, jvmToolchain: Int) =
     """
     buildscript {
         repositories {
             $kotlin_repo
-            maven { url '${System.getProperty("plugin_repo_url")}' }
+            $plugin_repo_url
             mavenCentral()
         }
         dependencies {
@@ -48,7 +64,7 @@ private fun generateBuildScript(kotlinVersion: String, jvmToolchain: Int) =
     
     repositories {
         $kotlin_repo
-        maven { url '${System.getProperty("runtime_repo_url")}' }
+        $runtime_repo_url
         mavenCentral()
     }
     
@@ -61,6 +77,16 @@ private fun generateBuildScript(kotlinVersion: String, jvmToolchain: Int) =
                     implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.5.0-SNAPSHOT")
                 }
             }
+        }
+    }
+    
+    tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask).configureEach {
+        compilerOptions {
+            $kotlin_language_version
+            $kotlin_api_version
+
+            progressiveMode = true
+            allWarningsAsErrors = true
         }
     }
     """.trimIndent()
