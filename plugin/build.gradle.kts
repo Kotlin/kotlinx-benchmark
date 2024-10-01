@@ -33,9 +33,6 @@ plugins {
 apply(plugin = "kotlinx.team.infra")
 
 extensions.configure<InfraExtension> {
-    teamcity {
-        libraryStagingRepoDescription = project.name
-    }
     publishing {
         include(":")
 

@@ -35,17 +35,15 @@ plugins {
 apply(plugin = "kotlinx.team.infra")
 
 extensions.configure<InfraExtension> {
-    teamcity {
-        libraryStagingRepoDescription = project.name
-    }
-
     publishing {
         include(":kotlinx-benchmark-runtime")
 
         libraryRepoUrl = "https://github.com/Kotlin/kotlinx-benchmark"
 
         if (project.findProperty("publication_repository") == "sonatype") {
-            sonatype {}
+            sonatype {
+                libraryStagingRepoDescription = project.name
+            }
         }
     }
 }
