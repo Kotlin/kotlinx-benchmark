@@ -100,6 +100,7 @@ kotlin {
         @Suppress("DEPRECATION", "DEPRECATION_ERROR")
         run {
             languageVersion = KotlinVersion.KOTLIN_1_5
+            // The API available in the Kotlin stdlib embedded in the minimum supported Gradle.
             apiVersion = KotlinVersion.KOTLIN_1_4
         }
     }
