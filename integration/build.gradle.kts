@@ -23,8 +23,16 @@ tasks.test {
 
     systemProperty("plugin_repo_url", plugin.projectDir.resolve("build/maven").absoluteFile.invariantSeparatorsPath)
     systemProperty("runtime_repo_url", rootProject.buildDir.resolve("maven").absoluteFile.invariantSeparatorsPath)
-    systemProperty("kotlin_repo_url", rootProject.properties["kotlin_repo_url"])
+    getKotlinDevRepositoryUrl(project)?.let {
+        systemProperty("kotlin_repo_url", it)
+    }
     systemProperty("kotlin_version", libs.versions.kotlin.asProvider().get())
+    getOverriddenKotlinLanguageVersion(project)?.let {
+        systemProperty("kotlin_language_version", it)
+    }
+    getOverriddenKotlinApiVersion(project)?.let {
+        systemProperty("kotlin_api_version", it)
+    }
     systemProperty("minSupportedGradleVersion", libs.versions.minSupportedGradle.get())
     systemProperty("minSupportedKotlinVersion", libs.versions.minSupportedKotlin.get())
 }

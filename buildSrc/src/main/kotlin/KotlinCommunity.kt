@@ -3,7 +3,6 @@
 import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.*
 import java.net.*
-import java.util.logging.Logger
 
 /*
  * Functions in this file are responsible for configuring kotlinx-benchmarks build against a custom dev version
@@ -22,8 +21,8 @@ import java.util.logging.Logger
  *   empty string otherwise
  */
 fun getKotlinDevRepositoryUrl(project: Project): String? {
-    val url = project.rootProject.properties["kotlin_repo_url"] as? String
-    if (url != null) {
+    val url = project.providers.gradleProperty("kotlin_repo_url").orNull
+    if (!url.isNullOrBlank()) {
         project.logger.info("""Configured Kotlin Compiler repository url: '$url' for project ${project.name}""")
     }
     return url
@@ -37,4 +36,30 @@ fun addDevRepositoryIfEnabled(repositoryHandler: RepositoryHandler, project: Pro
     repositoryHandler.maven {
         url = URI.create(devRepoUrl)
     }
+}
+
+/**
+ * Should be used for running against non-released Kotlin compiler on a system test level.
+ *
+ * @return a Kotlin API version parametrized from command line or gradle.properties, null otherwise
+ */
+fun getOverriddenKotlinApiVersion(project: Project): String? {
+    val apiVersion = project.providers.gradleProperty("kotlin_api_version").orNull
+    if (!apiVersion.isNullOrBlank()) {
+        project.logger.info("""Configured Kotlin API version: '$apiVersion' for project ${project.name}""")
+    }
+    return apiVersion
+}
+
+/**
+ * Should be used for running against non-released Kotlin compiler on a system test level.
+ *
+ * @return a Kotlin Language version parametrized from command line or gradle.properties, null otherwise
+ */
+fun getOverriddenKotlinLanguageVersion(project: Project): String? {
+    val languageVersion = project.providers.gradleProperty("kotlin_language_version").orNull
+    if (!languageVersion.isNullOrBlank()) {
+        project.logger.info("""Configured Kotlin Language version: '$languageVersion' for project ${project.name}""")
+    }
+    return languageVersion
 }

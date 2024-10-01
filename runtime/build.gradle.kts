@@ -59,13 +59,14 @@ kotlin {
 
     targets.configureEach {
         compilations.configureEach {
-            compilerOptions.configure {
-                allWarningsAsErrors = true
-                freeCompilerArgs.add("-Xexpect-actual-classes")
-                optIn.addAll(
-                    "kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi",
-                    "kotlin.RequiresOptIn",
-                )
+            compileTaskProvider.configure {
+                compilerOptions {
+                    freeCompilerArgs.add("-Xexpect-actual-classes")
+                    optIn.addAll(
+                        "kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi",
+                        "kotlin.RequiresOptIn",
+                    )
+                }
             }
         }
     }
@@ -73,9 +74,6 @@ kotlin {
     sourceSets.configureEach {
         kotlin.srcDirs(listOf("$name/src"))
         resources.srcDirs(listOf("$name/resources"))
-        languageSettings {
-            progressiveMode = true
-        }
     }
 
     sourceSets {
