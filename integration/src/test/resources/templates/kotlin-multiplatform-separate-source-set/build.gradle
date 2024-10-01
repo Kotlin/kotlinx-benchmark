@@ -1,0 +1,16 @@
+kotlin {
+    jvm {
+        compilations.create('custom') { associateWith(compilations.main) }
+    }
+    js {
+        nodejs()
+        compilations.create('custom') { associateWith(compilations.main) }
+    }
+}
+
+benchmark {
+    targets {
+        register("jvmCustom")
+        register("jsCustom")
+    }
+}

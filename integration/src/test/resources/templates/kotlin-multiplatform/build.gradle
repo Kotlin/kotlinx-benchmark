@@ -2,9 +2,7 @@ import org.jetbrains.kotlin.konan.target.KonanTarget
 import org.jetbrains.kotlin.konan.target.HostManager
 
 kotlin {
-    jvm {
-        compilations.create('benchmark') { associateWith(compilations.main) }
-    }
+    jvm {}
     js { nodejs() }
     wasmJs { d8() }
 
@@ -12,12 +10,6 @@ kotlin {
     if (HostManager.hostIsMingw) mingwX64('native')
     if (HostManager.host == KonanTarget.MACOS_X64.INSTANCE) macosX64('native')
     if (HostManager.host == KonanTarget.MACOS_ARM64.INSTANCE) macosArm64('native')
-
-    sourceSets {
-        jvmBenchmark {
-            dependsOn(jvmMain)
-        }
-    }
 }
 
 benchmark {
