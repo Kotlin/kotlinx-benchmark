@@ -31,19 +31,13 @@ private fun Project.createWasmBenchmarkCompileTask(target: WasmBenchmarkTarget):
     kotlinTarget.binaries.executable(benchmarkCompilation)
 
     benchmarkCompilation.apply {
-        with(kotlinSourceSets.single()) {
-            kotlin.setSrcDirs(files("$benchmarkBuildDir/sources"))
-            resources.setSrcDirs(files())
+        val sourceSet = kotlinSourceSets.single()
 
-            dependencies {
-                implementation(compilation.output.allOutputs)
-            }
-            project.configurations.let {
-                it.getByName(this.implementationConfigurationName).extendsFrom(
-                    it.getByName(compilation.compileDependencyConfigurationName)
-                )
-            }
-        }
+        sourceSet.resources.setSrcDirs(files())
+        sourceSet.kotlin.setSrcDirs(files("$benchmarkBuildDir/sources"))
+
+        associateWith(compilation)
+
         compileTaskProvider.configure {
             it.apply {
                 group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
