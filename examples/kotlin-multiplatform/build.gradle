@@ -20,7 +20,7 @@ kotlin {
         compilations.create("defaultExecutor") { associateWith(compilations.main) }
         compilations.create("builtInExecutor") { associateWith(compilations.main) }
     }
-    wasm('wasmJs') { nodejs() }
+    wasmJs { nodejs() }
 
     // Native targets
     macosX64()

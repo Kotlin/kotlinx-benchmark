@@ -6,7 +6,7 @@ kotlin {
         compilations.create('benchmark') { associateWith(compilations.main) }
     }
     js { nodejs() }
-    wasm('wasmJs') { d8() }
+    wasmJs { d8() }
 
     if (HostManager.hostIsLinux) linuxX64('native')
     if (HostManager.hostIsMingw) mingwX64('native')
