@@ -18,6 +18,7 @@ class Runner(
             .withProjectDir(projectDir)
             .withArguments(*(defaultArguments() + tasks))
             .withGradleVersion(gradleVersion.versionString)
+            .forwardStdError(System.err.bufferedWriter())
             .run {
                 if (print) forwardStdOutput(System.out.bufferedWriter()) else this
             }
