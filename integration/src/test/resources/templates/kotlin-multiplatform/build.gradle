@@ -14,21 +14,8 @@ kotlin {
     if (HostManager.host == KonanTarget.MACOS_ARM64.INSTANCE) macosArm64('native')
 
     sourceSets {
-        commonMain {
-            dependencies {
-                implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.5.0-SNAPSHOT")
-            }
-        }
-        jvmMain {
-        }
         jvmBenchmark {
             dependsOn(jvmMain)
-        }
-        jsMain {
-        }
-        wasmJsMain {
-        }
-        nativeMain {
         }
     }
 }

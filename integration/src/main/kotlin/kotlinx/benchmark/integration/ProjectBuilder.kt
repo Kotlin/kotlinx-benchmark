@@ -61,5 +61,13 @@ private fun generateBuildScript(kotlinVersion: String, jvmToolchain: Int) =
     
     kotlin {
         jvmToolchain($jvmToolchain)
+
+        sourceSets {
+            commonMain {
+                dependencies {
+                    implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.5.0-SNAPSHOT")
+                }
+            }
+        }
     }
     """.trimIndent()
