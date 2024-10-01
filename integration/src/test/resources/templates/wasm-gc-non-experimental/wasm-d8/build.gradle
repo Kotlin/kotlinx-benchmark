@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.targets.js.d8.D8RootExtension
 
 kotlin {
-    wasm('wasmJs') {
+    wasmJs {
         d8()
     }
 
