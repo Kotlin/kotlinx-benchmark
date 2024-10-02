@@ -25,6 +25,9 @@ tasks.test {
     systemProperty("runtime_repo_url", rootProject.buildDir.resolve("maven").absoluteFile.invariantSeparatorsPath)
     systemProperty("kotlin_repo_url", rootProject.properties["kotlin_repo_url"])
     systemProperty("kotlin_version", libs.versions.kotlin.asProvider().get())
+    getOverriddenKotlinNativeVersion(project)?.let {
+        systemProperty("kotlin.native.version", it)
+    }
     systemProperty("minSupportedGradleVersion", libs.versions.minSupportedGradle.get())
     systemProperty("minSupportedKotlinVersion", libs.versions.minSupportedKotlin.get())
 }

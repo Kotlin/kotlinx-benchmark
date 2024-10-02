@@ -16,7 +16,7 @@ class Runner(
     private fun gradle(vararg tasks: String): GradleRunner =
         GradleRunner.create()
             .withProjectDir(projectDir)
-            .withArguments(*(defaultArguments() + tasks))
+            .withArguments(*(defaultArguments() + kotlinNativeVersion + tasks))
             .withGradleVersion(gradleVersion.versionString)
             .run {
                 if (print) forwardStdOutput(System.out.bufferedWriter()) else this
@@ -42,6 +42,11 @@ class Runner(
     }
 
     private fun defaultArguments(): Array<String> = arrayOf("--stacktrace")
+
+    // Forward the Kotlin Native distribution version to test projects
+    private val kotlinNativeVersion = "kotlin.native.version".let { property ->
+        System.getProperty(property)?.let { arrayOf("-P$property=$it") } ?: emptyArray()
+    }
 
     fun updateAnnotations(filePath: String, annotationsSpecifier: AnnotationsSpecifier.() -> Unit) {
         val annotations = AnnotationsSpecifier().also(annotationsSpecifier)
