@@ -63,3 +63,16 @@ fun getOverriddenKotlinLanguageVersion(project: Project): String? {
     }
     return languageVersion
 }
+
+/**
+ * Should be used for running against non-released Kotlin compiler on a system test level.
+ *
+ * @return a Kotlin API version parametrized from command line or gradle.properties, null otherwise
+ */
+fun getOverriddenKotlinNativeVersion(project: Project): String? {
+    val nativeVersion = project.providers.gradleProperty("kotlin.native.version").orNull
+    if (!nativeVersion.isNullOrBlank()) {
+        project.logger.info("""Configured Kotlin Native distribution version: '$nativeVersion' for project ${project.name}""")
+    }
+    return nativeVersion
+}

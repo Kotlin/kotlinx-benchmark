@@ -33,6 +33,9 @@ tasks.test {
     getOverriddenKotlinApiVersion(project)?.let {
         systemProperty("kotlin_api_version", it)
     }
+    getOverriddenKotlinNativeVersion(project)?.let {
+        systemProperty("kotlin.native.version", it)
+    }
     systemProperty("minSupportedGradleVersion", libs.versions.minSupportedGradle.get())
     systemProperty("minSupportedKotlinVersion", libs.versions.minSupportedKotlin.get())
 }
