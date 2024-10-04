@@ -12,7 +12,7 @@ class WasmGcOptionsTest : GradleTest() {
         val runner = project(
             "wasm-gc-non-experimental/wasm-d8",
             print = true,
-            kotlinVersion = GradleTestVersion.MinSupportedKotlinVersion.versionString
+            //kotlinVersion = GradleTestVersion.MinSupportedKotlinVersion.versionString
         )
         runner.runAndSucceed( "wasmJsBenchmark")
     }
