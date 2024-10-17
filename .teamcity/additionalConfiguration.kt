@@ -9,7 +9,6 @@ import jetbrains.buildServer.configs.kotlin.DslContext
 import jetbrains.buildServer.configs.kotlin.ParameterDisplay
 import jetbrains.buildServer.configs.kotlin.Project
 import jetbrains.buildServer.configs.kotlin.buildFeatures.commitStatusPublisher
-import jetbrains.buildServer.configs.kotlin.buildSteps.GradleBuildStep
 import jetbrains.buildServer.configs.kotlin.buildSteps.gradle
 
 fun Project.additionalConfiguration() {
@@ -28,9 +27,6 @@ fun Project.additionalConfiguration() {
         }
     }
     platforms.forEach { platform ->
-        val gradleBuild = knownBuilds.buildOn(platform).steps.items.single() as GradleBuildStep
-        gradleBuild.tasks += " " + "fastBenchmark"
-
         knownBuilds.deployPublish.params {
             select("reverse.dep.*.system.publication_repository", "space", display = ParameterDisplay.PROMPT, label = "Publication Repository", options = listOf("space", "sonatype"))
         }
