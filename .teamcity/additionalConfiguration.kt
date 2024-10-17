@@ -106,8 +106,7 @@ fun Project.buildWithKotlinMaster(platform: Platform, versionBuild: BuildType) =
         artifacts {
             buildRule = lastSuccessful()
             cleanDestination = true
-            artifactRules = "+:maven.zip!**=>artifacts/kotlin\n" +
-                    "+:kotlin-native-prebuilt-linux-x86_64-%$kotlinVersionParameter%.tar.gz!**=>artifacts/native"
+            artifactRules = "+:maven.zip!**=>artifacts/kotlin"
         }
     }
 
