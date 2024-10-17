@@ -3,11 +3,7 @@
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
-import jetbrains.buildServer.configs.kotlin.BuildType
-import jetbrains.buildServer.configs.kotlin.BuildTypeSettings
-import jetbrains.buildServer.configs.kotlin.DslContext
-import jetbrains.buildServer.configs.kotlin.ParameterDisplay
-import jetbrains.buildServer.configs.kotlin.Project
+import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.commitStatusPublisher
 import jetbrains.buildServer.configs.kotlin.buildSteps.gradle
 
@@ -37,12 +33,18 @@ fun Project.additionalConfiguration() {
     }
 
     deployPlugin()
+
+    // Check with Kotlin master only on Linux
+    buildWithKotlinMaster(Platform.Linux, knownBuilds.buildVersion).also {
+        knownBuilds.buildAll.dependsOnSnapshot(it, onFailure = FailureAction.ADD_PROBLEM)
+    }
 }
 
 const val gradlePublishKey = "gradle.publish.key"
 const val gradlePublishSecret = "gradle.publish.secret"
 
 const val DEPLOY_PUBLISH_PLUGIN_ID = "Deploy_Publish_Plugin"
+const val BUILD_WITH_KOTLIN_MASTER_ID = "Build_with_Kotlin_Master_Linux"
 
 fun Project.deployPlugin() = BuildType {
     id(DEPLOY_PUBLISH_PLUGIN_ID)
@@ -81,4 +83,48 @@ fun Project.deployPlugin() = BuildType {
             gradleWrapperPath = ""
         }
     }
+}.also { buildType(it) }
+
+fun Project.buildWithKotlinMaster(platform: Platform, versionBuild: BuildType) = BuildType {
+    id(BUILD_WITH_KOTLIN_MASTER_ID)
+    this.name = "Build with Kotlin Master (${platform.buildTypeName()})"
+
+    requirements {
+        contains("teamcity.agent.jvm.os.name", platform.teamcityAgentName())
+    }
+    commonConfigure()
+
+    dependsOnSnapshot(versionBuild)
+    params {
+        param(versionSuffixParameter, versionBuild.depParamRefs[versionSuffixParameter].ref)
+        param(teamcitySuffixParameter, versionBuild.depParamRefs[teamcitySuffixParameter].ref)
+    }
+
+    val kotlinVersionParameter = "dep.Kotlin_KotlinPublic_BuildNumber.deployVersion"
+
+    dependsOn(AbsoluteId("Kotlin_KotlinPublic_Artifacts")) {
+        artifacts {
+            buildRule = lastSuccessful()
+            cleanDestination = true
+            artifactRules = "+:maven.zip!**=>artifacts/kotlin\n" +
+                    "+:kotlin-native-prebuilt-linux-x86_64-%$kotlinVersionParameter%.tar.gz!**=>artifacts/native"
+        }
+    }
+
+    steps {
+        gradle {
+            name = "Build and Test ${platform.buildTypeName()} Binaries"
+            jdkHome = "%env.$jdk%"
+            jvmArgs = "-Xmx1g"
+            tasks = "clean publishToBuildLocal check"
+            // --continue is needed to run tests for all targets even if one target fails
+            gradleParams = "--info --stacktrace -P$versionSuffixParameter=%$versionSuffixParameter% -P$teamcitySuffixParameter=%$teamcitySuffixParameter% --continue"
+            gradleParams += " -Pkotlin_repo_url=file://%teamcity.build.checkoutDir%/artifacts/kotlin -Pkotlin_version=%$kotlinVersionParameter% -Pkotlin.native.version=%$kotlinVersionParameter%"
+            buildFile = ""
+            gradleWrapperPath = ""
+        }
+    }
+
+    // What files to publish as build artifacts
+    artifactRules = "+:build/maven=>maven\n+:build/api=>api\n+:artifacts"
 }.also { buildType(it) }
