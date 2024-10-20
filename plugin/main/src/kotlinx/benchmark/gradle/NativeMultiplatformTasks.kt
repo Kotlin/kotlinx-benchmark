@@ -18,7 +18,7 @@ fun Project.processNativeCompilation(target: NativeBenchmarkTarget) {
     val expectedHost = compilation.target.konanTarget
     val actualHost = HostManager.host
     if (expectedHost != actualHost) {
-        project.logger.warn("Skipping benchmarks for '${target.name}' because they cannot be run on current host '$actualHost' (expected host: '$expectedHost')")
+        project.logger.info("Skipping benchmarks for '${target.name}' because they cannot be run on current host '$actualHost' (expected host: '$expectedHost')")
         return
     }
 
