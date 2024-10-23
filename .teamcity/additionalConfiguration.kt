@@ -17,7 +17,7 @@ fun Project.additionalConfiguration() {
             publisher = github {
                 githubUrl = "https://api.github.com"
                 authType = storedToken {
-                    tokenId = "tc_token_id:CID_7db3007c46f7e30124f81ef54591b223:-1:4b5743ff-b95e-41b0-89d6-e9a50d3048db"
+                    tokenId = "tc_token_id:CID_7db3007c46f7e30124f81ef54591b223:-1:05a5bd7b-50f1-4d04-b542-b9283f6b0148"
                 }
             }
         }
