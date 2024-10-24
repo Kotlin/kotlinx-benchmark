@@ -14,7 +14,7 @@ To configure Kotlin/JVM and Java projects for benchmarking, follow these steps:
     ```kotlin
     // build.gradle.kts
     plugins {
-        id("org.jetbrains.kotlinx.benchmark") version "0.4.11"
+        id("org.jetbrains.kotlinx.benchmark") version "0.4.12"
     }
     ```
 
@@ -25,7 +25,7 @@ To configure Kotlin/JVM and Java projects for benchmarking, follow these steps:
     ```groovy
     // build.gradle
     plugins {
-        id 'org.jetbrains.kotlinx.benchmark' version '0.4.11'
+        id 'org.jetbrains.kotlinx.benchmark' version '0.4.12'
     }
     ```
 
@@ -66,7 +66,7 @@ To configure Kotlin/JVM and Java projects for benchmarking, follow these steps:
     ```kotlin
     // build.gradle.kts
     dependencies {
-        implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.11")
+        implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.12")
     }
     ```
 
@@ -77,7 +77,7 @@ To configure Kotlin/JVM and Java projects for benchmarking, follow these steps:
     ```groovy
     // build.gradle
     dependencies {
-        implementation 'org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.11'
+        implementation 'org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.12'
     }
     ```
 
