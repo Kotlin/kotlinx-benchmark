@@ -128,6 +128,7 @@ apiValidation {
 }
 
 val checkReadme by tasks.registering(CheckReadmeTask::class) {
+    enabled = providers.gradleProperty("min_supported_gradle_version").orNull.isNullOrBlank()
     minSupportedGradleVersion = libs.versions.minSupportedGradle
     minSupportedKotlinVersion = libs.versions.minSupportedKotlin
     readme = file("README.md")
