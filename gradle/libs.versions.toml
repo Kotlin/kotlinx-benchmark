@@ -9,6 +9,7 @@ squareup-kotlinpoet = "1.3.0"
 jmh = "1.21"
 gradle-pluginPublish = "0.21.0"
 
+# Note: This version can be overridden by passing `-Pmin_supported_gradle_version=<version>`
 minSupportedGradle = "7.4"
 minSupportedKotlin = "2.0.0"
 

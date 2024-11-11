@@ -117,8 +117,14 @@ fun Project.buildWithKotlinMaster(platform: Platform, versionBuild: BuildType) =
             jvmArgs = "-Xmx1g"
             tasks = "clean publishToBuildLocal check"
             // --continue is needed to run tests for all targets even if one target fails
-            gradleParams = "--info --stacktrace -P$versionSuffixParameter=%$versionSuffixParameter% -P$teamcitySuffixParameter=%$teamcitySuffixParameter% --continue"
-            gradleParams += " -Pkotlin_repo_url=file://%teamcity.build.checkoutDir%/artifacts/kotlin -Pkotlin_version=%$kotlinVersionParameter% -Pkotlin.native.version=%$kotlinVersionParameter%"
+            gradleParams = listOf(
+                "-x kotlinStoreYarnLock",
+                "--info", "--stacktrace", "--continue",
+                "-P$versionSuffixParameter=%$versionSuffixParameter%", "-P$teamcitySuffixParameter=%$teamcitySuffixParameter%",
+                "-Pkotlin_repo_url=file://%teamcity.build.checkoutDir%/artifacts/kotlin",
+                "-Pkotlin_version=%$kotlinVersionParameter%", "-Pkotlin.native.version=%$kotlinVersionParameter%",
+                "-Pmin_supported_gradle_version=7.6.3"
+            ).joinToString(separator = " ")
             buildFile = ""
             gradleWrapperPath = ""
         }

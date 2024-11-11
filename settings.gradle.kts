@@ -11,12 +11,17 @@ pluginManagement {
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
-            val kotlinVersion = providers.gradleProperty("kotlin_version").orNull
-            if (!kotlinVersion.isNullOrBlank()) {
-                // Override the default Kotlin version.
-                // The only intended use-case is for testing dev Kotlin builds using kotlinx-benchmark.
-                // The Kotlin version should not be overridden during regular development.
-                version("kotlin", kotlinVersion)
+            listOf(
+                "kotlin" to "kotlin_version",
+                "minSupportedGradle" to "min_supported_gradle_version",
+            ).forEach { (versionName, propertyName) ->
+                val overrideVersion = providers.gradleProperty(propertyName).orNull
+                if (!overrideVersion.isNullOrBlank()) {
+                    // Override the default version.
+                    // The only intended use-case is for testing dev Kotlin builds using kotlinx-benchmark.
+                    // These versions should not be overridden during regular development.
+                    version(versionName, overrideVersion)
+                }
             }
         }
     }
