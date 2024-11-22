@@ -43,7 +43,10 @@ kotlin {
     jvm()
     js { nodejs() }
     @OptIn(ExperimentalWasmDsl::class)
-    wasm("wasmJs") { d8() }
+    wasmJs {
+        nodejs()
+        d8()
+    }
 
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     applyDefaultHierarchyTemplate {
