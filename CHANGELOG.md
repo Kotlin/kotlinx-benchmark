@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.4.13
+
+- Support Kotlin 2.0.0 and newer [#255](https://github.com/Kotlin/kotlinx-benchmark/pull/255)
+- Add support for non-packed klib files in Native [#256](https://github.com/Kotlin/kotlinx-benchmark/pull/256)
+- Fix Native benchmark compilations triggering compile tasks on Gradle sync [#252](https://github.com/Kotlin/kotlinx-benchmark/pull/252)
+- Do not log KMP host messages at warning level [#105](https://github.com/Kotlin/kotlinx-benchmark/issues/105)
+
 ## 0.4.12
 
 - Support debug build configuration for K/N [#189](https://github.com/Kotlin/kotlinx-benchmark/issues/189)
