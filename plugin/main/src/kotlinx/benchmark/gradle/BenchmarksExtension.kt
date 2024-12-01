@@ -8,9 +8,7 @@ import org.gradle.api.provider.*
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJsCompilation
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
+import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrCompilation
 
 fun Project.benchmark(configure: Action<BenchmarksExtension>) {
@@ -63,10 +61,17 @@ constructor(
             when {
                 multiplatform != null -> {
                     val target = multiplatform.targets.findByName(name)
+                    println("target: $target")
+                    if (target is KotlinAndroidTarget) {
+                        return@container AndroidBenchmarkTarget(this, name, target)
+                    }
+                    target?.compilations?.findByName(KotlinCompilation.MAIN_COMPILATION_NAME)
+                        .let { println("compilation: $it") }
                     // We allow the name to be either a target or a source set
                     when (val compilation = target?.compilations?.findByName(KotlinCompilation.MAIN_COMPILATION_NAME)
                         ?: multiplatform.targets.flatMap { it.compilations }
-                            .find { it.defaultSourceSet.name == name }) {
+                            .find { it.defaultSourceSet.name == name }
+                    ) {
                         null -> {
                             project.logger.warn("Warning: Cannot find a benchmark compilation '$name', ignoring.")
                             BenchmarkTarget(this, name) // ignore
