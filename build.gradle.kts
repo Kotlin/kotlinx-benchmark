@@ -98,6 +98,7 @@ allprojects {
         compilerOptions {
             getOverriddenKotlinLanguageVersion(project)?.let {
                 languageVersion = KotlinVersion.fromVersion(it)
+                freeCompilerArgs.add("-Xsuppress-version-warnings")
             }
             getOverriddenKotlinApiVersion(project)?.let {
                 apiVersion = KotlinVersion.fromVersion(it)
