@@ -10,7 +10,7 @@
 `kotlinx-benchmark` is a toolkit for running benchmarks for multiplatform code written in Kotlin.
 It is designed to work with Kotlin/JVM, Kotlin/JS, Kotlin/Native, and Kotlin/WasmJs (experimental) targets.
 
-To get started, ensure you're using Kotlin 2.0.0 or newer and Gradle 7.4 or newer.
+To get started, ensure you're using Kotlin 2.0.0 or newer and Gradle 7.6.3 or newer.
 However, because the Kotlin/WasmJs target is experimental and in an active development phase, it guarantees support
 only for the specific Kotlin version used to build the library. For the latest version, this is Kotlin 2.0.20.
 
