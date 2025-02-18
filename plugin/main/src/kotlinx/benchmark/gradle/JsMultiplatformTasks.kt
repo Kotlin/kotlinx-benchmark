@@ -74,8 +74,8 @@ private fun Project.createJsBenchmarkGenerateSourceTask(
         description = "Generate JS source files for '${target.name}'"
         title = target.name
         useBenchmarkJs = target.jsBenchmarksExecutor == JsBenchmarksExecutor.BenchmarkJs
-        inputClassesDirs = compilationOutput.output.allOutputs
-        inputDependencies = compilationOutput.compileDependencyFiles
+        inputClassesDirs = compilationOutput.output.classesDirs
+        inputDependencies = compilationOutput.runtimeDependencyFiles
         outputResourcesDir = file("$benchmarkBuildDir/resources")
         outputSourcesDir = file("$benchmarkBuildDir/sources")
     }

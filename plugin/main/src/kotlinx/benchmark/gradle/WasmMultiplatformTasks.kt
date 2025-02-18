@@ -58,8 +58,8 @@ private fun Project.createWasmBenchmarkGenerateSourceTask(
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Generate Wasm source files for '${target.name}'"
         title = target.name
-        inputClassesDirs = compilationOutput.output.allOutputs
-        inputDependencies = compilationOutput.compileDependencyFiles
+        inputClassesDirs = compilationOutput.output.classesDirs
+        inputDependencies = compilationOutput.runtimeDependencyFiles
         outputResourcesDir = file("$benchmarkBuildDir/resources")
         outputSourcesDir = file("$benchmarkBuildDir/sources")
     }

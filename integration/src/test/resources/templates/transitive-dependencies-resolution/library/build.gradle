@@ -1,0 +1,37 @@
+import org.jetbrains.kotlin.konan.target.HostManager
+import org.jetbrains.kotlin.konan.target.KonanTarget
+
+plugins {
+    id 'org.jetbrains.kotlin.multiplatform'
+}
+
+kotlin {
+    if (HostManager.hostIsLinux) linuxX64('native')
+    if (HostManager.hostIsMingw) mingwX64('native')
+    if (HostManager.host == KonanTarget.MACOS_ARM64.INSTANCE) macosArm64('native')
+    if (HostManager.host == KonanTarget.MACOS_X64.INSTANCE) macosX64('native')
+    wasmJs {
+        nodejs()
+    }
+    js() {
+        nodejs()
+    }
+
+    sourceSets {
+        jsMain {
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
+        nativeMain {
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
+        wasmJsMain {
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
+    }
+}

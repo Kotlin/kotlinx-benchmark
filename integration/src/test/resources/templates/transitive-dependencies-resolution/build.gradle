@@ -1,0 +1,41 @@
+import org.jetbrains.kotlin.konan.target.HostManager
+import org.jetbrains.kotlin.konan.target.KonanTarget
+
+def parentRepositories = repositories
+
+subprojects {
+    repositories {
+        parentRepositories.forEach {
+            add(it)
+        }
+    }
+}
+
+kotlin {
+    if (HostManager.hostIsLinux) linuxX64('native')
+    if (HostManager.hostIsMingw) mingwX64('native')
+    if (HostManager.host == KonanTarget.MACOS_ARM64.INSTANCE) macosArm64('native')
+    if (HostManager.host == KonanTarget.MACOS_X64.INSTANCE) macosX64('native')
+    wasmJs {
+        nodejs()
+    }
+    js() {
+        nodejs()
+    }
+
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation(project(":library"))
+            }
+        }
+    }
+}
+
+benchmark {
+    targets {
+        register("native")
+        register("js")
+        register("wasmJs")
+    }
+}
