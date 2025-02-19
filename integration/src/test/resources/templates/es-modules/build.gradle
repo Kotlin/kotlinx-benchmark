@@ -1,0 +1,21 @@
+kotlin {
+    js("jsEs") {
+        nodejs()
+        useEsModules()
+    }
+    js("jsUmd") {
+        nodejs()
+    }
+    js("jsCommon") {
+        nodejs()
+        useCommonJs()
+    }
+}
+
+benchmark {
+    targets {
+        register("jsEs")
+        register("jsUmd")
+        register("jsCommon")
+    }
+}

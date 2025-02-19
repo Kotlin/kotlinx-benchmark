@@ -5,6 +5,7 @@ import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.dsl.JsModuleKind
 import org.jetbrains.kotlin.gradle.targets.js.dsl.*
 import org.jetbrains.kotlin.gradle.targets.js.ir.*
+import org.jetbrains.kotlin.serialization.js.ModuleKind
 
 @KotlinxBenchmarkPluginInternalApi
 fun Project.processJsCompilation(target: JsBenchmarkTarget) {
@@ -56,7 +57,8 @@ private fun Project.createJsBenchmarkCompileTask(target: JsBenchmarkTarget): Kot
 
                 compilerOptions {
                     sourceMap.set(true)
-                    moduleKind.set(JsModuleKind.MODULE_UMD)
+                    //moduleKind.set(JsModuleKind.MODULE_UMD)
+                    moduleKind.set(JsModuleKind.fromKind(compilation.kotlinOptions.moduleKind ?: JsModuleKind.MODULE_UMD.kind))
                 }
             }
         }

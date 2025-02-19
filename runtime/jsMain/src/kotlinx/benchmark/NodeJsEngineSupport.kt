@@ -3,14 +3,19 @@ package kotlinx.benchmark
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-internal external fun require(module: String): dynamic
+@JsModule("fs")
+@JsNonModule
+private external object NodeFileSystem {
+    fun writeFileSync(path: String, data: String)
+    fun readFileSync(path: String, options: String): String
+}
 
 internal object NodeJsEngineSupport : JsEngineSupport() {
     override fun writeFile(path: String, text: String) =
-        require("fs").writeFileSync(path, text)
+        NodeFileSystem.writeFileSync(path, text)
 
     override fun readFile(path: String): String =
-        require("fs").readFileSync(path, "utf8") as String
+        NodeFileSystem.readFileSync(path, "utf8")
 
     override fun arguments(): Array<out String> {
         val arguments = js("process.argv.slice(2).join(' ')") as String

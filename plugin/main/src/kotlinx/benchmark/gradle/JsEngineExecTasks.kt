@@ -8,6 +8,7 @@ import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.util.internal.VersionNumber
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
+import org.jetbrains.kotlin.gradle.plugin.mpp.fileExtension
 import org.jetbrains.kotlin.gradle.targets.js.d8.D8Exec
 import org.jetbrains.kotlin.gradle.targets.js.d8.D8RootExtension
 import org.jetbrains.kotlin.gradle.targets.js.dsl.*
@@ -55,9 +56,12 @@ private fun Project.getExecutableFile(compilation: KotlinJsIrCompilation): Provi
     val kotlinTarget = compilation.target as KotlinJsIrTarget
     val binary = kotlinTarget.binaries.executable(compilation)
         .first { it.mode == KotlinJsBinaryMode.PRODUCTION } as JsIrBinary
-    val extension = if (kotlinTarget.platformType == KotlinPlatformType.wasm) "mjs" else "js"
     val outputFileName = binary.linkTask.flatMap { task ->
-        task.compilerOptions.moduleName.map { "$it.$extension" }
+        task.compilerOptions.moduleName.flatMap { modName ->
+            compilation.fileExtension.map { extension ->
+                "$modName.$extension"
+            }
+        }
     }
     val destinationDir = binary.linkSyncTask.flatMap { it.destinationDirectory }
     val executableFile = destinationDir.zip(outputFileName) { dir, fileName -> dir.resolve(fileName) }
