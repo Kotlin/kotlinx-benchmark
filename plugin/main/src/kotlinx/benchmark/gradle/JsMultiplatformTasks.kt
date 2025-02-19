@@ -57,8 +57,9 @@ private fun Project.createJsBenchmarkCompileTask(target: JsBenchmarkTarget): Kot
 
                 compilerOptions {
                     sourceMap.set(true)
-                    //moduleKind.set(JsModuleKind.MODULE_UMD)
-                    moduleKind.set(JsModuleKind.fromKind(compilation.kotlinOptions.moduleKind ?: JsModuleKind.MODULE_UMD.kind))
+                    compilation.kotlinOptions.moduleKind?.let {
+                        moduleKind.set(JsModuleKind.fromKind(it))
+                    }
                 }
             }
         }
