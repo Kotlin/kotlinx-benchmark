@@ -4,12 +4,13 @@ import kotlinx.benchmark.gradle.BenchmarksPlugin.Companion.RUN_BENCHMARKS_TASKNA
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
 import org.gradle.api.file.RegularFile
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
 import org.gradle.util.internal.VersionNumber
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
-import org.jetbrains.kotlin.gradle.targets.js.d8.D8Exec
-import org.jetbrains.kotlin.gradle.targets.js.d8.D8RootExtension
+import org.jetbrains.kotlin.gradle.targets.wasm.d8.D8Exec
+import org.jetbrains.kotlin.gradle.targets.wasm.d8.D8EnvSpec
 import org.jetbrains.kotlin.gradle.targets.js.dsl.*
 import org.jetbrains.kotlin.gradle.targets.js.ir.*
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.*
@@ -67,7 +68,7 @@ private fun Project.getExecutableFile(compilation: KotlinJsIrCompilation): Provi
 private val KotlinJsIrCompilation.isWasmCompilation: Boolean get() =
     target.platformType == KotlinPlatformType.wasm
 
-private fun MutableList<String>.addWasmGcArguments() {
+private fun ListProperty<String>.addWasmGcArguments() {
     add("--experimental-wasm-gc")
 }
 
@@ -106,8 +107,8 @@ private fun Project.createD8Exec(
     description = "Executes benchmark for '${target.name}' with D8"
     inputFileProperty.set(getExecutableFile(compilation))
     if (compilation.isWasmCompilation) {
-        val addGcArgs = rootProject.extensions.findByType(D8RootExtension::class.java)?.let {
-            val d8Version = VersionNumber.parse(it.version)
+        val addGcArgs = rootProject.extensions.findByType(D8EnvSpec::class.java)?.let {
+            val d8Version = VersionNumber.parse(it.version.get())
             // --experimental-wasm-gc flag was removed from V8 starting from ~ 12.3.68
             d8Version < VersionNumber(12, 3, 68, null)
         } ?: true
