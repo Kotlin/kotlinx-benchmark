@@ -30,18 +30,7 @@ private fun Project.createWasmBenchmarkCompileTask(target: WasmBenchmarkTarget):
     val kotlinTarget = compilation.target
     check(kotlinTarget is KotlinJsTargetDsl)
 
-    kotlinTarget.binaries.executable(benchmarkCompilation).forEach {
-        if (kotlinTarget is KotlinJsIrTarget &&
-            kotlinTarget.wasmTargetType == KotlinWasmTargetType.JS &&
-            it.mode == KotlinJsBinaryMode.PRODUCTION) {
-            (it as ExecutableWasm).let { x ->
-                x.linkSyncTask.configure { y ->
-                    y.dependsOn(x.optimizeTask)
-                    y.from.from(x.optimizeTask.flatMap { it.outputFileProperty.map { it.asFile.parentFile } })
-                }
-            }
-        }
-    }
+    kotlinTarget.binaries.executable(benchmarkCompilation)
 
     benchmarkCompilation.apply {
         val sourceSet = kotlinSourceSets.single()
