@@ -52,19 +52,17 @@ repositories {
     }
 }
 
-pluginBundle {
+gradlePlugin {
     website = "https://github.com/Kotlin/kotlinx-benchmark"
     vcsUrl = "https://github.com/Kotlin/kotlinx-benchmark.git"
-    tags = listOf("benchmarking", "multiplatform", "kotlin")
-}
 
-gradlePlugin {
     plugins {
         register("benchmarkPlugin") {
-            id = "org.jetbrains.kotlinx.benchmark"
+            id = "io.github.fzhinkin.benchmark"//"org.jetbrains.kotlinx.benchmark"
             implementationClass = "kotlinx.benchmark.gradle.BenchmarksPlugin"
             displayName = "Gradle plugin for benchmarking"
             description = "Toolkit for running benchmarks for multiplatform Kotlin code."
+            tags.set(listOf("benchmarking", "multiplatform", "kotlin"))
         }
     }
 }
@@ -178,6 +176,19 @@ if (project.findProperty("publication_repository") == "space") {
                     password = project.findProperty("space.token") as? String?
                 }
             }
+        }
+    }
+}
+
+// Both kotlinx.team.infra and Gradle publish plugins register their own javadocJar artifacts.
+// We remove one of them here to avoid the collision leading to a build failure.
+tasks.withType<AbstractPublishToMaven>().configureEach {
+    doFirst {
+        this as AbstractPublishToMaven
+        val artifactsSet = publication.artifacts
+        val javadocJars = artifactsSet.filter { it.classifier == "javadoc" }.toList()
+        javadocJars.drop(1).forEach {
+            artifactsSet.remove(it)
         }
     }
 }
