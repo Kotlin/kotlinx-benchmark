@@ -4,10 +4,10 @@
 kotlin = "2.0.20"
 kotlin-for-gradle-plugin = "2.0.20" # Kotlin 2.1 removes support for the used language version / api version: KT-60521
 kotlinx-binaryCompatibilityValidator = "0.16.2"
-kotlinx-teamInfra = "0.4.0-dev-81"
+kotlinx-teamInfra = "0.4.0-dev-84"
 squareup-kotlinpoet = "1.3.0"
 jmh = "1.21"
-gradle-pluginPublish = "0.21.0"
+gradle-pluginPublish = "1.3.1"
 
 # Note: This version can be overridden by passing `-Pmin_supported_gradle_version=<version>`
 minSupportedGradle = "7.4"
