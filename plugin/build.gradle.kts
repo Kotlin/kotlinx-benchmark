@@ -58,7 +58,7 @@ gradlePlugin {
 
     plugins {
         register("benchmarkPlugin") {
-            id = "io.github.fzhinkin.benchmark"//"org.jetbrains.kotlinx.benchmark"
+            id = "org.jetbrains.kotlinx.benchmark"
             implementationClass = "kotlinx.benchmark.gradle.BenchmarksPlugin"
             displayName = "Gradle plugin for benchmarking"
             description = "Toolkit for running benchmarks for multiplatform Kotlin code."
