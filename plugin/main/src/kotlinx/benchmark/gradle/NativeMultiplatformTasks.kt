@@ -43,7 +43,7 @@ private fun Project.createNativeBenchmarkGenerateSourceTask(target: NativeBenchm
         val compilation = target.compilation
         this.nativeTarget = compilation.target.konanTarget.name
         title = target.name
-        inputClassesDirs = compilation.output.allOutputs
+        inputClassesDirs = compilation.output.classesDirs
 
         val nativeKlibDependencies = project.configurations.getByName(compilation.defaultSourceSet.implementationMetadataConfigurationName)
         inputDependencies = compilation.compileDependencyFiles + nativeKlibDependencies

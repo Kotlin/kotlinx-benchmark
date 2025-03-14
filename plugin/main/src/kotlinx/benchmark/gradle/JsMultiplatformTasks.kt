@@ -5,6 +5,7 @@ import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.dsl.JsModuleKind
 import org.jetbrains.kotlin.gradle.targets.js.dsl.*
 import org.jetbrains.kotlin.gradle.targets.js.ir.*
+import org.jetbrains.kotlin.serialization.js.ModuleKind
 
 @KotlinxBenchmarkPluginInternalApi
 fun Project.processJsCompilation(target: JsBenchmarkTarget) {
@@ -56,7 +57,9 @@ private fun Project.createJsBenchmarkCompileTask(target: JsBenchmarkTarget): Kot
 
                 compilerOptions {
                     sourceMap.set(true)
-                    moduleKind.set(JsModuleKind.MODULE_UMD)
+                    compilation.kotlinOptions.moduleKind?.let {
+                        moduleKind.set(JsModuleKind.fromKind(it))
+                    }
                 }
             }
         }
@@ -74,8 +77,8 @@ private fun Project.createJsBenchmarkGenerateSourceTask(
         description = "Generate JS source files for '${target.name}'"
         title = target.name
         useBenchmarkJs = target.jsBenchmarksExecutor == JsBenchmarksExecutor.BenchmarkJs
-        inputClassesDirs = compilationOutput.output.allOutputs
-        inputDependencies = compilationOutput.compileDependencyFiles
+        inputClassesDirs = compilationOutput.output.classesDirs
+        inputDependencies = compilationOutput.runtimeDependencyFiles
         outputResourcesDir = file("$benchmarkBuildDir/resources")
         outputSourcesDir = file("$benchmarkBuildDir/sources")
     }

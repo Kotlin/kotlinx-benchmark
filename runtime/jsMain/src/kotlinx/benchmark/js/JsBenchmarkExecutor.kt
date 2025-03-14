@@ -4,6 +4,10 @@ import kotlinx.benchmark.*
 import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 import kotlin.js.Promise
 
+@JsModule("benchmark")
+@JsNonModule
+private external val benchmarkJs: dynamic
+
 @KotlinxBenchmarkRuntimeInternalApi
 class JsBenchmarkExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<out String>) :
     SuiteExecutor(name, jsEngineSupport.arguments()[0]) {
@@ -11,8 +15,6 @@ class JsBenchmarkExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args
     init {
         check(!isD8) { "${JsBenchmarkExecutor::class.simpleName} does not support d8 engine" }
     }
-
-    private val benchmarkJs: dynamic = require("benchmark")
 
     override fun run(
         runnerConfiguration: RunnerConfiguration,

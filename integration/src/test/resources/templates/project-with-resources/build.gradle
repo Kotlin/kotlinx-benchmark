@@ -1,0 +1,24 @@
+import org.jetbrains.kotlin.konan.target.KonanTarget
+import org.jetbrains.kotlin.konan.target.HostManager
+
+kotlin {
+    if (HostManager.hostIsLinux) linuxX64('native')
+    if (HostManager.hostIsMingw) mingwX64('native')
+    if (HostManager.host == KonanTarget.MACOS_ARM64.INSTANCE) macosArm64('native')
+    if (HostManager.host == KonanTarget.MACOS_X64.INSTANCE) macosX64('native')
+    js()
+    wasmJs {
+        nodejs()
+    }
+    js() {
+        nodejs()
+    }
+}
+
+benchmark {
+    targets {
+        register("native")
+        register("js")
+        register("wasmJs")
+    }
+}
