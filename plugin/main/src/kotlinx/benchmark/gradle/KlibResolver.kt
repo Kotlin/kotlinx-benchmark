@@ -82,6 +82,7 @@ private fun KlibResolver.libraryResolver(inputDependencies: Set<File>): KotlinLi
         override fun log(message: String) {}
         override fun error(message: String) = kotlin.error("e: $message")
         override fun warning(message: String) {}
+        @Deprecated(message = Logger.FATAL_DEPRECATION_MESSAGE, replaceWith = ReplaceWith(Logger.FATAL_REPLACEMENT))
         override fun fatal(message: String) = kotlin.error("e: $message")
     }
     val deps = inputDependencies.map(File::getCanonicalPath)

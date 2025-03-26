@@ -45,6 +45,8 @@ private fun Project.createJsBenchmarkCompileTask(target: JsBenchmarkTarget): Kot
             runtimeOnly(npm("source-map-support", "*"))
         }
 
+        val moduleKindProvider = compilation.compileTaskProvider.flatMap { it.compilerOptions.moduleKind }
+
         compileTaskProvider.configure {
             it.apply {
                 group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
@@ -54,12 +56,9 @@ private fun Project.createJsBenchmarkCompileTask(target: JsBenchmarkTarget): Kot
                 //println("JS: ${kotlinOptions.outputFile}")
                 //destinationDir = file("$benchmarkBuildDir/classes")
                 dependsOn("${target.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}")
-
                 compilerOptions {
                     sourceMap.set(true)
-                    compilation.kotlinOptions.moduleKind?.let {
-                        moduleKind.set(JsModuleKind.fromKind(it))
-                    }
+                    moduleKind.set(moduleKindProvider)
                 }
             }
         }

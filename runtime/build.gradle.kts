@@ -60,18 +60,14 @@ kotlin {
         }
     }
 
-    targets.configureEach {
-        compilations.configureEach {
-            compileTaskProvider.configure {
-                compilerOptions {
-                    freeCompilerArgs.add("-Xexpect-actual-classes")
-                    optIn.addAll(
-                        "kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi",
-                        "kotlin.RequiresOptIn",
-                    )
-                }
-            }
-        }
+    @OptIn(ExperimentalKotlinGradlePluginApi::class)
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+        optIn.addAll(
+            "kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi",
+            "kotlin.RequiresOptIn",
+        )
+        allWarningsAsErrors.set(true)
     }
 
     sourceSets.configureEach {

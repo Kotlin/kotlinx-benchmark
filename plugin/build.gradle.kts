@@ -93,6 +93,10 @@ kotlin {
                 "kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi",
                 "kotlin.RequiresOptIn",
         )
+        allWarningsAsErrors.set(true)
+        freeCompilerArgs.addAll(
+            "-Xsuppress-version-warnings"
+        )
         /**
          * Those versions are configured according to https://docs.gradle.org/current/userguide/compatibility.html
          * and the Kotlin compiler compatibility policy stating that Kotlin 1.4 is compatible with 1.5 binaries

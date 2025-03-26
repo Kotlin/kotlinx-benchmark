@@ -45,8 +45,7 @@ private fun Project.createNativeBenchmarkGenerateSourceTask(target: NativeBenchm
         title = target.name
         inputClassesDirs = compilation.output.classesDirs
 
-        val nativeKlibDependencies = project.configurations.getByName(compilation.defaultSourceSet.implementationMetadataConfigurationName)
-        inputDependencies = compilation.compileDependencyFiles + nativeKlibDependencies
+        inputDependencies = compilation.compileDependencyFiles
 
         outputResourcesDir = file("$benchmarkBuildDir/resources")
         outputSourcesDir = file("$benchmarkBuildDir/sources")
@@ -76,9 +75,10 @@ private fun Project.createNativeBenchmarkCompileTask(target: NativeBenchmarkTarg
 
         associateWith(compilation)
 
-
-        // TODO: check if there are other ways to set compiler options.
-        this.kotlinOptions.freeCompilerArgs = compilation.kotlinOptions.freeCompilerArgs
+        val argsProvider = compilation.compileTaskProvider.flatMap { it.compilerOptions.freeCompilerArgs }
+        this.compileTaskProvider.configure {
+            it.compilerOptions.freeCompilerArgs.set(argsProvider)
+        }
     }
 
     compilationTarget.apply {
