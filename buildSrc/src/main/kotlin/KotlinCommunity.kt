@@ -82,12 +82,10 @@ fun getOverriddenKotlinNativeVersion(project: Project): String? {
  *
  * @return a list of additional options, or an empty list if none were specified
  */
-fun getAdditionalKotlinCompilerOptions(project: Project): List<String>? =
-    project.providers.gradleProperty("kotlin_additional_cli_options")
-        .orNull?.let { options ->
-            options.removeSurrounding("\"").split(" ").filter { it.isNotBlank() }
-        }
-
+fun getAdditionalKotlinCompilerOptions(project: Project): List<String> {
+    val opts = project.providers.gradleProperty("kotlin_additional_cli_options").orNull
+    return opts?.split(' ').orEmpty().map(String::trim).filter(String::isNotBlank)
+}
 
 /**
  * Check if `allWarningsAsErrors` was configured to be set using the `kotlin_Werror_override` property.

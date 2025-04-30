@@ -114,7 +114,7 @@ allprojects {
                 freeCompilerArgs.addAll("-Wextra", "-Xuse-fir-experimental-checkers")
             }
 
-            getAdditionalKotlinCompilerOptions(project)?.forEach { option -> freeCompilerArgs.add(option) }
+            freeCompilerArgs.addAll(getAdditionalKotlinCompilerOptions(project))
         }
         doFirst {
             logger.info("Added Kotlin compiler flags: ${compilerOptions.freeCompilerArgs.get().joinToString(", ")}")
