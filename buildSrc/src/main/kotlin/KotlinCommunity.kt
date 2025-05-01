@@ -76,3 +76,28 @@ fun getOverriddenKotlinNativeVersion(project: Project): String? {
     }
     return nativeVersion
 }
+
+/**
+ * Parses additional compiler options specified using the `kotlin_additional_cli_options` property.
+ *
+ * @return a list of additional options, or an empty list if none were specified
+ */
+fun getAdditionalKotlinCompilerOptions(project: Project): List<String> {
+    val opts = project.providers.gradleProperty("kotlin_additional_cli_options").orNull
+    return opts?.split(' ').orEmpty().map(String::trim).filter(String::isNotBlank)
+}
+
+/**
+ * Check if `allWarningsAsErrors` was configured to be set using the `kotlin_Werror_override` property.
+ *
+ * @return `true` if `kotlin_Werror_override` was set to `enable` or it was not specified at all, `false` if it was set to `disable`.
+ */
+fun getAllWarningsAsErrorsValue(project: Project): Boolean {
+    val werrorOverride = project.providers.gradleProperty("kotlin_Werror_override").orNull ?: return true
+    project.logger.info("""Configured kotlin_Werror_override: '$werrorOverride' for project ${project.name}""")
+    return when (werrorOverride) {
+        "enable" -> true
+        "disable" -> false
+        else -> error("Unexpected value for 'kotlin_Werror_override' property: $werrorOverride")
+    }
+}

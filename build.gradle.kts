@@ -104,8 +104,21 @@ allprojects {
                 apiVersion = KotlinVersion.fromVersion(it)
             }
 
+            freeCompilerArgs.addAll("-Xreport-all-warnings", "-Xrender-internal-diagnostic-names")
+
             progressiveMode = true
-            allWarningsAsErrors = true
+
+            if (getAllWarningsAsErrorsValue(project)) {
+                allWarningsAsErrors = true
+            } else {
+                freeCompilerArgs.addAll("-Wextra", "-Xuse-fir-experimental-checkers")
+            }
+
+            freeCompilerArgs.addAll(getAdditionalKotlinCompilerOptions(project))
+        }
+        doFirst {
+            logger.info("Added Kotlin compiler flags: ${compilerOptions.freeCompilerArgs.get().joinToString(", ")}")
+            logger.info("allWarningsAsErrors=${compilerOptions.allWarningsAsErrors.get()}")
         }
     }
 }
