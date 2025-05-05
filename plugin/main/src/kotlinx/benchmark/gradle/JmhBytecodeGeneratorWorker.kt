@@ -99,7 +99,7 @@ abstract class JmhBytecodeGeneratorWorker : WorkAction<JmhBytecodeGeneratorWorkP
         }
 
         val source = RFGeneratorSource()
-        var hasValidationErrors = false
+        var noValidationErrors = true
         for ((directory, files) in allFiles) {
             println("Analyzing ${files.size} files from $directory")
             val directoryPath = directory.absolutePath
@@ -109,13 +109,13 @@ abstract class JmhBytecodeGeneratorWorker : WorkAction<JmhBytecodeGeneratorWorkP
                     val className = resourceName.replace('\\', '.').replace('/', '.')
                     val clazz = Class.forName(className.removeSuffix(classSuffix), false, introspectionClassLoader)
                     source.processClasses(clazz)
-                    hasValidationErrors = hasValidationErrors.or(!validateBenchmarkFunctions(clazz))
+                    noValidationErrors = noValidationErrors.and(validateBenchmarkFunctions(clazz))
                 }
             }
         }
 
-        if (hasValidationErrors) {
-            error("One or more benchmark functions are invalid and could not be processed by JMH. See logs for details.")
+        check(noValidationErrors) {
+            "One or more benchmark functions are invalid and could not be processed by JMH. See logs for details."
         }
 
         logger.lifecycle("Writing out Java source to $outputSourceDirectory and resources to $outputResourceDirectory")
@@ -139,13 +139,11 @@ abstract class JmhBytecodeGeneratorWorker : WorkAction<JmhBytecodeGeneratorWorkP
      * Otherwise, the function returns `false` and logs all detected errors.
      */
     private fun validateBenchmarkFunctions(clazz: Class<*>): Boolean {
-        var allFunctionsValid = true
-        // Using declaredMethods to abstain from reporting the same method multiple times in a case
+        // Using declaredMethods to abstain from reporting the same method multiple times in the case
         // of benchmark classes extending some other classes.
-        clazz.declaredMethods.filter { it.isAnnotationPresent(Benchmark::class.java) }.forEach { method ->
-            allFunctionsValid = allFunctionsValid.and(validateBenchmarkFunction(method))
-        }
-        return allFunctionsValid
+        return clazz.declaredMethods.filter { it.isAnnotationPresent(Benchmark::class.java) }
+            .map(::validateBenchmarkFunction)
+            .fold(true, Boolean::and)
     }
 
     /**
@@ -153,28 +151,33 @@ abstract class JmhBytecodeGeneratorWorker : WorkAction<JmhBytecodeGeneratorWorkP
      * Otherwise, the function returns `false` and logs all detected errors.
      */
     private fun validateBenchmarkFunction(function: Method): Boolean {
-        val name = function.name
-        if (reservedJavaIdentifierNames.contains(name)) {
-            logger.error(
-                formatInvalidFunctionNameMessage(
-                    "Benchmark function name is a reserved Java keyword and cannot be used", function
-                )
-            )
+        isValidJavaFunctionName(function.name)?.let {
+            logger.error(formatInvalidFunctionNameMessage(it, function))
             return false
         }
-
-        if (!Character.isJavaIdentifierStart(name.first()) ||
-            name.substring(1).any { !Character.isJavaIdentifierPart(it) }
-        ) {
-            logger.error(
-                formatInvalidFunctionNameMessage(
-                    "Benchmark function name is not a valid Java identifier", function
-                )
-            )
-            return false
-        }
-
         return true
+    }
+
+    /**
+     * Validates if [identifier] is a valid Java function name and return a string describing an error if it's not.
+     * If the [identifier] is a valid function name, the function returns `null`.
+     */
+    private fun isValidJavaFunctionName(identifier: String): String? {
+        // See Java Language Specification, §3.8 Identifiers
+        if (reservedLiterals.contains(identifier)) {
+            return "Benchmark function name is a boolean or null literal and cannot be used as a function name"
+        }
+        // See Java Language Specification, §3.9 Keywords
+        if (reservedJavaIdentifierNames.contains(identifier)) {
+            return "Benchmark function name is a reserved Java keyword and cannot be used"
+        }
+        // See Java Language Specification, §3.8 Identifiers
+        if (!(Character.isJavaIdentifierStart(identifier.first())
+                    && identifier.substring(1).all(Character::isJavaIdentifierPart))) {
+            return "Benchmark function name is not a valid Java identifier"
+        }
+
+        return null
     }
 
     private fun formatInvalidFunctionNameMessage(errorDescription: String, function: Method): String {
@@ -189,10 +192,23 @@ abstract class JmhBytecodeGeneratorWorker : WorkAction<JmhBytecodeGeneratorWorkP
     }
 }
 
+/**
+ * Words reserved for boolean and null-literals, that could not be used as Java identifier names.
+ *
+ * See Java Language specification, §3.8. Identifiers for details.
+ */
+private val reservedLiterals = setOf("true", "false", "null")
+
+/**
+ * Reserved keywords that could not be used as Java identifier names.
+ *
+ * See Java Language specification, §3.9. Keywords for details.
+ *
+ * Note some keywords (like module or exports) are contextual and require some specific conditions
+ * to be met before they will be recognized as keywords and become a problem for us.
+ * Thus, they are not included here.
+ */
 private val reservedJavaIdentifierNames = setOf(
-    // boolean and NULL-literals
-    "true", "false", "null",
-    // See Java Language specification, 3.9. Keywords
     "abstract", "continue", "for", "new", "switch",
     "assert", "default", "if", "package", "synchronized",
     "boolean", "do", "goto", "private", "this",
