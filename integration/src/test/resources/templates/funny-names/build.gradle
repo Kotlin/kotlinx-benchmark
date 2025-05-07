@@ -1,0 +1,9 @@
+kotlin {
+    jvm { }
+}
+
+benchmark {
+    targets {
+        register("jvm")
+    }
+}
