@@ -57,7 +57,7 @@ class ConfigurationCacheTest : GradleTest() {
     fun testConfigurationCacheWasm() = runConfigurationCacheTest(
         "kotlin-multiplatform",
         listOf(":wasmJsBenchmark"),
-        listOf(":compileKotlinWasmJs", ":wasmBenchmarkGenerate", ":compileWasmBenchmarkProductionExecutableKotlinWasmJs")
+        listOf(":compileKotlinWasmJs", ":wasmJsBenchmarkGenerate", ":compileWasmJsBenchmarkProductionExecutableKotlinWasmJs")
     )
 }
 

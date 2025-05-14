@@ -3,8 +3,9 @@ package kotlinx.benchmark.gradle
 import java.io.ByteArrayOutputStream
 import java.io.FileOutputStream
 import java.io.OutputStream
+import java.io.Serializable
 
-internal class ConsoleAndFilesOutputStream : OutputStream() {
+internal class ConsoleAndFilesOutputStream : OutputStream(), Serializable {
     private val buffer = ByteArrayOutputStream()
     private var currentStream: OutputStream = System.out
     private val fileTag = "<FILE:"
