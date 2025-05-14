@@ -37,7 +37,7 @@ class ConfigurationCacheTest : GradleTest() {
     fun testConfigurationCacheNative() = runConfigurationCacheTest(
         "kotlin-multiplatform",
         listOf(":nativeBenchmark"),
-        listOf(":compileKotlinNative", ":nativeBenchmarkGenerate", ":compileNativeBenchmarkKotlinNative", ":linkNativeBenchmarkReleaseExecutableNative")
+        listOf(":compileKotlinNative", ":nativeBenchmarkGenerate", ":compileNativeBenchmarkKotlinNative", ":linkNativeBenchmarkDebugExecutableNative")
     )
 
     @Test
