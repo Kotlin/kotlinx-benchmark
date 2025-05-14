@@ -17,6 +17,7 @@ class ReportFormatTest : GradleTest() {
                     iterationTime = 100
                     iterationTimeUnit = "ms"
                     reportFormat = format
+                    advanced("jmhIgnoreLock", true)
                 }
             }
         }

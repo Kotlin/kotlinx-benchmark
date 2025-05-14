@@ -12,6 +12,7 @@ class ConfigurationCacheTest : GradleTest() {
                 iterations = 1
                 iterationTime = 100
                 iterationTimeUnit = "ms"
+                advanced("jmhIgnoreLock", true)
             }
         }
 

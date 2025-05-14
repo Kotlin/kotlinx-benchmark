@@ -16,6 +16,7 @@ class SourceSetAsBenchmarkTargetTest : GradleTest() {
                     iterationTime = 100
                     iterationTimeUnit = "ms"
                     reportFormat = "csv"
+                    advanced("jmhIgnoreLock", true)
                 }
             }
 
