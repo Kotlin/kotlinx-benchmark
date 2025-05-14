@@ -91,7 +91,7 @@ class OptionsOverrideAnnotationsTest : GradleTest() {
     @Test
     fun testOutputTimeUnit() {
         val expectedOutputTimeUnit = "ns"
-        val expectedCount = /*warmups*/3 + /*iterations*/5 + /*Success:*/1 + /*summary*/1
+        val expectedCount = /*warmups*/2 + /*iterations*/1 + /*Success:*/1 + /*summary*/1
 
         testConfiguration(
             setupBlock = {
@@ -110,7 +110,7 @@ class OptionsOverrideAnnotationsTest : GradleTest() {
     @Test
     fun testMode() {
         val expectedMode = "avgt"
-        val expectedCount = /*warmups*/3 + /*iterations*/5 + /*Success:*/1 + /*summary*/1
+        val expectedCount = /*warmups*/2 + /*iterations*/1 + /*Success:*/1 + /*summary*/1
 
         testConfiguration(
             setupBlock = {
