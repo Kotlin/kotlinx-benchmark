@@ -28,7 +28,7 @@ class SuiteSourceGeneratorTest : GradleTest() {
                 }
             },
             checkBlock = {
-                val parameters = "iterations = 12, warmups = 5, iterationTime = IterationTime\\(200, BenchmarkTimeUnit.MILLISECONDS\\)"
+                val parameters = "iterations = 12, warmups = 2, iterationTime = IterationTime\\(200, BenchmarkTimeUnit.MILLISECONDS\\)"
                 assertGeneratedDescriptorContainsCode(parameters)
             }
         )
@@ -44,7 +44,7 @@ class SuiteSourceGeneratorTest : GradleTest() {
             },
             checkBlock = {
                 // time and timeUnit of @Warmup are ignored: https://github.com/Kotlin/kotlinx-benchmark/issues/74
-                val parameters = "iterations = 3, warmups = 12, iterationTime = IterationTime\\(1, BenchmarkTimeUnit.SECONDS\\)"
+                val parameters = "iterations = 1, warmups = 12, iterationTime = IterationTime\\(1, BenchmarkTimeUnit.SECONDS\\)"
                 assertGeneratedDescriptorContainsCode(parameters)
             }
         )
