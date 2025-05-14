@@ -4,9 +4,7 @@ import org.jetbrains.kotlin.konan.target.HostManager
 kotlin {
     jvm {}
     js { nodejs() }
-    wasmJs {
-        d8()
-    }
+    wasmJs { d8() }
 
     if (HostManager.hostIsLinux) linuxX64('native')
     if (HostManager.hostIsMingw) mingwX64('native')
