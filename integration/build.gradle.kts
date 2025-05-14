@@ -40,7 +40,7 @@ tasks.test {
     systemProperty("minSupportedKotlinVersion", libs.versions.minSupportedKotlin.get())
 
     val forks = project.providers.gradleProperty("testing.max.forks").orNull?.toInt()
-        ?: Runtime.getRuntime().availableProcessors()
+        ?: (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
 
     maxParallelForks = forks
 }
