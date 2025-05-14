@@ -19,4 +19,10 @@ benchmark {
         register("wasmJs")
         register("native")
     }
+
+    configurations {
+        main {
+            advanced("jmhIgnoreLock", true)
+        }
+    }
 }
