@@ -19,7 +19,7 @@ class SupportedKotlinVersionTest : GradleTest() {
     fun `when using min supported Kotlin version, expect no warning`() {
         val runner = project("kotlin-multiplatform", kotlinVersion = GradleTestVersion.MinSupportedKotlinVersion.versionString)
 
-        runner.runAndSucceed(":help", "-q") {
+        runner.runAndSucceed(":help", "-q", "--debug") {
             assertOutputDoesNotContain(warningMessage)
         }
     }
