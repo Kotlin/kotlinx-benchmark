@@ -121,5 +121,8 @@ private fun Project.createD8Exec(
     }
     val reportFile = setupReporting(target, config)
     args(writeParameters(target.name, reportFile, traceFormat(), config))
-    standardOutput = ConsoleAndFilesOutputStream()
+
+    doFirst {
+        standardOutput = ConsoleAndFilesOutputStream()
+    }
 }
