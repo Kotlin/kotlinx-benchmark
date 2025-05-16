@@ -42,7 +42,7 @@ class Runner(
         buildResult.fn()
     }
 
-    private fun defaultArguments(): Array<String> = arrayOf("--stacktrace")
+    private fun defaultArguments(): Array<String> = arrayOf("--stacktrace", "--info")
 
     // Forward the Kotlin Native distribution version to test projects
     private val kotlinNativeVersion = "kotlin.native.version".let { property ->
