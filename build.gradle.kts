@@ -34,6 +34,7 @@ plugins {
     alias(libs.plugins.kotlinx.binaryCompatibilityValidator)
 }
 
+
 apply(plugin = "kotlinx.team.infra")
 
 extensions.configure<InfraExtension> {

@@ -8,6 +8,7 @@ pluginManagement {
     }
 }
 
+
 dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
@@ -23,6 +24,27 @@ dependencyResolutionManagement {
                     version(versionName, overrideVersion)
                 }
             }
+        }
+    }
+}
+
+plugins {
+    id("com.gradle.develocity") version "4.0.1"
+}
+
+
+develocity {
+    server = "https://ge.jetbrains.com/"
+    buildScan {
+        capture {
+            fileFingerprints = true
+            buildLogging = true
+            uploadInBackground = true
+        }
+        obfuscation {
+            ipAddresses { _ -> listOf("0.0.0.0") }
+            hostname { _ -> "concealed" }
+            username { _ -> "TeamCity" }
         }
     }
 }
