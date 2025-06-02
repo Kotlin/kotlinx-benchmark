@@ -18,7 +18,8 @@ class Runner(
         GradleRunner.create()
             .withProjectDir(projectDir)
             .withArguments(*(defaultArguments() + kotlinNativeVersion + tasks))
-            .withGradleDistribution(URI("https://cache-redirector.jetbrains.com/services.gradle.org/distributions/gradle-${gradleVersion.versionString}-bin.zip"))
+            .withGradleVersion(gradleVersion.versionString)
+            //.withGradleDistribution(URI("https://cache-redirector.jetbrains.com/services.gradle.org/distributions/gradle-${gradleVersion.versionString}-bin.zip"))
             .forwardStdError(System.err.bufferedWriter())
             .run {
                 if (print) forwardStdOutput(System.out.bufferedWriter()) else this
