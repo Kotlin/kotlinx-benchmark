@@ -241,6 +241,10 @@ private fun validateConfig(config: BenchmarkConfiguration) {
                 }
             }
 
+            "jmhIgnoreLock" -> require(value is Boolean) {
+                "Invalid value for 'jmhIgnoreLock': '$value'. Expected a Boolean value."
+            }
+
             "jsUseBridge" -> require(value is Boolean) {
                 "Invalid value for 'jsUseBridge': '$value'. Expected a Boolean value."
             }
