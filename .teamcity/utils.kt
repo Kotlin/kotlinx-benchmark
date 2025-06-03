@@ -12,17 +12,12 @@ const val releaseVersionParameter = "releaseVersion"
 const val libraryStagingRepoDescription = "kotlinx-benchmark"
 
 val platforms = Platform.values()
-const val jdk = "JDK_18_x64"
+const val jdk = "JDK_17_0"
 
 enum class Platform {
     Windows, Linux, MacOS;
 }
 
-fun Platform.nativeTaskPrefix(): String = when(this) {
-    Platform.Windows -> "mingwX64"
-    Platform.Linux -> "linuxX64"
-    Platform.MacOS -> "macosX64"
-}
 fun Platform.buildTypeName(): String = when (this) {
     Platform.Windows, Platform.Linux -> name
     Platform.MacOS -> "Mac OS X"
