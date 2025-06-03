@@ -12,7 +12,7 @@ const val releaseVersionParameter = "releaseVersion"
 const val libraryStagingRepoDescription = "kotlinx-benchmark"
 
 val platforms = Platform.values()
-const val jdk = "JDK_21_0"
+const val jdk = "JDK_17_0"
 
 enum class Platform {
     Windows, Linux, MacOS;
