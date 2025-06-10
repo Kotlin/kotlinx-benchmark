@@ -1,11 +1,14 @@
 package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrCompilation
+import java.util.*
 
 open class BenchmarkConfiguration
 @KotlinxBenchmarkPluginInternalApi
@@ -45,13 +48,13 @@ constructor(
     }
 
     @KotlinxBenchmarkPluginInternalApi
-    fun capitalizedName() = if (name == "main") "" else name.capitalize()
+    fun capitalizedName() = if (name == "main") "" else name.capitalize(Locale.ROOT)
 
     @KotlinxBenchmarkPluginInternalApi
-    fun prefixName(suffix: String) = if (name == "main") suffix else name + suffix.capitalize()
+    fun prefixName(suffix: String) = if (name == "main") suffix else name + suffix.capitalize(Locale.ROOT)
 
     @KotlinxBenchmarkPluginInternalApi
-    fun reportFileExt(): String = reportFormat?.toLowerCase() ?: "json"
+    fun reportFileExt(): String = reportFormat?.toLowerCase(Locale.ROOT) ?: "json"
 }
 
 open class BenchmarkTarget
@@ -125,4 +128,16 @@ constructor(
     val compilation: KotlinNativeCompilation
 ) : BenchmarkTarget(extension, name) {
     var buildType: NativeBuildType = NativeBuildType.RELEASE
+}
+
+class AndroidBenchmarkTarget
+@KotlinxBenchmarkPluginInternalApi
+constructor(
+    extension: BenchmarksExtension,
+    name: String,
+    val target: KotlinAndroidTarget,
+) : BenchmarkTarget(extension, name) {
+    val sdkDir: Property<String> = extension.project.objects.property(String::class.java).convention(
+        System.getenv("ANDROID_HOME") ?: ""
+    )
 }

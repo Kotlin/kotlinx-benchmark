@@ -1,9 +1,11 @@
 import kotlinx.benchmark.gradle.JsBenchmarksExecutor
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id 'org.jetbrains.kotlin.multiplatform'
     id 'org.jetbrains.kotlin.plugin.allopen' version "2.0.20"
     id 'org.jetbrains.kotlinx.benchmark'
+    id 'com.android.library'
 }
 
 // how to apply plugin to a specific source set?
@@ -11,7 +13,43 @@ allOpen {
     annotation("org.openjdk.jmh.annotations.State")
 }
 
+android {
+    compileSdk 34
+    namespace = "org.jetbrains.kotlinx.examples"
+
+    defaultConfig {
+        minSdk = 29
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+//            isMinifyEnabled = false
+//            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+}
+
+// Could not determine the dependencies of task ':examples:kotlin-multiplatform:extractReleaseAnnotations'.
+// > Could not resolve all task dependencies for configuration ':examples:kotlin-multiplatform:detachedConfiguration1'.
+//    > Could not find com.android.tools.lint:lint-gradle:31.2.2.
+repositories {
+    google()
+}
+
 kotlin {
+    androidTarget {
+        // Android target does not have any compilations
+        println("android compilations: ${compilations.size()}")
+    }
     jvm {
         compilations.create('benchmark') { associateWith(compilations.main) }
     }
@@ -47,6 +85,20 @@ kotlin {
         }
 
         nativeMain {}
+
+        androidMain {
+            kotlin.setSrcDirs(["src/androidMain/kotlin"])
+        }
+
+        forEach {
+            // Android target has 3 source sets: androidMain, androidUnitTest, and androidInstrumentedTest
+            println("SourceSet: $it")
+            println(it.name)
+            println(it.kotlin)
+            println(it.kotlin.srcDirs)
+            println(it.kotlin.sourceDirectories)
+        }
+
     }
 }
 
@@ -121,5 +173,17 @@ benchmark {
         register("macosArm64")
         register("linuxX64")
         register("mingwX64")
+        register("android")
+    }
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_1_8)
     }
 }

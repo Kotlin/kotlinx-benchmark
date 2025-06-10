@@ -4,6 +4,7 @@ import kotlinx.benchmark.*
 import kotlin.math.*
 
 @State(Scope.Benchmark)
+@Warmup(iterations = 3, time = 1, timeUnit = BenchmarkTimeUnit.SECONDS)
 @Measurement(iterations = 3, time = 1, timeUnit = BenchmarkTimeUnit.SECONDS)
 @OutputTimeUnit(BenchmarkTimeUnit.MILLISECONDS)
 @BenchmarkMode(Mode.AverageTime)

@@ -93,4 +93,10 @@ class Runner(
             projectDir.resolve("build/benchmarks/${targetName}/sources/kotlinx/benchmark/generated").resolve(filePath)
         )
     }
+
+    fun generatedAndroidDir(targetName: String, targetCompilation: String, filePath: String, fileTestAction: (File) -> Unit) {
+        fileTestAction(
+            projectDir.resolve("build/benchmarks/$targetName/$targetCompilation/GeneratedAndroidProject").resolve(filePath)
+        )
+    }
 }

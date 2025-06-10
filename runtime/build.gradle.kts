@@ -1,14 +1,38 @@
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
 import java.util.*
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
+    id("com.android.library")
 }
 
 repositories {
     mavenCentral()
+    google()
+}
+
+android {
+    compileSdk = 34
+    namespace = "org.jetbrains.kotlinx.examples"
+
+    defaultConfig {
+        minSdk = 29
+        targetSdk = 34
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+        }
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
 }
 
 kotlin {
@@ -50,12 +74,15 @@ kotlin {
         d8()
     }
 
+    androidTarget {}
+
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     applyDefaultHierarchyTemplate {
         common {
             group("jsWasmJsShared") {
                 withJs()
                 withWasmJs()
+                withAndroidTarget()
             }
         }
     }
@@ -127,4 +154,15 @@ tasks.withType(KotlinNativeCompile::class).configureEach {
         "-opt-in=kotlin.native.runtime.NativeRuntimeApi",
         "-opt-in=kotlinx.cinterop.ExperimentalForeignApi",
     )
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile::class).configureEach {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_1_8)
+    }
 }
