@@ -25,7 +25,7 @@ benchmark {
     targets {
         register("main") {
             this as JvmBenchmarkTarget
-            jmhVersion = "1.21"
+            jmhVersion = "1.37"
         }
     }
 }

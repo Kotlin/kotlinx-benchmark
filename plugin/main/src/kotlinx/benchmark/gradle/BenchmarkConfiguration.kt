@@ -1,5 +1,6 @@
 package kotlinx.benchmark.gradle
 
+import kotlinx.benchmark.gradle.internal.BenchmarksPluginConstants
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
@@ -70,7 +71,8 @@ constructor(
     extension: BenchmarksExtension,
     name: String
 ) : BenchmarkTarget(extension, name) {
-    var jmhVersion: String = (extension.project.findProperty("benchmarks_jmh_version") as? String) ?: "1.21"
+    var jmhVersion: String = (extension.project.findProperty("benchmarks_jmh_version") as? String)
+        ?: BenchmarksPluginConstants.DEFAULT_JMH_VERSION
 }
 
 class JavaBenchmarkTarget
