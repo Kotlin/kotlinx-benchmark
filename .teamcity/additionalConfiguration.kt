@@ -24,7 +24,10 @@ fun Project.additionalConfiguration() {
     }
     platforms.forEach { platform ->
         knownBuilds.deployPublish.params {
-            select("reverse.dep.*.system.publication_repository", "space", display = ParameterDisplay.PROMPT, label = "Publication Repository", options = listOf("space", "sonatype"))
+            select("reverse.dep.*.system.publication_repository", "space",
+                display = ParameterDisplay.PROMPT,
+                label = "Publication Repository",
+                options = listOf("space", "sonatype", "space-central"))
         }
         knownBuilds.deployOn(platform).params {
             param("system.space.user", "abduqodiri.qurbonzoda")

@@ -112,6 +112,19 @@ if (project.findProperty("publication_repository") == "space") {
             }
         }
     }
+} else if (project.findProperty("publication_repository") == "space-central") {
+    publishing {
+        repositories {
+            maven {
+                name = "space-central"
+                url = uri(project.findProperty("libs.repo.url") as String)
+                credentials {
+                    username = project.findProperty("libs.repo.user") as? String?
+                    password = project.findProperty("libs.repo.password") as? String?
+                }
+            }
+        }
+    }
 }
 
 // Workaround for TeamCity build failure:
