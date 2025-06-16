@@ -240,6 +240,13 @@ class OptionsValidationTest : GradleTest() {
                 iterationTimeUnit = "ms"
                 advanced("jsUseBridge", "x")
             }
+
+            configuration("invalidJmhIgnoreLock") {
+                iterations = 1
+                iterationTime = 100
+                iterationTimeUnit = "ms"
+                advanced("jmhIgnoreLock", "x")
+            }
         }
 
         runner.runAndFail("blankAdvancedConfigNameBenchmark") {
@@ -259,6 +266,9 @@ class OptionsValidationTest : GradleTest() {
         }
         runner.runAndFail("invalidJsUseBridgeBenchmark") {
             assertOutputContains("Invalid value for 'jsUseBridge': 'x'. Expected a Boolean value.")
+        }
+        runner.runAndFail("invalidJmhIgnoreLock") {
+            assertOutputContains("Invalid value for 'jmhIgnoreLock': 'x'. Expected a Boolean value.")
         }
     }
 }
