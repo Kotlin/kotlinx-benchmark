@@ -40,11 +40,10 @@ class ConfigurationCacheTest : GradleTest() {
     )
 
     @Test
-    @Ignore("https://youtrack.jetbrains.com/issue/KT-58250")
     fun testConfigurationCacheJs() = runConfigurationCacheTest(
         "kotlin-multiplatform",
-        listOf(":jsIrBenchmark"),
-        listOf(":compileKotlinJsIr", ":jsIrBenchmarkGenerate", ":compileJsIrBenchmarkProductionExecutableKotlinJsIr")
+        listOf(":jsBenchmark"),
+        listOf(":compileKotlinJs", ":jsBenchmarkGenerate", ":compileJsBenchmarkProductionExecutableKotlinJs")
     )
 
     @Test
@@ -55,11 +54,10 @@ class ConfigurationCacheTest : GradleTest() {
     )
 
     @Test
-    @Ignore("https://youtrack.jetbrains.com/issue/KT-58256")
     fun testConfigurationCacheWasm() = runConfigurationCacheTest(
         "kotlin-multiplatform",
         listOf(":wasmJsBenchmark"),
-        listOf(":compileKotlinWasmJs", ":wasmBenchmarkGenerate", ":compileWasmBenchmarkProductionExecutableKotlinWasmJs")
+        listOf(":compileKotlinWasmJs", ":wasmJsBenchmarkGenerate", ":compileWasmJsBenchmarkProductionExecutableKotlinWasmJs")
     )
 }
 

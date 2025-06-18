@@ -2,6 +2,7 @@ package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
+import org.openjdk.jmh.util.Version
 
 @KotlinxBenchmarkPluginInternalApi
 fun Project.processJavaSourceSet(target: JavaBenchmarkTarget) {
@@ -34,6 +35,7 @@ fun Project.processJavaSourceSet(target: JavaBenchmarkTarget) {
 }
 
 private fun Project.configureJmhDependency(target: JavaBenchmarkTarget) {
+    checkJmhVersion(target)
     val dependencies = dependencies
 
     // Add dependency to JMH core library to the source set designated by config.name

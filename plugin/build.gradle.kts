@@ -141,6 +141,9 @@ val generatePluginConstants by tasks.registering {
     val kotlinCompilerVersion = libs.versions.kotlin.asProvider()
     inputs.property("kotlinCompilerVersion", kotlinCompilerVersion)
 
+    val defaultJvmVersion = libs.versions.jmh
+    inputs.property("defaultJmhVersion", defaultJvmVersion)
+
     doLast {
         constantsKtFile.writeText(
                 """|package kotlinx.benchmark.gradle.internal
@@ -150,6 +153,7 @@ val generatePluginConstants by tasks.registering {
                 |  const val MIN_SUPPORTED_GRADLE_VERSION = "${minSupportedGradleVersion.get()}"
                 |  const val MIN_SUPPORTED_KOTLIN_VERSION = "${minSupportedKotlinVersion.get()}"
                 |  const val DEFAULT_KOTLIN_COMPILER_VERSION = "${kotlinCompilerVersion.get()}"
+                |  const val DEFAULT_JMH_VERSION = "${defaultJvmVersion.get()}"
                 |}
                 |""".trimMargin()
         )

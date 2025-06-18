@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.4.14
+
+- Fixed various issues specific to Kotlin/JS projects [#292](https://github.com/Kotlin/kotlinx-benchmark/pull/292)
+- Added benchmark name validation for JVM [#304](https://github.com/Kotlin/kotlinx-benchmark/pull/304)
+- Various build infrastructure updates
+
 ## 0.4.13
 
 - Support Kotlin 2.0.0 and newer [#255](https://github.com/Kotlin/kotlinx-benchmark/pull/255)

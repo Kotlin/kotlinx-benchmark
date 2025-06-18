@@ -120,6 +120,7 @@ constructor(
                 is NativeBenchmarkTarget -> processNativeCompilation(config)
             }
         }
+        extension.checkConflictingJmhVersions()
     }
 
     private fun configureBenchmarkTaskConventions(
