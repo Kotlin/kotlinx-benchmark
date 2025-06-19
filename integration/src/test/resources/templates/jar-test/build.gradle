@@ -1,0 +1,18 @@
+kotlin {
+    jvm { }
+
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation("org.jetbrains.kotlin:kotlin-test")
+                implementation("org.jetbrains.kotlin:kotlin-reflect")
+            }
+        }
+    }
+}
+
+benchmark {
+    targets {
+        register("jvm")
+    }
+}
