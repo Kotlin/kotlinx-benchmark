@@ -53,8 +53,11 @@ private val kotlin_warnings_settings = System.getProperty("kotlin_Werror_overrid
 } ?: false
 
 private val kotlin_additional_cli_options = System.getProperty("kotlin_additional_cli_options")?.let {
-    val args = it.split(' ').map(String::trim).filter(String::isNotBlank)
-        .joinToString(prefix = "\"", separator = "\", \"", postfix = "\"") { opt ->
+    val argsList = it.split(' ').map(String::trim).filter(String::isNotBlank)
+    if (argsList.isEmpty()) {
+        ""
+    } else {
+        argsList.joinToString(prefix = "\"", separator = "\", \"", postfix = "\"") { opt ->
             opt.replace("\\", "\\\\")
                 .replace("\n", "\\n")
                 .replace("\t", "\\t")
@@ -62,7 +65,7 @@ private val kotlin_additional_cli_options = System.getProperty("kotlin_additiona
                 .replace("\r", "\\r")
                 .replace("\"", "\\\"")
         }
-    "freeCompilerArgs.addAll($args)"
+    }
 } ?: ""
 
 private fun generateBuildScript(kotlinVersion: String, jvmToolchain: Int) =
