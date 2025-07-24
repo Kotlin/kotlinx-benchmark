@@ -123,7 +123,8 @@ fun Project.buildWithKotlinMaster(platform: Platform, versionBuild: BuildType) =
                 "-P$versionSuffixParameter=%$versionSuffixParameter%", "-P$teamcitySuffixParameter=%$teamcitySuffixParameter%",
                 "-Pkotlin_repo_url=file://%teamcity.build.checkoutDir%/artifacts/kotlin",
                 "-Pkotlin_version=%$kotlinVersionParameter%", "-Pkotlin.native.version=%$kotlinVersionParameter%",
-                "-Pmin_supported_gradle_version=7.6.3"
+                "-Pmin_supported_gradle_version=7.6.3",
+                "-Pkotlin.native.enableKlibsCrossCompilation=false"
             ).joinToString(separator = " ")
             buildFile = ""
             gradleWrapperPath = ""
