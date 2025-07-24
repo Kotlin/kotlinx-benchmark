@@ -7,6 +7,7 @@ import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.compile.*
 import org.gradle.jvm.tasks.*
+import org.jetbrains.kotlin.cli.common.toBooleanLenient
 import java.io.*
 
 @KotlinxBenchmarkPluginInternalApi
@@ -132,6 +133,10 @@ fun Project.createJvmBenchmarkExecTask(
 
         val reportFile = setupReporting(target, config)
         args(writeParameters(target.name, reportFile, traceFormat(), config))
+        when (config.advanced["jmhIgnoreLock"]) {
+            true -> jvmArgs("-Djmh.ignoreLock=true")
+            false -> jvmArgs("-Djmh.ignoreLock=false")
+        }
         javaLauncher.set(javaLauncherProvider())
     }
 }

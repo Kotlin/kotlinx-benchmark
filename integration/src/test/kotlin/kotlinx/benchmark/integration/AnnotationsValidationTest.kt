@@ -2,11 +2,11 @@ package kotlinx.benchmark.integration
 
 import kotlin.test.*
 
-class AnnotationsValidationTest : GradleTest() {
+abstract class AnnotationsValidationTest : GradleTest() {
 
-    private val platformBenchmarkTask = "nativeBenchmark"
+    protected val platformBenchmarkTask = "nativeBenchmark"
 
-    private fun executeBenchmark(
+    protected fun executeBenchmark(
         benchmarkFunction: String? = null,
         setupFunction: String? = null,
         teardownFunction: String? = null,
@@ -26,7 +26,7 @@ class AnnotationsValidationTest : GradleTest() {
         runJvmBenchmark(runner, jvmSpecificError)
     }
 
-    private fun runPlatformBenchmark(runner: Runner, error: String?) {
+    protected fun runPlatformBenchmark(runner: Runner, error: String?) {
         if (error != null) {
             runner.runAndFail(platformBenchmarkTask) {
                 assertOutputContains(error)
@@ -38,7 +38,7 @@ class AnnotationsValidationTest : GradleTest() {
         }
     }
 
-    private fun runJvmBenchmark(runner: Runner, jvmSpecificError: String?) {
+    protected fun runJvmBenchmark(runner: Runner, jvmSpecificError: String?) {
         if (jvmSpecificError != null) {
             runner.runAndFail("jvmBenchmark") {
                 assertOutputContains(jvmSpecificError)
@@ -49,7 +49,9 @@ class AnnotationsValidationTest : GradleTest() {
             }
         }
     }
+}
 
+class ParamAnnotationsValidationTest : AnnotationsValidationTest() {
     // @Param
 
     @Test
@@ -142,7 +144,9 @@ class AnnotationsValidationTest : GradleTest() {
             jvmSpecificError = "@Param can only be placed over the annotation-compatible types: primitives, primitive wrappers, Strings, or enums."
         )
     }
+}
 
+class BenchmarkAnnotationsValidationTest : AnnotationsValidationTest() {
     // @Benchmark
 
     @Test
@@ -204,7 +208,9 @@ class AnnotationsValidationTest : GradleTest() {
             jvmSpecificError = "Method parameters should be either @State classes"
         )
     }
+}
 
+class SetupAnnotationsValidationTest : AnnotationsValidationTest() {
     // @Setup
 
     @Test
@@ -271,7 +277,9 @@ class AnnotationsValidationTest : GradleTest() {
             jvmSpecificError = "Method parameters should be either @State classes"
         )
     }
+}
 
+class TearDownAnnotationsValidationTest : AnnotationsValidationTest() {
     // TearDown
 
     @Test
@@ -338,7 +346,9 @@ class AnnotationsValidationTest : GradleTest() {
             jvmSpecificError = "Method parameters should be either @State classes"
         )
     }
+}
 
+class MixedAnnotationsValidationTest : AnnotationsValidationTest() {
     // Mix
 
     @Test
