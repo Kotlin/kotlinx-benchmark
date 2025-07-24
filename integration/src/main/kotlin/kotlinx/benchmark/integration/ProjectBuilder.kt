@@ -45,6 +45,29 @@ private val kotlin_api_version = System.getProperty("kotlin_api_version")?.let {
     "apiVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.fromVersion('$it')"
 }.orEmpty()
 
+private val kotlin_warnings_settings = System.getProperty("kotlin_Werror_override")?.let {
+    when (it) {
+        "disable" -> "freeCompilerArgs.addAll(\"-Wextra\", \"-Xuse-fir-experimental-checkers\")"
+        else -> "allWarningsAsErrors = true"
+    }
+} ?: false
+
+private val kotlin_additional_cli_options = System.getProperty("kotlin_additional_cli_options")?.let {
+    val argsList = it.split(' ').map(String::trim).filter(String::isNotBlank)
+    if (argsList.isEmpty()) {
+        ""
+    } else {
+        argsList.joinToString(prefix = "\"", separator = "\", \"", postfix = "\"") { opt ->
+            opt.replace("\\", "\\\\")
+                .replace("\n", "\\n")
+                .replace("\t", "\\t")
+                .replace("\b", "\\b")
+                .replace("\r", "\\r")
+                .replace("\"", "\\\"")
+        }
+    }
+} ?: ""
+
 private fun generateBuildScript(kotlinVersion: String, jvmToolchain: Int) =
     """
     buildscript {
@@ -86,7 +109,8 @@ private fun generateBuildScript(kotlinVersion: String, jvmToolchain: Int) =
             $kotlin_api_version
 
             progressiveMode = true
-            allWarningsAsErrors = true
+            $kotlin_warnings_settings
+            $kotlin_additional_cli_options         
         }
     }
     """.trimIndent()

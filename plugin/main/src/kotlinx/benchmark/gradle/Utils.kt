@@ -1,6 +1,7 @@
 package kotlinx.benchmark.gradle
 
 import groovy.lang.Closure
+import kotlinx.benchmark.gradle.internal.BenchmarksPluginConstants
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
 import org.gradle.api.plugins.*
@@ -9,6 +10,7 @@ import org.gradle.api.tasks.*
 import org.gradle.jvm.toolchain.JavaCompiler
 import org.gradle.jvm.toolchain.JavaLauncher
 import org.gradle.jvm.toolchain.JavaToolchainService
+import org.gradle.util.internal.VersionNumber
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -283,4 +285,42 @@ fun Project.javaLauncherProvider(): Provider<JavaLauncher> = provider {
     val toolchainService = extensions.findByType(JavaToolchainService::class.java) ?: return@provider null
     val javaExtension = extensions.findByType(JavaPluginExtension::class.java) ?: return@provider null
     toolchainService.launcherFor(javaExtension.toolchain).orNull
+}
+
+internal fun Project.checkJmhVersion(target: JvmBenchmarkTarget) {
+    if (project.findProperty("benchmarks_jmh_version_skip_check")?.toString()?.toBoolean() == true) {
+        return
+    }
+
+    val version = target.jmhVersion
+    val parsedVersion = VersionNumber.parse(version)
+    val defaultVersion = VersionNumber.parse(BenchmarksPluginConstants.DEFAULT_JMH_VERSION)
+
+    if (parsedVersion < defaultVersion) {
+        logger.warn("Configured JMH version ($version) is older than a default version supplied by " +
+                "the benchmarking plugin (${BenchmarksPluginConstants.DEFAULT_JMH_VERSION}). " +
+                "Consider removing or updating value set to a target's `jmhVersion` property or " +
+                "to the `benchmarks_jmh_version_skip_check` Gradle property. " +
+                "Use `benchmarks_jmh_version_skip_check=true` Gradle property to ignore this warning.")
+    }
+}
+
+
+internal fun BenchmarksExtension.checkConflictingJmhVersions() {
+    val version2target = targets.mapNotNull { (it as? JvmBenchmarkTarget) }.groupBy { it.jmhVersion }
+    if (version2target.size <= 1) return
+
+    val clarification = buildString {
+        version2target.entries.sortedBy { it.key }.forEach { (version, targets) ->
+            if (this@buildString.isNotEmpty()) {
+                append("; ")
+            }
+            append("$version is used by ")
+            append(targets.joinToString(", ") { it.name })
+        }
+    }
+
+    project.logger.warn("Project ${project.name} configures several JVM benchmarking targets that use different " +
+            "JMH versions ($clarification). Such configuration is not supported and may lead to runtime errors. " +
+            "Consider using the same JMH version across all benchmarking targets.")
 }

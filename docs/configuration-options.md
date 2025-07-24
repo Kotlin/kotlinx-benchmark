@@ -85,20 +85,28 @@ benchmark {
 - **"definedByJmh"** – Let JMH determine the amount, using the value in the [`@Fork` annotation](https://javadoc.io/doc/org.openjdk.jmh/jmh-core/latest/org/openjdk/jmh/annotations/Fork.html) for the benchmark function or its enclosing class. If not specified by `@Fork`, it defaults to [Defaults.MEASUREMENT_FORKS (`5`)](https://javadoc.io/doc/org.openjdk.jmh/jmh-core/latest/org/openjdk/jmh/runner/Defaults.html#MEASUREMENT_FORKS).
 
 The library offers the flexibility to specify the version of the Java Microbenchmark Harness (JMH) to use when running benchmarks on the JVM.
-The default version is set to `1.21`, but you can customize it while registering a JVM target for benchmarking:
+The default version is set to `1.37`, but you can customize it while registering a JVM target for benchmarking:
 
 ```kotlin
 benchmark {
     targets {
         register("jvmBenchmarks") {
             this as JvmBenchmarkTarget
-            jmhVersion = "1.36"
+            jmhVersion = "1.38"
         }
     }
 }
 ```
 
 Alternatively, you can utilize the project property `benchmarks_jmh_version` to achieve the same effect.
+
+> [!WARNING]
+> While it is possible to register multiple JVM benchmark targets with different JMH versions,
+> such configurations are not supported. Using such configurations may result in runtime errors.
+
+> [!NOTE]
+> It is recommended to change JMH version only when a new JMH version was released,
+> but `kotlinx-benchmark` plugin applied to a project is still using an older version.
 
 ### Kotlin/JS & Kotlin/Wasm
 | Option                                        | Description                                                                                           | Possible Values | Default Value |

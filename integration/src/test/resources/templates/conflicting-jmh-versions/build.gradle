@@ -1,0 +1,15 @@
+kotlin {
+    jvm {
+        compilations.create('first') { associateWith(compilations.main) }
+        compilations.create('second') { associateWith(compilations.main) }
+        compilations.create('third') { associateWith(compilations.main) }
+    }
+}
+
+benchmark {
+    targets {
+        register("jvmFirst") { jmhVersion = "1.21" }
+        register("jvmSecond") { jmhVersion = "1.22" }
+        register("jvmThird") { jmhVersion = "1.22" }
+    }
+}
