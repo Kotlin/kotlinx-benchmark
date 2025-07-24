@@ -107,12 +107,7 @@ allprojects {
             freeCompilerArgs.addAll("-Xreport-all-warnings", "-Xrender-internal-diagnostic-names")
 
             progressiveMode = true
-
-            if (getAllWarningsAsErrorsValue(project)) {
-                allWarningsAsErrors = true
-            } else {
-                freeCompilerArgs.addAll("-Wextra", "-Xuse-fir-experimental-checkers")
-            }
+            allWarningsAsErrors = getAllWarningsAsErrorsValue(project)
 
             freeCompilerArgs.addAll(getAdditionalKotlinCompilerOptions(project))
         }
