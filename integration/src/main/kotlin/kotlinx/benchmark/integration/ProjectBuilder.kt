@@ -26,15 +26,15 @@ benchmark {
 }
 
 private val kotlin_repo = System.getProperty("kotlin_repo_url")?.let {
-    "maven { url '$it' }"
+    "maven { url '${it.replace("\\","\\\\")}' }"
 }.orEmpty()
 
 private val plugin_repo_url = System.getProperty("plugin_repo_url")!!.let {
-    "maven { url '$it' }"
+    "maven { url '${it.replace("\\","\\\\")}' }"
 }
 
 private val runtime_repo_url = System.getProperty("runtime_repo_url")!!.let {
-    "maven { url '$it' }"
+    "maven { url '${it.replace("\\","\\\\")}' }"
 }
 
 private val kotlin_language_version = System.getProperty("kotlin_language_version")?.let {
