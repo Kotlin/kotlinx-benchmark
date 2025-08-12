@@ -2,7 +2,7 @@
 
 import org.gradle.api.Project
 import org.gradle.api.artifacts.dsl.*
-import java.net.*
+import org.gradle.kotlin.dsl.maven
 
 /*
  * Functions in this file are responsible for configuring kotlinx-benchmarks build against a custom dev version
@@ -33,9 +33,7 @@ fun getKotlinDevRepositoryUrl(project: Project): String? {
  */
 fun addDevRepositoryIfEnabled(repositoryHandler: RepositoryHandler, project: Project) {
     val devRepoUrl = getKotlinDevRepositoryUrl(project) ?: return
-    repositoryHandler.maven {
-        url = URI.create(devRepoUrl)
-    }
+    repositoryHandler.maven(devRepoUrl)
 }
 
 /**

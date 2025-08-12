@@ -26,15 +26,15 @@ benchmark {
 }
 
 private val kotlin_repo = System.getProperty("kotlin_repo_url")?.let {
-    "maven { url '$it' }"
+    "maven { url '${it.replace("\\","\\\\")}' }"
 }.orEmpty()
 
 private val plugin_repo_url = System.getProperty("plugin_repo_url")!!.let {
-    "maven { url '$it' }"
+    "maven { url '${it.replace("\\","\\\\")}' }"
 }
 
 private val runtime_repo_url = System.getProperty("runtime_repo_url")!!.let {
-    "maven { url '$it' }"
+    "maven { url '${it.replace("\\","\\\\")}' }"
 }
 
 private val kotlin_language_version = System.getProperty("kotlin_language_version")?.let {
@@ -45,12 +45,12 @@ private val kotlin_api_version = System.getProperty("kotlin_api_version")?.let {
     "apiVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.fromVersion('$it')"
 }.orEmpty()
 
-private val kotlin_warnings_settings = System.getProperty("kotlin_Werror_override")?.let {
+private val kotlin_warnings_settings = System.getProperty("kotlin_Werror_override").let {
     when (it) {
-        "disable" -> "freeCompilerArgs.addAll(\"-Wextra\", \"-Xuse-fir-experimental-checkers\")"
+        "disable" -> ""
         else -> "allWarningsAsErrors = true"
     }
-} ?: false
+}
 
 private val kotlin_additional_cli_options = System.getProperty("kotlin_additional_cli_options")?.let {
     val argsList = it.split(' ').map(String::trim).filter(String::isNotBlank)
