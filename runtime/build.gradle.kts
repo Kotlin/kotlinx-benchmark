@@ -1,5 +1,7 @@
+import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
 import java.util.*
@@ -72,9 +74,13 @@ kotlin {
                     )
                 }
             }
-            if (target.platformType == KotlinPlatformType.wasm) {
-                compileTaskProvider.configure {
-                    compilerOptions.optIn.add("kotlin.js.ExperimentalWasmJsInterop")
+
+            // If a compiler version is below 2.2.20, ExperimentalWasmJsInterop may not be resolved.
+            if (kotlin.isCompilerVersionAtLeast(2, 2, 20)) {
+                if (target.platformType == KotlinPlatformType.wasm) {
+                    compileTaskProvider.configure {
+                        compilerOptions.optIn.add("kotlin.js.ExperimentalWasmJsInterop")
+                    }
                 }
             }
         }
@@ -133,4 +139,18 @@ tasks.withType(KotlinNativeCompile::class).configureEach {
         "-opt-in=kotlin.native.runtime.NativeRuntimeApi",
         "-opt-in=kotlinx.cinterop.ExperimentalForeignApi",
     )
+}
+
+@OptIn(ExperimentalBuildToolsApi::class, ExperimentalKotlinGradlePluginApi::class)
+fun KotlinMultiplatformExtension.isCompilerVersionAtLeast(major: Int, minor: Int, patch: Int): Boolean {
+    val version = compilerVersion.orNull ?: return false
+    val mainVersion = version.split('-')[0]
+    val parts = mainVersion.split('.')
+    if (parts.size != 3) return false
+    val actualMajor = parts[0].toIntOrNull() ?: return false
+    val actualMinor = parts[1].toIntOrNull() ?: return false
+    val actualPatch = parts[2].toIntOrNull() ?: return false
+    return actualMajor > major ||
+            (actualMajor == major && actualMinor > minor) ||
+            (actualMajor == major && actualMinor == minor && actualPatch >= patch)
 }
