@@ -13,4 +13,10 @@ benchmark {
         register("jvmCustom")
         register("jsCustom")
     }
+
+    configurations {
+        main {
+            advanced("jmhIgnoreLock", true)
+        }
+    }
 }
