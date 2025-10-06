@@ -84,8 +84,7 @@ class SuiteSourceGenerator(
         val mainBenchmarkPackage = "kotlinx.benchmark.generated"
 
         val suppressWarnings = AnnotationSpec.builder(Suppress::class).addMember(
-            "\"UNUSED_PARAMETER\"",
-            "\"REDUNDANT_CALL_OF_CONVERSION_METHOD\""
+            "\"UNUSED_PARAMETER\", \"REDUNDANT_CALL_OF_CONVERSION_METHOD\""
         ).build()
         val optInRuntimeInternalApi = AnnotationSpec.builder(ClassName("kotlin", "OptIn")).addMember(
             "kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi::class"
