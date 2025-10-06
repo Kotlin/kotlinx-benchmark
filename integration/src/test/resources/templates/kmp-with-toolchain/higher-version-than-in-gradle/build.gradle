@@ -6,4 +6,10 @@ benchmark {
     targets {
         register("jvm")
     }
+
+    configurations {
+        main {
+            advanced("jmhIgnoreLock", true)
+        }
+    }
 }
