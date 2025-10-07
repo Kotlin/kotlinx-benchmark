@@ -71,8 +71,8 @@ constructor(
     extension: BenchmarksExtension,
     name: String
 ) : BenchmarkTarget(extension, name) {
-    var jmhVersion: String = (extension.project.findProperty("benchmarks_jmh_version") as? String)
-        ?: BenchmarksPluginConstants.DEFAULT_JMH_VERSION
+    var jmhVersion: String = extension.project.providers.gradleProperty("benchmarks_jmh_version")
+        .orElse(BenchmarksPluginConstants.DEFAULT_JMH_VERSION).get()
 }
 
 class JavaBenchmarkTarget

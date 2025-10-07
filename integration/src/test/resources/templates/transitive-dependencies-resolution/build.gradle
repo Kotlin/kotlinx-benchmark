@@ -1,3 +1,4 @@
+import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.konan.target.HostManager
 import org.jetbrains.kotlin.konan.target.KonanTarget
 
@@ -34,7 +35,10 @@ kotlin {
 
 benchmark {
     targets {
-        register("native")
+        register("native") {
+            // don't optimize binaries to speedup test execution
+            buildType = NativeBuildType.DEBUG
+        }
         register("js")
         register("wasmJs")
     }

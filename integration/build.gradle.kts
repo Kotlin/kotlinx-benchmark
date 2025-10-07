@@ -42,4 +42,9 @@ tasks.test {
     project.providers.gradleProperty("kotlin_additional_cli_options").orNull?.let {
         systemProperty("kotlin_additional_cli_options", it)
     }
+    
+    val forks = project.providers.gradleProperty("testing.max.forks").orNull?.toInt()
+        ?: (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
+
+    maxParallelForks = forks
 }
