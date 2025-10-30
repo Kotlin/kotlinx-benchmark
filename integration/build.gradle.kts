@@ -38,4 +38,13 @@ tasks.test {
     }
     systemProperty("minSupportedGradleVersion", libs.versions.minSupportedGradle.get())
     systemProperty("minSupportedKotlinVersion", libs.versions.minSupportedKotlin.get())
+    systemProperty("kotlin_Werror_override", if (getAllWarningsAsErrorsValue(project)) "enable" else "disable")
+    project.providers.gradleProperty("kotlin_additional_cli_options").orNull?.let {
+        systemProperty("kotlin_additional_cli_options", it)
+    }
+    
+    val forks = project.providers.gradleProperty("testing.max.forks").orNull?.toInt()
+        ?: (Runtime.getRuntime().availableProcessors() / 2).coerceAtLeast(1)
+
+    maxParallelForks = forks
 }

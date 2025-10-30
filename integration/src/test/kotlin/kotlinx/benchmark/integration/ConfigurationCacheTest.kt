@@ -12,6 +12,7 @@ class ConfigurationCacheTest : GradleTest() {
                 iterations = 1
                 iterationTime = 100
                 iterationTimeUnit = "ms"
+                advanced("jmhIgnoreLock", true)
             }
         }
 
@@ -36,7 +37,7 @@ class ConfigurationCacheTest : GradleTest() {
     fun testConfigurationCacheNative() = runConfigurationCacheTest(
         "kotlin-multiplatform",
         listOf(":nativeBenchmark"),
-        listOf(":compileKotlinNative", ":nativeBenchmarkGenerate", ":compileNativeBenchmarkKotlinNative", ":linkNativeBenchmarkReleaseExecutableNative")
+        listOf(":compileKotlinNative", ":nativeBenchmarkGenerate", ":compileNativeBenchmarkKotlinNative", ":linkNativeBenchmarkDebugExecutableNative")
     )
 
     @Test
