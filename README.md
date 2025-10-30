@@ -427,6 +427,28 @@ Refer to our [comprehensive guide](docs/configuration-options.md) to learn about
 Often you want to have benchmarks in the same project, but separated from main code, much like tests.
 Refer to our [detailed documentation](docs/separate-benchmark-source-set.md) on configuring your project to set up a separate source set for benchmarks.
 
+## Analyzing results
+
+Upon finishing benchmarks execution, the plugin prints out a summary table with results.
+In addition to that table, it also saves results into a file. By default, that would be a JSON file with a format
+compatible with the format used by JMH. The format is configured using `reportFormat` option, you can read more about 
+it in the [configuration documentation](docs/configuration-options.md).
+
+While runs consisting of a few benchmarks could be analyzed without any additional tools,
+analyzing run results consisting of dozens of benchmarks could quickly become tedious.
+
+To facilitate this process, you can use [Kotlin Notebooks](https://kotlinlang.org/docs/kotlin-notebook-overview.html),
+which provides means for manipulating, analyzing and visualizing data.
+
+We prepared several notebooks demonstrating different analysis techniques using our [example](#Examples) projects.
+Namely, 
+- [Performing single run analysis](examples/simple-benchmark-analysis.ipynb)
+  ![SingleRunAnalysis](docs/notebooks-single-run-demo.png)
+- [Comparing different runs with each other](examples/compare-benchmark-runs.ipynb)
+  ![MultiRunAnalysis](docs/notebooks-multi-run-demo.png)
+
+You can always copy these notebooks into your projects and adapt for your particular needs.
+
 ## Examples
 
 To help you better understand how to use the `kotlinx-benchmark` library, we've provided an [examples](examples) subproject. 
