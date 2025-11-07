@@ -300,7 +300,7 @@ To run benchmarks in Kotlin/Wasm:
     // build.gradle.kts
     benchmark {
         targets {
-            register("wasm")
+            register("wasmJs")
         }
     }
     ```
