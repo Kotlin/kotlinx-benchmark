@@ -15,8 +15,11 @@ external interface WriteFileOptions : JsAny {
     var flag: String?
 }
 
+fun emptyWriteFileOptions(): WriteFileOptions =
+    js("{}")
+
 fun writeFileOptions(block: WriteFileOptions.() -> Unit): WriteFileOptions =
-    js("{}").unsafeCast<WriteFileOptions>().apply(block)
+    emptyWriteFileOptions().apply(block)
 
 //@JsFun("(path, text) => require('fs').writeFileSync(path, text, 'utf8')")
 //private external fun nodeJsWriteFile(path: String, text: String)
