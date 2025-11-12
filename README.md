@@ -446,6 +446,8 @@ Namely,
   ![SingleRunAnalysis](docs/notebooks-single-run-demo.png)
 - [Comparing different runs with each other](examples/compare-benchmark-runs.ipynb)
   ![MultiRunAnalysis](docs/notebooks-multi-run-demo.png)
+- [Comparing benchmark functions from the same run with each other](examples/compare-hypothesis.ipynb)
+  ![HypothesisAnalysis](docs/notebooks-compare-hypothesis-demo.png)
 
 You can always copy these notebooks into your projects and adapt for your particular needs.
 
