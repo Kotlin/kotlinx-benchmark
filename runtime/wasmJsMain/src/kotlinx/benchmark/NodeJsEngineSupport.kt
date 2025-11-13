@@ -3,21 +3,36 @@ package kotlinx.benchmark
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-@JsFun("(path, text) => require('fs').writeFileSync(path, text, 'utf8')")
-private external fun nodeJsWriteFile(path: String, text: String)
+@JsFun("""
+    (globalThis.module = (typeof process !== 'undefined') && (process.release.name === 'node') ?
+        await import('node:module') : void 0, () => {})
+""")
+internal external fun persistModule()
 
-@JsFun("(path) => require('fs').readFileSync(path, 'utf8')")
-private external fun nodeJsReadFile(path: String): String
+@JsFun("""() => { 
+    const importMeta = import.meta;
+    return globalThis.module.default.createRequire(importMeta.url);
+}
+""")
+internal external fun getRequire(): JsAny
+
+@JsFun("(require, path, text) => require('fs').writeFileSync(path, text, 'utf8')")
+private external fun nodeJsWriteFile(require: JsAny, path: String, text: String)
+
+@JsFun("(require, path, text) => require('fs').readFileSync(path, 'utf8')")
+private external fun nodeJsReadFile(require: JsAny, path: String): String
 
 @JsFun("() => process.argv.slice(2).join(' ')")
 private external fun nodeJsArguments(): String
 
 internal object NodeJsEngineSupport : JsEngineSupport() {
+    private val require = persistModule().let { getRequire() }
+
     override fun writeFile(path: String, text: String) =
-        nodeJsWriteFile(path, text)
+        nodeJsWriteFile(require, path, text)
 
     override fun readFile(path: String): String =
-        nodeJsReadFile(path)
+        nodeJsReadFile(require, path)
 
     override fun arguments(): Array<out String> =
         nodeJsArguments().split(' ').toTypedArray()
