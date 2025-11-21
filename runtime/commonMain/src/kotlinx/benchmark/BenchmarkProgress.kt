@@ -98,6 +98,7 @@ class ConsoleBenchmarkProgress : BenchmarkProgress() {
         println()
         println("$suite summary:")
         println(summary)
+        println("Analysing benchmark results is not always trivial,\nplease refer to https://github.com/Kotlin/kotlinx-benchmark/tree/master?tab=readme-ov-file#analyzing-results for details.\n")
     }
 
     override fun startBenchmark(suite: String, benchmark: String) {
