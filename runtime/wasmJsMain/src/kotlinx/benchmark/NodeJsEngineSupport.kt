@@ -5,7 +5,7 @@ import kotlin.time.toDuration
 
 @JsFun("""
     (globalThis.module = (typeof process !== 'undefined') && (process.release.name === 'node') ?
-        await import('node:module') : void 0, () => {})
+        await import(/* webpackIgnore: true */'node:module') : void 0, () => {})
 """)
 internal external fun persistModule()
 
