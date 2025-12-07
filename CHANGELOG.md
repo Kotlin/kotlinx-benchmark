@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 0.4.15
+
+- Made WasmJS/D8 tasks configuration-cache friendly [#309](https://github.com/Kotlin/kotlinx-benchmark/pull/309)
+- Made Gradle plugin isolation compatible [#325](https://github.com/Kotlin/kotlinx-benchmark/pull/325)
+- Updated publish-plugin to published signed plugin artifacts [#295](https://github.com/Kotlin/kotlinx-benchmark/pull/295)
+- Updated default JMH version to `1.37` [#312](https://github.com/Kotlin/kotlinx-benchmark/pull/312)
+- Introduced notebooks for benchmarking results analysis, and added a note about them to the plugin output [#330](https://github.com/Kotlin/kotlinx-benchmark/pull/330), [#327](https://github.com/Kotlin/kotlinx-benchmark/pull/327)
+- Multiple various build infrastructure and documentation changes.
+
 ## 0.4.14
 
 - Fixed various issues specific to Kotlin/JS projects [#292](https://github.com/Kotlin/kotlinx-benchmark/pull/292)
