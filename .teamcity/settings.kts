@@ -45,11 +45,14 @@ project {
     }
 
     val deployVersion = deployVersion().apply {
-        dependsOnSnapshot(buildAll, onFailure = FailureAction.IGNORE)
+        // TODO: rollback later
+        // dependsOnSnapshot(buildAll, onFailure = FailureAction.IGNORE)
     }
-    val deploys = platforms.map { deploy(it, deployVersion) }
+    // TODO: rollback filtration
+    val deploys = platforms.filter { it == Platform.MacOS }.map { deploy(it, deployVersion) }
     val deployPublish = deployPublish(deployVersion).apply {
-        dependsOnSnapshot(buildAll, onFailure = FailureAction.IGNORE)
+        // TODO: rollback later
+        // dependsOnSnapshot(buildAll, onFailure = FailureAction.IGNORE)
         deploys.forEach {
             dependsOnSnapshot(it)
         }

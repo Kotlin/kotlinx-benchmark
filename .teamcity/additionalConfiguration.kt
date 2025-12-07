@@ -25,7 +25,7 @@ fun Project.additionalConfiguration() {
             }
         }
     }
-    platforms.forEach { platform ->
+    platforms.filter { it == Platform.MacOS }.forEach { platform ->
         knownBuilds.deployPublish.params {
             select("reverse.dep.*.system.publication_repository", "space-central",
                 display = ParameterDisplay.PROMPT,
@@ -47,7 +47,7 @@ fun Project.additionalConfiguration() {
     }
 
     knownBuilds.deployPublish.dependsOnSnapshot(cpyTask, onFailure = FailureAction.ADD_PROBLEM)
-    platforms.forEach { platform ->
+    platforms.filter { it == Platform.MacOS }.forEach { platform ->
         cpyTask.dependsOnSnapshot(knownBuilds.deployOn(platform), onFailure = FailureAction.ADD_PROBLEM)
     }
 }
