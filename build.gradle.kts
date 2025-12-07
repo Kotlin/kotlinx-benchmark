@@ -124,6 +124,7 @@ apiValidation {
         "java",
         "kotlin-jvm-separate-benchmark-source-set",
         "kotlin-jvm",
+        "kotlin-jvm-compare-hypothesis",
         "kotlin-multiplatform",
         "integration",
     )
