@@ -100,9 +100,7 @@ fun Project.deployPlugin() = BuildType {
             jdkHome = "%env.$jdk%"
             jvmArgs = "-Xmx1g"
             gradleParams = "--info --stacktrace -P$releaseVersionParameter=%$releaseVersionParameter% -P$gradlePublishKey=%$gradlePublishKey% -P$gradlePublishSecret=%$gradlePublishSecret%"
-            // TODO: temporary disabled
-            //tasks = "clean :plugin:publishPlugins"
-            tasks = "clean"
+            tasks = "clean :plugin:publishPlugins"
             buildFile = ""
             gradleWrapperPath = ""
         }
