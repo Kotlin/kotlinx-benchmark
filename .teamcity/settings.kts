@@ -46,16 +46,10 @@ project {
 
     val deployVersion = deployVersion().apply {
         dependsOnSnapshot(buildAll, onFailure = FailureAction.IGNORE)
-        dependsOnSnapshot(BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID) {
-            reuseBuilds = ReuseBuilds.NO
-        }
     }
     val deploys = platforms.map { deploy(it, deployVersion) }
     val deployPublish = deployPublish(deployVersion).apply {
         dependsOnSnapshot(buildAll, onFailure = FailureAction.IGNORE)
-        dependsOnSnapshot(BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID) {
-            reuseBuilds = ReuseBuilds.NO
-        }
         deploys.forEach {
             dependsOnSnapshot(it)
         }
@@ -143,8 +137,6 @@ fun Project.deployVersion() = BuildType {
         // enable editing of this configuration to set up things
         param("teamcity.ui.settings.readOnly", "false")
         param(versionSuffixParameter, "dev-%build.counter%")
-        param("reverse.dep.$BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID.system.libs.repo.description", libraryStagingRepoDescription)
-        param("env.libs.repository.id", "%dep.$BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID.env.libs.repository.id%")
     }
 
     requirements {
@@ -173,7 +165,6 @@ fun Project.deployPublish(configureBuild: BuildType) = BuildType {
         // Tell configuration build how to get release version parameter from this build
         // "dev" is the default and means publishing is not releasing to public
         text(configureBuild.reverseDepParamRefs[releaseVersionParameter].name, "dev", display = ParameterDisplay.PROMPT, label = "Release Version")
-        param("env.libs.repository.id", "%dep.$BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID.env.libs.repository.id%")
     }
     commonConfigure()
 }.also { buildType(it) }
@@ -186,7 +177,6 @@ fun Project.deploy(platform: Platform, configureBuild: BuildType) = buildType("D
     params {
         param(versionSuffixParameter, "${configureBuild.depParamRefs[versionSuffixParameter]}")
         param(releaseVersionParameter, "${configureBuild.depParamRefs[releaseVersionParameter]}")
-        param("env.libs.repository.id", "%dep.$BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID.env.libs.repository.id%")
     }
 
     vcs {

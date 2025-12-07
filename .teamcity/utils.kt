@@ -31,8 +31,6 @@ const val BUILD_ALL_ID = "Build_All"
 const val DEPLOY_CONFIGURE_VERSION_ID = "Deploy_Configure"
 const val DEPLOY_PUBLISH_ID = "Deploy_Publish"
 
-val BUILD_CREATE_STAGING_REPO_ABSOLUTE_ID = AbsoluteId("KotlinTools_CreateSonatypeStagingRepository")
-
 class KnownBuilds(private val project: Project) {
     private fun buildWithId(id: String): BuildType {
         return project.buildTypes.single { it.id.toString().endsWith(id) }

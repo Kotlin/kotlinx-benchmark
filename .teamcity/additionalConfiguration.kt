@@ -5,7 +5,10 @@
 
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.commitStatusPublisher
+import jetbrains.buildServer.configs.kotlin.buildFeatures.dockerRegistryConnections
 import jetbrains.buildServer.configs.kotlin.buildSteps.gradle
+import jetbrains.buildServer.configs.kotlin.buildSteps.script
+
 
 fun Project.additionalConfiguration() {
     knownBuilds.buildVersion.params {
@@ -27,7 +30,7 @@ fun Project.additionalConfiguration() {
             select("reverse.dep.*.system.publication_repository", "space-central",
                 display = ParameterDisplay.PROMPT,
                 label = "Publication Repository",
-                options = listOf("space", "sonatype", "space-central"))
+                options = listOf("space", "space-central"))
         }
         knownBuilds.deployOn(platform).params {
             param("system.space.user", "abduqodiri.qurbonzoda")
@@ -36,10 +39,16 @@ fun Project.additionalConfiguration() {
     }
 
     deployPlugin()
+    val cpyTask = copyToCentral()
 
     // Check with Kotlin master only on Linux
     buildWithKotlinMaster(Platform.Linux, knownBuilds.buildVersion).also {
         knownBuilds.buildAll.dependsOnSnapshot(it, onFailure = FailureAction.ADD_PROBLEM)
+    }
+
+    knownBuilds.deployPublish.dependsOnSnapshot(cpyTask, onFailure = FailureAction.ADD_PROBLEM)
+    platforms.forEach { platform ->
+        cpyTask.dependsOnSnapshot(knownBuilds.deployOn(platform), onFailure = FailureAction.ADD_PROBLEM)
     }
 }
 
@@ -48,6 +57,7 @@ const val gradlePublishSecret = "gradle.publish.secret"
 
 const val DEPLOY_PUBLISH_PLUGIN_ID = "Deploy_Publish_Plugin"
 const val BUILD_WITH_KOTLIN_MASTER_ID = "Build_with_Kotlin_Master_Linux"
+const val COPY_TO_CENTRAL_PORTAL_ID = "Copy_To_Central"
 
 fun Project.deployPlugin() = BuildType {
     id(DEPLOY_PUBLISH_PLUGIN_ID)
@@ -81,9 +91,77 @@ fun Project.deployPlugin() = BuildType {
             jdkHome = "%env.$jdk%"
             jvmArgs = "-Xmx1g"
             gradleParams = "--info --stacktrace -P$releaseVersionParameter=%$releaseVersionParameter% -P$gradlePublishKey=%$gradlePublishKey% -P$gradlePublishSecret=%$gradlePublishSecret%"
-            tasks = "clean :plugin:publishPlugins"
+            // TODO: temporary disabled
+            //tasks = "clean :plugin:publishPlugins"
+            tasks = "clean"
             buildFile = ""
             gradleWrapperPath = ""
+        }
+    }
+}.also { buildType(it) }
+
+fun Project.copyToCentral() = BuildType {
+    id(COPY_TO_CENTRAL_PORTAL_ID)
+
+    this.name = "Deploy (Copy Artifacts To Central Portal)"
+    commonConfigure()
+
+    requirements {
+        // Require Linux for publishPlugins
+        contains("teamcity.agent.jvm.os.name", "Linux")
+    }
+
+    buildNumberPattern = this@copyToCentral.knownBuilds.buildVersion.depParamRefs.buildNumber.ref
+
+    type = BuildTypeSettings.Type.DEPLOYMENT
+    enablePersonalBuilds = false
+    maxRunningBuilds = 1
+    params {
+        text(
+            name = releaseVersionParameter,
+            value = "",
+            label = "Release Version",
+            display = ParameterDisplay.PROMPT,
+            allowEmpty = false
+        )
+        param("ArtifactPrefix", "kotlinx-benchmark")
+        text("ArtifactPrefixes", "[kotlinx-benchmark]", description = "Optional list of artifact prefixes in the format of [prefix1,prefix2]", allowEmpty = true)
+    }
+
+    steps {
+        script {
+            name = "Create Central Deployment"
+            scriptContent = """
+                #!/bin/bash
+                
+                unset JAVA_HOME
+                
+                publishing-utils \
+                  central \
+                  space-to-central \
+                  --central-token="%system.libs.central.token%" \
+                  --central-deployment-name="kotlinx-io %releaseVersion%" \
+                  --space-url="https://jetbrains.team" \
+                  --space-username="%system.libs.repo.user%" \
+                  --space-password="%system.libs.repo.password%" \
+                  --from-project-key="kt" \
+                  --from-repo-name="kotlinx-dev" \
+                  --version="%releaseVersion%" \
+                  --artifact-id-prefixes="%ArtifactPrefixes%" \
+                  --hashes=[md5,sha1] \
+                  --filtered-packages="[]" \
+                  --central-local-deployment-paths="%LocalDeploymentPaths%"              
+            """.trimIndent()
+            dockerImage = "registry.jetbrains.team/p/kti/containers/publishing-utils:187"
+        }
+    }
+
+    features {
+        dockerRegistryConnections {
+            id = "DockerSupport"
+            loginToRegistry = on {
+                dockerRegistryId = "PROJECT_EXT_599"
+            }
         }
     }
 }.also { buildType(it) }
