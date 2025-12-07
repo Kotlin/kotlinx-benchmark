@@ -24,7 +24,7 @@ fun Project.additionalConfiguration() {
     }
     platforms.forEach { platform ->
         knownBuilds.deployPublish.params {
-            select("reverse.dep.*.system.publication_repository", "space",
+            select("reverse.dep.*.system.publication_repository", "space-central",
                 display = ParameterDisplay.PROMPT,
                 label = "Publication Repository",
                 options = listOf("space", "sonatype", "space-central"))
