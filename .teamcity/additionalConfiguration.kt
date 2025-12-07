@@ -79,7 +79,7 @@ fun Project.deployPlugin() = BuildType {
 
     // Don't depend on build; TODO: rollback
     // dependsOnSnapshot(this@deployPlugin.knownBuilds.buildAll)
-    buildNumberPattern = this@deployPlugin.knownBuilds.deployVersion.depParamRefs.buildNumber.ref
+    // buildNumberPattern = this@deployPlugin.knownBuilds.deployVersion.depParamRefs.buildNumber.ref
 
     type = BuildTypeSettings.Type.DEPLOYMENT
     enablePersonalBuilds = false
