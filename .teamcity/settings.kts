@@ -167,7 +167,7 @@ fun Project.deployPublish(configureBuild: BuildType) = BuildType {
     params {
         // Tell configuration build how to get release version parameter from this build
         // "dev" is the default and means publishing is not releasing to public
-        text(configureBuild.reverseDepParamRefs[releaseVersionParameter].name, "dev", display = ParameterDisplay.PROMPT, label = "Release Version")
+        text("reverse.dep.*.releaseVersion", "dev", display = ParameterDisplay.PROMPT, label = "Release Version")
     }
     commonConfigure()
 }.also { buildType(it) }

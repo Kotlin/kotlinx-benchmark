@@ -6,6 +6,7 @@
 import jetbrains.buildServer.configs.kotlin.*
 import jetbrains.buildServer.configs.kotlin.buildFeatures.commitStatusPublisher
 import jetbrains.buildServer.configs.kotlin.buildFeatures.dockerRegistryConnections
+import jetbrains.buildServer.configs.kotlin.buildFeatures.approval
 import jetbrains.buildServer.configs.kotlin.buildSteps.gradle
 import jetbrains.buildServer.configs.kotlin.buildSteps.script
 
@@ -69,8 +70,16 @@ fun Project.deployPlugin() = BuildType {
         contains("teamcity.agent.jvm.os.name", "Linux")
     }
 
-    dependsOnSnapshot(this@deployPlugin.knownBuilds.buildAll)
-    buildNumberPattern = this@deployPlugin.knownBuilds.buildVersion.depParamRefs.buildNumber.ref
+    features {
+        approval {
+            approvalRules = "user:filipp.zhinkin"
+            manualRunsApproved = false
+        }
+    }
+
+    // Don't depend on build; TODO: rollback
+    // dependsOnSnapshot(this@deployPlugin.knownBuilds.buildAll)
+    buildNumberPattern = this@deployPlugin.knownBuilds.deployVersion.depParamRefs.buildNumber.ref
 
     type = BuildTypeSettings.Type.DEPLOYMENT
     enablePersonalBuilds = false
@@ -102,6 +111,7 @@ fun Project.deployPlugin() = BuildType {
 
 fun Project.copyToCentral() = BuildType {
     id(COPY_TO_CENTRAL_PORTAL_ID)
+    templates(AbsoluteId("KotlinTools_DeployToCentral"))
 
     this.name = "Deploy (Copy Artifacts To Central Portal)"
     commonConfigure()
@@ -111,7 +121,7 @@ fun Project.copyToCentral() = BuildType {
         contains("teamcity.agent.jvm.os.name", "Linux")
     }
 
-    buildNumberPattern = this@copyToCentral.knownBuilds.buildVersion.depParamRefs.buildNumber.ref
+    buildNumberPattern = this@copyToCentral.knownBuilds.deployVersion.depParamRefs.buildNumber.ref
 
     type = BuildTypeSettings.Type.DEPLOYMENT
     enablePersonalBuilds = false
@@ -150,7 +160,7 @@ fun Project.copyToCentral() = BuildType {
                   --artifact-id-prefixes="%ArtifactPrefixes%" \
                   --hashes=[md5,sha1] \
                   --filtered-packages="[]" \
-                  --central-local-deployment-paths="%LocalDeploymentPaths%"              
+                  --central-local-deployment-paths="[]"              
             """.trimIndent()
             dockerImage = "registry.jetbrains.team/p/kti/containers/publishing-utils:187"
         }
