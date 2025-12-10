@@ -34,6 +34,7 @@ only for the specific Kotlin version used to build the library. For the latest v
   - [Running Benchmarks](#running-benchmarks)
   - [Benchmark Configuration Profiles](#benchmark-configuration-profiles)
   - [Separate source set for benchmarks](#separate-source-set-for-benchmarks)
+- [Analyzing results](#analyzing-results)
 - [Examples](#examples)
 - [Contributing](#contributing)
 
