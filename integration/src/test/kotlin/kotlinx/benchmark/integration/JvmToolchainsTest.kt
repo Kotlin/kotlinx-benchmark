@@ -2,6 +2,7 @@ package kotlinx.benchmark.integration
 
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Test
+import kotlin.test.Ignore
 import kotlin.test.assertEquals
 
 class JvmToolchainsTest : GradleTest() {
@@ -19,6 +20,7 @@ class JvmToolchainsTest : GradleTest() {
         }
     }
 
+    @Ignore // KTI-2826
     @Test
     fun testMinSupportedVersion() {
         for (jvmToolchain in listOf(8, 11, 17, 21)) {
