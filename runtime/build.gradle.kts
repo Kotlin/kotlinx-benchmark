@@ -141,6 +141,16 @@ tasks.withType(KotlinNativeCompile::class).configureEach {
     )
 }
 
+tasks.withType(Jar::class).configureEach {
+    manifest {
+        attributes(
+            "Implementation-Vendor" to "JetBrains",
+            "Implementation-Title" to project.name,
+            "Implementation-Version" to project.version,
+        )
+    }
+}
+
 @OptIn(ExperimentalBuildToolsApi::class, ExperimentalKotlinGradlePluginApi::class)
 fun KotlinMultiplatformExtension.isCompilerVersionAtLeast(major: Int, minor: Int, patch: Int): Boolean {
     val version = compilerVersion.orNull ?: return false
