@@ -28,6 +28,7 @@ plugins {
     alias(libs.plugins.gradle.pluginPublish)
     alias(libs.plugins.kotlinx.binaryCompatibilityValidator)
     alias(libs.plugins.kotlin.jvm)
+    //id("jar-file-attributes")
 }
 
 apply(plugin = "kotlinx.team.infra")
@@ -190,6 +191,16 @@ tasks.withType<AbstractPublishToMaven>().configureEach {
         javadocJars.drop(1).forEach {
             artifactsSet.remove(it)
         }
+    }
+}
+
+project.tasks.withType<Jar>().configureEach {
+    manifest {
+        attributes(
+            "Implementation-Vendor" to "JetBrains",
+            "Implementation-Title" to project.name,
+            "Implementation-Version" to project.version,
+        )
     }
 }
 
