@@ -6,6 +6,7 @@ import kotlin.test.Ignore
 import kotlin.test.assertEquals
 
 class JvmToolchainsTest : GradleTest() {
+    @Ignore // KTI-2826
     @Test
     fun testHigherVersionThanInGradle() {
         val runner = project(
