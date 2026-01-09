@@ -223,7 +223,9 @@ class SuiteSourceGenerator(
 
                     parameterProperties.forEach { property ->
                         val type = property.type.nameIfStandardType!!
-                        addStatement("instance.${property.name} = params.getValue(\"${property.name}\").to$type()")
+                        // otherwise it will cause `REDUNDANT_CALL_OF_CONVERSION_METHOD` warning in user code (KT-77727)
+                        val conversion = if (type.toString() == STRING.simpleName) "" else ".to$type()"
+                        addStatement("instance.${property.name} = params.getValue(\"${property.name}\")$conversion")
                     }
                 }
 
