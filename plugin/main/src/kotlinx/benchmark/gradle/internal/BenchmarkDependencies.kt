@@ -47,13 +47,12 @@ internal class BenchmarkDependencies(
         }
 
     internal companion object {
-
         /** Mark this [Configuration] as one that will be used to declare dependencies. */
         private fun Configuration.declarable() {
             isCanBeDeclaredCompat = true
             isCanBeResolved = false
             isCanBeConsumed = false
-            isVisible = false
+            isVisibleCompat = false
         }
 
         /** Mark this [Configuration] as one that will be used to resolve dependencies. */
@@ -61,7 +60,7 @@ internal class BenchmarkDependencies(
             isCanBeDeclaredCompat = false
             isCanBeResolved = true
             isCanBeConsumed = false
-            isVisible = false
+            isVisibleCompat = false
         }
 
         @Suppress("UnstableApiUsage")
@@ -74,6 +73,15 @@ internal class BenchmarkDependencies(
             get() = if (isCanBeDeclaredSupported) isCanBeDeclared else false
             set(value) {
                 if (isCanBeDeclaredSupported) isCanBeDeclared = value
+            }
+
+        /** `true` is [Configuration.isVisible] is still available in the current Gradle version */
+        private val isVisibleSupported = GradleVersion.current() < GradleVersion.version("9.0")
+
+        private var Configuration.isVisibleCompat: Boolean
+            get() = if (isVisibleSupported) isVisible else false
+            set(value) {
+                if (isVisibleSupported) isVisible = value
             }
     }
 }
