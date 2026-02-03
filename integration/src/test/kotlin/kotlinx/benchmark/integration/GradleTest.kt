@@ -31,10 +31,12 @@ abstract class GradleTest {
         }.apply(build)
         rootProjectDir.deleteRecursively()
         templates.resolve(name).copyRecursively(rootProjectDir)
-        file("build.gradle").modify(builder::build)
+        file("build.gradle").modify(builder::generateBuildScript)
         val settingsFile = file("settings.gradle")
-        if (!settingsFile.exists()) {
-            file("settings.gradle").writeText("") // empty settings file
+        if (settingsFile.exists()) {
+            settingsFile.modify(builder::generateSettingsScripts)
+        } else {
+            settingsFile.writeText(builder.generateSettingsScripts(""))
         }
         return Runner(rootProjectDir, print, gradleVersion)
     }
