@@ -288,7 +288,7 @@ fun Project.javaLauncherProvider(): Provider<JavaLauncher> = provider {
 }
 
 internal fun Project.checkJmhVersion(target: JvmBenchmarkTarget) {
-    if (project.findProperty("benchmarks_jmh_version_skip_check")?.toString()?.toBoolean() == true) {
+    if (providers.gradleProperty("benchmarks_jmh_version_skip_check").map { it.toBoolean() }.orElse(false).get()) {
         return
     }
 
