@@ -9,14 +9,21 @@ class Runner(
     private val projectDir: File,
     private val print: Boolean,
     gradleVersion: GradleTestVersion? = null,
+    kotlinNativeVersion: String?
 ) {
     /** Defaults to the minimum Gradle version specified in [kotlinx.benchmark.gradle.BenchmarksPlugin] */
     private val gradleVersion: GradleTestVersion = gradleVersion ?: MinSupportedGradleVersion
 
+    val kotlinNativeVersionParameter = if (kotlinNativeVersion != null) {
+        arrayOf("-Pkotlin.native.version=$kotlinNativeVersion")
+    } else {
+        emptyArray()
+    }
+
     private fun gradle(vararg tasks: String): GradleRunner =
         GradleRunner.create()
             .withProjectDir(projectDir)
-            .withArguments(*(defaultArguments() + kotlinNativeVersion + tasks))
+            .withArguments(*(defaultArguments() + kotlinNativeVersionParameter + tasks))
             .withGradleVersion(gradleVersion.versionString)
             .forwardStdError(System.err.bufferedWriter())
             .run {
@@ -43,11 +50,6 @@ class Runner(
     }
 
     private fun defaultArguments(): Array<String> = arrayOf("--stacktrace")
-
-    // Forward the Kotlin Native distribution version to test projects
-    private val kotlinNativeVersion = "kotlin.native.version".let { property ->
-        System.getProperty(property)?.let { arrayOf("-P$property=$it") } ?: emptyArray()
-    }
 
     fun updateAnnotations(filePath: String, annotationsSpecifier: AnnotationsSpecifier.() -> Unit) {
         val annotations = AnnotationsSpecifier().also(annotationsSpecifier)
