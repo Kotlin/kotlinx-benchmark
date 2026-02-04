@@ -132,6 +132,7 @@ fun Project.copyToCentral() = BuildType {
             display = ParameterDisplay.PROMPT,
             allowEmpty = false
         )
+        param("DeployVersion", "%$releaseVersionParameter%")
         param("ArtifactPrefix", "kotlinx-benchmark")
         text("ArtifactPrefixes", "kotlinx-benchmark", description = "Optional list of artifact prefixes in the format of [prefix1,prefix2]", allowEmpty = true)
     }
