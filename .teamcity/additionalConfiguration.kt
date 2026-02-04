@@ -133,44 +133,7 @@ fun Project.copyToCentral() = BuildType {
             allowEmpty = false
         )
         param("ArtifactPrefix", "kotlinx-benchmark")
-        text("ArtifactPrefixes", "[kotlinx-benchmark]", description = "Optional list of artifact prefixes in the format of [prefix1,prefix2]", allowEmpty = true)
-    }
-
-    steps {
-        script {
-            name = "Create Central Deployment"
-            scriptContent = """
-                #!/bin/bash
-                
-                unset JAVA_HOME
-                
-                publishing-utils \
-                  central \
-                  space-to-central \
-                  --central-token="%system.libs.central.token%" \
-                  --central-deployment-name="kotlinx-io %releaseVersion%" \
-                  --space-url="https://jetbrains.team" \
-                  --space-username="%system.libs.repo.user%" \
-                  --space-password="%system.libs.repo.password%" \
-                  --from-project-key="kt" \
-                  --from-repo-name="kotlinx-dev" \
-                  --version="%releaseVersion%" \
-                  --artifact-id-prefixes="%ArtifactPrefixes%" \
-                  --hashes=[md5,sha1] \
-                  --filtered-packages="[]" \
-                  --central-local-deployment-paths="[]"              
-            """.trimIndent()
-            dockerImage = "registry.jetbrains.team/p/kti/containers/publishing-utils:187"
-        }
-    }
-
-    features {
-        dockerRegistryConnections {
-            id = "DockerSupport"
-            loginToRegistry = on {
-                dockerRegistryId = "PROJECT_EXT_599"
-            }
-        }
+        text("ArtifactPrefixes", "kotlinx-benchmark", description = "Optional list of artifact prefixes in the format of [prefix1,prefix2]", allowEmpty = true)
     }
 }.also { buildType(it) }
 
