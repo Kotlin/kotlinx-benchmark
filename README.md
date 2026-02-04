@@ -34,6 +34,7 @@ only for the specific Kotlin version used to build the library. For the latest v
   - [Running Benchmarks](#running-benchmarks)
   - [Benchmark Configuration Profiles](#benchmark-configuration-profiles)
   - [Separate source set for benchmarks](#separate-source-set-for-benchmarks)
+- [Analyzing results](#analyzing-results)
 - [Examples](#examples)
 - [Contributing](#contributing)
 
@@ -59,7 +60,7 @@ dedicated to setting up benchmarking in those specific project types.
     ```kotlin
     // build.gradle.kts
     plugins {
-        id("org.jetbrains.kotlinx.benchmark") version "0.4.15"
+        id("org.jetbrains.kotlinx.benchmark") version "0.4.16"
     }
     ```
 
@@ -82,7 +83,7 @@ dedicated to setting up benchmarking in those specific project types.
         sourceSets {
             commonMain {
                 dependencies {
-                    implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.15")
+                    implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.16")
                 }
             }
         }
@@ -107,7 +108,7 @@ dedicated to setting up benchmarking in those specific project types.
     ```groovy
     // build.gradle
     plugins {
-        id 'org.jetbrains.kotlinx.benchmark' version '0.4.15'
+        id 'org.jetbrains.kotlinx.benchmark' version '0.4.16'
     }
     ```
 
@@ -130,7 +131,7 @@ dedicated to setting up benchmarking in those specific project types.
         sourceSets {
             commonMain {
                 dependencies {
-                    implementation 'org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.15'
+                    implementation 'org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.16'
                 }
             }
         }

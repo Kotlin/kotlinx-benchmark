@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.4.16
+
+- Restored compatibility with Gradle's project isolation that was broken after #312 [#349](https://github.com/Kotlin/kotlinx-benchmark/pull/349)
+
 ## 0.4.15
 
 - Made WasmJS/D8 tasks configuration-cache friendly [#309](https://github.com/Kotlin/kotlinx-benchmark/pull/309)

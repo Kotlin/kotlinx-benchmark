@@ -8,16 +8,16 @@ class SupportedKotlinVersionTest : GradleTest() {
     /** The minimum Kotlin version that kotlinx-benchmark plugin supports. */
     private val minSupportedKotlinVersion = System.getProperty("minSupportedKotlinVersion")
     private val warningMessage =
-        "JetBrains Gradle Benchmarks plugin requires Kotlin version ${GradleTestVersion.MinSupportedKotlinVersion.versionString}"
+        "JetBrains Gradle Benchmarks plugin requires Kotlin version ${KotlinTestVersion.MinSupportedKotlinVersion.versionString}"
 
     @Test
     fun `test MinSupportedKotlinVersion matches the version used in build scripts`() {
-        assertEquals(minSupportedKotlinVersion, GradleTestVersion.MinSupportedKotlinVersion.versionString)
+        assertEquals(minSupportedKotlinVersion, KotlinTestVersion.MinSupportedKotlinVersion.versionString)
     }
 
     @Test
     fun `when using min supported Kotlin version, expect no warning`() {
-        val runner = project("kotlin-multiplatform", kotlinVersion = GradleTestVersion.MinSupportedKotlinVersion.versionString)
+        val runner = project("kotlin-multiplatform", kotlinVersion = KotlinTestVersion.MinSupportedKotlinVersion.versionString)
 
         runner.runAndSucceed(":help", "-q") {
             assertOutputDoesNotContain(warningMessage)
@@ -26,7 +26,7 @@ class SupportedKotlinVersionTest : GradleTest() {
 
     @Test
     fun `when using unsupported Gradle version, expect warning`() {
-        val runner = project("kotlin-multiplatform", kotlinVersion = GradleTestVersion.UnsupportedKotlinVersion.versionString)
+        val runner = project("kotlin-multiplatform", kotlinVersion = KotlinTestVersion.UnsupportedKotlinVersion.versionString)
 
         runner.run(":help", "-q") {
             assertOutputContains(warningMessage)

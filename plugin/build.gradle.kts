@@ -5,7 +5,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
 buildscript {
     repositories {
-        maven("https://maven.pkg.jetbrains.space/kotlin/p/kotlinx/maven")
+        maven("https://packages.jetbrains.team/maven/p/kotlinx-team-infra/maven")
         mavenCentral()
         val kotlinRepoUrl = providers.gradleProperty("kotlin_repo_url").orNull
         if (kotlinRepoUrl != null) {
