@@ -4,6 +4,7 @@ import kotlinx.benchmark.integration.GradleTestVersion.MinSupportedGradleVersion
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.GradleRunner
 import java.io.File
+import java.net.URI
 
 class Runner(
     private val projectDir: File,
@@ -14,17 +15,20 @@ class Runner(
     /** Defaults to the minimum Gradle version specified in [kotlinx.benchmark.gradle.BenchmarksPlugin] */
     private val gradleVersion: GradleTestVersion = gradleVersion ?: MinSupportedGradleVersion
 
-    val kotlinNativeVersionParameter = if (kotlinNativeVersion != null) {
+    private val kotlinNativeVersionParameter = if (kotlinNativeVersion != null) {
         arrayOf("-Pkotlin.native.version=$kotlinNativeVersion")
     } else {
         emptyArray()
     }
 
+    private val gradleDistributionUri: URI
+        get() = URI("https://cache-redirector.jetbrains.com/services.gradle.org/distributions/gradle-${gradleVersion.versionString}-bin.zip")
+
     private fun gradle(vararg tasks: String): GradleRunner =
         GradleRunner.create()
             .withProjectDir(projectDir)
             .withArguments(*(defaultArguments() + kotlinNativeVersionParameter + tasks))
-            .withGradleVersion(gradleVersion.versionString)
+            .withGradleDistribution(gradleDistributionUri)
             .forwardStdError(System.err.bufferedWriter())
             .run {
                 if (print) forwardStdOutput(System.out.bufferedWriter()) else this
