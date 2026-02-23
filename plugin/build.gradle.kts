@@ -115,6 +115,7 @@ dependencies {
 
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.kotlin.compilerEmbeddable)
+    compileOnly("org.jetbrains.kotlinx:kotlinx-metadata-klib:0.0.6")
     compileOnly(libs.jmh.generatorBytecode) // used in worker
 }
 

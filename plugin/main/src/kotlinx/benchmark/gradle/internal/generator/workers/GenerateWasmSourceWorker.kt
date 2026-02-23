@@ -5,12 +5,14 @@ import kotlinx.benchmark.gradle.Platform
 import kotlinx.benchmark.gradle.SuiteSourceGenerator
 import kotlinx.benchmark.gradle.createModuleDescriptor
 import kotlinx.benchmark.gradle.internal.generator.RequiresKotlinCompilerEmbeddable
-import org.gradle.api.file.*
-import org.gradle.api.provider.*
+import kotlinx.metadata.klib.KlibModuleMetadata
+import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.provider.Property
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
-import org.jetbrains.kotlin.storage.LockBasedStorageManager
+import org.jetbrains.kotlin.library.resolveSingleFileKlib
 import org.jetbrains.kotlin.storage.StorageManager
 import java.io.File
 
@@ -57,20 +59,25 @@ internal abstract class GenerateWasmSourceWorker : WorkAction<GenerateWasmSource
         inputDependencies: Set<File>,
         outputSourcesDir: File,
     ) {
-        val modules = loadIr(
-            lib,
-            inputDependencies = inputDependencies,
-            LockBasedStorageManager("Inspect"),
+        val resolvedLibrary = resolveSingleFileKlib(org.jetbrains.kotlin.konan.file.File(lib.absolutePath))
+        val metadata = KlibModuleMetadata.read(object : KlibModuleMetadata.MetadataLibraryProvider {
+            override val moduleHeaderData: ByteArray
+                get() = resolvedLibrary.moduleHeaderData
+
+            override fun packageMetadata(fqName: String, partName: String): ByteArray =
+                resolvedLibrary.packageMetadata(fqName, partName)
+
+            override fun packageMetadataParts(fqName: String): Set<String> =
+                resolvedLibrary.packageMetadataParts(fqName)
+        })
+
+        val generator = SuiteSourceGenerator(
+            title,
+            metadata,
+            outputSourcesDir,
+            Platform.WasmBuiltIn
         )
-        modules.forEach { module ->
-            val generator = SuiteSourceGenerator(
-                title,
-                module,
-                outputSourcesDir,
-                Platform.WasmBuiltIn
-            )
-            generator.generate()
-        }
+        generator.generate()
     }
 
     private fun loadIr(

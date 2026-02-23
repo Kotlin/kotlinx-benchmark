@@ -29,6 +29,7 @@ internal class BenchmarkDependencies(
                         project.dependencies.create("org.jetbrains.kotlin:kotlin-compiler-embeddable:$version")
                     }
                 )
+                deps.add(project.dependencies.create("org.jetbrains.kotlinx:kotlinx-metadata-klib:0.0.6"))
             }
         }
 

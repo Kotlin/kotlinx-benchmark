@@ -1,29 +1,31 @@
 package kotlinx.benchmark.gradle
 
-import kotlinx.benchmark.gradle.SuiteSourceGenerator.Companion.paramAnnotationFQN
+import kotlinx.benchmark.gradle.SuiteSourceGenerator.Companion.blackholeClassName
+import kotlinx.benchmark.gradle.SuiteSourceGenerator.Companion.paramAnnotationClassName
 import kotlinx.benchmark.gradle.internal.generator.RequiresKotlinCompilerEmbeddable
-import org.jetbrains.kotlin.builtins.KotlinBuiltIns
-import org.jetbrains.kotlin.builtins.UnsignedTypes
-import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
-import org.jetbrains.kotlin.descriptors.FunctionDescriptor
-import org.jetbrains.kotlin.descriptors.PropertyDescriptor
-import org.jetbrains.kotlin.js.descriptorUtils.getKotlinTypeFqName
-import org.jetbrains.kotlin.name.FqName
-import org.jetbrains.kotlin.resolve.annotations.argumentValue
+import kotlinx.metadata.klib.annotations
+import kotlin.metadata.KmAnnotationArgument
+import kotlin.metadata.KmClassifier
+import kotlin.metadata.KmFunction
+import kotlin.metadata.KmProperty
+import kotlin.metadata.KmType
+import kotlin.metadata.Visibility
+import kotlin.metadata.isVar
+import kotlin.metadata.visibility
 
 @RequiresKotlinCompilerEmbeddable
-internal fun validateBenchmarkFunctions(functions: List<FunctionDescriptor>) {
+internal fun validateBenchmarkFunctions(functions: List<KmFunction>) {
     functions.forEach { function ->
-        if (function.visibility != DescriptorVisibilities.PUBLIC) {
-            error("@Benchmark function should be public. Function `${function.name}` is ${function.visibility.name}.")
+        if (function.visibility != Visibility.PUBLIC) {
+            error("@Benchmark function should be public. Function `${function.name}` is ${function.visibility.name.toLowerCase()}.")
         }
 
         val parameters = function.valueParameters.size
         if (parameters == 1) {
             val paramType = function.valueParameters[0].type
-            if (paramType.getKotlinTypeFqName(false) != "kotlinx.benchmark.Blackhole") {
+            if ((paramType.classifier as KmClassifier.Class).name != blackholeClassName) {
                 error("@Benchmark function can have at most one parameter of type `Blackhole`. " +
-                    "Function `${function.name}` has a parameter of type `$paramType`. ")
+                    "Function `${function.name}` has a parameter of type `${(paramType.classifier as KmClassifier.Class).name.replace('/', '.')}`. ")
             }
         } else if (parameters != 0) {
             error("@Benchmark function can have at most one parameter of type `Blackhole`. " +
@@ -33,10 +35,10 @@ internal fun validateBenchmarkFunctions(functions: List<FunctionDescriptor>) {
 }
 
 @RequiresKotlinCompilerEmbeddable
-internal fun validateSetupFunctions(functions: List<FunctionDescriptor>) {
+internal fun validateSetupFunctions(functions: List<KmFunction>) {
     functions.forEach { function ->
-        if (function.visibility != DescriptorVisibilities.PUBLIC) {
-            error("@Setup function should be public. Function `${function.name}` is ${function.visibility.name}.")
+        if (function.visibility != Visibility.PUBLIC) {
+            error("@Setup function should be public. Function `${function.name}` is ${function.visibility.name.toLowerCase()}.")
         }
 
         val parameters = function.valueParameters.size
@@ -48,10 +50,10 @@ internal fun validateSetupFunctions(functions: List<FunctionDescriptor>) {
 }
 
 @RequiresKotlinCompilerEmbeddable
-internal fun validateTeardownFunctions(functions: List<FunctionDescriptor>) {
+internal fun validateTeardownFunctions(functions: List<KmFunction>) {
     functions.forEach { function ->
-        if (function.visibility != DescriptorVisibilities.PUBLIC) {
-            error("@TearDown function should be public. Function `${function.name}` is ${function.visibility.name}.")
+        if (function.visibility != Visibility.PUBLIC) {
+            error("@TearDown function should be public. Function `${function.name}` is ${function.visibility.name.toLowerCase()}.")
         }
 
         val parameters = function.valueParameters.size
@@ -62,27 +64,32 @@ internal fun validateTeardownFunctions(functions: List<FunctionDescriptor>) {
     }
 }
 
+private fun KmType.isPrimitiveOrUnsigned(): Boolean = when ((this.classifier as? KmClassifier.Class)?.name) {
+    "kotlin/Boolean", "kotlin/Char", "kotlin/Byte", "kotlin/Short", "kotlin/Int", "kotlin/Float", "kotlin/Long", "kotlin/Double" -> true
+    "kotlin/UByte", "kotlin/UShort", "kotlin/UInt", "kotlin/ULong" -> true
+    else -> false
+}
+
 @RequiresKotlinCompilerEmbeddable
-internal fun validateParameterProperties(properties: List<PropertyDescriptor>) {
+internal fun validateParameterProperties(properties: List<KmProperty>) {
     properties.forEach { property ->
         if (!property.isVar) {
             error("@Param property should be mutable (var). Property `${property.name}` is read-only (val).")
         }
-        if (property.visibility != DescriptorVisibilities.PUBLIC) {
-            error("@Param property should be public. Property `${property.name}` is ${property.visibility.name}.")
+        if (property.visibility != Visibility.PUBLIC) {
+            error("@Param property should be public. Property `${property.name}` is ${property.visibility.name.toLowerCase()}.")
         }
-        val isSupportedType = KotlinBuiltIns.isPrimitiveTypeOrNullablePrimitiveType(property.type) ||
-                UnsignedTypes.isUnsignedType(property.type) ||
-                property.type.getKotlinTypeFqName(false) == "kotlin.String"
+
+        val isSupportedType = property.returnType.isPrimitiveOrUnsigned() ||
+                (property.returnType.classifier as? KmClassifier.Class)?.name == "kotlin/String"
         if (!isSupportedType) {
-            error("@Param property should have a primitive or string type. Property `${property.name}` type is `${property.type}`.")
+            error("@Param property should have a primitive or string type. Property `${property.name}` type is `${(property.returnType.classifier as KmClassifier.Class).name.replace('/', '.')}`.")
         }
 
-        val annotation = property.annotations.findAnnotation(FqName(paramAnnotationFQN))!!
-        val valueArgument = annotation.argumentValue("value")!!
-        val values = valueArgument.value as List<*>
+        val annotation = property.annotations.find { it.className == paramAnnotationClassName }!!
+        val valueArgument = annotation.arguments["value"]!! as KmAnnotationArgument.ArrayValue
 
-        if (values.isEmpty()) {
+        if (valueArgument.elements.isEmpty()) {
             error("@Param annotation should have at least one argument. The annotation on property `${property.name}` has no arguments.")
         }
     }

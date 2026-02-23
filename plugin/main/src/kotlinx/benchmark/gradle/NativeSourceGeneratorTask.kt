@@ -2,16 +2,21 @@ package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import kotlinx.benchmark.gradle.internal.generator.RequiresKotlinCompilerEmbeddable
+import kotlinx.metadata.klib.KlibModuleMetadata
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkerExecutor
+import org.jetbrains.kotlin.konan.library.resolverByName
 import org.jetbrains.kotlin.library.KLIB_FILE_EXTENSION_WITH_DOT
+import org.jetbrains.kotlin.library.resolveSingleFileKlib
 import org.jetbrains.kotlin.storage.LockBasedStorageManager
+import org.jetbrains.kotlin.util.DummyLogger
 import java.io.File
 import javax.inject.Inject
+import kotlin.collections.emptyList
 
 @CacheableTask
 abstract class NativeSourceGeneratorTask
@@ -106,12 +111,19 @@ abstract class NativeSourceGeneratorWorker : WorkAction<NativeSourceGeneratorWor
                 if (parameters.target.isEmpty())
                     throw Exception("nativeTarget should be specified for API generator for native targets")
 
-                val storageManager = LockBasedStorageManager("Inspect")
-                val module =
-                    KlibResolver.Native.createModuleDescriptor(lib, parameters.inputDependencies, storageManager)
+                val resolvedLibrary = resolveSingleFileKlib(org.jetbrains.kotlin.konan.file.File(lib.absolutePath))
+                val metadata = KlibModuleMetadata.read(object : KlibModuleMetadata.MetadataLibraryProvider {
+                    override val moduleHeaderData: ByteArray
+                        get() = resolvedLibrary.moduleHeaderData
+
+                    override fun packageMetadata(fqName: String, partName: String): ByteArray = resolvedLibrary.packageMetadata(fqName, partName)
+
+                    override fun packageMetadataParts(fqName: String): Set<String> = resolvedLibrary.packageMetadataParts(fqName)
+                })
+
                 val generator = SuiteSourceGenerator(
                     parameters.title,
-                    module,
+                    metadata,
                     parameters.outputSourcesDir,
                     Platform.NativeBuiltIn
                 )
