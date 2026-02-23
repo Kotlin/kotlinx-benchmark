@@ -10,7 +10,30 @@ class ProjectBuilder {
         configurations[name] = BenchmarkConfiguration().apply(configuration)
     }
 
-    fun build(original: String): String {
+    fun generateSettingsScripts(original: String): String {
+        val pluginManagement = """
+        pluginManagement {
+            repositories {
+                $kotlin_repo
+                $plugin_repo_url
+                mavenCentral()
+                gradlePluginPortal()
+            }
+        }                    
+        """.trimIndent()
+        val dependencyManagement = """
+        dependencyResolutionManagement {
+            repositories {
+                $kotlin_repo
+                $runtime_repo_url
+                mavenCentral()
+            }
+        }
+        """.trimIndent()
+        return pluginManagement + "\n\n" + original + "\n\n" + dependencyManagement
+    }
+
+    fun generateBuildScript(original: String): String {
 
         val script =
             """
@@ -70,25 +93,9 @@ private val kotlin_additional_cli_options = System.getProperty("kotlin_additiona
 
 private fun generateBuildScript(kotlinVersion: String, jvmToolchain: Int) =
     """
-    buildscript {
-        repositories {
-            $kotlin_repo
-            $plugin_repo_url
-            mavenCentral()
-        }
-        dependencies {
-            classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion'
-            classpath 'org.jetbrains.kotlinx:kotlinx-benchmark-plugin:0.5.0-SNAPSHOT'
-        }
-    }
-    
-    apply plugin: 'kotlin-multiplatform'
-    apply plugin: 'org.jetbrains.kotlinx.benchmark'
-    
-    repositories {
-        $kotlin_repo
-        $runtime_repo_url
-        mavenCentral()
+    plugins {
+        id 'org.jetbrains.kotlin.multiplatform' version '$kotlinVersion'
+        id 'org.jetbrains.kotlinx.benchmark' version '0.5.0-SNAPSHOT'
     }
     
     kotlin {

@@ -1,8 +1,8 @@
 package kotlinx.benchmark.integration
 
-import org.junit.*
-import org.junit.rules.*
-import java.io.*
+import org.junit.Rule
+import org.junit.rules.TemporaryFolder
+import java.io.File
 
 abstract class GradleTest {
     @Rule
@@ -31,12 +31,19 @@ abstract class GradleTest {
         }.apply(build)
         rootProjectDir.deleteRecursively()
         templates.resolve(name).copyRecursively(rootProjectDir)
-        file("build.gradle").modify(builder::build)
+        file("build.gradle").modify(builder::generateBuildScript)
         val settingsFile = file("settings.gradle")
-        if (!settingsFile.exists()) {
-            file("settings.gradle").writeText("") // empty settings file
+        if (settingsFile.exists()) {
+            settingsFile.modify(builder::generateSettingsScripts)
+        } else {
+            settingsFile.writeText(builder.generateSettingsScripts(""))
         }
-        return Runner(rootProjectDir, print, gradleVersion)
+        return Runner(
+            rootProjectDir, print, gradleVersion,
+            // If a Kotlin version was explicitly specified, use it as a native version,
+            // otherwise - take a value from the system property.
+            kotlinVersion ?: System.getProperty("kotlin.native.version")
+        )
     }
 }
 
