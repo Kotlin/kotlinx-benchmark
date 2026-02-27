@@ -1,11 +1,12 @@
 package kotlinx.benchmark.gradle.internal
 
 import kotlinx.benchmark.gradle.BenchmarksExtension
-import org.gradle.api.*
-import org.gradle.api.artifacts.*
-import org.gradle.api.attributes.*
-import org.gradle.api.attributes.Usage.*
-import org.gradle.api.model.*
+import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.attributes.Usage
+import org.gradle.api.attributes.Usage.JAVA_RUNTIME
+import org.gradle.api.attributes.Usage.USAGE_ATTRIBUTE
+import org.gradle.api.model.ObjectFactory
 import org.gradle.util.GradleVersion
 
 /**
@@ -30,6 +31,11 @@ internal class BenchmarkDependencies(
                     }
                 )
                 deps.add(project.dependencies.create("org.jetbrains.kotlinx:kotlinx-metadata-klib:0.0.6"))
+                deps.addLater(
+                    benchmarksExtension.kotlinCompilerVersion.map { version ->
+                        project.dependencies.create("org.jetbrains.kotlin:kotlin-util-klib:$version")
+                    }
+                )
             }
         }
 
