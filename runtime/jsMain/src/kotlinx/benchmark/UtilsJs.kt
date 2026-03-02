@@ -26,11 +26,14 @@ internal val isSpiderMonkey: Boolean by lazy { isSpiderMonkeyEngine() }
 
 internal val isNodeJs: Boolean by lazy { isNodeJsEngine() }
 
+internal val isJsc: Boolean by lazy { isJscEngine() }
+
 internal val jsEngineSupport: JsEngineSupport by lazy {
     when {
         isD8 -> D8EngineSupport
         isSpiderMonkey -> SpiderMonkeyEngineSupport
         isNodeJs -> NodeJsEngineSupport
+        isJsc -> JscEngineSupport
         else -> error("Unsupported js engine")
     }
 }
@@ -40,5 +43,6 @@ internal actual inline fun measureNanoseconds(block: () -> Unit): Long =
         isD8 -> standaloneJsVmMeasureTime(block)
         isSpiderMonkey -> standaloneJsVmMeasureTime(block)
         isNodeJs -> nodeJsMeasureTime(block)
+        isJsc -> jscMeasureTime(block)
         else -> error("Unsupported js engine")
     }
