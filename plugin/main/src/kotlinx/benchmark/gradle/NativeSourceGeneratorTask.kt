@@ -2,6 +2,7 @@ package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import kotlinx.benchmark.gradle.internal.generator.RequiresKotlinCompilerEmbeddable
+import kotlinx.benchmark.klib.KlibMetadataLoaderFactory
 import kotlinx.metadata.klib.KlibModuleMetadata
 import org.gradle.api.*
 import org.gradle.api.file.*
@@ -111,15 +112,7 @@ abstract class NativeSourceGeneratorWorker : WorkAction<NativeSourceGeneratorWor
                 if (parameters.target.isEmpty())
                     throw Exception("nativeTarget should be specified for API generator for native targets")
 
-                val resolvedLibrary = resolveSingleFileKlib(org.jetbrains.kotlin.konan.file.File(lib.absolutePath))
-                val metadata = KlibModuleMetadata.read(object : KlibModuleMetadata.MetadataLibraryProvider {
-                    override val moduleHeaderData: ByteArray
-                        get() = resolvedLibrary.moduleHeaderData
-
-                    override fun packageMetadata(fqName: String, partName: String): ByteArray = resolvedLibrary.packageMetadata(fqName, partName)
-
-                    override fun packageMetadataParts(fqName: String): Set<String> = resolvedLibrary.packageMetadataParts(fqName)
-                })
+                val metadata = KlibMetadataLoaderFactory.create().load(lib)
 
                 val generator = SuiteSourceGenerator(
                     parameters.title,

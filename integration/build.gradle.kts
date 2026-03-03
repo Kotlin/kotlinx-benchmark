@@ -7,7 +7,6 @@ repositories {
 }
 
 evaluationDependsOn(":kotlinx-benchmark-runtime")
-
 val runtime get() = project(":kotlinx-benchmark-runtime")
 val plugin get() = gradle.includedBuild("plugin")
 
@@ -19,6 +18,9 @@ dependencies {
 
 tasks.test {
     dependsOn(plugin.task(":publishToBuildLocal"))
+    dependsOn(plugin.task(":klib-shim:publishToBuildLocal"))
+    dependsOn(plugin.task(":klib-shim-2.3:publishToBuildLocal"))
+    dependsOn(plugin.task(":klib-shim-2.4:publishToBuildLocal"))
     dependsOn(runtime.tasks.getByName("publishToBuildLocal"))
 
     systemProperty("plugin_repo_url", plugin.projectDir.resolve("build/maven").absoluteFile.invariantSeparatorsPath)

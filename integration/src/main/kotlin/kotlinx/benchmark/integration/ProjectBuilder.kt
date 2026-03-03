@@ -26,6 +26,7 @@ class ProjectBuilder {
             repositories {
                 $kotlin_repo
                 $runtime_repo_url
+                $plugin_repo_url
                 mavenCentral()
             }
         }

@@ -1,0 +1,9 @@
+public abstract interface class kotlinx/benchmark/klib/KlibMetadataLoader {
+	public abstract fun load (Ljava/io/File;)Lkotlinx/metadata/klib/KlibModuleMetadata;
+}
+
+public final class kotlinx/benchmark/klib/KlibMetadataLoaderFactory {
+	public static final field INSTANCE Lkotlinx/benchmark/klib/KlibMetadataLoaderFactory;
+	public final fun create ()Lkotlinx/benchmark/klib/KlibMetadataLoader;
+}
+

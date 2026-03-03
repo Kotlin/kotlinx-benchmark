@@ -13,3 +13,7 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "kotlinx-benchmark-plugin"
+
+include(":klib-shim")
+include(":klib-shim-2.3")
+include(":klib-shim-2.4")

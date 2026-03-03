@@ -35,6 +35,9 @@ apply(plugin = "kotlinx.team.infra")
 extensions.configure<InfraExtension> {
     publishing {
         include(":")
+        include(":klib-shim")
+        include(":klib-shim-2.3")
+        include(":klib-shim-2.4")
 
         libraryRepoUrl = "https://github.com/Kotlin/kotlinx-benchmark"
     }
@@ -42,13 +45,15 @@ extensions.configure<InfraExtension> {
 
 logger.info("Using Kotlin ${libs.versions.kotlin.asProvider().get()} for project ${project.name}")
 
-repositories {
-    mavenCentral()
-    gradlePluginPortal()
+allprojects {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
 
-    val kotlinRepoUrl = providers.gradleProperty("kotlin_repo_url").orNull
-    if (kotlinRepoUrl != null) {
-        maven(kotlinRepoUrl)
+        val kotlinRepoUrl = providers.gradleProperty("kotlin_repo_url").orNull
+        if (kotlinRepoUrl != null) {
+            maven(kotlinRepoUrl)
+        }
     }
 }
 
@@ -115,8 +120,9 @@ dependencies {
 
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.kotlin.compilerEmbeddable)
-    compileOnly("org.jetbrains.kotlinx:kotlinx-metadata-klib:0.0.6")
+    compileOnly(libs.kotlinx.metadata.klib)
     compileOnly(libs.jmh.generatorBytecode) // used in worker
+    compileOnly(project(":klib-shim"))
 }
 
 val generatePluginConstants by tasks.registering {

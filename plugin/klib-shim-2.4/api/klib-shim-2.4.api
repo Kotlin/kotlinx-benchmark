@@ -1,0 +1,5 @@
+public final class kotlinx/benchmark/klib/KlibMetadataLoaderImpl : kotlinx/benchmark/klib/KlibMetadataLoader {
+	public fun <init> ()V
+	public fun load (Ljava/io/File;)Lkotlinx/metadata/klib/KlibModuleMetadata;
+}
+

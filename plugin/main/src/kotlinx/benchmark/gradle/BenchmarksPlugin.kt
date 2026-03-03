@@ -65,7 +65,7 @@ constructor(
 
         plugins.withType(org.jetbrains.kotlin.gradle.plugin.KotlinBasePlugin::class.java) { kotlinPlugin ->
             logger.info("Detected Kotlin plugin version '${kotlinPlugin.pluginVersion}'")
-            if (getKotlinVersion(kotlinPlugin.pluginVersion) < getKotlinVersion(MIN_SUPPORTED_KOTLIN_VERSION)) {
+            if (parseKotlinVersion(kotlinPlugin.pluginVersion) < parseKotlinVersion(MIN_SUPPORTED_KOTLIN_VERSION)) {
                 logger.error("JetBrains Gradle Benchmarks plugin requires Kotlin version $MIN_SUPPORTED_KOTLIN_VERSION or higher")
             }
             extension.kotlinCompilerVersion.set(kotlinPlugin.pluginVersion)
@@ -139,11 +139,16 @@ constructor(
     }
 }
 
-private fun getKotlinVersion(kotlinVersion: String): KotlinVersion {
+@KotlinxBenchmarkPluginInternalApi
+fun parseKotlinVersion(kotlinVersion: String): KotlinVersion {
     val (major, minor) = kotlinVersion
         .split('.')
         .take(2)
         .map { it.toInt() }
-    val patch = kotlinVersion.substringAfterLast('.').substringBefore('-').toInt()
+    val patch = try {
+        kotlinVersion.substringAfterLast('.').substringBefore('-').toInt()
+    } catch (e: NumberFormatException) {
+        0
+    }
     return KotlinVersion(major, minor, patch)
 }

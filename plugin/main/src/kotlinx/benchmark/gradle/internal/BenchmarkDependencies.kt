@@ -1,6 +1,7 @@
 package kotlinx.benchmark.gradle.internal
 
 import kotlinx.benchmark.gradle.BenchmarksExtension
+import kotlinx.benchmark.gradle.parseKotlinVersion
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.attributes.Usage
@@ -34,6 +35,12 @@ internal class BenchmarkDependencies(
                 deps.addLater(
                     benchmarksExtension.kotlinCompilerVersion.map { version ->
                         project.dependencies.create("org.jetbrains.kotlin:kotlin-util-klib:$version")
+                    }
+                )
+                deps.addLater(
+                    benchmarksExtension.kotlinCompilerVersion.map { version ->
+                        val shimVersion = if (parseKotlinVersion(version) >= KotlinVersion(2, 4)) "2.4" else "2.3"
+                        project.dependencies.create("org.jetbrains.kotlinx:kotlinx-benchmark-klib-shim-$shimVersion:${BenchmarksPluginConstants.BENCHMARK_PLUGIN_VERSION}")
                     }
                 )
             }
