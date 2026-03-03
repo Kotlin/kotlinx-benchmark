@@ -9,9 +9,12 @@ class KlibMetadataLoaderImpl : KlibMetadataLoader {
         val libs = KlibLoader {
             libraryPaths(klibFile.absolutePath)
         }.load()
-        println("Loaded libraries: ${libs.librariesStdlibFirst.joinToString(", ") { it.libraryFile.toString() }}")
 
-        val library = libs.librariesStdlibFirst.first { it.libraryFile == klibFile }
+        check (!libs.hasProblems) {
+            "Failed to load following libraries: ${libs.problematicLibraries.joinToString("; ") { "${it.libraryPath}: ${it.problemCase}" }}"
+        }
+
+        val library = libs.librariesStdlibFirst.first()
         return KlibModuleMetadata.read(object : KlibModuleMetadata.MetadataLibraryProvider {
             override val moduleHeaderData: ByteArray
                 get() = library.moduleHeaderData
