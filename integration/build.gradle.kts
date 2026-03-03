@@ -17,6 +17,11 @@ dependencies {
     testImplementation(kotlin("test-junit"))
 }
 
+kotlin {
+    // the minimum JDK version required to run all integration tests
+    jvmToolchain(17)
+}
+
 tasks.test {
     dependsOn(plugin.task(":publishToBuildLocal"))
     dependsOn(runtime.tasks.getByName("publishToBuildLocal"))
