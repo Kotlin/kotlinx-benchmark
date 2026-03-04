@@ -1,6 +1,7 @@
 package kotlinx.benchmark.klib
 
 import kotlinx.metadata.klib.KlibModuleMetadata
+import org.jetbrains.kotlin.library.components.metadata
 import org.jetbrains.kotlin.library.loader.KlibLoader
 import java.io.File
 
@@ -16,14 +17,15 @@ class KlibMetadataLoaderImpl : KlibMetadataLoader {
 
         val library = libs.librariesStdlibFirst.first()
         return KlibModuleMetadata.read(object : KlibModuleMetadata.MetadataLibraryProvider {
+            private val metadata = library.metadata
             override val moduleHeaderData: ByteArray
-                get() = library.moduleHeaderData
+                get() = metadata.moduleHeaderData
 
             override fun packageMetadata(fqName: String, partName: String): ByteArray =
-                library.packageMetadata(fqName, partName)
+                metadata.getPackageFragment(fqName, partName)
 
             override fun packageMetadataParts(fqName: String): Set<String> =
-                library.packageMetadataParts(fqName)
+                metadata.getPackageFragmentNames(fqName)
         })
     }
 }

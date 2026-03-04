@@ -20,7 +20,7 @@ kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect" }
 
 kotlin-utilKlibMetadata = { module = "org.jetbrains.kotlin:kotlin-util-klib-metadata" }
 kotlin-utilKlib = { module = "org.jetbrains.kotlin:kotlin-util-klib" }
-kotlin-utilKlib24 = { module = "org.jetbrains.kotlin:kotlin-util-klib", version = "2.3.0" }
+kotlin-utilKlib24 = { module = "org.jetbrains.kotlin:kotlin-util-klib", version = "2.3.20-RC" }
 kotlin-utilIo = { module = "org.jetbrains.kotlin:kotlin-util-io" }
 kotlinx-metadata-klib = { module = "org.jetbrains.kotlinx:kotlinx-metadata-klib", version.ref = "kotlinx-metadata-klib" }
 kotlin-compilerEmbeddable = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin" }

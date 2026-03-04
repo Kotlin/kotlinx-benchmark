@@ -39,7 +39,7 @@ internal class BenchmarkDependencies(
                 )
                 deps.addLater(
                     benchmarksExtension.kotlinCompilerVersion.map { version ->
-                        val shimVersion = if (parseKotlinVersion(version) >= KotlinVersion(2, 4)) "2.4" else "2.3"
+                        val shimVersion = if (parseKotlinVersion(version) >= KotlinVersion(2, 3, 20)) "2.4" else "2.3"
                         project.dependencies.create("org.jetbrains.kotlinx:kotlinx-benchmark-klib-shim-$shimVersion:${BenchmarksPluginConstants.BENCHMARK_PLUGIN_VERSION}")
                     }
                 )
