@@ -23,7 +23,7 @@ kotlin-utilIo = { module = "org.jetbrains.kotlin:kotlin-util-io" }
 
 kotlin-compilerEmbeddable = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin" }
 
-kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin-for-gradle-plugin" }
 
 kotlinx-teamInfraGradlePlugin = { module = "kotlinx.team:kotlinx.team.infra", version.ref = "kotlinx-teamInfra" }
 

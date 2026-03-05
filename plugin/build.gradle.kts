@@ -84,7 +84,7 @@ kotlin {
     jvmToolchain(8)
 
     @OptIn(ExperimentalBuildToolsApi::class, ExperimentalKotlinGradlePluginApi::class)
-    compilerVersion = libs.versions.kotlin.`for`.gradle.plugin.get()
+    compilerVersion = libs.versions.kotlin.asProvider().get()
 
     compilerOptions {
         optIn.addAll(
