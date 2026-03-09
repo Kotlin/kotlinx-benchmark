@@ -1,0 +1,47 @@
+import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
+import org.jetbrains.kotlin.konan.target.KonanTarget
+import org.jetbrains.kotlin.konan.target.HostManager
+
+plugins {
+    id 'org.jetbrains.kotlin.multiplatform'
+    id 'org.jetbrains.kotlinx.benchmark'
+}
+
+kotlin {
+    jvm {}
+    // JS and WasmJs do not support project isolation yet (https://youtrack.jetbrains.com/issue/KT-80311)
+    // js { nodejs() }
+    // wasmJs { d8() }
+
+    if (HostManager.hostIsLinux) linuxX64('native')
+    if (HostManager.hostIsMingw) mingwX64('native')
+    if (HostManager.host == KonanTarget.MACOS_X64.INSTANCE) macosX64('native')
+    if (HostManager.host == KonanTarget.MACOS_ARM64.INSTANCE) macosArm64('native')
+
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.5.0-SNAPSHOT")
+            }
+        }
+    }
+}
+
+benchmark {
+    targets {
+        register("jvm")
+        // JS and WasmJs do not support project isolation yet (https://youtrack.jetbrains.com/issue/KT-80311)
+        // register("js")
+        // register("wasmJs")
+        register("native") {
+            // don't optimize binaries to speedup test execution
+            buildType = NativeBuildType.DEBUG
+        }
+    }
+
+    configurations {
+        main {
+            advanced("jmhIgnoreLock", true)
+        }
+    }
+}
