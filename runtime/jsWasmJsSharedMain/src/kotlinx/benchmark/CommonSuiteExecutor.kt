@@ -161,3 +161,4 @@ abstract class CommonSuiteExecutor(
     }
 }
 
+internal expect inline fun measureNanoseconds(block: () -> Unit): Long
