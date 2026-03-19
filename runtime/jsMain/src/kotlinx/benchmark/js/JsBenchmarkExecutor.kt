@@ -9,7 +9,11 @@ import kotlin.js.Promise
 private external val benchmarkJs: dynamic
 
 @KotlinxBenchmarkRuntimeInternalApi
-class JsBenchmarkExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<out String>) :
+fun runBenchmarks(name: String, args: Array<out String>, declareAndExecuteSuites: (SuiteExecutorBase) -> Unit) {
+    declareAndExecuteSuites(JsBenchmarkExecutor(name, args))
+}
+
+private class JsBenchmarkExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args: Array<out String>) :
     SuiteExecutor(name, engineSupport.arguments()[0]) {
 
     override fun run(
