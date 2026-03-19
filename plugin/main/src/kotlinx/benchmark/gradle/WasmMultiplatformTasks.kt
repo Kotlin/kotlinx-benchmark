@@ -1,9 +1,25 @@
 package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
-import org.gradle.api.*
-import org.jetbrains.kotlin.gradle.targets.js.dsl.*
-import org.jetbrains.kotlin.gradle.targets.js.ir.*
+import org.gradle.api.Project
+import org.gradle.api.file.RegularFile
+import org.jetbrains.kotlin.gradle.targets.js.KotlinWasmTargetType
+import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsTargetDsl
+import org.jetbrains.kotlin.gradle.targets.js.ir.ExecutableWasm
+import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrCompilation
+import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrTarget
+import java.io.File
+
+private fun patchWasiMjsFile(wasiMjsFile: RegularFile) {
+    val rootsPreopens = File.listRoots().joinToString(separator = ", ") { "'${it.absolutePath}' : '${it.absolutePath}'" }
+    val wasiInitializer = "new WASI({"
+    val fileContent = wasiMjsFile.asFile.readText()
+    val patchedContent = fileContent.replace(wasiInitializer, "$wasiInitializer preopens: { $rootsPreopens }, ")
+    wasiMjsFile.asFile.writeText(patchedContent)
+}
+
+private fun KotlinJsIrCompilation.isWasmWasiTarget(): Boolean =
+    (this.target as KotlinJsIrTarget).wasmTargetType == KotlinWasmTargetType.WASI
 
 @KotlinxBenchmarkPluginInternalApi
 fun Project.processWasmCompilation(target: WasmBenchmarkTarget) {
@@ -13,10 +29,21 @@ fun Project.processWasmCompilation(target: WasmBenchmarkTarget) {
     createWasmBenchmarkGenerateSourceTask(target, compilation)
 
     val benchmarkCompilation = createWasmBenchmarkCompileTask(target)
-
     benchmarkCompilation.binaries.configureEach { binary ->
+        binary.linkTask.configure { linkTask ->
+            if (compilation.isWasmWasiTarget()) {
+                val mainFile = binary.mainFile
+                linkTask.doLast {
+                    patchWasiMjsFile(mainFile.get())
+                }
+            }
+        }
+
+        val fileToExecute = if (compilation.isWasmWasiTarget())
+            (binary as ExecutableWasm).mainOptimizedFile else binary.mainFileSyncPath
+
         target.extension.configurations.forEach {
-            createJsEngineBenchmarkExecTask(it, target, binary)
+            createJsEngineBenchmarkExecTask(it, target, binary, fileToExecute)
         }
     }
 }

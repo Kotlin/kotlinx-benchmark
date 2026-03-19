@@ -25,6 +25,7 @@ kotlin {
         compilations.create("builtInExecutor") { associateWith(mainCompilation) }
     }
     wasmJs { nodejs() }
+    wasmWasi { nodejs() }
 
     // Native targets
     macosX64()
@@ -44,6 +45,8 @@ kotlin {
         jvmMain {}
 
         wasmJsMain {}
+
+        wasmWasiMain {}
 
         val jsMain by getting
 
@@ -127,6 +130,7 @@ benchmark {
             jsBenchmarksExecutor = JsBenchmarksExecutor.BuiltIn
         }
         register("wasmJs")
+        register("wasmWasi")
 
         // Native targets
         register("macosX64")
