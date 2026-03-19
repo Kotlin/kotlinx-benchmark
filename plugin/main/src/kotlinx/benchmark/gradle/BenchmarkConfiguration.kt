@@ -2,12 +2,17 @@ package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.internal.BenchmarksPluginConstants
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
+import org.gradle.api.file.RegularFile
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrCompilation
 import kotlin.text.replaceFirstChar
+
+@KotlinxBenchmarkPluginInternalApi
+data class CustomEngine(val name: String, val enginePath: Provider<RegularFile>, val engineArguments: Provider<String>)
 
 open class BenchmarkConfiguration
 @KotlinxBenchmarkPluginInternalApi
@@ -28,6 +33,8 @@ constructor(
     var excludes: MutableList<String> = mutableListOf()
     var params: MutableMap<String, MutableList<Any?>> = mutableMapOf()
     var advanced: MutableMap<String, Any?> = mutableMapOf()
+
+    var customEngine: CustomEngine? = null
 
     fun include(pattern: String) {
         includes.add(pattern)
