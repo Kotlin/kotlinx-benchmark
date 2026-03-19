@@ -74,6 +74,7 @@ kotlin {
                     freeCompilerArgs.add("-Xexpect-actual-classes")
                     optIn.addAll(
                         "kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi",
+                        "kotlinx.benchmark.KotlinxBenchmarkRuntimeExperimentalApi",
                         "kotlin.RequiresOptIn",
                     )
                 }
