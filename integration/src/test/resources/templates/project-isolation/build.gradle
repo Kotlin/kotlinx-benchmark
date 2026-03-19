@@ -5,7 +5,7 @@ kotlin {
     jvm {}
     // JS and WasmJs do not support project isolation yet (https://youtrack.jetbrains.com/issue/KT-80311)
     // js { nodejs() }
-    // wasmJs { d8() }
+    // wasmJs { nodejs() }
 
     if (HostManager.hostIsLinux) linuxX64('native')
     if (HostManager.hostIsMingw) mingwX64('native')

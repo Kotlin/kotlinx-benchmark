@@ -50,7 +50,6 @@ kotlin {
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         nodejs()
-        d8()
     }
 
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
