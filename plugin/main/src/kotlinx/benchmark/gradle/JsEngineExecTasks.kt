@@ -4,6 +4,8 @@ import kotlinx.benchmark.gradle.BenchmarksPlugin.Companion.RUN_BENCHMARKS_TASKNA
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.api.file.RegularFile
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.targets.js.ir.JsIrBinary
@@ -15,6 +17,7 @@ fun Project.createJsEngineBenchmarkExecTask(
     config: BenchmarkConfiguration,
     target: BenchmarkTarget,
     binary: JsIrBinary,
+    executableFile: Provider<RegularFile>,
 ) {
     val taskName = "${binary.name}${config.capitalizedName()}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}"
     val compilationTarget = binary.target
@@ -22,7 +25,7 @@ fun Project.createJsEngineBenchmarkExecTask(
     when (compilationTarget.platformType) {
         KotlinPlatformType.wasm -> {
             if (compilationTarget.isNodejsConfigured) {
-                val execTask = createNodeJsExec(config, target, binary, taskName)
+                val execTask = createNodeJsExec(config, target, binary.compilation, executableFile, taskName)
                 tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(execTask)
             } else {
                 throw GradleException("kotlinx-benchmark only supports nodejs() environments for Kotlin/Wasm.")
@@ -30,7 +33,7 @@ fun Project.createJsEngineBenchmarkExecTask(
         }
         KotlinPlatformType.js -> {
             if (compilationTarget.isNodejsConfigured) {
-                val execTask = createNodeJsExec(config, target, binary, taskName)
+                val execTask = createNodeJsExec(config, target, binary.compilation,  executableFile, taskName)
                 tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(execTask)
             } else {
                 throw GradleException("kotlinx-benchmark only supports nodejs() environment for Kotlin/JS.")
@@ -53,21 +56,19 @@ private fun MutableList<String>.addJsArguments() {
 private fun createNodeJsExec(
     config: BenchmarkConfiguration,
     target: BenchmarkTarget,
-    binary: JsIrBinary,
+    compilation: KotlinJsIrCompilation,
+    executableFile: Provider<RegularFile>,
     taskName: String
-): TaskProvider<NodeJsExec> {
-    val compilation = binary.compilation
-    return NodeJsExec.create(compilation, taskName) {
-        dependsOn(compilation.runtimeDependencyFiles)
-        group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
-        description = "Executes benchmark for '${target.name}' with NodeJS"
-        inputFileProperty.set(binary.mainFileSyncPath)
-        with(nodeArgs) {
-            if (!compilation.isWasmCompilation) {
-                addJsArguments()
-            }
+): TaskProvider<NodeJsExec> = NodeJsExec.create(compilation, taskName) {
+    dependsOn(compilation.runtimeDependencyFiles)
+    group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
+    description = "Executes benchmark for '${target.name}' with NodeJS"
+    inputFileProperty.set(executableFile)
+    with(nodeArgs) {
+        if (!compilation.isWasmCompilation) {
+            addJsArguments()
         }
-        val reportFile = setupReporting(target, config)
-        args(writeParameters(target.name, reportFile, traceFormat(), config))
     }
+    val reportFile = setupReporting(target, config)
+    args(writeParameters(target.name, reportFile, traceFormat(), config))
 }

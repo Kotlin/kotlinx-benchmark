@@ -4,6 +4,8 @@ import groovy.lang.Closure
 import kotlinx.benchmark.gradle.internal.BenchmarksPluginConstants
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
+import org.gradle.api.file.Directory
+import org.gradle.api.file.RegularFile
 import org.gradle.api.plugins.*
 import org.gradle.api.provider.*
 import org.gradle.api.tasks.*
@@ -43,7 +45,7 @@ fun Project.benchmarkBuildDir(target: BenchmarkTarget): File =
         .asFile
 
 @KotlinxBenchmarkPluginInternalApi
-fun Project.benchmarkReportsDir(config: BenchmarkConfiguration, target: BenchmarkTarget): File {
+fun Project.benchmarkReportsDir(config: BenchmarkConfiguration, target: BenchmarkTarget): Provider<Directory> {
     val ext = project.extensions.extraProperties
     val time = if (ext.has("reportTime")) {
         ext.get("reportTime") as LocalDateTime
@@ -56,8 +58,6 @@ fun Project.benchmarkReportsDir(config: BenchmarkConfiguration, target: Benchmar
     val compatibleTime = timestamp.replace(":", ".") // Windows doesn't allow ':' in path
 
     return layout.buildDirectory.dir("${target.extension.reportsDir}/${config.name}/${compatibleTime}")
-        .get()
-        .asFile
 }
 
 @KotlinxBenchmarkPluginInternalApi
@@ -87,17 +87,17 @@ fun <T> Any.tryGetClass(className: String): Class<T>? {
 }
 
 @KotlinxBenchmarkPluginInternalApi
-fun Task.setupReporting(target: BenchmarkTarget, config: BenchmarkConfiguration): File {
+fun Task.setupReporting(target: BenchmarkTarget, config: BenchmarkConfiguration): Provider<RegularFile> {
     extensions.extraProperties.set("idea.internal.test", project.getSystemProperty("idea.active"))
     val reportsDir = project.benchmarkReportsDir(config, target)
-    val reportFile = reportsDir.resolve("${target.name}.${config.reportFileExt()}")
+    val reportFile = reportsDir.map { it.asFile.resolve("${target.name}.${config.reportFileExt()}") }
     val configName = config.name
     val targetName = target.name
     doFirst {
-        reportsDir.mkdirs()
+        reportsDir.get().asFile.mkdirs()
         logger.lifecycle("Running '${configName}' benchmarks for '${targetName}'")
     }
-    return reportFile
+    return project.layout.file(reportFile)
 }
 
 @KotlinxBenchmarkPluginInternalApi
@@ -110,17 +110,15 @@ fun Task.traceFormat(): String {
 val Path.absolutePath: String get() = toAbsolutePath().toFile().invariantSeparatorsPath
 
 @KotlinxBenchmarkPluginInternalApi
-fun writeParameters(
+fun Task.writeParameters(
     name: String,
-    reportFile: File,
+    reportFile: Provider<RegularFile>,
     format: String,
-    config: BenchmarkConfiguration
+    config: BenchmarkConfiguration,
 ): File {
     validateConfig(config)
-    val file = Files.createTempFile("benchmarks", "txt").toFile()
-    file.writeText(buildString {
+    val baseConfiguration = buildString {
         appendLine("name:$name")
-        appendLine("reportFile:$reportFile")
         appendLine("traceFormat:$format")
         config.reportFormat?.let { appendLine("reportFormat:$it") }
         config.iterations?.let { appendLine("iterations:$it") }
@@ -142,8 +140,31 @@ fun writeParameters(
         config.advanced.forEach { (param, value) ->
             appendLine("advanced:$param=$value")
         }
-    })
-    return file
+
+        config.customEngine?.let { appendLine("advanced:customEngineName=${it.name}") }
+    }
+
+    val enginePath = config.customEngine?.enginePath
+    val engineArguments = config.customEngine?.engineArguments
+
+    val configFile = Files.createTempFile("benchmarks", "txt").toFile()
+    val configFileProvider = project.layout.file(project.provider { configFile })
+
+    doFirst {
+        val fullConfiguration = buildString {
+            append(baseConfiguration)
+            appendLine("reportFile:${reportFile.get().asFile.absolutePath}")
+            if (enginePath != null) {
+                appendLine("advanced:customEngineBinaryPath=${enginePath.get().asFile.absolutePath}")
+            }
+            if (engineArguments != null) {
+                appendLine("advanced:customEngineArguments=${engineArguments.get()}")
+            }
+        }
+        configFileProvider.get().asFile.writeText(fullConfiguration)
+    }
+
+    return configFile
 }
 
 private fun validateConfig(config: BenchmarkConfiguration) {
@@ -251,7 +272,19 @@ private fun validateConfig(config: BenchmarkConfiguration) {
                 "Invalid value for 'jsUseBridge': '$value'. Expected a Boolean value."
             }
 
-            else -> throw IllegalArgumentException("Invalid advanced option name: '$param'. Accepted options: \"nativeFork\", \"nativeGCAfterIteration\", \"jvmForks\", \"jsUseBridge\".")
+            "wasmFork" -> require(value is String) {
+                "Invalid value for 'wasmFork': '$value'. Only perBenchmark value is allowed."
+            }
+
+            "engineBinaryPath" -> require(value is String) {
+                "Invalid value for 'engineBinaryPath': '$value'. Expected a String value."
+            }
+
+            "engineArguments" -> require(value is String) {
+                "Invalid value for 'engineArguments': '$value'. Expected a String value."
+            }
+
+            else -> throw IllegalArgumentException("Invalid advanced option name: '$param'. Accepted options: \"nativeFork\", \"nativeGCAfterIteration\", \"jvmForks\", \"jsUseBridge\", \"wasmFork\".")
         }
     }
 }

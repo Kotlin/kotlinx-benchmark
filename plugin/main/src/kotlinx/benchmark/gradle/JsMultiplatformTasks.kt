@@ -5,7 +5,6 @@ import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.dsl.JsModuleKind
 import org.jetbrains.kotlin.gradle.targets.js.dsl.*
 import org.jetbrains.kotlin.gradle.targets.js.ir.*
-import org.jetbrains.kotlin.serialization.js.ModuleKind
 
 @KotlinxBenchmarkPluginInternalApi
 fun Project.processJsCompilation(target: JsBenchmarkTarget) {
@@ -17,7 +16,7 @@ fun Project.processJsCompilation(target: JsBenchmarkTarget) {
     val benchmarkCompilation = createJsBenchmarkCompileTask(target)
     benchmarkCompilation.binaries.configureEach { binary ->
         target.extension.configurations.forEach {
-            createJsEngineBenchmarkExecTask(it, target, binary)
+            createJsEngineBenchmarkExecTask(it, target, binary, binary.mainFileSyncPath)
         }
     }
 }
