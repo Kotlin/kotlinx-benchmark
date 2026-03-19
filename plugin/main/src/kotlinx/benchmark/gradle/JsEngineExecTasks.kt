@@ -2,44 +2,35 @@ package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.BenchmarksPlugin.Companion.RUN_BENCHMARKS_TASKNAME
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
-import org.gradle.api.*
-import org.gradle.api.file.RegularFile
-import org.gradle.api.provider.Provider
+import org.gradle.api.GradleException
+import org.gradle.api.Project
 import org.gradle.api.tasks.TaskProvider
-import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
-import org.jetbrains.kotlin.gradle.plugin.mpp.fileExtension
-import org.jetbrains.kotlin.gradle.targets.js.dsl.*
-import org.jetbrains.kotlin.gradle.targets.js.ir.*
-import org.jetbrains.kotlin.gradle.targets.js.nodejs.*
-import org.jetbrains.kotlin.gradle.targets.wasm.d8.D8Exec
+import org.jetbrains.kotlin.gradle.targets.js.ir.JsIrBinary
+import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrCompilation
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsExec
 
-@OptIn(ExperimentalWasmDsl::class)
 @KotlinxBenchmarkPluginInternalApi
 fun Project.createJsEngineBenchmarkExecTask(
     config: BenchmarkConfiguration,
     target: BenchmarkTarget,
-    compilation: KotlinJsIrCompilation
+    binary: JsIrBinary,
 ) {
-    val taskName = "${target.name}${config.capitalizedName()}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}"
-
-    val compilationTarget = compilation.target
+    val taskName = "${binary.name}${config.capitalizedName()}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}"
+    val compilationTarget = binary.target
 
     when (compilationTarget.platformType) {
         KotlinPlatformType.wasm -> {
-            if (compilationTarget.isD8Configured) {
-                val execTask = createD8Exec(config, target, compilation, taskName)
-                tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(execTask)
-            } else if (compilationTarget.isNodejsConfigured) {
-                val execTask = createNodeJsExec(config, target, compilation, taskName)
+            if (compilationTarget.isNodejsConfigured) {
+                val execTask = createNodeJsExec(config, target, binary, taskName)
                 tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(execTask)
             } else {
-                throw GradleException("kotlinx-benchmark only supports d8() and nodejs() environments for Kotlin/Wasm.")
+                throw GradleException("kotlinx-benchmark only supports nodejs() environments for Kotlin/Wasm.")
             }
         }
         KotlinPlatformType.js -> {
             if (compilationTarget.isNodejsConfigured) {
-                val execTask = createNodeJsExec(config, target, compilation, taskName)
+                val execTask = createNodeJsExec(config, target, binary, taskName)
                 tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(execTask)
             } else {
                 throw GradleException("kotlinx-benchmark only supports nodejs() environment for Kotlin/JS.")
@@ -51,22 +42,6 @@ fun Project.createJsEngineBenchmarkExecTask(
     }
 }
 
-private fun Project.getExecutableFile(compilation: KotlinJsIrCompilation): Provider<RegularFile> {
-    val kotlinTarget = compilation.target
-    val binary = kotlinTarget.binaries.executable(compilation)
-        .first { it.mode == KotlinJsBinaryMode.PRODUCTION }
-    val outputFileName = binary.linkTask.flatMap { task ->
-        task.compilerOptions.moduleName.flatMap { modName ->
-            compilation.fileExtension.map { extension ->
-                "$modName.$extension"
-            }
-        }
-    }
-    val destinationDir = binary.linkSyncTask.flatMap { it.destinationDirectory }
-    val executableFile = destinationDir.zip(outputFileName) { dir, fileName -> dir.resolve(fileName) }
-    return project.layout.file(executableFile)
-}
-
 private val KotlinJsIrCompilation.isWasmCompilation: Boolean get() =
     target.platformType == KotlinPlatformType.wasm
 
@@ -75,40 +50,24 @@ private fun MutableList<String>.addJsArguments() {
     add("source-map-support/register")
 }
 
-private fun Project.createNodeJsExec(
+private fun createNodeJsExec(
     config: BenchmarkConfiguration,
     target: BenchmarkTarget,
-    compilation: KotlinJsIrCompilation,
+    binary: JsIrBinary,
     taskName: String
-): TaskProvider<NodeJsExec> = NodeJsExec.register(compilation, taskName) {
-    dependsOn(compilation.runtimeDependencyFiles)
-    group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
-    description = "Executes benchmark for '${target.name}' with NodeJS"
-    inputFileProperty.set(getExecutableFile(compilation))
-    with(nodeArgs) {
-        if (!compilation.isWasmCompilation) {
-            addJsArguments()
+): TaskProvider<NodeJsExec> {
+    val compilation = binary.compilation
+    return NodeJsExec.create(compilation, taskName) {
+        dependsOn(compilation.runtimeDependencyFiles)
+        group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
+        description = "Executes benchmark for '${target.name}' with NodeJS"
+        inputFileProperty.set(binary.mainFileSyncPath)
+        with(nodeArgs) {
+            if (!compilation.isWasmCompilation) {
+                addJsArguments()
+            }
         }
-    }
-    val reportFile = setupReporting(target, config)
-    args(writeParameters(target.name, reportFile, traceFormat(), config))
-}
-
-@OptIn(ExperimentalWasmDsl::class)
-private fun Project.createD8Exec(
-    config: BenchmarkConfiguration,
-    target: BenchmarkTarget,
-    compilation: KotlinJsIrCompilation,
-    taskName: String
-): TaskProvider<D8Exec> = D8Exec.register(compilation, taskName) {
-    dependsOn(compilation.runtimeDependencyFiles)
-    group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
-    description = "Executes benchmark for '${target.name}' with D8"
-    inputFileProperty.set(getExecutableFile(compilation))
-    val reportFile = setupReporting(target, config)
-    args(writeParameters(target.name, reportFile, traceFormat(), config))
-
-    doFirst {
-        standardOutput = ConsoleAndFilesOutputStream()
+        val reportFile = setupReporting(target, config)
+        args(writeParameters(target.name, reportFile, traceFormat(), config))
     }
 }
