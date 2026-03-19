@@ -54,9 +54,10 @@ class RunnerConfiguration(config: String) {
 
     private fun mapSingleValues(name: String, delimiter: String): Map<String, String> = values[name]
         ?.associate {
-            val splitted = it.split(delimiter)
-            check(splitted.size == 2) { "Parameter name and value format is required for $name." }
-            splitted[0] to splitted[1]
+            val first = it.substringBefore(delimiter, "")
+            val second = it.substringAfter(delimiter, "")
+            check (first.isNotEmpty() && second.isNotEmpty()) { "Parameter name and value format is required for $name." }
+            first to second
         } ?: emptyMap()
 
     private fun listValues(name: String): List<String> {

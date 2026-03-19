@@ -6,7 +6,11 @@ import kotlin.native.runtime.GC
 import kotlin.time.*
 
 @KotlinxBenchmarkRuntimeInternalApi
-class NativeExecutor(
+fun runBenchmarks(name: String, args: Array<out String>, declareAndExecuteSuites: (SuiteExecutorBase) -> Unit) {
+    declareAndExecuteSuites(NativeExecutor(name, args))
+}
+
+internal class NativeExecutor(
     name: String,
     args: Array<out String>
 ) : SuiteExecutor(name, args[0], { NativeIntelliJBenchmarkProgress(args[2]) }) {

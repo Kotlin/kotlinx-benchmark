@@ -1,19 +1,14 @@
 package kotlinx.benchmark
 
-import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
+interface CommonBenchmarkExtension {
+    val executionName: String
 
-@KotlinxBenchmarkRuntimeInternalApi
-abstract class CommonSuiteExecutor(
-    executionName: String,
-    configPath: String,
-    xmlReporter: (() -> BenchmarkProgress)? = null
-) : SuiteExecutor(executionName, configPath, xmlReporter) {
-
-    private fun runBenchmark(
+    fun runBenchmark(
         benchmark: BenchmarkDescriptor<Any?>,
         configuration: BenchmarkConfiguration,
         parameters: Map<String, String>,
         id: String,
+        progress: BenchmarkProgress,
     ): DoubleArray?  {
         val instance = benchmark.suite.factory()
         benchmark.suite.parametrize(instance, parameters)
@@ -22,8 +17,8 @@ abstract class CommonSuiteExecutor(
         val samples = try {
             val cycles = estimateCycles(instance, benchmark, configuration)
             val measurer = createIterationMeasurer(instance, benchmark, configuration, cycles)
-            warmup(id, configuration, cycles, measurer)
-            measure(id, configuration, cycles, measurer)
+            warmup(id, configuration, cycles, measurer, progress)
+            measure(id, configuration, cycles, measurer, progress)
         } catch (e: Throwable) {
             exception = e
             doubleArrayOf()
@@ -34,48 +29,16 @@ abstract class CommonSuiteExecutor(
         if (exception != null) {
             val error = exception.toString()
             val stacktrace = exception.stackTraceToString()
-            reporter.endBenchmarkException(executionName, id, error, stacktrace)
+            progress.endBenchmarkException(executionName, id, error, stacktrace)
             return null
         }
         return samples
     }
 
-    private fun saveBenchmarkResults(benchmark: BenchmarkDescriptor<Any?>, configuration: BenchmarkConfiguration, parameters: Map<String, String>, id: String, samples: DoubleArray) {
-        val convertedSamples = samples
-            .map { it.nanosToSample(configuration.mode, configuration.outputTimeUnit) }
-            .toDoubleArray()
-        val result = ReportBenchmarksStatistics.createResult(benchmark, parameters, configuration, convertedSamples)
-        val message = with(result) {
-            "  ~ ${score.sampleToText(
-                config.mode,
-                config.outputTimeUnit
-            )} ±${(error / score * 100).formatSignificant(2)}%"
-        }
-        reporter.endBenchmark(executionName, id, BenchmarkProgress.FinishStatus.Success, message)
-        result(result)
-    }
-
-    override fun run(runnerConfiguration: RunnerConfiguration, benchmarks: List<BenchmarkDescriptor<Any?>>, start: () -> Unit, complete: () -> Unit) {
-        start()
-        for (benchmark in benchmarks) {
-            val suite = benchmark.suite
-            val benchmarkConfiguration = BenchmarkConfiguration(runnerConfiguration, suite)
-            runWithParameters(suite.parameters, runnerConfiguration.params, suite.defaultParameters) { parameters ->
-                val id = id(benchmark.name, parameters)
-                reporter.startBenchmark(executionName, id)
-                val samples = runBenchmark(benchmark, benchmarkConfiguration, parameters, id)
-                if (samples != null) {
-                    saveBenchmarkResults(benchmark, benchmarkConfiguration, parameters, id, samples)
-                }
-            }
-        }
-        complete()
-    }
-
     private fun <T> estimateCycles(
         instance: T,
         benchmark: BenchmarkDescriptor<T>,
-        configuration: BenchmarkConfiguration
+        configuration: BenchmarkConfiguration,
     ): Int {
         val estimator = wrapBenchmarkFunction(instance, benchmark) { body ->
             var iterations = 0
@@ -95,14 +58,15 @@ abstract class CommonSuiteExecutor(
         id: String,
         configuration: BenchmarkConfiguration,
         cycles: Int,
-        measurer: () -> Long
+        measurer: () -> Long,
+        progress: BenchmarkProgress,
     ) {
         var currentIteration = 0
         while(currentIteration < configuration.warmups) {
             val elapsedTime = measurer()
             val metricInNanos = elapsedTime.toDouble() / cycles
             val sample = metricInNanos.nanosToText(configuration.mode, configuration.outputTimeUnit)
-            reporter.output(executionName, id, "Warm-up #$currentIteration: $sample")
+            progress.output(executionName, id, "Warm-up #$currentIteration: $sample")
             currentIteration++
         }
     }
@@ -111,11 +75,12 @@ abstract class CommonSuiteExecutor(
         id: String,
         configuration: BenchmarkConfiguration,
         cycles: Int,
-        measurer: () -> Long
+        measurer: () -> Long,
+        progress: BenchmarkProgress,
     ) : DoubleArray = DoubleArray(configuration.iterations) { iteration ->
         val nanosecondsPerOperation = measurer().toDouble() / cycles
         val text = nanosecondsPerOperation.nanosToText(configuration.mode, configuration.outputTimeUnit)
-        reporter.output(executionName, id, "Iteration #$iteration: $text")
+        progress.output(executionName, id, "Iteration #$iteration: $text")
         nanosecondsPerOperation
     }
 
@@ -146,7 +111,7 @@ abstract class CommonSuiteExecutor(
         else -> error("Unexpected ${benchmark::class.simpleName}")
     }
 
-    protected open fun <T> createIterationMeasurer(
+    fun <T> createIterationMeasurer(
         instance: T,
         benchmark: BenchmarkDescriptor<T>,
         configuration: BenchmarkConfiguration,
