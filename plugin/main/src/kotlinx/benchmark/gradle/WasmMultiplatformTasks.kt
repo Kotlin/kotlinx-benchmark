@@ -14,8 +14,10 @@ fun Project.processWasmCompilation(target: WasmBenchmarkTarget) {
 
     val benchmarkCompilation = createWasmBenchmarkCompileTask(target)
 
-    target.extension.configurations.forEach {
-        createJsEngineBenchmarkExecTask(it, target, benchmarkCompilation)
+    benchmarkCompilation.binaries.configureEach { binary ->
+        target.extension.configurations.forEach {
+            createJsEngineBenchmarkExecTask(it, target, binary)
+        }
     }
 }
 
