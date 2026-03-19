@@ -305,6 +305,7 @@ To run benchmarks in Kotlin/Wasm:
         }
     }
     ```
+The similar configuration could be applied to compile `WasmWasi` target.
 
 Note: Kotlin/Wasm is an experimental compilation target for Kotlin. It may be dropped or changed at any time. Refer to 
 [Kotlin/Wasm documentation](https://kotlinlang.org/docs/wasm-overview.html) for up-to-date information about the target stability.
