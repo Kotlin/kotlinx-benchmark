@@ -105,6 +105,10 @@ benchmark {
             advanced("jvmForks", "definedByJmh") // see README.md for possible "jvmForks" values
             advanced("nativeFork", "perIteration") // see README.md for possible "nativeFork" values
         }
+
+        create("mt") {
+            include("MultithreadedBenchmark")
+        }
     }
 
     // Setup configurations
