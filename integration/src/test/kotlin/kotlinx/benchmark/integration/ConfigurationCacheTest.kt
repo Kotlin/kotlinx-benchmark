@@ -43,7 +43,7 @@ class ConfigurationCacheTest : GradleTest() {
     @Test
     fun testConfigurationCacheJs() = runConfigurationCacheTest(
         "kotlin-multiplatform",
-        listOf(":jsBenchmark"),
+        listOf(":jsBenchmarkProductionExecutableBenchmark"),
         listOf(":compileKotlinJs", ":jsBenchmarkGenerate", ":compileJsBenchmarkProductionExecutableKotlinJs")
     )
 
@@ -57,14 +57,14 @@ class ConfigurationCacheTest : GradleTest() {
     @Test
     fun testConfigurationCacheWasmJs() = runConfigurationCacheTest(
         "kotlin-multiplatform",
-        listOf(":wasmJsBenchmark"),
+        listOf(":wasmJsBenchmarkProductionExecutableBenchmark"),
         listOf(":compileKotlinWasmJs", ":wasmJsBenchmarkGenerate", ":compileWasmJsBenchmarkProductionExecutableKotlinWasmJs")
     )
 
     @Test
     fun testConfigurationCacheWasmWasi() = runConfigurationCacheTest(
         "kotlin-multiplatform",
-        listOf(":wasmWasiBenchmark"),
+        listOf(":wasmWasiBenchmarkProductionExecutableBenchmark"),
         listOf(":compileKotlinWasmWasi", ":wasmWasiBenchmarkGenerate", ":compileWasmWasiBenchmarkProductionExecutableKotlinWasmWasi")
     )
 }
