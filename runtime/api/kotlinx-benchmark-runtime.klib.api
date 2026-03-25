@@ -63,6 +63,13 @@ open annotation class kotlinx.benchmark/TearDown : kotlin/Annotation { // kotlin
     constructor <init>() // kotlinx.benchmark/TearDown.<init>|<init>(){}[0]
 }
 
+open annotation class kotlinx.benchmark/Threads : kotlin/Annotation { // kotlinx.benchmark/Threads|null[0]
+    constructor <init>(kotlin/Int) // kotlinx.benchmark/Threads.<init>|<init>(kotlin.Int){}[0]
+
+    final val value // kotlinx.benchmark/Threads.value|{}value[0]
+        final fun <get-value>(): kotlin/Int // kotlinx.benchmark/Threads.value.<get-value>|<get-value>(){}[0]
+}
+
 open annotation class kotlinx.benchmark/Warmup : kotlin/Annotation { // kotlinx.benchmark/Warmup|null[0]
     constructor <init>(kotlin/Int = ..., kotlin/Int = ..., kotlinx.benchmark/BenchmarkTimeUnit = ..., kotlin/Int = ...) // kotlinx.benchmark/Warmup.<init>|<init>(kotlin.Int;kotlin.Int;kotlinx.benchmark.BenchmarkTimeUnit;kotlin.Int){}[0]
 
