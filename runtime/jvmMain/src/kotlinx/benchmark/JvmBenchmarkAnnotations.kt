@@ -24,3 +24,5 @@ actual typealias Warmup = org.openjdk.jmh.annotations.Warmup
 actual typealias Measurement = org.openjdk.jmh.annotations.Measurement
 
 actual typealias Param = org.openjdk.jmh.annotations.Param
+
+actual typealias Threads = org.openjdk.jmh.annotations.Threads
