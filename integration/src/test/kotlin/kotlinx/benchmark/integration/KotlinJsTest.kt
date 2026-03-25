@@ -5,21 +5,21 @@ import kotlin.test.Test
 class KotlinJsTest : GradleTest() {
     @Test
     fun useEsModules() {
-        project("es-modules", true).runAndSucceed("jsEsBenchmark") {
+        project("es-modules", true).runAndSucceed("jsEsProductionExecutableBenchmark") {
             assertOutputContains("CommonBenchmark.benchmark")
         }
     }
 
     @Test
     fun useUmdModules() {
-        project("es-modules", true).runAndSucceed("jsUmdBenchmark") {
+        project("es-modules", true).runAndSucceed("jsUmdProductionExecutableBenchmark") {
             assertOutputContains("CommonBenchmark.benchmark")
         }
     }
 
     @Test
     fun useCommonJs() {
-        project("es-modules", true).runAndSucceed("jsCommonBenchmark") {
+        project("es-modules", true).runAndSucceed("jsCommonBenchmarkProductionExecutableBenchmark") {
             assertOutputContains("CommonBenchmark.benchmark")
         }
     }

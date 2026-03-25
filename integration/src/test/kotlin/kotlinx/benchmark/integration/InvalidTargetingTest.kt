@@ -7,13 +7,13 @@ class InvalidTargetingTest : GradleTest() {
     @Test
     fun testWasmNodeJs() {
         val runner = project("invalid-target/wasm-nodejs", true)
-        runner.runAndSucceed("wasmJsBenchmark")
+        runner.runAndSucceed("wasmJsBenchmarkDevelopmentExecutableBenchmark", "wasmJsBenchmarkProductionExecutableBenchmark")
     }
 
     @Test
     fun testWasmBrowser() {
         val runner = project("invalid-target/wasm-browser", true)
-        runner.runAndFail("wasmJsBenchmark") {
+        runner.runAndFail("wasmJsBenchmarkDevelopmentExecutableBenchmark") {
             assertOutputContains("kotlinx-benchmark only supports nodejs() environments for Kotlin/Wasm.")
         }
     }

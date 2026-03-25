@@ -12,7 +12,7 @@ class TransitiveDependenciesResolutionTest : GradleTest() {
 
     @Test
     fun js() {
-        verifyFor("js")
+        verifyFor("jsBenchmarkProductionExecutable")
     }
 
     @Test
@@ -22,6 +22,11 @@ class TransitiveDependenciesResolutionTest : GradleTest() {
 
     @Test
     fun wasmJs() {
-        verifyFor("wasmJs")
+        verifyFor("wasmJsBenchmarkProductionExecutable")
+    }
+
+    @Test
+    fun wasmWasi() {
+        verifyFor("wasmWasiBenchmarkProductionExecutable")
     }
 }
