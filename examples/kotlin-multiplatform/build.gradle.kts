@@ -27,6 +27,7 @@ kotlin {
     wasmJs { nodejs() }
 
     // Native targets
+    @Suppress("DEPRECATION", "DEPRECATION_ERROR")
     macosX64()
     macosArm64()
     linuxX64()
