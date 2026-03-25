@@ -55,3 +55,6 @@ actual annotation class Measurement(
 )
 
 actual annotation class Param(actual vararg val value: String)
+
+@Target(AnnotationTarget.CLASS)
+actual annotation class Threads(actual val value: Int)

@@ -99,3 +99,6 @@ expect annotation class Measurement(
 )
 
 expect annotation class Param(vararg val value: String)
+
+@Target(AnnotationTarget.CLASS)
+expect annotation class Threads(val value: Int)

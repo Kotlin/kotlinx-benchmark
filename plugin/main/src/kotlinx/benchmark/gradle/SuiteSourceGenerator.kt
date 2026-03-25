@@ -79,6 +79,7 @@ class SuiteSourceGenerator(
         val warmupAnnotationFQN = "kotlinx.benchmark.Warmup"
         val measureAnnotationFQN = "kotlinx.benchmark.Measurement"
         val paramAnnotationFQN = "kotlinx.benchmark.Param"
+        val threadsAnnotationFQN = "kotlinx.benchmark.Threads"
 
         val blackholeFQN = "kotlinx.benchmark.Blackhole"
 
@@ -165,6 +166,7 @@ class SuiteSourceGenerator(
         val warmupAnnotation = original.annotations.singleOrNull { it.fqName.toString() == warmupAnnotationFQN }
         val outputTimeAnnotation = original.annotations.singleOrNull { it.fqName.toString() == outputTimeAnnotationFQN }
         val modeAnnotation = original.annotations.singleOrNull { it.fqName.toString() == modeAnnotationFQN }
+        val threadsAnnotation = original.annotations.singleOrNull { it.fqName.toString() == threadsAnnotationFQN }
 
         val outputTimeUnitValue = outputTimeAnnotation?.argumentValue("value") as EnumValue?
         val outputTimeUnit = outputTimeUnitValue?.enumEntryName?.toString()
@@ -178,6 +180,8 @@ class SuiteSourceGenerator(
         val measureIterationTimeUnit = measureAnnotation?.argumentValue("timeUnit") as EnumValue?
 
         val warmupIterations = warmupAnnotation?.argumentValue("iterations")?.value as Int?
+
+        val classThreadsCount = threadsAnnotation?.argumentValue("value")?.value as Int?
 
         val iterations = measureIterations
         val iterationTime = measureIterationTime
@@ -290,6 +294,8 @@ class SuiteSourceGenerator(
                             ", mode = %T.%N", modeClass,
                             MemberName(modeClass, mode)
                         )
+                    if (classThreadsCount != null)
+                        addCode(", threads = $classThreadsCount")
                     addCode(")\n»")
                     addStatement("")
 
