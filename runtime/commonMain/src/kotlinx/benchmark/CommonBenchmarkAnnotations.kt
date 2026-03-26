@@ -100,5 +100,16 @@ expect annotation class Measurement(
 
 expect annotation class Param(vararg val value: String)
 
+/**
+ * Specifies the number of threads that a benchmark function will be executed in.
+ *
+ * [value] has to be either strictly positive (> 0), or it could be a special constant [THREADS_CPU_COUNT].
+ */
 @Target(AnnotationTarget.CLASS)
 expect annotation class Threads(val value: Int)
+
+/**
+ * A special value for [Threads.value] forcing to run a benchmark using `N`-threads,
+ * where `N` is the total number of CPUs available in runtime.
+ */
+const val THREADS_CPU_COUNT: Int = -1

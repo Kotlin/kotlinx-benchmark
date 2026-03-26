@@ -7,6 +7,7 @@ import org.jetbrains.kotlin.builtins.UnsignedTypes
 import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
 import org.jetbrains.kotlin.descriptors.FunctionDescriptor
 import org.jetbrains.kotlin.descriptors.PropertyDescriptor
+import org.jetbrains.kotlin.descriptors.annotations.AnnotationDescriptor
 import org.jetbrains.kotlin.js.descriptorUtils.getKotlinTypeFqName
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.resolve.annotations.argumentValue
@@ -85,5 +86,16 @@ internal fun validateParameterProperties(properties: List<PropertyDescriptor>) {
         if (values.isEmpty()) {
             error("@Param annotation should have at least one argument. The annotation on property `${property.name}` has no arguments.")
         }
+    }
+}
+
+@RequiresKotlinCompilerEmbeddable
+internal fun validateThreadsAnnotation(threads: AnnotationDescriptor?) {
+    if (threads == null) return
+
+    val value = threads.argumentValue("value")!!.value as Int
+
+    if (value != -1 /* THREADS_CPU_COUNT */ && value <= 0) {
+        error("@Threads annotation accepts only positive integers and special value THREADS_CPU_COUNT, but $value was specified.")
     }
 }

@@ -111,7 +111,10 @@ benchmark {
         }
 
         create("mt") {
-            include("MultithreadedBenchmark")
+            iterations = 2
+            iterationTime = 300
+            iterationTimeUnit = "ms"
+            include("Multithreaded")
         }
     }
 

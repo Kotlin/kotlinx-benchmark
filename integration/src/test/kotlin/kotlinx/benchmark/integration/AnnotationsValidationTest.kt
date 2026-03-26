@@ -11,6 +11,7 @@ abstract class AnnotationsValidationTest : GradleTest() {
         setupFunction: String? = null,
         teardownFunction: String? = null,
         paramProperty: Pair<String, List<String>>? = null,
+        threadsAnnotationValue: String? = null,
         error: String? = null,
         jvmSpecificError: String? = null
     ) {
@@ -20,6 +21,9 @@ abstract class AnnotationsValidationTest : GradleTest() {
             setupFunction?.let { setup(it) }
             teardownFunction?.let { teardown(it) }
             paramProperty?.let { param(it.first, *it.second.toTypedArray()) }
+        }
+        runner.updateAnnotations("src/commonMain/kotlin/CommonBenchmark.kt") {
+            threadsAnnotationValue?.let { threads(it) }
         }
 
         runPlatformBenchmark(runner, error)
@@ -373,6 +377,50 @@ class MixedAnnotationsValidationTest : AnnotationsValidationTest() {
             benchmarkFunction = "plainFunction",
             setupFunction = "plainFunction",
             teardownFunction = "plainFunction"
+        )
+    }
+}
+
+class ThreadsAnnotationsValidationTest : AnnotationsValidationTest() {
+    @Test
+    fun testSingleThread() {
+        executeBenchmark(
+            benchmarkFunction = "plainFunction",
+            threadsAnnotationValue = "1"
+        )
+    }
+
+    @Test
+    fun testTwoThreads() {
+        executeBenchmark(
+            benchmarkFunction = "plainFunction",
+            threadsAnnotationValue = "2"
+        )
+    }
+
+    @Test
+    fun testMaxThreads() {
+        executeBenchmark(
+            benchmarkFunction = "plainFunction",
+            threadsAnnotationValue = "THREADS_CPU_COUNT"
+        )
+    }
+
+    @Test
+    fun testZeroThreads() {
+        executeBenchmark(
+            benchmarkFunction = "plainFunction",
+            threadsAnnotationValue = "0",
+            error = "@Threads annotation accepts only positive integers and special value THREADS_CPU_COUNT, but 0 was specified."
+        )
+    }
+
+    @Test
+    fun testNegativeThreads() {
+        executeBenchmark(
+            benchmarkFunction = "plainFunction",
+            threadsAnnotationValue = "-10",
+            error = "@Threads annotation accepts only positive integers and special value THREADS_CPU_COUNT, but -10 was specified."
         )
     }
 }
