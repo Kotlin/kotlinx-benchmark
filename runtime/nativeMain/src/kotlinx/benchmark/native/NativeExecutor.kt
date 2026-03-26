@@ -328,7 +328,7 @@ class NativeExecutor(
         workers: WorkersPool,
     ): Pair<Int, Double> {
         return singleIteration(instance, benchmark, workers, { results ->
-            results.sumOf { it.first } / results.size to results.map { it.second }.average()
+            results.sumOf { it.first } / results.size to results.sumOf { it.second }
         }) { body ->
             warmupSingleIterationLoop(iterationDurationNanos, nativeGCAfterIteration) {
                 body()
@@ -343,7 +343,7 @@ class NativeExecutor(
         nativeGCAfterIteration: Boolean,
         workers: WorkersPool,
     ): Double {
-        return singleIteration(instance, benchmark, workers, { it.average() }) { body ->
+        return singleIteration(instance, benchmark, workers, { it.sum() }) { body ->
             measureSingleIterationLoop(cycles, nativeGCAfterIteration) {
                 body()
             }
