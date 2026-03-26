@@ -137,3 +137,6 @@ final class kotlinx.benchmark/Blackhole { // kotlinx.benchmark/Blackhole|null[0]
     // Targets: [js, wasmJs]
     final fun consumeInt(kotlin/Int) // kotlinx.benchmark/Blackhole.consumeInt|consumeInt(kotlin.Int){}[0]
 }
+
+final const val kotlinx.benchmark/THREADS_CPU_COUNT // kotlinx.benchmark/THREADS_CPU_COUNT|{}THREADS_CPU_COUNT[0]
+    final fun <get-THREADS_CPU_COUNT>(): kotlin/Int // kotlinx.benchmark/THREADS_CPU_COUNT.<get-THREADS_CPU_COUNT>|<get-THREADS_CPU_COUNT>(){}[0]

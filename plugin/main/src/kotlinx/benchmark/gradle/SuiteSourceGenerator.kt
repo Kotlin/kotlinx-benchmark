@@ -162,6 +162,8 @@ class SuiteSourceGenerator(
         val modeAnnotation = original.annotations.singleOrNull { it.fqName.toString() == modeAnnotationFQN }
         val threadsAnnotation = original.annotations.singleOrNull { it.fqName.toString() == threadsAnnotationFQN }
 
+        validateThreadsAnnotation(threadsAnnotation)
+
         val outputTimeUnitValue = outputTimeAnnotation?.argumentValue("value") as EnumValue?
         val outputTimeUnit = outputTimeUnitValue?.enumEntryName?.toString()
 

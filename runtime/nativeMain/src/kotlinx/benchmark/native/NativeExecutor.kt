@@ -80,7 +80,8 @@ class NativeExecutor(
             reporter.startBenchmark(executionName, id)
         }
 
-        WorkersPool(benchmarkRun.config.threads).use { workersPool ->
+        val threads = resolveThreadsCount(benchmarkRun.config.threads)
+        WorkersPool(threads).use { workersPool ->
             try {
                 val iterations = warmup(
                     benchmark.suite.name, benchmarkRun.config, instance,
@@ -148,7 +149,8 @@ class NativeExecutor(
         var exception: Throwable? = null
         val iterations =
             if (benchmarkRun.config.nativeFork == NativeFork.PerIteration) 1 else benchmarkRun.config.iterations
-        val samples = WorkersPool(benchmarkRun.config.threads).use { workersPool ->
+        val threads = resolveThreadsCount(benchmarkRun.config.threads)
+        val samples = WorkersPool(threads).use { workersPool ->
              try {
                 // Execute warmup
                 val cycles =
@@ -419,6 +421,16 @@ class NativeExecutor(
                 it.result
             }
         }
+    }
+
+
+    private fun resolveThreadsCount(threads: Int): Int {
+        if (threads > 0) return threads
+        require(threads == THREADS_CPU_COUNT) {
+            "Illegal thread count value: $threads. It should be either positive, " +
+                    "or equal to THREADS_CPU_COUNT ($THREADS_CPU_COUNT)"
+        }
+        return Platform.getAvailableProcessors()
     }
 }
 
