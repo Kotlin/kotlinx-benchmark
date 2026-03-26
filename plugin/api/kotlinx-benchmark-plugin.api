@@ -2,6 +2,7 @@ public class kotlinx/benchmark/gradle/BenchmarkConfiguration {
 	public final fun advanced (Ljava/lang/String;Ljava/lang/Object;)V
 	public final fun exclude (Ljava/lang/String;)V
 	public final fun getAdvanced ()Ljava/util/Map;
+	public final fun getCustomEngine ()Lkotlinx/benchmark/gradle/CustomEngine;
 	public final fun getExcludes ()Ljava/util/List;
 	public final fun getIncludes ()Ljava/util/List;
 	public final fun getIterationTime ()Ljava/lang/Long;
@@ -16,6 +17,7 @@ public class kotlinx/benchmark/gradle/BenchmarkConfiguration {
 	public final fun include (Ljava/lang/String;)V
 	public final fun param (Ljava/lang/String;[Ljava/lang/Object;)V
 	public final fun setAdvanced (Ljava/util/Map;)V
+	public final fun setCustomEngine (Lkotlinx/benchmark/gradle/CustomEngine;)V
 	public final fun setExcludes (Ljava/util/List;)V
 	public final fun setIncludes (Ljava/util/List;)V
 	public final fun setIterationTime (Ljava/lang/Long;)V
@@ -69,6 +71,15 @@ public abstract class kotlinx/benchmark/gradle/BenchmarksPlugin : org/gradle/api
 public final class kotlinx/benchmark/gradle/BenchmarksPlugin$Companion {
 }
 
+public final class kotlinx/benchmark/gradle/CustomEngine {
+	public fun <init> (Ljava/lang/String;Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;)V
+	public synthetic fun <init> (Ljava/lang/String;Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;Lorg/gradle/api/provider/Provider;ILkotlin/jvm/internal/DefaultConstructorMarker;)V
+	public final fun getEngineArguments ()Lorg/gradle/api/provider/Provider;
+	public final fun getEnginePath ()Lorg/gradle/api/provider/Provider;
+	public final fun getName ()Ljava/lang/String;
+	public final fun getWorkingDir ()Lorg/gradle/api/provider/Provider;
+}
+
 public final class kotlinx/benchmark/gradle/JavaBenchmarkTarget : kotlinx/benchmark/gradle/JvmBenchmarkTarget {
 }
 
@@ -95,7 +106,9 @@ public class kotlinx/benchmark/gradle/JmhBytecodeGeneratorTask : org/gradle/api/
 }
 
 public final class kotlinx/benchmark/gradle/JsBenchmarkTarget : kotlinx/benchmark/gradle/BenchmarkTarget {
+	public final fun getBuildType ()Lorg/jetbrains/kotlin/gradle/targets/js/dsl/KotlinJsBinaryMode;
 	public final fun getJsBenchmarksExecutor ()Lkotlinx/benchmark/gradle/JsBenchmarksExecutor;
+	public final fun setBuildType (Lorg/jetbrains/kotlin/gradle/targets/js/dsl/KotlinJsBinaryMode;)V
 	public final fun setJsBenchmarksExecutor (Lkotlinx/benchmark/gradle/JsBenchmarksExecutor;)V
 }
 
@@ -134,6 +147,9 @@ public abstract class kotlinx/benchmark/gradle/JvmBenchmarkTarget : kotlinx/benc
 }
 
 public class kotlinx/benchmark/gradle/KotlinJvmBenchmarkTarget : kotlinx/benchmark/gradle/JvmBenchmarkTarget {
+}
+
+public abstract interface annotation class kotlinx/benchmark/gradle/KotlinxBenchmarkPluginExperimentalApi : java/lang/annotation/Annotation {
 }
 
 public abstract class kotlinx/benchmark/gradle/NativeBenchmarkExec : org/gradle/api/DefaultTask {
@@ -193,6 +209,8 @@ public final class kotlinx/benchmark/gradle/UtilsKt$sam$i$org_gradle_api_Action$
 }
 
 public final class kotlinx/benchmark/gradle/WasmBenchmarkTarget : kotlinx/benchmark/gradle/BenchmarkTarget {
+	public final fun getBuildType ()Lorg/jetbrains/kotlin/gradle/targets/js/dsl/KotlinJsBinaryMode;
+	public final fun setBuildType (Lorg/jetbrains/kotlin/gradle/targets/js/dsl/KotlinJsBinaryMode;)V
 }
 
 public abstract class kotlinx/benchmark/gradle/WasmSourceGeneratorTask : org/gradle/api/DefaultTask {
