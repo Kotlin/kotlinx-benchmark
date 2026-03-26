@@ -2,8 +2,15 @@ package kotlinx.benchmark.native
 
 import kotlinx.benchmark.*
 import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
+import kotlin.native.concurrent.Future
+import kotlin.native.concurrent.ObsoleteWorkersApi
+import kotlin.native.concurrent.TransferMode
+import kotlin.native.concurrent.Worker
 import kotlin.native.runtime.GC
-import kotlin.time.*
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
+import kotlin.time.TimeSource
+import kotlin.time.measureTime
 
 @KotlinxBenchmarkRuntimeInternalApi
 class NativeExecutor(
@@ -58,6 +65,7 @@ class NativeExecutor(
         resultsFile.writeFile(samples?.let{ it[0].toString() } ?: "null")
     }
 
+    @OptIn(ObsoleteWorkersApi::class)
     private fun runBenchmarkWarmup(benchmarks: List<BenchmarkDescriptor<Any?>>) {
         val (configFileName, iteration, resultsFile) = additionalArguments
         val benchmarkRun = configFileName.parseBenchmarkConfig()
@@ -71,18 +79,25 @@ class NativeExecutor(
         if (iteration.toInt() == 0) {
             reporter.startBenchmark(executionName, id)
         }
-        try {
-            val iterations = warmup(benchmark.suite.name, benchmarkRun.config, instance,
-                benchmark, iteration.toInt())
-            resultsFile.writeFile(iterations.toString())
-        } catch (e: Throwable) {
-            val error = e.toString()
-            val stacktrace = e.stacktrace()
-            reporter.endBenchmarkException(executionName, id, error, stacktrace)
-            resultsFile.writeFile("null")
-        } finally {
-            benchmark.suite.teardown(instance)
-            benchmark.blackhole.flush()
+
+        WorkersPool(benchmarkRun.config.threads).use { workersPool ->
+            try {
+                val iterations = warmup(
+                    benchmark.suite.name, benchmarkRun.config, instance,
+                    benchmark,
+                    workersPool,
+                    iteration.toInt()
+                )
+                resultsFile.writeFile(iterations.toString())
+            } catch (e: Throwable) {
+                val error = e.toString()
+                val stacktrace = e.stacktrace()
+                reporter.endBenchmarkException(executionName, id, error, stacktrace)
+                resultsFile.writeFile("null")
+            } finally {
+                benchmark.suite.teardown(instance)
+                benchmark.blackhole.flush()
+            }
         }
     }
 
@@ -107,12 +122,13 @@ class NativeExecutor(
         saveBenchmarkResults(benchmark, benchmarkRun, samples)
     }
 
+    @OptIn(ObsoleteWorkersApi::class)
     fun run(
         benchmark: BenchmarkDescriptor<Any?>,
         benchmarkRun: BenchmarkRun,
         currentIteration: Int? = null,
         cyclesPerIteration: Int? = null
-    ): DoubleArray?  {
+    ): DoubleArray? {
 
         require((currentIteration == null) == (cyclesPerIteration == null)) {
             "Current iteration number must be provided if and only if the number of cycles per iteration is provided"
@@ -130,27 +146,37 @@ class NativeExecutor(
         benchmark.suite.setup(instance)
 
         var exception: Throwable? = null
-        val iterations = if (benchmarkRun.config.nativeFork == NativeFork.PerIteration) 1 else benchmarkRun.config.iterations
-        val samples = try {
-            // Execute warmup
-            val cycles = cyclesPerIteration ?: warmup(suite.name, benchmarkRun.config, instance, benchmark)
-            DoubleArray(iterations) { iteration ->
-                val nanosecondsPerOperation = measure(instance, benchmark, cycles, benchmarkRun.config.nativeGCAfterIteration)
-                val text = nanosecondsPerOperation.nanosToText(benchmarkRun.config.mode, benchmarkRun.config.outputTimeUnit)
-                val iterationNumber = currentIteration ?: iteration
-                reporter.output(
-                    executionName,
-                    id,
-                    "Iteration #$iterationNumber: $text"
-                )
-                nanosecondsPerOperation.nanosToSample(benchmarkRun.config.mode, benchmarkRun.config.outputTimeUnit)
+        val iterations =
+            if (benchmarkRun.config.nativeFork == NativeFork.PerIteration) 1 else benchmarkRun.config.iterations
+        val samples = WorkersPool(benchmarkRun.config.threads).use { workersPool ->
+             try {
+                // Execute warmup
+                val cycles =
+                    cyclesPerIteration ?: warmup(suite.name, benchmarkRun.config, instance, benchmark, workersPool)
+                val nativeGCAfterIteration = benchmarkRun.config.nativeGCAfterIteration
+                DoubleArray(iterations) { iteration ->
+                    val nanosecondsPerOperation =
+                        measureSingleIteration(instance, benchmark, cycles, nativeGCAfterIteration, workersPool)
+                    val text =
+                        nanosecondsPerOperation.nanosToText(
+                            benchmarkRun.config.mode,
+                            benchmarkRun.config.outputTimeUnit
+                        )
+                    val iterationNumber = currentIteration ?: iteration
+                    reporter.output(
+                        executionName,
+                        id,
+                        "Iteration #$iterationNumber: $text"
+                    )
+                    nanosecondsPerOperation.nanosToSample(benchmarkRun.config.mode, benchmarkRun.config.outputTimeUnit)
+                }
+            } catch (e: Throwable) {
+                exception = e
+                doubleArrayOf()
+            } finally {
+                benchmark.suite.teardown(instance)
+                benchmark.blackhole.flush()
             }
-        } catch (e: Throwable) {
-            exception = e
-            doubleArrayOf()
-        } finally {
-            benchmark.suite.teardown(instance)
-            benchmark.blackhole.flush()
         }
         if (exception != null) {
             val error = exception.toString()
@@ -220,7 +246,7 @@ class NativeExecutor(
         return getStackTrace().joinToString("\n") + "\nCause: ${nested.message}\n" + nested.stacktrace()
     }
 
-    private inline fun measure(
+    private inline fun measureSingleIterationLoop(
         cycles: Int,
         nativeGCAfterIteration: Boolean,
         body: () -> Unit,
@@ -240,37 +266,30 @@ class NativeExecutor(
         return duration.toDouble(DurationUnit.NANOSECONDS) / cycles
     }
 
-    private inline fun <T> measureWarmup(
+    private fun <T> warmup(
         name: String,
         config: BenchmarkConfiguration,
+        instance: T,
         benchmark: BenchmarkDescriptor<T>,
-        currentIteration: Int?,
-        body: () -> Unit
+        workers: WorkersPool,
+        currentIteration: Int? = null
     ): Int {
-        require(config.nativeFork == NativeFork.PerIteration && currentIteration != null
-                || config.nativeFork == NativeFork.PerBenchmark && currentIteration == null) {
+        require(
+            config.nativeFork == NativeFork.PerIteration && currentIteration != null
+                    || config.nativeFork == NativeFork.PerBenchmark && currentIteration == null
+        ) {
             "Fork must be per benchmark or current iteration number must be provided, but not both at the same time"
         }
 
-        var iterations = 0
         val warmupIterations = if (config.nativeFork == NativeFork.PerIteration) 1 else config.warmups
+        var iterations = 0
         repeat(warmupIterations) { iteration ->
             val benchmarkNanos = config.iterationTime * config.iterationTimeUnit.toMultiplier()
 
-            if (config.nativeGCAfterIteration)
-                GC.collect()
-            val startTime = TimeSource.Monotonic.markNow()
-            var duration = Duration.ZERO
-            iterations = 0
-            while (duration.inWholeNanoseconds < benchmarkNanos) {
-                body()
-                duration = startTime.elapsedNow()
-                iterations++
-            }
-            if (config.nativeGCAfterIteration)
-                GC.collect()
+            val (avgIterations, metric) = warmupSingleIteration(instance, benchmark, config.nativeGCAfterIteration,
+                benchmarkNanos, workers)
+            iterations = avgIterations
 
-            val metric = duration.toDouble(DurationUnit.NANOSECONDS) / iterations // TODO: metric
             val sample = metric.nanosToText(config.mode, config.outputTimeUnit)
             val iterationNumber = currentIteration ?: iteration
             reporter.output(name, benchmark.name, "Warm-up #$iterationNumber: $sample")
@@ -278,51 +297,128 @@ class NativeExecutor(
         return iterations
     }
 
-    private fun <T> warmup(
-        name: String,
-        config: BenchmarkConfiguration,
-        instance: T,
-        benchmark: BenchmarkDescriptor<T>,
-        currentIteration: Int? = null
-    ): Int = when(benchmark) {
-        is BenchmarkDescriptorWithBlackholeParameter -> {
-            val blackhole = benchmark.blackhole
-            val delegate = benchmark.function
-            measureWarmup(name, config, benchmark, currentIteration) {
-                blackhole.consume(instance.delegate(blackhole))
-            }
+    internal inline fun warmupSingleIterationLoop(
+        iterationDurationNanos: Long,
+        nativeGCAfterIteration: Boolean,
+        body: () -> Unit,
+    ): Pair<Int, Double> {
+        if (nativeGCAfterIteration)
+            GC.collect()
+        val startTime = TimeSource.Monotonic.markNow()
+        var duration = Duration.ZERO
+        var iterations = 0
+        while (duration.inWholeNanoseconds < iterationDurationNanos) {
+            body()
+            duration = startTime.elapsedNow()
+            iterations++
         }
-        is BenchmarkDescriptorWithNoBlackholeParameter -> {
-            val blackhole = benchmark.blackhole
-            val delegate = benchmark.function
-            measureWarmup(name, config, benchmark, currentIteration) {
-                blackhole.consume(instance.delegate())
-            }
-        }
-        else -> error("Unexpected ${benchmark::class.simpleName}")
+        if (nativeGCAfterIteration)
+            GC.collect()
+
+        return iterations to duration.toDouble(DurationUnit.NANOSECONDS) / iterations // TODO: metric
     }
 
-    private fun <T> measure(
+    private fun <T> warmupSingleIteration(
+        instance: T,
+        benchmark: BenchmarkDescriptor<T>,
+        nativeGCAfterIteration: Boolean,
+        iterationDurationNanos: Long,
+        workers: WorkersPool,
+    ): Pair<Int, Double> {
+        return singleIteration(instance, benchmark, workers, { results ->
+            results.sumOf { it.first } / results.size to results.map { it.second }.average()
+        }) { body ->
+            warmupSingleIterationLoop(iterationDurationNanos, nativeGCAfterIteration) {
+                body()
+            }
+        }
+    }
+
+    private fun <T> measureSingleIteration(
         instance: T,
         benchmark: BenchmarkDescriptor<T>,
         cycles: Int,
         nativeGCAfterIteration: Boolean,
-    ): Double = when(benchmark) {
-        is BenchmarkDescriptorWithBlackholeParameter -> {
-            val blackhole = benchmark.blackhole
-            val delegate = benchmark.function
-            measure(cycles, nativeGCAfterIteration) {
-                blackhole.consume(instance.delegate(blackhole))
+        workers: WorkersPool,
+    ): Double {
+        return singleIteration(instance, benchmark, workers, { it.average() }) { body ->
+            measureSingleIterationLoop(cycles, nativeGCAfterIteration) {
+                body()
             }
         }
-        is BenchmarkDescriptorWithNoBlackholeParameter -> {
-            val blackhole = benchmark.blackhole
-            val delegate = benchmark.function
-            measure(cycles, nativeGCAfterIteration) {
-                blackhole.consume(instance.delegate())
+    }
+
+    @OptIn(ObsoleteWorkersApi::class)
+    private inline fun <T, R> singleIteration(
+        instance: T,
+        benchmark: BenchmarkDescriptor<T>,
+        workers: WorkersPool,
+        resultsAggregator: (List<R>) -> R,
+        crossinline body: (() -> Unit) -> R
+    ): R {
+        val waiters = workers.numWorkers + 1 // + 1 is for the current thread
+        Barrier(waiters).use { barrier ->
+            val runner = when (benchmark) {
+                is BenchmarkDescriptorWithBlackholeParameter -> {
+                    {
+                        val blackhole = benchmark.blackhole
+                        val delegate = benchmark.function
+                        barrier.wait()
+                        body {
+                            blackhole.consume(instance.delegate(blackhole))
+                        }
+                    }
+                }
+
+                is BenchmarkDescriptorWithNoBlackholeParameter -> {
+                    {
+                        val blackhole = benchmark.blackhole
+                        val delegate = benchmark.function
+                        barrier.wait()
+                        body {
+                            blackhole.consume(instance.delegate())
+                        }
+                    }
+                }
+
+                else -> error("Unexpected ${benchmark::class.simpleName}")
+            }
+
+            // Submit single benchmark iteration to all workers
+            val futures = workers.submit(runner)
+
+            // Synchronized workers
+            barrier.wait()
+
+            // Await the end of iteration and aggregate results
+            return resultsAggregator(futures.map { it.result })
+        }
+    }
+
+    @OptIn(ObsoleteWorkersApi::class)
+    private class WorkersPool(val numWorkers: Int): AutoCloseable {
+
+        init {
+            require(numWorkers > 0) {
+                "At least one worker thread is required"
             }
         }
-        else -> error("Unexpected ${benchmark::class.simpleName}")
+
+        private var closed = false
+        private val workers = Array(numWorkers) { Worker.start(name = "Benchmark runner $it") }
+
+        fun <R> submit(workload: () -> R): List<Future<R>> {
+            check(!closed) { "Pools is closed!" }
+            return workers.map { it.execute(TransferMode.UNSAFE, { workload }) { it() } }
+        }
+
+        override fun close() {
+            if (closed) return
+            closed = true
+            workers.map { it.requestTermination(false) }.forEach {
+                it.result
+            }
+        }
     }
 }
 
