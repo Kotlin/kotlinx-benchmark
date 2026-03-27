@@ -61,7 +61,7 @@ The following annotations are available to define and fine-tune your benchmarks.
 The `@State` annotation specifies the extent to which the state object is shared among the worker threads,
 and it is mandatory for benchmark classes to be marked with this annotation to define their scope of state sharing.
 
-Currently, multi-threaded execution of a benchmark method is supported only on the JVM, where you can specify various scopes.
+Currently, various scopes are supported only on the JVM, where you can specify various scopes.
 Refer to [JMH documentation of Scope](https://javadoc.io/doc/org.openjdk.jmh/jmh-core/latest/org/openjdk/jmh/annotations/Scope.html)
 for details about available scopes and their implications.
 In non-JVM targets, only `Scope.Benchmark` is applicable.
@@ -213,6 +213,27 @@ for details about the effect and restrictions of the annotation in Kotlin/JVM.
 In our example, the `@Param` annotation is used with values `"4"` and `"10"`, meaning the `benchmarkMethod`
 will be benchmarked twice - once with the `size` value set to `4` and then with `10`.
 This approach helps in understanding how the input list's size affects the time taken to sum its integers.
+
+
+### @Threads
+
+`kotlinx-benchmarks` has limited support for symmetric multi-threaded benchmarks where the same benchmark function
+is executed by multiple threads simultaneously. Such execution mode is supported for Kotlin/JVM and Kotlin/Native only,
+for all other target the annotation will have no effect.
+
+To turn a regular benchmark into a multi-threaded benchmark, annotate a class with `@Threads(N)`, where `N` is either
+a positive integer value (like `2` or `5`), or a special constant `THREADS_CPU_COUNT` which is replaced with the total
+number of CPUs on host system in runtime. `@Threads(1)` has the same effect as no annotation at all.
+
+If a benchmark class is annotated with `@Threads(3)`, for every benchmark function `3` threads will be created
+and every such function will be executed simultaneously by all three threads. Such execution mode is handy when
+performance of a concurrent or a thread-safe data structure or an algorithm needs to be evaluated. 
+
+Note that due to limitations of the current implementation, benchmark's state will be shared by all threads executing
+a benchmark function (see [State](#state) for details).
+
+Refer to [JMH documentation of @Threads](https://javadoc.io/doc/org.openjdk.jmh/jmh-core/latest/org/openjdk/jmh/annotations/Threads.html)
+for details about the effect and restrictions of the annotation in Kotlin/JVM.
 
 ### Other JMH annotations
 
