@@ -1,8 +1,11 @@
 package kotlinx.benchmark
 
+import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 import kotlinx.benchmark.native.NativeExecutor
 import kotlinx.cinterop.*
 import platform.posix.*
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
 
 internal actual fun Double.format(precision: Int, useGrouping: Boolean): String {
     val longPart = toLong()
@@ -60,4 +63,40 @@ internal fun String.parseBenchmarkConfig(): NativeExecutor.BenchmarkRun {
     val configuration = BenchmarkConfiguration.parse(lines[1].getElement("configuration"))
     val parameters = lines[2].getElement("parameters").parseMap()
     return NativeExecutor.BenchmarkRun(name, configuration, parameters)
+}
+
+// Iteration results for a single thread
+internal class IterationResult(val operations: Long)
+
+internal class AggregateIterationResult(
+    val duration: Duration,
+    val operations: LongArray
+)
+
+// Iteration results for all threads
+internal fun AggregateIterationResult.nanosToText(mode: Mode, unit: BenchmarkTimeUnit): String {
+    val value = nanosToSample(mode, unit)
+    return when (mode) {
+        Mode.Throughput -> "${value.formatSignificant(6)} ops/${unit.toText()}"
+        Mode.AverageTime -> "${value.formatSignificant(6)} ${unit.toText()}/op"
+        else -> throw UnsupportedOperationException("$mode is not supported")
+    }
+}
+
+internal fun AggregateIterationResult.nanosToSample(mode: Mode, unit: BenchmarkTimeUnit): Double {
+    val totalDuration = duration.toDouble(unit.toDurationUnit())
+    return when (mode) {
+        Mode.Throughput -> operations.sumOf { it.toDouble() } / totalDuration
+        Mode.AverageTime -> operations.sumOf { totalDuration / it.toDouble()} / operations.size
+        else -> throw UnsupportedOperationException("$mode is not supported")
+    }
+}
+
+internal fun BenchmarkTimeUnit.toDurationUnit(): DurationUnit = when (this) {
+    BenchmarkTimeUnit.MINUTES -> DurationUnit.MINUTES
+    BenchmarkTimeUnit.SECONDS -> DurationUnit.SECONDS
+    BenchmarkTimeUnit.MILLISECONDS -> DurationUnit.MILLISECONDS
+    BenchmarkTimeUnit.MICROSECONDS -> DurationUnit.MICROSECONDS
+    BenchmarkTimeUnit.NANOSECONDS -> DurationUnit.NANOSECONDS
+    else -> throw IllegalStateException("Unsupported unit $this")
 }

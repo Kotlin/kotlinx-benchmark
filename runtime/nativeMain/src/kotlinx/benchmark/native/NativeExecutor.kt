@@ -11,8 +11,6 @@ import kotlin.native.concurrent.TransferMode
 import kotlin.native.concurrent.Worker
 import kotlin.native.runtime.GC
 import kotlin.time.Duration
-import kotlin.time.DurationUnit
-import kotlin.time.measureTime
 
 @KotlinxBenchmarkRuntimeInternalApi
 fun runBenchmarks(name: String, args: Array<out String>, declareAndExecuteSuites: (SuiteExecutorBase) -> Unit) {
@@ -27,21 +25,27 @@ internal class NativeExecutor(
     private val action = args[1]
     private val additionalArguments = args.drop(3)
 
-    data class BenchmarkRun(val benchmarkName: String, val config: BenchmarkConfiguration,
-                            val parameters: Map<String, String>)
+    data class BenchmarkRun(
+        val benchmarkName: String, val config: BenchmarkConfiguration,
+        val parameters: Map<String, String>
+    )
 
     private val BenchmarkConfiguration.nativeFork: NativeFork
         get() = advanced["nativeFork"]
-            ?.let { NativeFork.values()
-            .firstOrNull { entity -> entity.name.equals(it, ignoreCase = true) } }
+            ?.let {
+                NativeFork.values()
+                    .firstOrNull { entity -> entity.name.equals(it, ignoreCase = true) }
+            }
             ?: NativeFork.PerBenchmark
 
     private val BenchmarkConfiguration.nativeGCAfterIteration: Boolean
         get() = "true".equals(advanced["nativeGCAfterIteration"], ignoreCase = true)
 
-    private fun outputBenchmarks(runnerConfiguration: RunnerConfiguration,
-                                 benchmarks: List<BenchmarkDescriptor<Any?>>,
-                                 start: () -> Unit) {
+    private fun outputBenchmarks(
+        runnerConfiguration: RunnerConfiguration,
+        benchmarks: List<BenchmarkDescriptor<Any?>>,
+        start: () -> Unit
+    ) {
         start()
         benchmarks.forEach {
             val suite = it.suite
@@ -68,7 +72,7 @@ internal class NativeExecutor(
         val benchmarkRun = configFileName.parseBenchmarkConfig()
         val benchmark = benchmarks.getBenchmark(benchmarkRun.benchmarkName)
         val samples = run(benchmark, benchmarkRun, iteration.toInt())
-        resultsFile.writeFile(samples?.let{ it[0].toString() } ?: "null")
+        resultsFile.writeFile(samples?.let { it[0].toString() } ?: "null")
     }
 
     @OptIn(ObsoleteWorkersApi::class)
@@ -135,8 +139,10 @@ internal class NativeExecutor(
         benchmarkRun: BenchmarkRun,
         currentIteration: Int? = null,
     ): DoubleArray? {
-        require(benchmarkRun.config.nativeFork == NativeFork.PerIteration && currentIteration != null
-                || benchmarkRun.config.nativeFork == NativeFork.PerBenchmark && currentIteration == null) {
+        require(
+            benchmarkRun.config.nativeFork == NativeFork.PerIteration && currentIteration != null
+                    || benchmarkRun.config.nativeFork == NativeFork.PerBenchmark && currentIteration == null
+        ) {
             "Fork must be per benchmark or current iteration number must be provided, but not both at the same time"
         }
 
@@ -158,10 +164,10 @@ internal class NativeExecutor(
                 val nativeGCAfterIteration = benchmarkRun.config.nativeGCAfterIteration
                 val iterationDuration = benchmarkRun.config.iterationDuration
                 DoubleArray(iterations) { iteration ->
-                    val nanosecondsPerOperation =
+                    val iterationResult =
                         singleIteration(instance, benchmark, iterationDuration, nativeGCAfterIteration, workersPool)
                     val text =
-                        nanosecondsPerOperation.nanosToText(
+                        iterationResult.nanosToText(
                             benchmarkRun.config.mode,
                             benchmarkRun.config.outputTimeUnit
                         )
@@ -171,7 +177,7 @@ internal class NativeExecutor(
                         id,
                         "Iteration #$iterationNumber: $text"
                     )
-                    nanosecondsPerOperation.nanosToSample(benchmarkRun.config.mode, benchmarkRun.config.outputTimeUnit)
+                    iterationResult.nanosToSample(benchmarkRun.config.mode, benchmarkRun.config.outputTimeUnit)
                 }
             } catch (e: Throwable) {
                 exception = e
@@ -190,10 +196,13 @@ internal class NativeExecutor(
         return samples
     }
 
-    private fun saveBenchmarkResults(benchmark: BenchmarkDescriptor<Any?>, benchmarkRun: BenchmarkRun,
-                              samples: DoubleArray) {
+    private fun saveBenchmarkResults(
+        benchmark: BenchmarkDescriptor<Any?>, benchmarkRun: BenchmarkRun,
+        samples: DoubleArray
+    ) {
         val id = id(benchmark.name, benchmarkRun.parameters)
-        val result = ReportBenchmarksStatistics.createResult(benchmark, benchmarkRun.parameters, benchmarkRun.config, samples)
+        val result =
+            ReportBenchmarksStatistics.createResult(benchmark, benchmarkRun.parameters, benchmarkRun.config, samples)
         val message = with(result) {
             // TODO: metric
             "  ~ ${
@@ -220,8 +229,10 @@ internal class NativeExecutor(
             val samples = samplesList.split(", ").map { it.toDouble() }.toDoubleArray()
             val benchmarkRun = configFileName.parseBenchmarkConfig()
             val benchmark = benchmarks.getBenchmark(benchmarkRun.benchmarkName)
-            val result = ReportBenchmarksStatistics.createResult(benchmark, benchmarkRun.parameters,
-                benchmarkRun.config, samples)
+            val result = ReportBenchmarksStatistics.createResult(
+                benchmark, benchmarkRun.parameters,
+                benchmarkRun.config, samples
+            )
             result(result)
         }
         complete()
@@ -243,7 +254,7 @@ internal class NativeExecutor(
             else -> throw IllegalArgumentException("Unknown action: $action.")
         }
     }
-    
+
     private fun Throwable.stacktrace(): String {
         val nested = cause ?: return getStackTrace().joinToString("\n")
         return getStackTrace().joinToString("\n") + "\nCause: ${nested.message}\n" + nested.stacktrace()
@@ -281,22 +292,20 @@ internal class NativeExecutor(
         synchronizer: MeasurementSynchronizer,
         nativeGCAfterIteration: Boolean,
         body: () -> Unit,
-    ): Double {
+    ): IterationResult {
         if (nativeGCAfterIteration)
             GC.collect()
 
-        var iterations = 0L
+        var cycles = 0L
 
-        val duration = measureTime {
-            while (!synchronizer.shouldStop) {
-                body()
-                iterations++
-            }
-            if (nativeGCAfterIteration)
-                GC.collect()
+        while (!synchronizer.shouldStop) {
+            body()
+            cycles++
         }
+        if (nativeGCAfterIteration)
+            GC.collect()
 
-        return duration.toDouble(DurationUnit.NANOSECONDS) / iterations // TODO: metric
+        return IterationResult(cycles)
     }
 
     @OptIn(ObsoleteWorkersApi::class)
@@ -306,7 +315,7 @@ internal class NativeExecutor(
         iterationDuration: Duration,
         nativeGCAfterIteration: Boolean,
         workers: WorkersPool,
-    ): Double {
+    ): AggregateIterationResult {
         val waiters = workers.numWorkers + 1 // + 1 is for the current thread
         val synchronizer = MeasurementSynchronizer()
         Barrier(waiters).use { barrier ->
@@ -350,7 +359,8 @@ internal class NativeExecutor(
             synchronizer.shouldStop = true
 
             // Await the end of iteration and aggregate results
-            return futures.map { it.result }.average()
+            val perThreadResults = futures.map { it.result.operations }.toLongArray()
+            return AggregateIterationResult(iterationDuration, perThreadResults)
         }
     }
 
