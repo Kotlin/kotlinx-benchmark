@@ -1,6 +1,8 @@
 package kotlinx.benchmark
 
 import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.nanoseconds
 
 @KotlinxBenchmarkRuntimeInternalApi
 class BenchmarkConfiguration private constructor(
@@ -23,6 +25,8 @@ class BenchmarkConfiguration private constructor(
         threads = runner.threads ?: suite.threads,
         advanced = runner.advanced
     )
+
+    val iterationDuration: Duration = (iterationTime * iterationTimeUnit.toMultiplier()).nanoseconds
 
     override fun toString() =
         "iterations=$iterations, warmups=$warmups, iterationTime=$iterationTime, " +
