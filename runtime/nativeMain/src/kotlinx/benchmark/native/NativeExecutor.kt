@@ -65,10 +65,10 @@ internal class NativeExecutor(
         ?: throw NoSuchElementException("Benchmark $name wasn't found.")
 
     private fun runBenchmarkIteration(benchmarks: List<BenchmarkDescriptor<Any?>>) {
-        val (configFileName, iteration, cycles, resultsFile) = additionalArguments
+        val (configFileName, iteration, _, resultsFile) = additionalArguments
         val benchmarkRun = configFileName.parseBenchmarkConfig()
         val benchmark = benchmarks.getBenchmark(benchmarkRun.benchmarkName)
-        val samples = run(benchmark, benchmarkRun, iteration.toInt(), cycles.toLong())
+        val samples = run(benchmark, benchmarkRun, iteration.toInt())
         resultsFile.writeFile(samples?.let{ it[0].toString() } ?: "null")
     }
 
@@ -90,13 +90,13 @@ internal class NativeExecutor(
         val threads = resolveThreadsCount(benchmarkRun.config.threads)
         WorkersPool(threads).use { workersPool ->
             try {
-                val iterations = warmup(
+                warmup(
                     benchmark.suite.name, benchmarkRun.config, instance,
                     benchmark,
                     workersPool,
                     iteration.toInt()
                 )
-                resultsFile.writeFile(iterations.toString())
+                resultsFile.writeFile("1") // Iterations number for backward compatibility
             } catch (e: Throwable) {
                 val error = e.toString()
                 val stacktrace = e.stacktrace()
@@ -135,12 +135,7 @@ internal class NativeExecutor(
         benchmark: BenchmarkDescriptor<Any?>,
         benchmarkRun: BenchmarkRun,
         currentIteration: Int? = null,
-        cyclesPerIteration: Long? = null
     ): DoubleArray? {
-
-        require((currentIteration == null) == (cyclesPerIteration == null)) {
-            "Current iteration number must be provided if and only if the number of cycles per iteration is provided"
-        }
         require(benchmarkRun.config.nativeFork == NativeFork.PerIteration && currentIteration != null
                 || benchmarkRun.config.nativeFork == NativeFork.PerBenchmark && currentIteration == null) {
             "Fork must be per benchmark or current iteration number must be provided, but not both at the same time"
@@ -160,8 +155,7 @@ internal class NativeExecutor(
         val samples = WorkersPool(threads).use { workersPool ->
              try {
                 // Execute warmup
-                val cycles =
-                    cyclesPerIteration ?: warmup(suite.name, benchmarkRun.config, instance, benchmark, workersPool)
+                warmup(suite.name, benchmarkRun.config, instance, benchmark, workersPool)
                 val nativeGCAfterIteration = benchmarkRun.config.nativeGCAfterIteration
                 DoubleArray(iterations) { iteration ->
                     val nanosecondsPerOperation =
@@ -284,7 +278,7 @@ internal class NativeExecutor(
         benchmark: BenchmarkDescriptor<T>,
         workers: WorkersPool,
         currentIteration: Int? = null
-    ): Long {
+    ) {
         require(
             config.nativeFork == NativeFork.PerIteration && currentIteration != null
                     || config.nativeFork == NativeFork.PerBenchmark && currentIteration == null
@@ -293,26 +287,23 @@ internal class NativeExecutor(
         }
 
         val warmupIterations = if (config.nativeFork == NativeFork.PerIteration) 1 else config.warmups
-        var iterations = 0L
         repeat(warmupIterations) { iteration ->
             val benchmarkNanos = config.iterationTime * config.iterationTimeUnit.toMultiplier()
 
-            val (avgIterations, metric) = warmupSingleIteration(instance, benchmark, config.nativeGCAfterIteration,
+            val metric = warmupSingleIteration(instance, benchmark, config.nativeGCAfterIteration,
                 benchmarkNanos.nanoseconds, workers)
-            iterations = avgIterations
 
             val sample = metric.nanosToText(config.mode, config.outputTimeUnit)
             val iterationNumber = currentIteration ?: iteration
             reporter.output(name, benchmark.name, "Warm-up #$iterationNumber: $sample")
         }
-        return iterations
     }
 
     private inline fun warmupSingleIterationLoop(
         synchronizer: MeasurementSynchronizer,
         nativeGCAfterIteration: Boolean,
         body: () -> Unit,
-    ): Pair<Long, Double> {
+    ): Double {
         if (nativeGCAfterIteration)
             GC.collect()
 
@@ -327,7 +318,7 @@ internal class NativeExecutor(
                 GC.collect()
         }
 
-        return iterations to duration.toDouble(DurationUnit.NANOSECONDS) / iterations // TODO: metric
+        return duration.toDouble(DurationUnit.NANOSECONDS) / iterations // TODO: metric
     }
 
     private fun <T> warmupSingleIteration(
@@ -336,9 +327,9 @@ internal class NativeExecutor(
         nativeGCAfterIteration: Boolean,
         iterationDuration: Duration,
         workers: WorkersPool,
-    ): Pair<Long, Double> {
+    ): Double {
         return singleIteration(instance, benchmark, workers, iterationDuration,{ results ->
-            results.sumOf { it.first } / results.size to results.map { it.second }.average()
+            results.average()
         }) { sync, body ->
             warmupSingleIterationLoop(sync, nativeGCAfterIteration) {
                 body()
