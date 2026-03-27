@@ -81,7 +81,6 @@ internal fun AggregateIterationResult.nanosToText(mode: Mode, unit: BenchmarkTim
     return when (mode) {
         Mode.Throughput -> "${value.formatSignificant(6)} ops/${unit.toText()}"
         Mode.AverageTime -> "${value.formatSignificant(6)} ${unit.toText()}/op"
-        else -> throw UnsupportedOperationException("$mode is not supported")
     }
 }
 
@@ -90,7 +89,6 @@ internal fun AggregateIterationResult.nanosToSample(mode: Mode, unit: BenchmarkT
     return when (mode) {
         Mode.Throughput -> operations.sumOf { it.toDouble() } / totalDuration
         Mode.AverageTime -> operations.sumOf { totalDuration / it.toDouble()} / operations.size
-        else -> throw UnsupportedOperationException("$mode is not supported")
     }
 }
 
@@ -100,5 +98,4 @@ internal fun BenchmarkTimeUnit.toDurationUnit(): DurationUnit = when (this) {
     BenchmarkTimeUnit.MILLISECONDS -> DurationUnit.MILLISECONDS
     BenchmarkTimeUnit.MICROSECONDS -> DurationUnit.MICROSECONDS
     BenchmarkTimeUnit.NANOSECONDS -> DurationUnit.NANOSECONDS
-    else -> throw IllegalStateException("Unsupported unit $this")
 }
