@@ -65,7 +65,7 @@ class NativeExecutor(
 
     private fun runBenchmarkIteration(benchmarks: List<BenchmarkDescriptor<Any?>>) {
         val (configFileName, iteration, _, resultsFile) = additionalArguments
-        val benchmarkRun = configFileName.parseBenchmarkConfig()
+        val benchmarkRun = configFileName.parseBenchmarkConfig().resolveThreadsCount()
         val benchmark = benchmarks.getBenchmark(benchmarkRun.benchmarkName)
         val samples = run(benchmark, benchmarkRun, iteration.toInt())
         resultsFile.writeFile(samples?.let { it[0].toString() } ?: "null")
@@ -74,7 +74,7 @@ class NativeExecutor(
     @OptIn(ObsoleteWorkersApi::class)
     private fun runBenchmarkWarmup(benchmarks: List<BenchmarkDescriptor<Any?>>) {
         val (configFileName, iteration, resultsFile) = additionalArguments
-        val benchmarkRun = configFileName.parseBenchmarkConfig()
+        val benchmarkRun = configFileName.parseBenchmarkConfig().resolveThreadsCount()
         val benchmark = benchmarks.getBenchmark(benchmarkRun.benchmarkName)
         val id = id(benchmark.name, benchmarkRun.parameters)
 
@@ -86,8 +86,7 @@ class NativeExecutor(
             reporter.startBenchmark(executionName, id)
         }
 
-        val threads = resolveThreadsCount(benchmarkRun.config.threads)
-        WorkersPool(threads).use { workersPool ->
+        WorkersPool(benchmarkRun.config.threads).use { workersPool ->
             try {
                 warmup(
                     benchmark.suite.name, benchmarkRun.config, instance,
@@ -110,7 +109,7 @@ class NativeExecutor(
 
     private fun runBenchmark(benchmarks: List<BenchmarkDescriptor<Any?>>) {
         val (configFileName, resultsFile) = additionalArguments
-        val benchmarkRun = configFileName.parseBenchmarkConfig()
+        val benchmarkRun = configFileName.parseBenchmarkConfig().resolveThreadsCount()
         val benchmark = benchmarks.getBenchmark(benchmarkRun.benchmarkName)
         val id = id(benchmark.name, benchmarkRun.parameters)
         reporter.startBenchmark(executionName, id)
@@ -124,7 +123,7 @@ class NativeExecutor(
     private fun endForkedIterationsRun(benchmarks: List<BenchmarkDescriptor<Any?>>) {
         val (configFileName, samplesFile) = additionalArguments
         val samples = samplesFile.readFile().split(", ").map { it.toDouble() }.toDoubleArray()
-        val benchmarkRun = configFileName.parseBenchmarkConfig()
+        val benchmarkRun = configFileName.parseBenchmarkConfig().resolveThreadsCount()
         val benchmark = benchmarks.getBenchmark(benchmarkRun.benchmarkName)
         saveBenchmarkResults(benchmark, benchmarkRun, samples)
     }
@@ -152,8 +151,7 @@ class NativeExecutor(
         var exception: Throwable? = null
         val iterations =
             if (benchmarkRun.config.nativeFork == NativeFork.PerIteration) 1 else benchmarkRun.config.iterations
-        val threads = resolveThreadsCount(benchmarkRun.config.threads)
-        val samples = WorkersPool(threads).use { workersPool ->
+        val samples = WorkersPool(benchmarkRun.config.threads).use { workersPool ->
             try {
                 // Execute warmup
                 warmup(suite.name, benchmarkRun.config, instance, benchmark, workersPool)
@@ -223,7 +221,7 @@ class NativeExecutor(
         resultsContent.takeIf(String::isNotEmpty)?.lines()?.forEach {
             val (configFileName, samplesList) = it.split(": ")
             val samples = samplesList.split(", ").map { it.toDouble() }.toDoubleArray()
-            val benchmarkRun = configFileName.parseBenchmarkConfig()
+            val benchmarkRun = configFileName.parseBenchmarkConfig().resolveThreadsCount()
             val benchmark = benchmarks.getBenchmark(benchmarkRun.benchmarkName)
             val result = ReportBenchmarksStatistics.createResult(
                 benchmark, benchmarkRun.parameters,
@@ -387,13 +385,18 @@ class NativeExecutor(
     }
 
 
-    private fun resolveThreadsCount(threads: Int): Int {
-        if (threads > 0) return threads
-        require(threads == THREADS_CPU_COUNT) {
-            "Illegal thread count value: $threads. It should be either positive, " +
+    private fun BenchmarkRun.resolveThreadsCount(): BenchmarkRun {
+        if (config.threads > 0) return this
+        require(config.threads == THREADS_CPU_COUNT) {
+            "Illegal thread count value: ${config.threads}. It should be either positive, " +
                     "or equal to THREADS_CPU_COUNT ($THREADS_CPU_COUNT)"
         }
-        return Platform.getAvailableProcessors()
+        val cpuCount = Platform.getAvailableProcessors()
+        return BenchmarkRun(
+            benchmarkName,
+            config.withUpdatedThreadsCount(cpuCount),
+            parameters
+        )
     }
 
     private class MeasurementSynchronizer {

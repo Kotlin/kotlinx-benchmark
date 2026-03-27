@@ -28,6 +28,17 @@ class BenchmarkConfiguration private constructor(
 
     val iterationDuration: Duration = (iterationTime * iterationTimeUnit.toMultiplier()).nanoseconds
 
+    fun withUpdatedThreadsCount(newThreadsValue: Int): BenchmarkConfiguration = BenchmarkConfiguration(
+        iterations = iterations,
+        warmups = warmups,
+        iterationTime = iterationTime,
+        iterationTimeUnit = iterationTimeUnit,
+        outputTimeUnit = outputTimeUnit,
+        mode = mode,
+        threads = newThreadsValue,
+        advanced = advanced
+    )
+
     override fun toString() =
         "iterations=$iterations, warmups=$warmups, iterationTime=$iterationTime, " +
                 "iterationTimeUnit=${iterationTimeUnit.toText()}, outputTimeUnit=${outputTimeUnit.toText()}, " +
