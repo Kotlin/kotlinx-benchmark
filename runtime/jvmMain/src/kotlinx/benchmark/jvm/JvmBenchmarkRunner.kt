@@ -42,6 +42,10 @@ fun main(args: Array<String>) {
         jmhOptions.param(key, *value.toTypedArray())
     }
 
+    config.threads?.let {
+        jmhOptions.threads(it)
+    }
+
     val runtimeMXBean = ManagementFactory.getRuntimeMXBean()
     val jvmArgs = runtimeMXBean.inputArguments
     if (jvmArgs.any { it.contains("libasyncProfiler") }) {
