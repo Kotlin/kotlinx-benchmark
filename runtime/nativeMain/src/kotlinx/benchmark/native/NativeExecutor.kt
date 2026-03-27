@@ -2,14 +2,17 @@ package kotlinx.benchmark.native
 
 import kotlinx.benchmark.*
 import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
+import kotlinx.cinterop.convert
+import platform.posix.usleep
+import kotlin.concurrent.Volatile
 import kotlin.native.concurrent.Future
 import kotlin.native.concurrent.ObsoleteWorkersApi
 import kotlin.native.concurrent.TransferMode
 import kotlin.native.concurrent.Worker
 import kotlin.native.runtime.GC
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.nanoseconds
 import kotlin.time.DurationUnit
-import kotlin.time.TimeSource
 import kotlin.time.measureTime
 
 @KotlinxBenchmarkRuntimeInternalApi
@@ -158,7 +161,8 @@ class NativeExecutor(
                 val nativeGCAfterIteration = benchmarkRun.config.nativeGCAfterIteration
                 DoubleArray(iterations) { iteration ->
                     val nanosecondsPerOperation =
-                        measureSingleIteration(instance, benchmark, cycles, nativeGCAfterIteration, workersPool)
+                        measureSingleIteration(instance, benchmark,
+                            (benchmarkRun.config.iterationTime * benchmarkRun.config.iterationTimeUnit.toMultiplier()).nanoseconds, nativeGCAfterIteration, workersPool)
                     val text =
                         nanosecondsPerOperation.nanosToText(
                             benchmarkRun.config.mode,
@@ -249,23 +253,24 @@ class NativeExecutor(
     }
 
     private inline fun measureSingleIterationLoop(
-        cycles: Long,
+        synchronizer: MeasurementSynchronizer,
         nativeGCAfterIteration: Boolean,
-        body: () -> Unit,
+        crossinline body: () -> Unit,
     ): Double {
         if (nativeGCAfterIteration)
             GC.collect()
 
+        var iterations: Long = 0
         val duration = measureTime {
-            var counter = cycles
-            while (counter-- > 0) {
+            while (!synchronizer.shouldStop) {
                 body()
+                iterations++
             }
             if (nativeGCAfterIteration)
                 GC.collect()
         }
 
-        return duration.toDouble(DurationUnit.NANOSECONDS) / cycles
+        return duration.toDouble(DurationUnit.NANOSECONDS) / iterations
     }
 
     private fun <T> warmup(
@@ -289,7 +294,7 @@ class NativeExecutor(
             val benchmarkNanos = config.iterationTime * config.iterationTimeUnit.toMultiplier()
 
             val (avgIterations, metric) = warmupSingleIteration(instance, benchmark, config.nativeGCAfterIteration,
-                benchmarkNanos, workers)
+                benchmarkNanos.nanoseconds, workers)
             iterations = avgIterations
 
             val sample = metric.nanosToText(config.mode, config.outputTimeUnit)
@@ -299,23 +304,24 @@ class NativeExecutor(
         return iterations
     }
 
-    internal inline fun warmupSingleIterationLoop(
-        iterationDurationNanos: Long,
+    private inline fun warmupSingleIterationLoop(
+        synchronizer: MeasurementSynchronizer,
         nativeGCAfterIteration: Boolean,
         body: () -> Unit,
     ): Pair<Long, Double> {
         if (nativeGCAfterIteration)
             GC.collect()
-        val startTime = TimeSource.Monotonic.markNow()
-        var duration = Duration.ZERO
+
         var iterations = 0L
-        while (duration.inWholeNanoseconds < iterationDurationNanos) {
-            body()
-            duration = startTime.elapsedNow()
-            iterations++
+
+        val duration = measureTime {
+            while (!synchronizer.shouldStop) {
+                body()
+                iterations++
+            }
+            if (nativeGCAfterIteration)
+                GC.collect()
         }
-        if (nativeGCAfterIteration)
-            GC.collect()
 
         return iterations to duration.toDouble(DurationUnit.NANOSECONDS) / iterations // TODO: metric
     }
@@ -324,13 +330,13 @@ class NativeExecutor(
         instance: T,
         benchmark: BenchmarkDescriptor<T>,
         nativeGCAfterIteration: Boolean,
-        iterationDurationNanos: Long,
+        iterationDuration: Duration,
         workers: WorkersPool,
     ): Pair<Long, Double> {
-        return singleIteration(instance, benchmark, workers, { results ->
-            results.sumOf { it.first } / results.size to results.sumOf { it.second }
-        }) { body ->
-            warmupSingleIterationLoop(iterationDurationNanos, nativeGCAfterIteration) {
+        return singleIteration(instance, benchmark, workers, iterationDuration,{ results ->
+            results.sumOf { it.first } / results.size to results.map { it.second }.average()
+        }) { sync, body ->
+            warmupSingleIterationLoop(sync, nativeGCAfterIteration) {
                 body()
             }
         }
@@ -339,12 +345,12 @@ class NativeExecutor(
     private fun <T> measureSingleIteration(
         instance: T,
         benchmark: BenchmarkDescriptor<T>,
-        cycles: Long,
+        iterationDuration: Duration,
         nativeGCAfterIteration: Boolean,
         workers: WorkersPool,
     ): Double {
-        return singleIteration(instance, benchmark, workers, { it.sum() }) { body ->
-            measureSingleIterationLoop(cycles, nativeGCAfterIteration) {
+        return singleIteration(instance, benchmark, workers, iterationDuration,{ it.average() }) { sync, body ->
+            measureSingleIterationLoop(sync, nativeGCAfterIteration) {
                 body()
             }
         }
@@ -355,10 +361,12 @@ class NativeExecutor(
         instance: T,
         benchmark: BenchmarkDescriptor<T>,
         workers: WorkersPool,
+        iterationDuration: Duration,
         resultsAggregator: (List<R>) -> R,
-        crossinline body: (() -> Unit) -> R
+        crossinline body: (MeasurementSynchronizer, () -> Unit) -> R
     ): R {
         val waiters = workers.numWorkers + 1 // + 1 is for the current thread
+        val synchronizer = MeasurementSynchronizer()
         Barrier(waiters).use { barrier ->
             val runner = when (benchmark) {
                 is BenchmarkDescriptorWithBlackholeParameter -> {
@@ -366,7 +374,7 @@ class NativeExecutor(
                         val blackhole = benchmark.blackhole
                         val delegate = benchmark.function
                         barrier.wait()
-                        body {
+                        body(synchronizer) {
                             blackhole.consume(instance.delegate(blackhole))
                         }
                     }
@@ -377,7 +385,7 @@ class NativeExecutor(
                         val blackhole = benchmark.blackhole
                         val delegate = benchmark.function
                         barrier.wait()
-                        body {
+                        body(synchronizer) {
                             blackhole.consume(instance.delegate())
                         }
                     }
@@ -389,8 +397,15 @@ class NativeExecutor(
             // Submit single benchmark iteration to all workers
             val futures = workers.submit(runner)
 
+            synchronizer.shouldStop = false
             // Synchronized workers
             barrier.wait()
+
+            // TODO: is there a better way to sleep?
+            usleep(iterationDuration.inWholeMicroseconds.convert())
+
+            // We're done
+            synchronizer.shouldStop = true
 
             // Await the end of iteration and aggregate results
             return resultsAggregator(futures.map { it.result })
@@ -431,6 +446,11 @@ class NativeExecutor(
                     "or equal to THREADS_CPU_COUNT ($THREADS_CPU_COUNT)"
         }
         return Platform.getAvailableProcessors()
+    }
+
+    private class MeasurementSynchronizer {
+        @Volatile
+        var shouldStop = false
     }
 }
 
