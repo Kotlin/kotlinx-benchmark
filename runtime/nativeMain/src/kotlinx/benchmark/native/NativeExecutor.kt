@@ -61,7 +61,7 @@ class NativeExecutor(
         val (configFileName, iteration, cycles, resultsFile) = additionalArguments
         val benchmarkRun = configFileName.parseBenchmarkConfig()
         val benchmark = benchmarks.getBenchmark(benchmarkRun.benchmarkName)
-        val samples = run(benchmark, benchmarkRun, iteration.toInt(), cycles.toInt())
+        val samples = run(benchmark, benchmarkRun, iteration.toInt(), cycles.toLong())
         resultsFile.writeFile(samples?.let{ it[0].toString() } ?: "null")
     }
 
@@ -128,7 +128,7 @@ class NativeExecutor(
         benchmark: BenchmarkDescriptor<Any?>,
         benchmarkRun: BenchmarkRun,
         currentIteration: Int? = null,
-        cyclesPerIteration: Int? = null
+        cyclesPerIteration: Long? = null
     ): DoubleArray? {
 
         require((currentIteration == null) == (cyclesPerIteration == null)) {
@@ -249,7 +249,7 @@ class NativeExecutor(
     }
 
     private inline fun measureSingleIterationLoop(
-        cycles: Int,
+        cycles: Long,
         nativeGCAfterIteration: Boolean,
         body: () -> Unit,
     ): Double {
@@ -275,7 +275,7 @@ class NativeExecutor(
         benchmark: BenchmarkDescriptor<T>,
         workers: WorkersPool,
         currentIteration: Int? = null
-    ): Int {
+    ): Long {
         require(
             config.nativeFork == NativeFork.PerIteration && currentIteration != null
                     || config.nativeFork == NativeFork.PerBenchmark && currentIteration == null
@@ -284,7 +284,7 @@ class NativeExecutor(
         }
 
         val warmupIterations = if (config.nativeFork == NativeFork.PerIteration) 1 else config.warmups
-        var iterations = 0
+        var iterations = 0L
         repeat(warmupIterations) { iteration ->
             val benchmarkNanos = config.iterationTime * config.iterationTimeUnit.toMultiplier()
 
@@ -303,12 +303,12 @@ class NativeExecutor(
         iterationDurationNanos: Long,
         nativeGCAfterIteration: Boolean,
         body: () -> Unit,
-    ): Pair<Int, Double> {
+    ): Pair<Long, Double> {
         if (nativeGCAfterIteration)
             GC.collect()
         val startTime = TimeSource.Monotonic.markNow()
         var duration = Duration.ZERO
-        var iterations = 0
+        var iterations = 0L
         while (duration.inWholeNanoseconds < iterationDurationNanos) {
             body()
             duration = startTime.elapsedNow()
@@ -326,7 +326,7 @@ class NativeExecutor(
         nativeGCAfterIteration: Boolean,
         iterationDurationNanos: Long,
         workers: WorkersPool,
-    ): Pair<Int, Double> {
+    ): Pair<Long, Double> {
         return singleIteration(instance, benchmark, workers, { results ->
             results.sumOf { it.first } / results.size to results.sumOf { it.second }
         }) { body ->
@@ -339,7 +339,7 @@ class NativeExecutor(
     private fun <T> measureSingleIteration(
         instance: T,
         benchmark: BenchmarkDescriptor<T>,
-        cycles: Int,
+        cycles: Long,
         nativeGCAfterIteration: Boolean,
         workers: WorkersPool,
     ): Double {
