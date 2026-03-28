@@ -17,7 +17,7 @@ internal actual class Barrier actual constructor(threads: Int) : AutoCloseable {
     private var closed = false
 
     init {
-        val ret = pthread_barrier_init(barrier.ptr, null, (threads + 1).convert())
+        val ret = pthread_barrier_init(barrier.ptr, null, threads.convert())
         if (ret != 0) {
             closed = true
             throw IllegalStateException("Failed to initialize pthread_barrier_t: $ret")
