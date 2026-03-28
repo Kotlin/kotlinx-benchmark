@@ -85,7 +85,7 @@ private fun Project.createNodeJsExec(
     target: BenchmarkTarget,
     compilation: KotlinJsIrCompilation,
     taskName: String
-): TaskProvider<NodeJsExec> = NodeJsExec.create(compilation, taskName) {
+): TaskProvider<NodeJsExec> = NodeJsExec.register(compilation, taskName) {
     dependsOn(compilation.runtimeDependencyFiles)
     group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
     description = "Executes benchmark for '${target.name}' with NodeJS"
