@@ -1,6 +1,8 @@
 package kotlinx.benchmark
 
 import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.nanoseconds
 
 @KotlinxBenchmarkRuntimeInternalApi
 class BenchmarkConfiguration private constructor(
@@ -10,6 +12,7 @@ class BenchmarkConfiguration private constructor(
     val iterationTimeUnit: BenchmarkTimeUnit,
     val outputTimeUnit: BenchmarkTimeUnit,
     val mode: Mode,
+    val threads: Int,
     val advanced: Map<String, String>,
 ) {
     constructor(runner: RunnerConfiguration, suite: SuiteDescriptor<*>) : this(
@@ -19,13 +22,27 @@ class BenchmarkConfiguration private constructor(
         iterationTimeUnit = runner.iterationTimeUnit ?: suite.iterationTime.timeUnit,
         outputTimeUnit = runner.outputTimeUnit ?: suite.outputTimeUnit,
         mode = runner.mode ?: suite.mode,
+        threads = runner.threads ?: suite.threads,
         advanced = runner.advanced
+    )
+
+    val iterationDuration: Duration = (iterationTime * iterationTimeUnit.toMultiplier()).nanoseconds
+
+    fun withUpdatedThreadsCount(newThreadsValue: Int): BenchmarkConfiguration = BenchmarkConfiguration(
+        iterations = iterations,
+        warmups = warmups,
+        iterationTime = iterationTime,
+        iterationTimeUnit = iterationTimeUnit,
+        outputTimeUnit = outputTimeUnit,
+        mode = mode,
+        threads = newThreadsValue,
+        advanced = advanced
     )
 
     override fun toString() =
         "iterations=$iterations, warmups=$warmups, iterationTime=$iterationTime, " +
                 "iterationTimeUnit=${iterationTimeUnit.toText()}, outputTimeUnit=${outputTimeUnit.toText()}, " +
-                "mode=${mode.toText()}" +
+                "mode=${mode.toText()}, threads=$threads, " +
                 advanced.entries.joinToString(prefix = ", ", separator = ", ") { "advanced:${it.key}=${it.value}" }
 
     @KotlinxBenchmarkRuntimeInternalApi
@@ -51,6 +68,7 @@ class BenchmarkConfiguration private constructor(
                 iterationTimeUnit = parseTimeUnit(getParameterValue("iterationTimeUnit")),
                 outputTimeUnit = parseTimeUnit(getParameterValue("outputTimeUnit")),
                 mode = getParameterValue("mode").toMode(),
+                threads = parameters["threads"]?.toInt() ?: 1,
                 advanced = advanced
             )
         }

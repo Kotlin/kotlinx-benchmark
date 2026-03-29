@@ -30,6 +30,12 @@ class AnnotationsSpecifier {
         )
     }
 
+    fun threads(threads: String) {
+        classAnnotations.add(
+            Annotation("@Threads", listOf(threads), placeholder = "// <Threads_Placeholder>")
+        )
+    }
+
     fun benchmark(functionName: String) {
         functionAnnotations.add(
             AnnotatedMember(functionName, Annotation("@Benchmark"))
@@ -86,7 +92,7 @@ class AnnotationsSpecifier {
         val trimmedLine = line.trimStart()
         val prefix = line.substring(0, line.length - trimmedLine.length)
         for (annotation in classAnnotations) {
-            if (trimmedLine.startsWith(annotation.name)) {
+            if (trimmedLine.startsWith(annotation.placeholder)) {
                 check(!annotation.isUsed)
                 annotation.isUsed = true
                 return prefix + annotation.toCode()
@@ -110,7 +116,8 @@ private data class AnnotatedMember(
 private data class Annotation(
     val name: String,
     val arguments: List<Any?> = emptyList(),
-    var isUsed: Boolean = false
+    var isUsed: Boolean = false,
+    val placeholder: String = name
 ) {
     fun toCode(): String =
         "$name${if (arguments.isEmpty()) "" else arguments.joinToString(", ", "(", ")")}"

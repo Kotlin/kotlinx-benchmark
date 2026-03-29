@@ -63,6 +63,13 @@ open annotation class kotlinx.benchmark/TearDown : kotlin/Annotation { // kotlin
     constructor <init>() // kotlinx.benchmark/TearDown.<init>|<init>(){}[0]
 }
 
+open annotation class kotlinx.benchmark/Threads : kotlin/Annotation { // kotlinx.benchmark/Threads|null[0]
+    constructor <init>(kotlin/Int) // kotlinx.benchmark/Threads.<init>|<init>(kotlin.Int){}[0]
+
+    final val value // kotlinx.benchmark/Threads.value|{}value[0]
+        final fun <get-value>(): kotlin/Int // kotlinx.benchmark/Threads.value.<get-value>|<get-value>(){}[0]
+}
+
 open annotation class kotlinx.benchmark/Warmup : kotlin/Annotation { // kotlinx.benchmark/Warmup|null[0]
     constructor <init>(kotlin/Int = ..., kotlin/Int = ..., kotlinx.benchmark/BenchmarkTimeUnit = ..., kotlin/Int = ...) // kotlinx.benchmark/Warmup.<init>|<init>(kotlin.Int;kotlin.Int;kotlinx.benchmark.BenchmarkTimeUnit;kotlin.Int){}[0]
 
@@ -130,3 +137,6 @@ final class kotlinx.benchmark/Blackhole { // kotlinx.benchmark/Blackhole|null[0]
     // Targets: [js, wasmJs]
     final fun consumeInt(kotlin/Int) // kotlinx.benchmark/Blackhole.consumeInt|consumeInt(kotlin.Int){}[0]
 }
+
+final const val kotlinx.benchmark/THREADS_CPU_COUNT // kotlinx.benchmark/THREADS_CPU_COUNT|{}THREADS_CPU_COUNT[0]
+    final fun <get-THREADS_CPU_COUNT>(): kotlin/Int // kotlinx.benchmark/THREADS_CPU_COUNT.<get-THREADS_CPU_COUNT>|<get-THREADS_CPU_COUNT>(){}[0]
