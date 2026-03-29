@@ -67,11 +67,10 @@ internal fun String.parseBenchmarkConfig(): NativeExecutor.BenchmarkRun {
 internal actual inline fun measureNanoseconds(block: () -> Unit): Long = TODO("Not implemented for this platform")
 
 // Iteration results for a single thread
-internal class IterationResult(val operations: Long)
+internal class IterationResult(val duration: Duration, val operations: Long)
 
 internal class AggregateIterationResult(
-    val duration: Duration,
-    val operations: LongArray
+    val results: Array<IterationResult>
 )
 
 // Iteration results for all threads
@@ -84,10 +83,9 @@ internal fun AggregateIterationResult.nanosToText(mode: Mode, unit: BenchmarkTim
 }
 
 internal fun AggregateIterationResult.nanosToSample(mode: Mode, unit: BenchmarkTimeUnit): Double {
-    val totalDuration = duration.toDouble(unit.toDurationUnit())
     return when (mode) {
-        Mode.Throughput -> operations.sumOf { it.toDouble() } / totalDuration
-        Mode.AverageTime -> operations.sumOf { totalDuration / it.toDouble()} / operations.size
+        Mode.Throughput -> results.sumOf { it.operations / it.duration.toDouble(unit.toDurationUnit()) }
+        Mode.AverageTime -> results.map { it.duration.toDouble(unit.toDurationUnit()) / it.operations }.average()
     }
 }
 

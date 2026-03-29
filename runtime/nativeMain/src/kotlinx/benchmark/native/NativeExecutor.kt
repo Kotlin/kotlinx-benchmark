@@ -11,6 +11,7 @@ import kotlin.native.concurrent.TransferMode
 import kotlin.native.concurrent.Worker
 import kotlin.native.runtime.GC
 import kotlin.time.Duration
+import kotlin.time.measureTime
 
 @KotlinxBenchmarkRuntimeInternalApi
 class NativeExecutor(
@@ -291,15 +292,16 @@ class NativeExecutor(
             GC.collect()
 
         var cycles = 0L
-
-        while (!synchronizer.shouldStop) {
-            body()
-            cycles++
+        val duration = measureTime {
+            while (!synchronizer.shouldStop) {
+                body()
+                cycles++
+            }
         }
         if (nativeGCAfterIteration)
             GC.collect()
 
-        return IterationResult(cycles)
+        return IterationResult(duration, cycles)
     }
 
     @OptIn(ObsoleteWorkersApi::class)
@@ -354,9 +356,7 @@ class NativeExecutor(
                 synchronizer.shouldStop = true
             }
 
-            // Await the end of iteration and aggregate results
-            val perThreadResults = futures.map { it.result.operations }.toLongArray()
-            return AggregateIterationResult(iterationDuration, perThreadResults)
+            return AggregateIterationResult(futures.map { it.result }.toTypedArray())
         }
     }
 
