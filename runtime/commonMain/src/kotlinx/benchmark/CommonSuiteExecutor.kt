@@ -2,12 +2,25 @@ package kotlinx.benchmark
 
 import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 
+internal const val SINGLE_THREADED_WARNING =
+    "WARNING: Runtime is single-threaded, so requested benchmark threads value is ignored and only one thread will be used."
+
 @KotlinxBenchmarkRuntimeInternalApi
 abstract class CommonSuiteExecutor(
     executionName: String,
     configPath: String,
     xmlReporter: (() -> BenchmarkProgress)? = null
 ) : SuiteExecutor(executionName, configPath, xmlReporter) {
+    protected open fun normalizeConfiguration(
+        benchmark: BenchmarkDescriptor<Any?>,
+        configuration: BenchmarkConfiguration,
+        parameters: Map<String, String>,
+        id: String,
+    ): BenchmarkConfiguration {
+        if (configuration.threads == 1) return configuration
+        reporter.output(executionName, id, SINGLE_THREADED_WARNING)
+        return configuration.withUpdatedThreadsCount(1)
+    }
 
     private fun runBenchmark(
         benchmark: BenchmarkDescriptor<Any?>,
@@ -59,10 +72,11 @@ abstract class CommonSuiteExecutor(
         start()
         for (benchmark in benchmarks) {
             val suite = benchmark.suite
-            val benchmarkConfiguration = BenchmarkConfiguration(runnerConfiguration, suite)
+            val baseConfiguration = BenchmarkConfiguration(runnerConfiguration, suite)
             runWithParameters(suite.parameters, runnerConfiguration.params, suite.defaultParameters) { parameters ->
                 val id = id(benchmark.name, parameters)
                 reporter.startBenchmark(executionName, id)
+                val benchmarkConfiguration = normalizeConfiguration(benchmark, baseConfiguration, parameters, id)
                 val samples = runBenchmark(benchmark, benchmarkConfiguration, parameters, id)
                 if (samples != null) {
                     saveBenchmarkResults(benchmark, benchmarkConfiguration, parameters, id, samples)
@@ -160,4 +174,3 @@ abstract class CommonSuiteExecutor(
         }
     }
 }
-
