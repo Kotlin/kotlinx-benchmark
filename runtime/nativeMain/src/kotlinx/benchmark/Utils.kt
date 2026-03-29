@@ -1,6 +1,5 @@
 package kotlinx.benchmark
 
-import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 import kotlinx.benchmark.native.NativeExecutor
 import kotlinx.cinterop.*
 import platform.posix.*

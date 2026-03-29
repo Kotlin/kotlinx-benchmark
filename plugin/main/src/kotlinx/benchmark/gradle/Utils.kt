@@ -198,7 +198,7 @@ private fun validateConfig(config: BenchmarkConfiguration) {
 
     config.threads?.let {
         require(it > 0 || it == -1 /*THREADS_CPU_COUNT*/) {
-            "Invalid threads: '$it'. Expected a positive integer (e.g., threads = 4)."
+            "Invalid threads: '$it'. Expected a positive integer or a special THREADS_CPU_COUNT value (e.g., threads = 4)."
         }
     }
 
