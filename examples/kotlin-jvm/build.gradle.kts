@@ -6,7 +6,7 @@ import org.jetbrains.kotlin.allopen.gradle.*
 
 plugins {
     kotlin("jvm")
-    kotlin("plugin.allopen") version "2.0.20"
+    kotlin("plugin.allopen") version "2.2.0"
     id("org.jetbrains.kotlinx.benchmark")
 }
 

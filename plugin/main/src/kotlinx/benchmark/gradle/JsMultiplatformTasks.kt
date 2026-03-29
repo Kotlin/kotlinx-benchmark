@@ -2,10 +2,8 @@ package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
-import org.jetbrains.kotlin.gradle.dsl.JsModuleKind
 import org.jetbrains.kotlin.gradle.targets.js.dsl.*
 import org.jetbrains.kotlin.gradle.targets.js.ir.*
-import org.jetbrains.kotlin.serialization.js.ModuleKind
 
 @KotlinxBenchmarkPluginInternalApi
 fun Project.processJsCompilation(target: JsBenchmarkTarget) {
@@ -57,9 +55,7 @@ private fun Project.createJsBenchmarkCompileTask(target: JsBenchmarkTarget): Kot
 
                 compilerOptions {
                     sourceMap.set(true)
-                    compilation.kotlinOptions.moduleKind?.let {
-                        moduleKind.set(JsModuleKind.fromKind(it))
-                    }
+                    moduleKind.set(compilation.compileTaskProvider.flatMap { task -> task.compilerOptions.moduleKind })
                 }
             }
         }
