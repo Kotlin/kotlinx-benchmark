@@ -61,10 +61,10 @@ The following annotations are available to define and fine-tune your benchmarks.
 The `@State` annotation specifies the extent to which the state object is shared among the worker threads,
 and it is mandatory for benchmark classes to be marked with this annotation to define their scope of state sharing.
 
-Currently, various scopes are supported only on the JVM, where you can specify various scopes.
+Currently, the only scope supported across all targets is  `Scope.Benchmark`.
+On JVM, however, additional scoped are available.
 Refer to [JMH documentation of Scope](https://javadoc.io/doc/org.openjdk.jmh/jmh-core/latest/org/openjdk/jmh/annotations/Scope.html)
 for details about available scopes and their implications.
-In non-JVM targets, only `Scope.Benchmark` is applicable.
 
 When writing JVM-only benchmarks, benchmark classes are not required to be annotated with `@State`.
 Refer to [JMH documentation of @State](https://javadoc.io/doc/org.openjdk.jmh/jmh-core/latest/org/openjdk/jmh/annotations/State.html)
@@ -217,17 +217,17 @@ This approach helps in understanding how the input list's size affects the time 
 
 ### @Threads
 
-`kotlinx-benchmarks` has limited support for symmetric multi-threaded benchmarks where the same benchmark function
+`kotlinx-benchmark` has limited support for symmetric multi-threaded benchmarks where the same benchmark function
 is executed by multiple threads simultaneously. Such execution mode is supported for Kotlin/JVM and Kotlin/Native only,
-for all other target the annotation will have no effect.
+for all other targets the annotation will have no effect.
 
-To turn a regular benchmark into a multi-threaded benchmark, annotate a class with `@Threads(N)`, where `N` is either
+To turn a regular benchmark into a multithreaded benchmark, annotate a class with `@Threads(N)`, where `N` is either
 a positive integer value (like `2` or `5`), or a special constant `THREADS_CPU_COUNT` which is replaced with the total
 number of CPUs on host system in runtime. `@Threads(1)` has the same effect as no annotation at all.
 
 If a benchmark class is annotated with `@Threads(3)`, for every benchmark function `3` threads will be created
 and every such function will be executed simultaneously by all three threads. Such execution mode is handy when
-performance of a concurrent or a thread-safe data structure or an algorithm needs to be evaluated. 
+performance of a concurrent or a thread-safe data structure or an algorithm needs to be evaluated.
 
 Note that due to limitations of the current implementation, benchmark's state will be shared by all threads executing
 a benchmark function (see [State](#state) for details).

@@ -292,11 +292,11 @@ class OptionsValidationTest : GradleTest() {
         }
 
         runner.runAndFail("invalidThreadsBenchmark") {
-            assertOutputContains("Invalid threads: '0'. Expected a positive integer (e.g., threads = 4).")
+            assertOutputContains("Invalid threads: '0'. Expected a positive integer or a special THREADS_CPU_COUNT value (e.g., threads = 4).")
         }
 
         runner.runAndFail("negativeThreadsBenchmark") {
-            assertOutputContains("Invalid threads: '-10'. Expected a positive integer (e.g., threads = 4).")
+            assertOutputContains("Invalid threads: '-10'. Expected a positive integer or a special THREADS_CPU_COUNT value (e.g., threads = 4).")
         }
     }
 }
