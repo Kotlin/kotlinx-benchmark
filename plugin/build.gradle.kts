@@ -92,14 +92,13 @@ kotlin {
                 "kotlin.RequiresOptIn",
         )
         /**
-         * Those versions are configured according to https://docs.gradle.org/current/userguide/compatibility.html
-         * and the Kotlin compiler compatibility policy stating that Kotlin 1.4 is compatible with 1.5 binaries
+         * Gradle 8.0 embeds Kotlin 1.8.x, so the plugin can be built against Kotlin language and API 1.8
+         * while remaining compatible with the minimum supported Gradle version.
          */
         @Suppress("DEPRECATION", "DEPRECATION_ERROR")
         run {
-            languageVersion = KotlinVersion.KOTLIN_1_5
-            // The API available in the Kotlin stdlib embedded in the minimum supported Gradle.
-            apiVersion = KotlinVersion.KOTLIN_1_4
+            languageVersion = KotlinVersion.KOTLIN_1_8
+            apiVersion = KotlinVersion.KOTLIN_1_8
         }
     }
 }
