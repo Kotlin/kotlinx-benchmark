@@ -343,14 +343,16 @@ class NativeExecutor(
             val futures = workers.submit(runner)
 
             synchronizer.shouldStop = false
-            // Synchronized workers
-            barrier.wait()
 
-            // TODO: is there a better way to sleep?
-            usleep(iterationDuration.inWholeMicroseconds.convert())
+            Nanosleep(iterationDuration).use { sleepWrapper ->
+                // Synchronized workers
+                barrier.wait()
 
-            // We're done
-            synchronizer.shouldStop = true
+                sleepWrapper.sleep()
+
+                // We're done
+                synchronizer.shouldStop = true
+            }
 
             // Await the end of iteration and aggregate results
             val perThreadResults = futures.map { it.result.operations }.toLongArray()
