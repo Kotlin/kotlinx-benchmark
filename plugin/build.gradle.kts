@@ -28,7 +28,6 @@ plugins {
     alias(libs.plugins.gradle.pluginPublish)
     alias(libs.plugins.kotlinx.binaryCompatibilityValidator)
     alias(libs.plugins.kotlin.jvm)
-    //id("jar-file-attributes")
 }
 
 apply(plugin = "kotlinx.team.infra")
