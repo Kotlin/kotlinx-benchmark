@@ -62,7 +62,7 @@ The `@State` annotation specifies the extent to which the state object is shared
 and it is mandatory for benchmark classes to be marked with this annotation to define their scope of state sharing.
 
 Currently, the only scope supported across all targets is  `Scope.Benchmark`.
-On JVM, however, additional scoped are available.
+On JVM, however, additional scopes are available.
 Refer to [JMH documentation of Scope](https://javadoc.io/doc/org.openjdk.jmh/jmh-core/latest/org/openjdk/jmh/annotations/Scope.html)
 for details about available scopes and their implications.
 
