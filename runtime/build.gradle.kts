@@ -141,13 +141,25 @@ tasks.withType(KotlinNativeCompile::class).configureEach {
     )
 }
 
-tasks.withType(Jar::class).configureEach {
-    manifest {
-        attributes(
-            "Implementation-Vendor" to "JetBrains",
-            "Implementation-Title" to project.name,
-            "Implementation-Version" to project.version,
-        )
+// Add Implementation-* attributes to JAR's manifest
+// While the manifest and these attributes could be added to any JAR file,
+// it does not make a lot of sense for anything but JAR files with actual implementation.
+// Those are JAR files without a classifier (where classifier is sources, javadoc, you name it).
+// Unfortunately, archiveClassifier is always empty during the configuration phase,
+// so the check is postponed until the actual task execution.
+tasks.withType<Jar>().configureEach {
+    doFirst {
+        // Skip all non-main JARs (sources, javadoc, etc)
+        if (archiveClassifier.getOrElse("").isNotEmpty()) return@doFirst
+        // Skip multiplatform metadata JARs
+        if (archiveAppendix.getOrElse("") != "jvm") return@doFirst
+        manifest {
+            attributes(
+                "Implementation-Vendor" to "JetBrains",
+                "Implementation-Title" to project.name,
+                "Implementation-Version" to project.version,
+            )
+        }
     }
 }
 

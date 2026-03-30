@@ -193,13 +193,18 @@ tasks.withType<AbstractPublishToMaven>().configureEach {
     }
 }
 
-project.tasks.withType<Jar>().configureEach {
-    manifest {
-        attributes(
-            "Implementation-Vendor" to "JetBrains",
-            "Implementation-Title" to project.name,
-            "Implementation-Version" to project.version,
-        )
+// Add Implementation-* attributes to JAR's manifest (excluding javadoc and sources jars).
+tasks.withType<Jar>().configureEach {
+    doFirst {
+        // Skip all non-main JARs (sources, javadoc, etc)
+        if (archiveClassifier.getOrElse("").isNotEmpty()) return@doFirst
+        manifest {
+            attributes(
+                "Implementation-Vendor" to "JetBrains",
+                "Implementation-Title" to project.name,
+                "Implementation-Version" to project.version,
+            )
+        }
     }
 }
 
