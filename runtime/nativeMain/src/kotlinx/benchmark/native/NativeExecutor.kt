@@ -312,10 +312,10 @@ internal class NativeExecutor(
 
         var cycles = 0L
         val duration = measureTime {
-            while (!synchronizer.shouldStop) {
+            do {
                 body()
                 cycles++
-            }
+            } while (!synchronizer.shouldStop)
         }
         if (nativeGCAfterIteration)
             GC.collect()
