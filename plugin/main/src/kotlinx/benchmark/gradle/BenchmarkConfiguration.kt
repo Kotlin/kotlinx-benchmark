@@ -7,6 +7,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrCompilation
+import kotlin.text.replaceFirstChar
 
 open class BenchmarkConfiguration
 @KotlinxBenchmarkPluginInternalApi
@@ -46,13 +47,13 @@ constructor(
     }
 
     @KotlinxBenchmarkPluginInternalApi
-    fun capitalizedName() = if (name == "main") "" else name.capitalize()
+    fun capitalizedName() = if (name == "main") "" else name.replaceFirstChar { it.titlecase() }
 
     @KotlinxBenchmarkPluginInternalApi
-    fun prefixName(suffix: String) = if (name == "main") suffix else name + suffix.capitalize()
+    fun prefixName(suffix: String) = if (name == "main") suffix else name + suffix.replaceFirstChar { it.titlecase() }
 
     @KotlinxBenchmarkPluginInternalApi
-    fun reportFileExt(): String = reportFormat?.toLowerCase() ?: "json"
+    fun reportFileExt(): String = reportFormat?.lowercase() ?: "json"
 }
 
 open class BenchmarkTarget
