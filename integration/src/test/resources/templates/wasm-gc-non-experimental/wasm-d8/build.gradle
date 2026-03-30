@@ -1,4 +1,4 @@
-import org.jetbrains.kotlin.gradle.targets.js.d8.D8RootExtension
+import org.jetbrains.kotlin.gradle.targets.wasm.d8.D8EnvSpec
 
 kotlin {
     wasmJs {
@@ -12,4 +12,4 @@ benchmark {
     }
 }
 
-rootProject.extensions.getByType(D8RootExtension).version = "12.6.99"
+rootProject.extensions.getByType(D8EnvSpec).version = "12.6.99"
