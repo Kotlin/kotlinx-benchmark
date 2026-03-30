@@ -21,10 +21,10 @@ abstract class CheckReadmeTask : DefaultTask() {
         val readme = readme.get().asFile
         val readmeContents = readme.readText()
 
-        val minSupportedGradleVersion = minSupportedGradleVersion.get()
+        val minSupportedGradleVersion = minSupportedGradleVersion.get().split('.').first()
         val minSupportedKotlinVersion = minSupportedKotlinVersion.get()
 
-        val matches = Regex("Kotlin (?<kotlinVersion>[^ ]+) or newer and Gradle (?<gradleVersion>[^ ]+) or newer")
+        val matches = Regex("Kotlin (?<kotlinVersion>[^ ]+) or newer and the latest stable Gradle (?<gradleVersion>[^ ]+) release or newer")
             .findAll(readmeContents).toList()
 
         require(matches.size >= 1) {
