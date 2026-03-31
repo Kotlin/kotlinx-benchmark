@@ -73,10 +73,6 @@ private fun Project.getExecutableFile(compilation: KotlinJsIrCompilation): Provi
 private val KotlinJsIrCompilation.isWasmCompilation: Boolean get() =
     target.platformType == KotlinPlatformType.wasm
 
-private fun ListProperty<String>.addWasmGcArguments() {
-    add("--experimental-wasm-gc")
-}
-
 private fun MutableList<String>.addJsArguments() {
     add("-r")
     add("source-map-support/register")
@@ -112,17 +108,6 @@ private fun Project.createD8Exec(
     group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
     description = "Executes benchmark for '${target.name}' with D8"
     inputFileProperty.set(getExecutableFile(compilation))
-    if (compilation.isWasmCompilation) {
-        val addGcArgs = rootProject.extensions.findByType(D8EnvSpec::class.java)?.let {
-            val versionString = it.version.orNull ?: return@let null
-            val d8Version = VersionNumber.parse(versionString)
-            // --experimental-wasm-gc flag was removed from V8 starting from ~ 12.3.68
-            d8Version < VersionNumber(12, 3, 68, null)
-        } ?: true
-        if (addGcArgs) {
-            d8Args.addWasmGcArguments()
-        }
-    }
     val reportFile = setupReporting(target, config)
     args(writeParameters(target.name, reportFile, traceFormat(), config))
 
