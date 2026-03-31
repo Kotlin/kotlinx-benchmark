@@ -1,8 +1,8 @@
 package kotlinx.benchmark.integration
 
 enum class KotlinTestVersion(val versionString: String) {
-    MinSupportedKotlinVersion("2.0.0"),
-    UnsupportedKotlinVersion("1.9.20"),
+    MinSupportedKotlinVersion("2.2.0"),
+    UnsupportedKotlinVersion("2.1.21"),
     Kotlin2_3_0("2.3.0");
 
     companion object {
