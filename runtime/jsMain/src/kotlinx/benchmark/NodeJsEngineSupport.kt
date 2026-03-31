@@ -3,24 +3,24 @@ package kotlinx.benchmark
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-@JsModule("fs")
-@JsNonModule
-private external object NodeFileSystem {
-    fun writeFileSync(path: String, data: String)
-    fun readFileSync(path: String, options: String): String
-}
+private fun nodeJsWriteFile(path: String, text: String) =
+    js("require('fs').writeFileSync(path, text, 'utf8')")
+
+private fun nodeJsReadFile(path: String): String =
+    js("require('fs').readFileSync(path, 'utf8')")
+
+private fun nodeJsArguments(): String =
+    js("process.argv.slice(2).join(' ')")
 
 internal object NodeJsEngineSupport : JsEngineSupport() {
     override fun writeFile(path: String, text: String) =
-        NodeFileSystem.writeFileSync(path, text)
+        nodeJsWriteFile(path, text)
 
     override fun readFile(path: String): String =
-        NodeFileSystem.readFileSync(path, "utf8")
+        nodeJsReadFile(path)
 
-    override fun arguments(): Array<out String> {
-        val arguments = js("process.argv.slice(2).join(' ')") as String
-        return arguments.split(' ').toTypedArray()
-    }
+    override fun arguments(): Array<out String> =
+        nodeJsArguments().split(' ').toTypedArray()
 }
 
 private fun hrTimeToNs(hrTime: dynamic): Long = (hrTime as Array<Double>).let { (seconds, nanos) ->
