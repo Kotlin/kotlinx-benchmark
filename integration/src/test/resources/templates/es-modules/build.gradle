@@ -1,3 +1,5 @@
+import org.gradle.api.attributes.Attribute
+
 kotlin {
     js("jsEs") {
         nodejs()
@@ -9,6 +11,13 @@ kotlin {
     js("jsCommon") {
         nodejs()
         useCommonJs()
+    }
+}
+
+def jsTargetDisambiguation = Attribute.of("org.jetbrains.kotlinx.benchmark.js.target", String)
+["jsEs", "jsUmd", "jsCommon"].each { targetName ->
+    configurations.matching { it.canBeConsumed && it.name.startsWith(targetName) }.configureEach {
+        attributes.attribute(jsTargetDisambiguation, targetName)
     }
 }
 
