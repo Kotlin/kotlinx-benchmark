@@ -8,6 +8,7 @@ import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
+import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsBinaryMode
 import org.jetbrains.kotlin.gradle.targets.js.ir.JsIrBinary
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrCompilation
 import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsExec
@@ -26,7 +27,9 @@ fun Project.createJsEngineBenchmarkExecTask(
         KotlinPlatformType.wasm -> {
             if (compilationTarget.isNodejsConfigured) {
                 val execTask = createNodeJsExec(config, target, binary.compilation, executableFile, taskName)
-                tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(execTask)
+                if (binary.mode == KotlinJsBinaryMode.PRODUCTION) {
+                    tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(execTask)
+                }
             } else {
                 throw GradleException("kotlinx-benchmark only supports nodejs() environments for Kotlin/Wasm.")
             }
@@ -34,7 +37,9 @@ fun Project.createJsEngineBenchmarkExecTask(
         KotlinPlatformType.js -> {
             if (compilationTarget.isNodejsConfigured) {
                 val execTask = createNodeJsExec(config, target, binary.compilation,  executableFile, taskName)
-                tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(execTask)
+                if (binary.mode == KotlinJsBinaryMode.PRODUCTION) {
+                    tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(execTask)
+                }
             } else {
                 throw GradleException("kotlinx-benchmark only supports nodejs() environment for Kotlin/JS.")
             }
