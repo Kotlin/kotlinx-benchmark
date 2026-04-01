@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import kotlinx.team.infra.InfraExtension
+import org.gradle.plugin.compatibility.compatibility
 import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
@@ -69,6 +70,12 @@ gradlePlugin {
             displayName = "Gradle plugin for benchmarking"
             description = "Toolkit for running benchmarks for multiplatform Kotlin code."
             tags.set(listOf("benchmarking", "multiplatform", "kotlin"))
+
+            compatibility {
+                features {
+                    configurationCache = true
+                }
+            }
         }
     }
 }
