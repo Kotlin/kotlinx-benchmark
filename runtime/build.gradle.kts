@@ -21,19 +21,15 @@ kotlin {
 
     // Tier 1
     linuxX64()
-    macosX64()
     macosArm64()
     iosSimulatorArm64()
-    iosX64()
 
     // Tier 2
     linuxArm64()
     watchosSimulatorArm64()
-    watchosX64()
     watchosArm32()
     watchosArm64()
     tvosSimulatorArm64()
-    tvosX64()
     tvosArm64()
     iosArm64()
 
@@ -42,8 +38,17 @@ kotlin {
     androidNativeArm64()
     androidNativeX86()
     androidNativeX64()
+    iosX64()
     mingwX64()
     watchosDeviceArm64()
+
+    // Deprecated
+    @Suppress("DEPRECATION", "DEPRECATION_ERROR")
+    macosX64()
+    @Suppress("DEPRECATION", "DEPRECATION_ERROR")
+    tvosX64()
+    @Suppress("DEPRECATION", "DEPRECATION_ERROR")
+    watchosX64()
 
     jvm()
     js { nodejs() }

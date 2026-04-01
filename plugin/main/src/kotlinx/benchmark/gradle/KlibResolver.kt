@@ -101,10 +101,8 @@ private class KLibLibraryResolver(
     knownIrProviders: List<String>,
     logger: Logger
 ) : KotlinLibraryProperResolverWithAttributes<KotlinLibrary>(
-    repositories = emptyList(),
     directLibs = klibs,
     distributionKlib = null,
-    localKotlinDir = null,
     skipCurrentDir = false,
     logger = logger,
     knownIrProviders = knownIrProviders
