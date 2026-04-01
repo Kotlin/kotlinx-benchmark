@@ -25,6 +25,7 @@ buildscript {
 plugins {
     `java-gradle-plugin`
     `maven-publish`
+    signing
     alias(libs.plugins.gradle.pluginPublish)
     alias(libs.plugins.kotlinx.binaryCompatibilityValidator)
     alias(libs.plugins.kotlin.jvm)
@@ -38,6 +39,11 @@ extensions.configure<InfraExtension> {
 
         libraryRepoUrl = "https://github.com/Kotlin/kotlinx-benchmark"
     }
+}
+
+signing {
+    // disable signing if private key isn't passed
+    isRequired = findProperty("libs.sign.key.private") != null
 }
 
 logger.info("Using Kotlin ${libs.versions.kotlin.asProvider().get()} for project ${project.name}")
