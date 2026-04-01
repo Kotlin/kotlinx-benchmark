@@ -1,5 +1,6 @@
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import kotlinx.team.infra.InfraExtension
+import org.gradle.plugin.compatibility.compatibility
 import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 
@@ -25,6 +26,7 @@ buildscript {
 plugins {
     `java-gradle-plugin`
     `maven-publish`
+    signing
     alias(libs.plugins.gradle.pluginPublish)
     alias(libs.plugins.kotlinx.binaryCompatibilityValidator)
     alias(libs.plugins.kotlin.jvm)
@@ -38,6 +40,11 @@ extensions.configure<InfraExtension> {
 
         libraryRepoUrl = "https://github.com/Kotlin/kotlinx-benchmark"
     }
+}
+
+signing {
+    // disable signing if private key isn't passed
+    isRequired = findProperty("libs.sign.key.private") != null
 }
 
 logger.info("Using Kotlin ${libs.versions.kotlin.asProvider().get()} for project ${project.name}")
@@ -63,6 +70,12 @@ gradlePlugin {
             displayName = "Gradle plugin for benchmarking"
             description = "Toolkit for running benchmarks for multiplatform Kotlin code."
             tags.set(listOf("benchmarking", "multiplatform", "kotlin"))
+
+            compatibility {
+                features {
+                    configurationCache = true
+                }
+            }
         }
     }
 }
