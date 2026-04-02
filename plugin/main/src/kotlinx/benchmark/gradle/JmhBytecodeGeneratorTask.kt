@@ -3,8 +3,10 @@ package kotlinx.benchmark.gradle
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
 import org.gradle.api.file.*
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.*
+import org.gradle.jvm.toolchain.JavaLauncher
 import org.gradle.workers.*
 import java.io.*
 import javax.inject.*
@@ -34,6 +36,11 @@ constructor(
     lateinit var runtimeClasspath: FileCollection
 
     @Optional
+    @Nested
+    val javaLauncher: Property<JavaLauncher> = project.objects.property(JavaLauncher::class.java)
+
+    @Deprecated(message = "Use jvmLauncher property instead.", level = DeprecationLevel.ERROR)
+    @Optional
     @Input
     var executableProvider: Provider<String> = project.provider { null }
 
@@ -41,7 +48,10 @@ constructor(
     fun generate() {
         val workQueue = workerExecutor.processIsolation { workerSpec ->
             workerSpec.classpath.setFrom(runtimeClasspath.files)
-            if (executableProvider.isPresent) {
+            @Suppress("DEPRECATION_ERROR")
+            if (javaLauncher.isPresent) {
+                workerSpec.forkOptions.executable = javaLauncher.get().executablePath.asFile.absolutePath
+            } else if (executableProvider.isPresent) {
                 workerSpec.forkOptions.executable = executableProvider.get()
             }
         }

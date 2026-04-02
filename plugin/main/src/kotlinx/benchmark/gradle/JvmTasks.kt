@@ -96,9 +96,7 @@ fun Project.createJvmBenchmarkGenerateSourceTask(
         inputClassesDirs = compilationOutput
         outputResourcesDir = file("$benchmarkBuildDir/resources")
         outputSourcesDir = file("$benchmarkBuildDir/sources")
-        executableProvider = javaLauncherProvider().map {
-            it.executablePath.asFile.absolutePath
-        }
+        javaLauncher.set(javaLauncherProvider())
     }
 }
 
