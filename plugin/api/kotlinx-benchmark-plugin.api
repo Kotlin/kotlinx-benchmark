@@ -82,6 +82,7 @@ public class kotlinx/benchmark/gradle/JmhBytecodeGeneratorTask : org/gradle/api/
 	public final fun getExecutableProvider ()Lorg/gradle/api/provider/Provider;
 	public final fun getInputClassesDirs ()Lorg/gradle/api/file/FileCollection;
 	public final fun getInputCompileClasspath ()Lorg/gradle/api/file/FileCollection;
+	public final fun getJavaLauncher ()Lorg/gradle/api/provider/Property;
 	public final fun getOutputResourcesDir ()Ljava/io/File;
 	public final fun getOutputSourcesDir ()Ljava/io/File;
 	public final fun getRuntimeClasspath ()Lorg/gradle/api/file/FileCollection;
