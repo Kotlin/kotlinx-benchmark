@@ -1,3 +1,7 @@
+public final class kotlinx/benchmark/CommonBenchmarkAnnotationsKt {
+	public static final field THREADS_CPU_COUNT I
+}
+
 public abstract interface annotation class kotlinx/benchmark/internal/KotlinxBenchmarkRuntimeInternalApi : java/lang/annotation/Annotation {
 }
 

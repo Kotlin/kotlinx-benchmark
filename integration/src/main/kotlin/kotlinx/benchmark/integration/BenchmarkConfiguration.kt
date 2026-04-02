@@ -8,6 +8,7 @@ class BenchmarkConfiguration {
     var mode: String? = null
     var outputTimeUnit: String? = null
     var reportFormat: String? = null
+    var threads: Int? = null
     private var includes: MutableList<String> = mutableListOf()
     private var excludes: MutableList<String> = mutableListOf()
     private var params: MutableMap<String, MutableList<Any>> = mutableMapOf()
@@ -41,6 +42,7 @@ class BenchmarkConfiguration {
             reportFormat = ${reportFormat?.escape()}
             includes = ${includes.map { it.escape() }}
             excludes = ${excludes.map { it.escape() }}
+            ${if(threads != null) """threads = $threads""" else "" }
             ${params.entries.joinToString(separator = "\n") { """param("${it.key}", ${it.value.joinToString()})""" }}
             ${advanced.entries.joinToString(separator = "\n") {
                 """advanced("${it.key}", ${if (it.value is String) "\"${it.value}\"" else it.value})"""
