@@ -117,7 +117,7 @@ kotlin {
 }
 
 dependencies {
-    implementation(libs.kotlin.reflect)
+    compileOnly(libs.kotlin.reflect)
 
     implementation(libs.squareup.kotlinpoet)
 
