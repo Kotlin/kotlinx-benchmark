@@ -3,6 +3,9 @@ package kotlinx.benchmark.wasm
 import kotlinx.benchmark.*
 import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 
+/**
+ * Executes benchmarks in the built-in Wasm/WASI engine.
+ */
 @KotlinxBenchmarkRuntimeInternalApi
 class WasmWasiBuiltInExecutor(name: String, configPath: String, xmlReporter: (() -> BenchmarkProgress)? = null) :
     SuiteExecutor(name, configPath, xmlReporter),
