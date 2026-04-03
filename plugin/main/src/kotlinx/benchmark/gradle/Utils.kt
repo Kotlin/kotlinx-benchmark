@@ -272,8 +272,11 @@ private fun validateConfig(config: BenchmarkConfiguration) {
                 "Invalid value for 'jsUseBridge': '$value'. Expected a Boolean value."
             }
 
-            "wasmFork" -> require(value is String) {
-                "Invalid value for 'wasmFork': '$value'. Only perBenchmark value is allowed."
+            "wasmFork" -> {
+                require(value.toString() in ValidOptions.wasmForks) {
+                    "Invalid value for 'nativeFork': '$value'. " +
+                            "Accepted values: ${ValidOptions.wasmForks.joinToString(", ")}."
+                }
             }
 
             "engineBinaryPath" -> require(value is String) {
@@ -300,6 +303,7 @@ private object ValidOptions {
     )
     val modes = setOf("thrpt", "avgt", "Throughput", "AverageTime")
     val nativeForks = setOf("perBenchmark", "perIteration")
+    val wasmForks = setOf("perBenchmark")
 }
 
 internal fun Project.getSystemProperty(key: String): String? {
