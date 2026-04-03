@@ -2,6 +2,7 @@ public class kotlinx/benchmark/gradle/BenchmarkConfiguration {
 	public final fun advanced (Ljava/lang/String;Ljava/lang/Object;)V
 	public final fun exclude (Ljava/lang/String;)V
 	public final fun getAdvanced ()Ljava/util/Map;
+	public final fun getCustomEngine ()Lkotlinx/benchmark/gradle/CustomEngine;
 	public final fun getExcludes ()Ljava/util/List;
 	public final fun getIncludes ()Ljava/util/List;
 	public final fun getIterationTime ()Ljava/lang/Long;
@@ -16,6 +17,7 @@ public class kotlinx/benchmark/gradle/BenchmarkConfiguration {
 	public final fun include (Ljava/lang/String;)V
 	public final fun param (Ljava/lang/String;[Ljava/lang/Object;)V
 	public final fun setAdvanced (Ljava/util/Map;)V
+	public final fun setCustomEngine (Lkotlinx/benchmark/gradle/CustomEngine;)V
 	public final fun setExcludes (Ljava/util/List;)V
 	public final fun setIncludes (Ljava/util/List;)V
 	public final fun setIterationTime (Ljava/lang/Long;)V

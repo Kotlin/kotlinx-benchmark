@@ -55,7 +55,10 @@ kotlin {
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         nodejs()
-        d8()
+    }
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmWasi {
+        nodejs()
     }
 
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
@@ -64,6 +67,7 @@ kotlin {
             group("jsWasmJsShared") {
                 withJs()
                 withWasmJs()
+                withWasmWasi()
             }
         }
     }

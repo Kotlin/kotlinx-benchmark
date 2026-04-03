@@ -12,7 +12,7 @@ class ProjectWithResourceFilesTest : GradleTest() {
 
     @Test
     fun js() {
-        verifyFor("js")
+        verifyFor("jsProductionExecutable")
     }
 
     @Test
@@ -22,6 +22,11 @@ class ProjectWithResourceFilesTest : GradleTest() {
 
     @Test
     fun wasmJs() {
-        verifyFor("wasmJs")
+        verifyFor("wasmJsProductionExecutable")
+    }
+
+    @Test
+    fun wasmWasi() {
+        verifyFor("wasmWasiProductionExecutable")
     }
 }
