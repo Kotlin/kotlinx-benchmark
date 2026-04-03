@@ -12,7 +12,7 @@ import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrCompilation
 import kotlin.text.replaceFirstChar
 
 @KotlinxBenchmarkPluginInternalApi
-data class CustomEngine(val name: String, val enginePath: Provider<RegularFile>, val engineArguments: Provider<String>)
+class CustomEngine(val name: String, val enginePath: Provider<RegularFile>, val engineArguments: Provider<String>)
 
 open class BenchmarkConfiguration
 @KotlinxBenchmarkPluginInternalApi
