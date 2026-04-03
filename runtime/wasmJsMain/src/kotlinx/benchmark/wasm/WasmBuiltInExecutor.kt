@@ -15,6 +15,9 @@ private fun id(p: Any): Any {
     return jsId(p as JsAny)
 }
 
+/**
+ * Executes benchmarks in the built-in Wasm engine.
+ */
 @KotlinxBenchmarkRuntimeInternalApi
 class WasmBuiltInExecutor(name: String, configPath: String, xmlReporter: (() -> BenchmarkProgress)? = null) :
     SuiteExecutor(name, configPath, xmlReporter),
