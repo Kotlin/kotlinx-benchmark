@@ -27,6 +27,7 @@ fun Project.createJsEngineBenchmarkExecTask(
         KotlinPlatformType.wasm -> {
             if (compilationTarget.isNodejsConfigured) {
                 val execTask = createNodeJsExec(config, target, binary.compilation, executableFile, taskName)
+                execTask.configure { it.dependsOn(binary.linkTask) }
                 if (binary.mode == KotlinJsBinaryMode.PRODUCTION) {
                     tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(execTask)
                 }
