@@ -3,6 +3,9 @@ package kotlinx.benchmark.wasm
 import kotlinx.benchmark.*
 import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 
+/**
+ * Executes benchmarks by spawning a separate engine process for each run.
+ */
 @KotlinxBenchmarkRuntimeInternalApi
 class SpawnBenchmarkExecutor(
     name: String,
