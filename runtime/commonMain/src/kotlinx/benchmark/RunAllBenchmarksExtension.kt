@@ -2,6 +2,19 @@ package kotlinx.benchmark
 
 import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 
+/**
+ * Runs a complete benchmark suite by iterating over all configured benchmarks and their parameter combinations.
+ *
+ * Implementations are responsible for:
+ * - reporting benchmark start and end events through [reporter]
+ * - executing a single benchmark in [runBenchmark]
+ * - publishing the computed result in [result]
+ *
+ * Contract:
+ * - [run] must call [start] before executing the first benchmark and [complete] after all benchmarks finish
+ * - [runBenchmark] should return raw sample values in nanoseconds, or `null` if the benchmark produced no result
+ * - [saveBenchmarkResults] converts raw samples, records the formatted result, and notifies [reporter]
+ */
 @KotlinxBenchmarkRuntimeInternalApi
 interface RunAllBenchmarksExtension {
     val reporter: BenchmarkProgress
