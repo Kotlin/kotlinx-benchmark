@@ -91,9 +91,8 @@ fun Project.deployPlugin(deployVersion: BuildType, validateOnly: Boolean, taskId
             jdkHome = "%env.$jdk%"
             jvmArgs = "-Xmx1g"
             gradleParams = "--info --stacktrace -P$releaseVersionParameter=%$releaseVersionParameter% " +
-                    "-P$gradlePublishKey=%$gradlePublishKey% -P$gradlePublishSecret=%$gradlePublishSecret%" +
-                    if (validateOnly) " --validate-only" else ""
-            tasks = "clean :plugin:publishPlugins"
+                    "-P$gradlePublishKey=%$gradlePublishKey% -P$gradlePublishSecret=%$gradlePublishSecret%"
+            tasks = "clean :plugin:publishPlugins" + (if (validateOnly) " --validate-only" else "")
             buildFile = ""
             gradleWrapperPath = ""
         }
