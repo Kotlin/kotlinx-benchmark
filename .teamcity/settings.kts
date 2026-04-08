@@ -165,6 +165,10 @@ fun Project.deployAll(deployVersion: BuildType) = BuildType {
     type = BuildTypeSettings.Type.COMPOSITE
     commonConfigure()
 
+    failureConditions {
+        executionTimeoutMin = 1440
+    }
+
     buildNumberPattern = deployVersion.depParamRefs.buildNumber.ref
     dependsOnSnapshot(deployVersion)
 
@@ -203,10 +207,12 @@ fun Project.deployVersion() = BuildType {
 }.also { buildType(it) }
 
 fun Project.deployUpload(deployVersion: BuildType) = BuildType {
-    templates(AbsoluteId("KotlinTools_KotlinLibrariesDeployLocalBundleToCentral"))
+    templates(UPLOAD_DEPLOYMENT_TEMPLATE_ID)
+    id(DEPLOY_UPLOAD_ID)
     name = "Upload deployment to central portal"
     description = "Verifies artifacts, uploads it to the Central portal, and waits for verification results."
-    id(DEPLOY_UPLOAD_ID)
+    type = BuildTypeSettings.Type.DEPLOYMENT
+    commonConfigure()
 
     buildNumberPattern = deployVersion.depParamRefs.buildNumber.ref
     dependsOnSnapshot(deployVersion)
@@ -222,11 +228,16 @@ fun Project.deployUpload(deployVersion: BuildType) = BuildType {
 }.also { buildType(it) }
 
 fun Project.deployPublish(deployVersion: BuildType) = BuildType {
-    id(DEPLOY_PUBLISH_ID)
     templates(PUBLISH_DEPLOYMENT_TEMPLATE_ID)
+    id(DEPLOY_PUBLISH_ID)
     name = "Publish deployment"
     description = "Published previously uploaded deployment"
     type = BuildTypeSettings.Type.DEPLOYMENT
+    commonConfigure()
+
+    failureConditions {
+        executionTimeoutMin = 1440
+    }
 
     buildNumberPattern = deployVersion.depParamRefs.buildNumber.ref
     dependsOnSnapshot(deployVersion)
@@ -234,7 +245,6 @@ fun Project.deployPublish(deployVersion: BuildType) = BuildType {
     params {
         param("DeployVersion", "%$releaseVersionParameter%")
     }
-    commonConfigure()
 }.also { buildType(it) }
 
 
@@ -256,6 +266,7 @@ fun Project.buildArtifacts(deployVersion: BuildType, platform: Platform) = build
 
     params {
         param(versionSuffixParameter, "${deployVersion.depParamRefs[versionSuffixParameter]}")
+        param(publicationCommandParameter, "publishAllPublicationsToBuildLocalRepository")
     }
 
     steps {
@@ -264,7 +275,7 @@ fun Project.buildArtifacts(deployVersion: BuildType, platform: Platform) = build
             jdkHome = "%env.$jdk%"
             jvmArgs = "-Xmx1g"
             gradleParams = "--info --stacktrace -P$versionSuffixParameter=%$versionSuffixParameter% -P$releaseVersionParameter=%$releaseVersionParameter%"
-            tasks = "clean publishAllPublicationsToBuildLocalRepository"
+            tasks = "clean %publicationCommand%"
             buildFile = ""
             gradleWrapperPath = ""
         }
