@@ -244,6 +244,7 @@ fun Project.deployPublish(deployVersion: BuildType) = BuildType {
 
     params {
         param("DeployVersion", "%$releaseVersionParameter%")
+        param("Approvers", DslContext.getParameter("Approvers", "<nobody>"))
     }
 }.also { buildType(it) }
 
