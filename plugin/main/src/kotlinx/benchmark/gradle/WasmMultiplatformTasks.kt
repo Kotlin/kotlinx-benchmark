@@ -44,7 +44,10 @@ fun Project.processWasmCompilation(target: WasmBenchmarkTarget) {
             (binary as ExecutableWasm).mainOptimizedFile else binary.mainFileSyncPath
 
         target.extension.configurations.forEach {
-            createJsEngineBenchmarkExecTask(it, target, binary, fileToExecute)
+            val execTask = createJsEngineBenchmarkExecTask(it, target, binary, fileToExecute)
+            if (binary.mode == target.buildType) {
+                makeBenchmarkConfigExecTask(it, target, execTask)
+            }
         }
     }
 }

@@ -15,7 +15,10 @@ fun Project.processJsCompilation(target: JsBenchmarkTarget) {
     val benchmarkCompilation = createJsBenchmarkCompileTask(target)
     benchmarkCompilation.binaries.configureEach { binary ->
         target.extension.configurations.forEach {
-            createJsEngineBenchmarkExecTask(it, target, binary, binary.mainFileSyncPath)
+            val execTask = createJsEngineBenchmarkExecTask(it, target, binary, binary.mainFileSyncPath)
+            if (binary.mode == target.buildType) {
+                makeBenchmarkConfigExecTask(it, target, execTask)
+            }
         }
     }
 }
