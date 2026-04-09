@@ -253,7 +253,7 @@ class OptionsValidationTest : GradleTest() {
             assertOutputContains("Invalid advanced option name: ' '. It must not be blank.")
         }
         runner.runAndFail("invalidAdvancedConfigNameBenchmark") {
-            assertOutputContains("Invalid advanced option name: 'jsFork'. Accepted options: \"nativeFork\", \"nativeGCAfterIteration\", \"jvmForks\", \"jsUseBridge\".")
+            assertOutputContains("Invalid advanced option name: 'jsFork'. Accepted options: \"nativeFork\", \"nativeGCAfterIteration\", \"jvmForks\", \"jsUseBridge\", \"wasmFork\".")
         }
         runner.runAndFail("invalidNativeForkBenchmark") {
             assertOutputContains("Invalid value for 'nativeFork': 'x'. Accepted values: ${ValidOptions.nativeForks.joinToString(", ")}.")
