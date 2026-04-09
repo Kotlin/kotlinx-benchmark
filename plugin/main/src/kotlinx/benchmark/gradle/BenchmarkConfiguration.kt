@@ -9,6 +9,7 @@ import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
+import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsBinaryMode
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrCompilation
 import kotlin.text.replaceFirstChar
 
@@ -122,6 +123,7 @@ constructor(
     val compilation: KotlinJsIrCompilation
 ) : BenchmarkTarget(extension, name) {
     var jsBenchmarksExecutor: JsBenchmarksExecutor = JsBenchmarksExecutor.BenchmarkJs
+    var buildType: KotlinJsBinaryMode = KotlinJsBinaryMode.PRODUCTION
 }
 
 class WasmBenchmarkTarget
@@ -131,7 +133,9 @@ constructor(
     name: String,
     @property:KotlinxBenchmarkPluginInternalApi
     val compilation: KotlinJsIrCompilation
-) : BenchmarkTarget(extension, name)
+) : BenchmarkTarget(extension, name) {
+    var buildType: KotlinJsBinaryMode = KotlinJsBinaryMode.PRODUCTION
+}
 
 class NativeBenchmarkTarget
 @KotlinxBenchmarkPluginInternalApi
