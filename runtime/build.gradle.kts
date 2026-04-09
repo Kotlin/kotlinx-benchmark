@@ -56,6 +56,10 @@ kotlin {
     wasmJs {
         nodejs()
     }
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmWasi {
+        nodejs()
+    }
 
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     applyDefaultHierarchyTemplate {
@@ -63,6 +67,7 @@ kotlin {
             group("jsWasmJsShared") {
                 withJs()
                 withWasmJs()
+                withWasmWasi()
             }
         }
     }
