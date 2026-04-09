@@ -14,7 +14,7 @@ class InvalidTargetingTest : GradleTest() {
     fun testWasmBrowser() {
         val runner = project("invalid-target/wasm-browser", true)
         runner.runAndFail("wasmJsBenchmark") {
-            assertOutputContains("kotlinx-benchmark only supports nodejs() environments for Kotlin/Wasm.")
+            assertOutputContains("kotlinx-benchmark only supports nodejs() environment for KotlinJs or Kotlin/Wasm.")
         }
     }
 
@@ -22,7 +22,7 @@ class InvalidTargetingTest : GradleTest() {
     fun testJsBrowser() {
         val runner = project("invalid-target/js-browser", true)
         runner.runAndFail("jsBenchmark") {
-            assertOutputContains("kotlinx-benchmark only supports nodejs() environment for Kotlin/JS.")
+            assertOutputContains("kotlinx-benchmark only supports nodejs() environment for KotlinJs or Kotlin/Wasm.")
         }
     }
 }

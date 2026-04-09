@@ -24,4 +24,9 @@ class ProjectWithResourceFilesTest : GradleTest() {
     fun wasmJs() {
         verifyFor("wasmJs")
     }
+
+    @Test
+    fun wasmWasi() {
+        verifyFor("wasmWasi")
+    }
 }
