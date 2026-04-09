@@ -4,6 +4,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
+import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
 import java.util.*
 
@@ -62,6 +63,10 @@ kotlin {
     wasmJs {
         nodejs()
     }
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmWasi {
+        nodejs()
+    }
 
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
     applyDefaultHierarchyTemplate {
@@ -69,6 +74,7 @@ kotlin {
             group("jsWasmJsShared") {
                 withJs()
                 withWasmJs()
+                withWasmWasi()
             }
         }
     }
@@ -89,8 +95,9 @@ kotlin {
             // If a compiler version is below 2.2.20, ExperimentalWasmJsInterop may not be resolved.
             if (kotlin.isCompilerVersionAtLeast(2, 2, 20)) {
                 if (target.platformType == KotlinPlatformType.wasm) {
+                    val interopOptIn = if (target.name == "wasmJs") "kotlin.js.ExperimentalWasmJsInterop" else "kotlin.wasm.ExperimentalWasmInterop"
                     compileTaskProvider.configure {
-                        compilerOptions.optIn.add("kotlin.js.ExperimentalWasmJsInterop")
+                        compilerOptions.optIn.add(interopOptIn)
                     }
                 }
             }
