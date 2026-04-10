@@ -43,9 +43,11 @@ fun Project.additionalConfiguration() {
     val cpyTask = copyToCentral()
 
     // Check with Kotlin master only on Linux
+    /* TODO: enable it back once issues are fixed on the Kotlin side
     buildWithKotlinMaster(Platform.Linux, knownBuilds.buildVersion).also {
         knownBuilds.buildAll.dependsOnSnapshot(it, onFailure = FailureAction.ADD_PROBLEM)
     }
+    */
 
     knownBuilds.deployPublish.dependsOnSnapshot(cpyTask, onFailure = FailureAction.ADD_PROBLEM)
     platforms.filter { it == Platform.MacOS }.forEach { platform ->
