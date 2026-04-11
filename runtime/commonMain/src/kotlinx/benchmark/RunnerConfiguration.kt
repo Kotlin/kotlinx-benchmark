@@ -26,6 +26,7 @@ class RunnerConfiguration(config: String) {
     val iterationTime = singleValueOrNull("iterationTime") { it.toLong() }
     val iterationTimeUnit = singleValueOrNull("iterationTimeUnit") { parseTimeUnit(it) }
     val advanced = mapSingleValues("advanced", "=")
+    val threads = singleValueOrNull("threads") { it.toInt() }
 
     val outputTimeUnit = singleValueOrNull(
         "outputTimeUnit"
@@ -78,6 +79,7 @@ iterationTime: $iterationTime
 iterationTimeUnit: $iterationTimeUnit            
 outputTimeUnit: $outputTimeUnit            
 mode: $mode
+threads: $threads
 advanced: $advanced
 """
     }
