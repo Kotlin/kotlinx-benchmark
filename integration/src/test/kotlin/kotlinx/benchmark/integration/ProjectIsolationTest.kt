@@ -6,7 +6,7 @@ import kotlin.test.Test
 class ProjectIsolationTest : GradleTest() {
     @Test
     fun testIsolation() {
-        Assume.assumeTrue("The test requires JDK 17 or newer.", Runtime.version().feature() >= 17)
+        Assume.assumeTrue("The test requires JDK 17 or newer.", JavaRuntimeUtil.getFeatureVersion() >= 17)
         // Use either 2.3.0, or a Kotlin version used to build tests, if it is a more recent one
         // (which is the case when running tests with Kotlin built from the HEAD).
         val version = KotlinTestVersion.mostRecent(
