@@ -7,56 +7,67 @@ import kotlin.time.toDuration
     (globalThis.module = (typeof process !== 'undefined') && (process.release.name === 'node') ?
         await import(/* webpackIgnore: true */'node:module') : void 0, () => {})
 """)
-internal external fun persistModule()
+private external fun persistModule()
 
-@JsFun("""() => { 
+private fun getRequire(): JsAny =
+    js("""{ 
     const importMeta = import.meta;
     return globalThis.module.default.createRequire(importMeta.url);
-}
-""")
-internal external fun getRequire(): JsAny
+}""")
 
-@JsFun("(require, path, text) => require('fs').writeFileSync(path, text, 'utf8')")
-private external fun nodeJsWriteFile(require: JsAny, path: String, text: String)
+private fun nodeJsWriteFile(require: JsAny, path: String, text: String): Unit =
+    js("require('fs').writeFileSync(path, text, 'utf8')")
 
-@JsFun("(require, path, text) => require('fs').readFileSync(path, 'utf8')")
-private external fun nodeJsReadFile(require: JsAny, path: String): String
+private fun nodeJsReadFile(require: JsAny, path: String): String =
+    js("require('fs').readFileSync(path, 'utf8')")
 
-@JsFun("() => process.argv.slice(2).join(' ')")
-private external fun nodeJsArguments(): String
+private fun nodeJsArguments(): String =
+    js("process.argv.slice(2).join(' ')")
 
-internal object NodeJsEngineSupport : JsEngineSupport() {
-    private val require = persistModule().let { getRequire() }
+private object NodeJsEngineSupport : BenchmarkEngineSupport() {
+    private val require by lazy { persistModule().let { getRequire() } }
 
-    override fun writeFile(path: String, text: String) =
-        nodeJsWriteFile(require, path, text)
+    override fun writeFile(path: String, content: String) =
+        nodeJsWriteFile(require, path, content)
 
     override fun readFile(path: String): String =
         nodeJsReadFile(require, path)
 
     override fun arguments(): Array<out String> =
         nodeJsArguments().split(' ').toTypedArray()
+
+    override fun getMeasurer(): Measurer = NodeJsMeasurer()
+
+    override fun isSupported(): Boolean = isNodeJsEngine()
 }
 
-private fun hrTimeToNs(hrTime: ExternalInterfaceType): Long {
-    val fromSeconds = getArrayElement(hrTime, 0).toDuration(DurationUnit.SECONDS)
-    val fromNanos = getArrayElement(hrTime, 1).toDuration(DurationUnit.NANOSECONDS)
+private fun hrTimeToNs(hrTime: JsArray<JsNumber>): Long {
+    val fromSeconds = hrTime[0]!!.toDouble().toDuration(DurationUnit.SECONDS)
+    val fromNanos = hrTime[1]!!.toDouble().toDuration(DurationUnit.NANOSECONDS)
     return (fromSeconds + fromNanos).inWholeNanoseconds
 }
 
-@JsFun("() => process")
-private external fun getProcess(): ExternalInterfaceType
+private fun getProcess(): Process = js("process")
 
-@JsFun("(process) => process.hrtime()")
-private external fun getHrTime(process: ExternalInterfaceType): ExternalInterfaceType
-
-@JsFun("(array, i) => array[i]")
-private external fun getArrayElement(array: ExternalInterfaceType, i: Int): Double
-
-internal inline fun nodeJsMeasureTime(block: () -> Unit): Long {
-    val process = getProcess()
-    val start = getHrTime(process)
-    block()
-    val end = getHrTime(process)
-    return hrTimeToNs(end) - hrTimeToNs(start)
+private external interface Process {
+    fun hrtime(): JsArray<JsNumber>
 }
+
+private class NodeJsMeasurer: Measurer() {
+    private val process = getProcess()
+    private var start: JsArray<JsNumber>? = null
+    override fun measureStart() {
+        start = process.hrtime()
+    }
+
+    override fun measureFinish(): Long {
+        val end = process.hrtime()
+        return hrTimeToNs(end) - hrTimeToNs(start!!)
+    }
+}
+
+private fun isNodeJsEngine(): Boolean =
+    js("(typeof process !== 'undefined') && (process.release.name === 'node')")
+
+internal actual var engineSupport: BenchmarkEngineSupport =
+    NodeJsEngineSupport

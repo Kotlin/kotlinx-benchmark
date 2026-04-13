@@ -5,7 +5,8 @@ import org.jetbrains.kotlin.konan.target.HostManager
 kotlin {
     jvm {}
     js { nodejs() }
-    wasmJs { d8() }
+    wasmJs { nodejs() }
+    wasmWasi { nodejs() }
 
     if (HostManager.hostIsLinux) linuxX64('native')
     if (HostManager.hostIsMingw) mingwX64('native')
@@ -18,6 +19,7 @@ benchmark {
         register("jvm")
         register("js")
         register("wasmJs")
+        register("wasmWasi")
         register("native") {
             // don't optimize binaries to speedup test execution
             buildType = NativeBuildType.DEBUG
