@@ -36,6 +36,9 @@ This project is built with Gradle.
 
 * Run `./gradlew build` to build. It also runs all the tests.
 
+The project requires a JDK that is supported by the version of Gradle defined in [`minSupportedGradle`](gradle/libs.versions.toml).
+Currently, this is JDK 17.
+
 You can import this project into IDEA, but you have to delegate build actions
 to Gradle (in Preferences -> Build, Execution, Deployment -> Build Tools -> Gradle -> Build and run).
 
