@@ -33,7 +33,7 @@ class AndroidTestBenchmark {
     }
 
     @Benchmark
-    fun localDate(): LocalDate {
-        return LocalDate.fromEpochDays(100)
+    fun localDate(bh: Blackhole) {
+        bh.consume(LocalDate.fromEpochDays(100))
     }
 }

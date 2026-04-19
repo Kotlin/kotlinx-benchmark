@@ -2,6 +2,7 @@ package kotlinx.benchmark.gradle
 
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import kotlinx.benchmark.gradle.SuiteSourceGenerator.Companion.blackholeFQN
 import kotlinx.benchmark.gradle.SuiteSourceGenerator.Companion.measureAnnotationFQN
 import kotlinx.benchmark.gradle.SuiteSourceGenerator.Companion.paramAnnotationFQN
 import kotlinx.benchmark.gradle.SuiteSourceGenerator.Companion.setupAnnotationFQN
@@ -66,6 +67,8 @@ internal abstract class AndroidGeneratorTask : DefaultTask() {
             logger.warn("classes.jar not found in AAR file: {}", classesJar.absolutePath)
         }
     }
+
+    private val BLACKHOLE_PROPERTY_NAME = "blackhole"
 
     private fun generateBenchmarkSourceFiles(
         targetDir: File,
@@ -254,15 +257,26 @@ internal abstract class AndroidGeneratorTask : DefaultTask() {
                 .build()
         )
 
-        // TODO: Handle methods with parameters (Blackhole)
         var hasTestMethods: Boolean
-        descriptor.methods
-            .filter { it.visibility == Visibility.PUBLIC && it.parameters.isEmpty() }
+        val methods = descriptor.methods
+            .filter { it.visibility == Visibility.PUBLIC }
+            .filter { it.parameters.isEmpty() || it.parameters.singleOrNull() == blackholeFQN }
             .filterNot { method ->
                 method.annotations.any { annotation -> annotation.name == paramAnnotationFQN }
             }
             .also { hasTestMethods = it.isNotEmpty() }
-            .forEach { method ->
+
+        val needsBlackhole = methods.any { it.parameters.singleOrNull() == blackholeFQN }
+        if (needsBlackhole) {
+            typeSpecBuilder.addProperty(
+                PropertySpec.builder(BLACKHOLE_PROPERTY_NAME, ClassName.bestGuess(blackholeFQN))
+                    .initializer("%T()", ClassName.bestGuess(blackholeFQN))
+                    .addModifiers(KModifier.PRIVATE)
+                    .build()
+            )
+        }
+
+        methods.forEach { method ->
                 when {
                     method.annotations.any { it.name == setupAnnotationFQN || it.name == teardownAnnotationFQN } -> {
                         generateNonMeasurableMethod(descriptor, method, propertyName, typeSpecBuilder)
@@ -310,9 +324,10 @@ internal abstract class AndroidGeneratorTask : DefaultTask() {
             }
         }
 
+        val callArgs = if (method.parameters.singleOrNull() == blackholeFQN) BLACKHOLE_PROPERTY_NAME else ""
         methodSpecBuilder
             .beginControlFlow("benchmarkRule.measureRepeated")
-            .addStatement("$propertyName.${method.name}()")
+            .addStatement("$propertyName.${method.name}($callArgs)")
             .endControlFlow()
 
         typeSpecBuilder.addFunction(methodSpecBuilder.build())
