@@ -110,10 +110,10 @@ internal abstract class AndroidSetupBenchmarkProject @Inject constructor(
         }
     }
 
-    private fun gatherInstrumentationRunnerArguments(benchmark: AndroidBenchmarkTarget.TemplateConfiguration): String {
-        val arguments = benchmark.instrumentationRunnerArguments.toMutableMap()
-        val mode = benchmark.profilingMode
+    private fun gatherInstrumentationRunnerArguments(config: AndroidBenchmarkTarget.TemplateConfiguration): String {
+        val arguments = config.instrumentationRunnerArguments.toMutableMap()
 
+        val mode = config.profilingMode
         if (mode != ProfilingMode.Default) {
             val key = "androidx.benchmark.profiling.mode"
             if (arguments.containsKey(key)) {
@@ -126,6 +126,11 @@ internal abstract class AndroidSetupBenchmarkProject @Inject constructor(
                 ProfilingMode.Default -> error("Default profiling mode not supported here")
             }
         }
+
+        if (arguments.containsKey("androidx.benchmark.dryRunMode.enable")) {
+            logger.warn("Instrumentation runner argument 'androidx.benchmark.dryRunMode.enable' is ignored. Set it through `AndroidBenchmarkTarget.dryRun`")
+        }
+        arguments["androidx.benchmark.dryRunMode.enable"] = config.dryRun.toString()
 
         return arguments.entries
             .joinToString(System.lineSeparator()) { (key, value) ->

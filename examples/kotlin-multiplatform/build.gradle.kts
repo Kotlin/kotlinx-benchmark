@@ -151,8 +151,8 @@ benchmark {
             this as AndroidBenchmarkTarget
             instrumentationRunnerArguments.putAll(mapOf(
                 "androidx.benchmark.suppressErrors" to "EMULATOR",
-                "androidx.benchmark.dryRunMode.enable" to "true",
             ))
+            dryRun = true
         }
 
         // Native targets

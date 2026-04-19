@@ -167,7 +167,15 @@ constructor(
     /**
      * Sets the [ProfilingMode] for the benchmark.
      */
-    var profilingMode: ProfilingMode = ProfilingMode.Default
+    public var profilingMode: ProfilingMode = ProfilingMode.Default
+
+    /**
+     * If `true`, the benchmark will be run with the `dryRun` flag. This means that each test
+     * only runs once and no output is generated.
+     *
+     * See [https://developer.android.com/topic/performance/benchmarking/microbenchmark-instrumentation-args#dryrunmode-enable]
+     */
+    public var dryRun: Boolean = false
 
     /**
      * Configures any extra `instrumentationRunnerArguments` arguments you want to set on the generated
@@ -176,14 +184,14 @@ constructor(
      * See the list of valid arguments here:
      * https://developer.android.com/topic/performance/benchmarking/microbenchmark-instrumentation-args
      */
-    val instrumentationRunnerArguments: MutableMap<String, String> = mutableMapOf()
+    public val instrumentationRunnerArguments: MutableMap<String, String> = mutableMapOf()
 
     /**
      * Sets the path to the Android SDK directory.
      * If not set, the plugin will first attempt to read it from the `sdk.dir` gradle property and then
      * from the `ANDROID_HOME` environment variable.
      */
-    val sdkDir: Property<String> = extension.project.objects.property(String::class.java).convention(
+    public val sdkDir: Property<String> = extension.project.objects.property(String::class.java).convention(
         extension.project.providers.gradleProperty("sdk.dir")
             .orElse(extension.project.providers.environmentVariable("ANDROID_HOME"))
             .orElse("")
@@ -193,7 +201,7 @@ constructor(
      * How long kotlinx-benchmark will wait for the device to complete the benchmarks.
      * If the limit is reached, the benchmark run will be aborted and an exception is thrown.
      */
-    var timeout: Duration = 10.minutes
+    public var timeout: Duration = 10.minutes
 
     /**
      * Absolute path to the `adb` executable used by the benchmark infrastructure
@@ -237,12 +245,6 @@ constructor(
 
     internal val compilationName = compilation.name
 
-    internal fun isDryRun(): Boolean {
-        return instrumentationRunnerArguments.any {
-            it.key == "androidx.benchmark.dryRunMode.enable" && it.value.equals("true", ignoreCase = true)
-        }
-    }
-
     // Used internally to generate task names including this target and its compilation.
     internal val gradleTaskName: String =
         "${name.replaceFirstChar { it.uppercase(Locale.ROOT) }}${compilation.name.replaceFirstChar { it.uppercase(Locale.ROOT) }}"
@@ -260,6 +262,7 @@ constructor(
             gradleVersion = gradleVersion.version,
             sdkDir = sdkDir.orNull,
             profilingMode = profilingMode,
+            dryRun = dryRun,
             instrumentationRunnerArguments = instrumentationRunnerArguments.toMap(),
         )
     }
@@ -276,6 +279,7 @@ constructor(
         val gradleVersion: String,
         val sdkDir: String?,
         val profilingMode: ProfilingMode,
+        val dryRun: Boolean,
         val instrumentationRunnerArguments: Map<String, String>,
     ): Serializable
 
