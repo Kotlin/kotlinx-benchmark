@@ -30,6 +30,14 @@ class Runner(
             .withArguments(*(defaultArguments() + kotlinNativeVersionParameter + tasks))
             .withGradleDistribution(gradleDistributionUri)
             .forwardStdError(System.err.bufferedWriter())
+            // Set to true to enabled debugging
+            // If enabled, this must be added to integration/build.gradle.kts
+            // tasks.tests {
+            //    jvmArgs(
+            //    "--add-opens", "java.base/java.lang.invoke=ALL-UNNAMED",
+            //    "--add-opens", "java.base/java.util=ALL-UNNAMED"
+            //  )
+            .withDebug(false) // Set to true, to enable debugging when running integration tests.
             .run {
                 if (print) forwardStdOutput(System.out.bufferedWriter()) else this
             }
@@ -97,6 +105,12 @@ class Runner(
     fun generatedDir(targetName: String, filePath: String, fileTestAction: (File) -> Unit) {
         fileTestAction(
             projectDir.resolve("build/benchmarks/${targetName}/sources/kotlinx/benchmark/generated").resolve(filePath)
+        )
+    }
+
+    fun generatedAndroidDir(targetName: String, filePath: String, fileTestAction: (File) -> Unit) {
+        fileTestAction(
+            projectDir.resolve("build/benchmarks/$targetName").resolve(filePath)
         )
     }
 }

@@ -1,13 +1,18 @@
 package kotlinx.benchmark.gradle
 
+import com.android.build.api.dsl.KotlinMultiplatformAndroidTarget
+import com.android.tools.r8.internal.om
 import groovy.lang.Closure
+import kotlinx.benchmark.gradle.internal.BenchmarksPluginConstants
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
 import org.gradle.api.plugins.*
 import org.gradle.api.provider.*
+import org.gradle.util.GradleVersion
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
+import org.jetbrains.kotlin.gradle.plugin.getKotlinPluginVersion
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJsCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
@@ -47,6 +52,7 @@ constructor(
         return targets.configure(configureClosure)
     }
 
+    @Suppress("UnstableApiUsage")
     val targets: NamedDomainObjectContainer<BenchmarkTarget> = run {
         project.container(BenchmarkTarget::class.java) { name ->
             val multiplatformClass =
@@ -63,10 +69,10 @@ constructor(
             when {
                 multiplatform != null -> {
                     val target = multiplatform.targets.findByName(name)
-                    // We allow the name to be either a target or a source set
-                    when (val compilation = target?.compilations?.findByName(KotlinCompilation.MAIN_COMPILATION_NAME)
-                        ?: multiplatform.targets.flatMap { it.compilations }
-                            .find { it.defaultSourceSet.name == name }) {
+                    // We allow the name to be either a target or a source set, but prioritize matching on target first
+                    val compilation = target?.compilations?.findByName(KotlinCompilation.MAIN_COMPILATION_NAME)  ?: multiplatform.targets.flatMap { it.compilations }.find { it.defaultSourceSet.name == name }
+                    when (compilation) {
+
                         null -> {
                             project.logger.warn("Warning: Cannot find a benchmark compilation '$name', ignoring.")
                             BenchmarkTarget(this, name) // ignore
@@ -91,12 +97,39 @@ constructor(
                             NativeBenchmarkTarget(this, name, compilation)
                         }
 
+                        is com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation -> {
+                            var androidTarget = (target as? KotlinMultiplatformAndroidTarget)
+                            if (androidTarget == null) {
+                                androidTarget = (compilation.target as? KotlinMultiplatformAndroidTarget) ?: error("Cannot cast to KotlinMultiplatformAndroidTarget: ${compilation.target}")
+                            }
+
+                            // Detect version of Kotlin used by the main project
+                            val kotlinVersion = project.getKotlinPluginVersion()
+                            // Detect version of AGP used by the main project
+                            val agpVersion = com.android.build.api.AndroidPluginVersion.getCurrent().version
+
+                            val adb = project.extensions
+                                .getByType(com.android.build.api.variant.KotlinMultiplatformAndroidComponentsExtension::class.java)
+                                .sdkComponents
+                                .adb
+
+                            AndroidBenchmarkTarget(
+                                extension = this,
+                                name = name,
+                                target = androidTarget,
+                                compilation = compilation,
+                                mainProjectGradleVersion = GradleVersion.current(),
+                                mainProjectKotlinVersion = kotlinVersion,
+                                mainProjectAgpVersion = agpVersion,
+                                adbReference = adb,
+                            )
+                        }
+
                         else -> {
                             project.logger.warn("Warning: Unsupported compilation '$compilation', ignoring.")
                             BenchmarkTarget(this, name) // ignore
                         }
                     }
-
                 }
 
                 javaExtension != null -> {

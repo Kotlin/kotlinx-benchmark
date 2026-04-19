@@ -5,6 +5,7 @@ pluginManagement {
         if (kotlinRepoUrl != null) {
             maven(kotlinRepoUrl)
         }
+        google()
     }
 }
 

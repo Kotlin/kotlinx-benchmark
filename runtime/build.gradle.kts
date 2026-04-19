@@ -1,3 +1,4 @@
+import com.android.build.api.dsl.androidLibrary
 import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
@@ -10,6 +11,7 @@ import java.util.*
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.android.multiplatform.library)
 }
 
 repositories {
@@ -59,6 +61,12 @@ kotlin {
     }
 
     js { nodejs() }
+    @Suppress("UnstableApiUsage")
+    androidLibrary {
+        namespace = "kotlinx.benchmark.runtime.android"
+        compileSdk = 35
+        minSdk = 29
+    }
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         nodejs()
