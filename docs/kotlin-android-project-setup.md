@@ -201,8 +201,8 @@ benchmark {
 Only one benchmark is available:
 
 ```shell
-./gradlew androidBenchmark # Available
-./gradlew androidSmokeBenchmark # Not available
+> ./gradlew androidBenchmark # Available
+> ./gradlew androidSmokeBenchmark # Not available
 ```
 Note, `BenchmarkConfiguration.reportFormat` is currently being ignored when
 producing benchmark reports, also for the `main` configuration.
@@ -233,6 +233,41 @@ kotlin {
 
 Note that this method will only separate the tests in the project view, not
 in the final build artifact being produced.
+
+## Troubleshooting
+
+**Debugging**
+If something goes wrong with the Android benchmarking setup, it is possible
+to debug it through the generated project. This project is a completely 
+independent Gradle project that can be edited and run on its own.
+
+```shell
+# Root of generated project
+> cd build/benchmarks/android
+
+# Start benchmarks
+> ./gradlew androidReleaseTest
+```
+
+**java.lang.IllegalStateException: UiAutomationService**
+If the benchmark is aborted prematurely, it might put the device in an 
+inconsistent state. This normally surfaces as an exception the next time you
+try to run the benchmarks:
+
+```shell
+java.lang.NoClassDefFoundError: androidx.benchmark.ShellImpl
+at androidx.benchmark.Shell.connectUiAutomation(Shell.kt:83)
+...
+Caused by: java.lang.IllegalStateException: UiAutomationService android.accessibilityservice.IAccessibilityServiceClient$Stub$Proxy@8635a3aalready registered!
+at android.os.Parcel.createExceptionOrNull(Parcel.java:3391)
+...
+```
+
+If this happens, rebooting the device will fix the problem:
+
+```shell
+> adb reboot
+```
 
 ## Examples
 
