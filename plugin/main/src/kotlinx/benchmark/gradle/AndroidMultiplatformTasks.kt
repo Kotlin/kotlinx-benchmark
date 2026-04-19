@@ -89,7 +89,7 @@ private fun Project.createAndroidBenchmarkExecTask(target: AndroidBenchmarkTarge
         this.benchmarkProjectDir.set(buildDir)
         this.deviceOutputDir.set(deviceOutputDir)
         this.benchmarkResultsDir.set(benchmarkResultsDir)
-        this.dryRun.set(target.isDryRun())
+        this.dryRun.set(target.dryRun)
     }
 }
 
