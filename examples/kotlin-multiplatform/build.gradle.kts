@@ -1,13 +1,14 @@
 @file:OptIn(ExperimentalWasmDsl::class)
 
+import com.android.build.api.dsl.androidLibrary
 import kotlinx.benchmark.gradle.*
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
-
 
 plugins {
     kotlin("multiplatform")
     kotlin("plugin.allopen") version "2.2.0"
     id("org.jetbrains.kotlinx.benchmark")
+    id("com.android.kotlin.multiplatform.library")
 }
 
 allOpen {
@@ -25,6 +26,12 @@ kotlin {
         compilations.create("builtInExecutor") { associateWith(mainCompilation) }
     }
     wasmJs { nodejs() }
+    @Suppress("UnstableApiUsage")
+    androidLibrary {
+        namespace = "org.jetbrains.kotlinx.benchmark.example.android"
+        compileSdk = 35
+        minSdk = 29
+    }
 
     // Native targets
     @Suppress("DEPRECATION", "DEPRECATION_ERROR")
@@ -36,12 +43,20 @@ kotlin {
     applyDefaultHierarchyTemplate()
 
     sourceSets {
+        repositories {
+            mavenCentral()
+            google()
+        }
         commonMain {
             dependencies {
                 implementation(project(":kotlinx-benchmark-runtime"))
+                //noinspection UseTomlInstead
+                implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.7.1")
             }
         }
 
+        androidMain {}
+ 
         jvmMain {}
 
         wasmJsMain {}
@@ -128,6 +143,17 @@ benchmark {
             jsBenchmarksExecutor = JsBenchmarksExecutor.BuiltIn
         }
         register("wasmJs")
+
+        // The `androidLibrary` target definition will automatically pass most
+        // of its properties to the benchmark project, but it is possible to
+        // further configure the benchmark project.
+        register("android") {
+            this as AndroidBenchmarkTarget
+            instrumentationRunnerArguments.putAll(mapOf(
+                "androidx.benchmark.suppressErrors" to "EMULATOR",
+                "androidx.benchmark.dryRunMode.enable" to "true",
+            ))
+        }
 
         // Native targets
         register("macosX64")

@@ -3,14 +3,18 @@ package kotlinx.benchmark.integration
 class ProjectBuilder {
     private val configurations = mutableMapOf<String, BenchmarkConfiguration>()
 
+    private val benchmarkLibraryVersion = "0.5.0-SNAPSHOT"
+    // The version should be set to be compatible with the Gradle version used by kotlinx-benchmarks.
+    // See https://developer.android.com/build/releases/about-agp#updating-gradle
+    private val agpMultiplatformVersion = "8.6.1"
     var kotlinVersion: String = System.getProperty("kotlin_version")
-    var jvmToolchain: Int = 8
+    var jvmToolchain: Int = 11 // TODO JDK_11_DISCUSS
 
     fun configuration(name: String, configuration: BenchmarkConfiguration.() -> Unit = {}) {
         configurations[name] = BenchmarkConfiguration().apply(configuration)
     }
 
-    fun generateSettingsScripts(original: String): String {
+    fun generateSettingsScripts(original: String, androidSupport: Boolean): String {
         val pluginManagement = """
         pluginManagement {
             repositories {
@@ -18,6 +22,7 @@ class ProjectBuilder {
                 $plugin_repo_url
                 mavenCentral()
                 gradlePluginPortal()
+                ${if (androidSupport) "google()" else ""}
             }
         }                    
         """.trimIndent()
@@ -27,13 +32,14 @@ class ProjectBuilder {
                 $kotlin_repo
                 $runtime_repo_url
                 mavenCentral()
+                ${if (androidSupport) "google()" else ""}
             }
         }
         """.trimIndent()
         return pluginManagement + "\n\n" + original + "\n\n" + dependencyManagement
     }
 
-    fun generateBuildScript(original: String): String {
+    fun generateBuildScript(original: String, androidSupport: Boolean): String {
 
         val script =
             """
@@ -44,7 +50,12 @@ benchmark {
 }
             """.trimIndent()
 
-        return generateBuildScript(kotlinVersion, jvmToolchain) + "\n\n" + original + "\n\n" + script
+        return generateBuildScript(
+            kotlinVersion = kotlinVersion,
+            jvmToolchain = jvmToolchain,
+            agpMultiplatformVersion = if (androidSupport) agpMultiplatformVersion else null,
+            benchmarkLibraryVersion = benchmarkLibraryVersion
+        ) + "\n\n" + original + "\n\n" + script
     }
 }
 
@@ -91,11 +102,22 @@ private val kotlin_additional_cli_options = System.getProperty("kotlin_additiona
     }
 } ?: ""
 
-private fun generateBuildScript(kotlinVersion: String, jvmToolchain: Int) =
+private fun generateBuildScript(
+    kotlinVersion: String,
+    jvmToolchain: Int,
+    agpMultiplatformVersion: String?,
+    benchmarkLibraryVersion: String
+) =
     """
     plugins {
         id 'org.jetbrains.kotlin.multiplatform' version '$kotlinVersion'
-        id 'org.jetbrains.kotlinx.benchmark' version '0.5.0-SNAPSHOT'
+        ${
+            when (agpMultiplatformVersion != null) {
+                true -> "id 'com.android.kotlin.multiplatform.library' version '$agpMultiplatformVersion'"
+                else -> ""
+            }
+        }
+        id 'org.jetbrains.kotlinx.benchmark' version '$benchmarkLibraryVersion'
     }
     
     kotlin {
@@ -104,7 +126,7 @@ private fun generateBuildScript(kotlinVersion: String, jvmToolchain: Int) =
         sourceSets {
             commonMain {
                 dependencies {
-                    implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.5.0-SNAPSHOT")
+                    implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:${benchmarkLibraryVersion}")
                 }
             }
         }

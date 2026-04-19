@@ -9,6 +9,7 @@ buildscript {
     repositories {
         maven("https://packages.jetbrains.team/maven/p/kotlinx-team-infra/maven")
         gradlePluginPortal()
+        google()
 
         addDevRepositoryIfEnabled(this, project)
     }
@@ -32,6 +33,7 @@ plugins {
     id("base")
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.kotlinx.binaryCompatibilityValidator)
+    alias(libs.plugins.android.multiplatform.library) apply false
 }
 
 apply(plugin = "kotlinx.team.infra")
@@ -53,6 +55,7 @@ extensions.configure<InfraExtension> {
 // https://youtrack.jetbrains.com/issue/KT-48410
 repositories {
     mavenCentral()
+    google()
 }
 
 // region Workarounds for https://github.com/gradle/gradle/issues/22335
@@ -91,6 +94,7 @@ if (kotlinVersionOverride != null) {
 
 allprojects {
     repositories {
+        google()
         addDevRepositoryIfEnabled(this, project)
     }
 

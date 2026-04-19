@@ -118,6 +118,7 @@ constructor(
                 is JsBenchmarkTarget -> processJsCompilation(config)
                 is WasmBenchmarkTarget -> processWasmCompilation(config)
                 is NativeBenchmarkTarget -> processNativeCompilation(config)
+                is AndroidBenchmarkTarget -> processAndroidCompilation(config)
             }
         }
         extension.checkConflictingJmhVersions()

@@ -44,6 +44,7 @@ only for the specific Kotlin version used to build the library. For the latest v
   - [Writing Benchmarks](docs/writing-benchmarks.md)
   - [Configuring Benchmarks Execution](docs/configuration-options.md)
   - [Setting Up Kotlin/JVM and Java Projects for Benchmarking](docs/kotlin-jvm-project-setup.md)
+  - [Setting Up Android modules for Benchmarking](docs/kotlin-android-project-setup.md)
   - [Setting Up a Separate Source Set for Benchmarks](docs/separate-benchmark-source-set.md)
   - [Overview of Tasks Provided by kotlinx-benchmark Gradle Plugin](docs/tasks-overview.md)
 
@@ -309,6 +310,71 @@ To run benchmarks in Kotlin/Wasm:
 Note: Kotlin/Wasm is an experimental compilation target for Kotlin. It may be dropped or changed at any time. Refer to 
 [Kotlin/Wasm documentation](https://kotlinlang.org/docs/wasm-overview.html) for up-to-date information about the target stability.
 
+#### Android
+To run benchmarks in an Android module: 
+
+1. Make sure that you are using the `com.android.kotlin.multiplatform.library`
+   plugin, not `com.android.library` or `com.android.application`. These are 
+   being [deprecated](https://developer.android.com/kotlin/multiplatform/plugin)
+   and are not supported.
+2. Create an `androidLibrary` target:
+
+    ```kotlin
+    // build.gradle.kts
+    kotlin {
+        androidLibrary { 
+            namespace = "com.myapp"
+            compileSdk = 36
+            minSdk = 29
+        }
+    }
+    ```
+   
+    `kotlinx-multiplatform` requires a minimum SDK of Android 10 (API level 29).
+
+2.  Register `android` as a benchmark target:
+
+    ```kotlin
+    // build.gradle.kts
+    benchmark {
+        targets {
+            register("android") {   
+                // Required unless the `ANDROID_HOME` environment variable is set
+                sdkDir = "/path/to/android/sdk"
+            }   
+        }
+    }
+    ```
+    Android benchmarks uses [Jetpack Microbenchmarks](https://developer.android.com/topic/performance/benchmarking/microbenchmark-overview)
+    under the hood.
+
+    <details><summary><b>Configuring Jetpack Microbenchmark</b></summary>
+
+    `kotlinx-benchmarks` will generate a seperate Jetpack Microbenchmark Gradle 
+    project under the hood that is responsible for running the benchmarks, but 
+    it is possible to configure the behavior of this project using the 
+    `kotlinx-benchmark` API.
+
+    In particular, you can configure extra instrumentation runner arguments. See
+    the full list [here](https://developer.android.com/topic/performance/benchmarking/microbenchmark-instrumentation-args).
+
+    ```
+        register("android") {
+            this as AndroidBenchmarkTarget
+            sdkDir = "/path/to/android/sdk"
+            profilingMode = ProfilingMode.None
+            instrumentationRunnerArguments.putAll(mapOf(
+                "androidx.benchmark.suppressErrors" to "EMULATOR"
+            ))
+        }
+    ```
+
+    During development and testing, it can be beneficial to allow testing on an
+    emulator, but for proper results, this option should be disabled and 
+    benchmarks run on a real device. 
+ 
+    </details>
+
 ### Writing Benchmarks
 
 After setting up your project and configuring targets, you can start writing benchmarks.
@@ -392,6 +458,9 @@ See [writing benchmarks](docs/writing-benchmarks.md) for a complete guide for wr
 
 To run your benchmarks in all registered platforms, run `benchmark` Gradle task in your project.
 To run only on a specific platform, run `<target-name>Benchmark`, e.g., `jvmBenchmark`.
+
+When running benchmarks on Android, the benchmarks will run on all connected devices by default. A single device can be
+selected by using `ANDROID_SERIAL=<deviceId> ./gradlew androidBenchmark`
 
 For more details about the tasks created by the `kotlinx-benchmark` plugin, refer to [this guide](docs/tasks-overview.md).
 
