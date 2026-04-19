@@ -1,7 +1,9 @@
 package kotlinx.benchmark.gradle
 
+import com.squareup.kotlinpoet.ANY
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.asTypeName
 import kotlinx.benchmark.gradle.SuiteSourceGenerator.Companion.blackholeFQN
 import kotlinx.benchmark.gradle.SuiteSourceGenerator.Companion.measureAnnotationFQN
 import kotlinx.benchmark.gradle.SuiteSourceGenerator.Companion.paramAnnotationFQN
@@ -16,7 +18,6 @@ import org.gradle.api.tasks.*
 import java.io.*
 import java.util.*
 import java.util.jar.*
-import kotlin.collections.*
 
 /**
  * Task for scanning benchmark classes in the AAR's classes.jar and generating the
@@ -276,53 +277,52 @@ internal abstract class AndroidGeneratorTask : DefaultTask() {
             )
         }
 
+        var hasSetupMethod = false
         methods.forEach { method ->
                 when {
                     method.annotations.any { it.name == setupAnnotationFQN || it.name == teardownAnnotationFQN } -> {
-                        generateNonMeasurableMethod(descriptor, method, propertyName, typeSpecBuilder)
+                        if (method.annotations.any { it.name == setupAnnotationFQN }) hasSetupMethod = true
+                        generateTestLifecycleMethod(descriptor, method, propertyName, typeSpecBuilder, isParameterized)
                     }
-
-                    isParameterized && descriptor.getSpecificField(paramAnnotationFQN).isNotEmpty() -> {
-                        generateParameterizedMeasurableMethod(descriptor, method, propertyName, typeSpecBuilder)
-                    }
-
                     else -> {
-                        generateMeasurableMethod(descriptor, method, propertyName, typeSpecBuilder)
+                        generateBenchmarkMethod(descriptor, method, propertyName, typeSpecBuilder)
                     }
                 }
             }
 
+        if (isParameterized && !hasSetupMethod) {
+            val methodSpecBuilder = FunSpec.builder("benchmark_${descriptor.name}_setUp")
+                .addAnnotation(ClassName("org.junit", "Before"))
+            descriptor.getSpecificField(paramAnnotationFQN).forEach { field ->
+                methodSpecBuilder.addStatement("$propertyName.${field.name} = ${field.name}")
+            }
+            typeSpecBuilder.addFunction(methodSpecBuilder.build())
+        }
+
         return hasTestMethods
     }
 
-    private fun generateCommonMeasurableMethod(
+    private fun generateBenchmarkMethod(
         descriptor: ClassAnnotationsDescriptor,
         method: MethodAnnotationsDescriptor,
         propertyName: String,
         typeSpecBuilder: TypeSpec.Builder,
-        isParameterized: Boolean
     ) {
 
         // Measurement and Warmup iterations are currently ignored on Android as there
         // are semantic differences between what these mean on JMH and Android.
         // Keep them visible, so we do not forget to revisit them in the future.
-        @Suppress("UnusedVariable")
+        @Suppress("UNUSED_VARIABLE")
         val measurementIterations = descriptor.annotations
             .find { it.name == measureAnnotationFQN }
             ?.parameters?.get("iterations") as? Int ?: 5
-        @Suppress("UnusedVariable")
+        @Suppress("UNUSED_VARIABLE")
         val warmupIterations = descriptor.annotations
             .find { it.name == warmupAnnotationFQN }
             ?.parameters?.get("iterations") as? Int ?: 5
 
         val methodSpecBuilder = FunSpec.builder("benchmark_${descriptor.name}_${method.name}")
             .addAnnotation(ClassName("org.junit", "Test"))
-
-        if (isParameterized) {
-            descriptor.getSpecificField(paramAnnotationFQN).forEach { field ->
-                methodSpecBuilder.addStatement("$propertyName.${field.name} = ${field.name}")
-            }
-        }
 
         val callArgs = if (method.parameters.singleOrNull() == blackholeFQN) BLACKHOLE_PROPERTY_NAME else ""
         methodSpecBuilder
@@ -333,36 +333,23 @@ internal abstract class AndroidGeneratorTask : DefaultTask() {
         typeSpecBuilder.addFunction(methodSpecBuilder.build())
     }
 
-    private fun generateParameterizedMeasurableMethod(
+    private fun generateTestLifecycleMethod(
         descriptor: ClassAnnotationsDescriptor,
         method: MethodAnnotationsDescriptor,
         propertyName: String,
-        typeSpecBuilder: TypeSpec.Builder
-    ) {
-        generateCommonMeasurableMethod(descriptor, method, propertyName, typeSpecBuilder, isParameterized = true)
-    }
-
-    private fun generateMeasurableMethod(
-        descriptor: ClassAnnotationsDescriptor,
-        method: MethodAnnotationsDescriptor,
-        propertyName: String,
-        typeSpecBuilder: TypeSpec.Builder
-    ) {
-        generateCommonMeasurableMethod(descriptor, method, propertyName, typeSpecBuilder, isParameterized = false)
-    }
-
-
-    private fun generateNonMeasurableMethod(
-        descriptor: ClassAnnotationsDescriptor,
-        method: MethodAnnotationsDescriptor,
-        propertyName: String,
-        typeSpecBuilder: TypeSpec.Builder
+        typeSpecBuilder: TypeSpec.Builder,
+        isParameterized: Boolean = false
     ) {
         when (method.annotations.first().name) {
             setupAnnotationFQN -> {
                 val methodSpecBuilder = FunSpec.builder("benchmark_${descriptor.name}_setUp")
                     .addAnnotation(ClassName("org.junit", "Before"))
-                    .addStatement("$propertyName.${method.name}()")
+                if (isParameterized) {
+                    descriptor.getSpecificField(paramAnnotationFQN).forEach { field ->
+                        methodSpecBuilder.addStatement("$propertyName.${field.name} = ${field.name}")
+                    }
+                }
+                methodSpecBuilder.addStatement("$propertyName.${method.name}()")
                 typeSpecBuilder.addFunction(methodSpecBuilder.build())
             }
 
