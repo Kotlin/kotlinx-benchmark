@@ -321,7 +321,7 @@ internal abstract class AndroidGeneratorTask : DefaultTask() {
             .find { it.name == warmupAnnotationFQN }
             ?.parameters?.get("iterations") as? Int ?: 5
 
-        val methodSpecBuilder = FunSpec.builder("benchmark_${descriptor.name}_${method.name}")
+        val methodSpecBuilder = FunSpec.builder("benchmark_${method.name}")
             .addAnnotation(ClassName("org.junit", "Test"))
 
         val callArgs = if (method.parameters.singleOrNull() == blackholeFQN) BLACKHOLE_PROPERTY_NAME else ""

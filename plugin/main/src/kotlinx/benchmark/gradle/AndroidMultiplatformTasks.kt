@@ -85,7 +85,6 @@ private fun Project.createAndroidBenchmarkExecTask(target: AndroidBenchmarkTarge
         dependsOn(generateSourcesTaskName(target))
         this.adb.set(target.adb)
         this.timeoutMs.set(target.timeout.inWholeMilliseconds)
-        this.timeoutStr.set(target.timeout.toString())
         this.benchmarkProjectDir.set(buildDir)
         this.deviceOutputDir.set(deviceOutputDir)
         this.benchmarkResultsDir.set(benchmarkResultsDir)
