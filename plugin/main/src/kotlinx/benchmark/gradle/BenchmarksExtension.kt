@@ -1,22 +1,16 @@
 package kotlinx.benchmark.gradle
 
 import com.android.build.api.dsl.KotlinMultiplatformAndroidTarget
-import com.android.tools.r8.internal.om
 import groovy.lang.Closure
-import kotlinx.benchmark.gradle.internal.BenchmarksPluginConstants
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
 import org.gradle.api.plugins.*
 import org.gradle.api.provider.*
 import org.gradle.util.GradleVersion
-import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
-import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
-import org.jetbrains.kotlin.gradle.plugin.getKotlinPluginVersion
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJsCompilation
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
-import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrCompilation
+import org.jetbrains.kotlin.gradle.dsl.*
+import org.jetbrains.kotlin.gradle.plugin.*
+import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.targets.js.ir.*
 
 fun Project.benchmark(configure: Action<BenchmarksExtension>) {
     extensions.configure(BenchmarksExtension::class.java, configure)
@@ -108,16 +102,24 @@ constructor(
                             // Detect version of AGP used by the main project
                             val agpVersion = com.android.build.api.AndroidPluginVersion.getCurrent().version
 
+                            // Get path to ADB
                             val adb = project.extensions
                                 .getByType(com.android.build.api.variant.KotlinMultiplatformAndroidComponentsExtension::class.java)
                                 .sdkComponents
                                 .adb
+
+                            // We want the generated project to use the same Gradle Wrapper binary as the
+                            // main project. To make sure they have the same setup, we copy the entire
+                            // gradle-wrapper.properties file from the main project. If not found, we instead
+                            // create one using the same Gradle version as the main project.
+                            val wrapperPropsFile = project.rootProject.rootDir.resolve("gradle/wrapper/gradle-wrapper.properties")
 
                             AndroidBenchmarkTarget(
                                 extension = this,
                                 name = name,
                                 target = androidTarget,
                                 compilation = compilation,
+                                mainProjectGradleWrapperPropertiesFile = wrapperPropsFile,
                                 mainProjectGradleVersion = GradleVersion.current(),
                                 mainProjectKotlinVersion = kotlinVersion,
                                 mainProjectAgpVersion = agpVersion,
