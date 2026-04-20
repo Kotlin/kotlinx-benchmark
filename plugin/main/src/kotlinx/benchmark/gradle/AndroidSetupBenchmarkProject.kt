@@ -93,10 +93,15 @@ internal abstract class AndroidSetupBenchmarkProject @Inject constructor(
             )
         }
 
-        updateTemplateValues(generatedProjectDir.resolve("gradle/wrapper/gradle-wrapper.properties")) {
-            mapOf(
-                "GRADLE_VERSION" to config.gradleVersion,
-            )
+        val wrapperProperties = generatedProjectDir.resolve("gradle/wrapper/gradle-wrapper.properties")
+        if (config.gradleWrapperPropertiesFile.exists()) {
+            config.gradleWrapperPropertiesFile.copyTo(wrapperProperties, overwrite = true)
+        } else {
+            updateTemplateValues(wrapperProperties) {
+                mapOf(
+                    "GRADLE_VERSION" to config.gradleVersion,
+                )
+            }
         }
 
         generatedProjectDir.resolve("local.properties").let { file ->

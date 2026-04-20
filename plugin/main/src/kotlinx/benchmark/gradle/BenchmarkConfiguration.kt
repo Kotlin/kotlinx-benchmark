@@ -6,6 +6,7 @@ import kotlinx.benchmark.gradle.internal.BenchmarksPluginConstants
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.GradleException
 import org.gradle.api.file.RegularFile
+import org.gradle.api.internal.provider.Providers.internal
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSet
@@ -15,6 +16,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrCompilation
+import java.io.File
 import java.io.Serializable
 import java.nio.file.Path
 import java.util.Locale
@@ -158,6 +160,7 @@ constructor(
     name: String,
     private val target: KotlinMultiplatformAndroidTarget,
     compilation: KotlinMultiplatformAndroidCompilation,
+    mainProjectGradleWrapperPropertiesFile: File,
     mainProjectGradleVersion: GradleVersion,
     mainProjectKotlinVersion: String,
     mainProjectAgpVersion: String,
@@ -243,6 +246,12 @@ constructor(
      */
     internal val gradleVersion = mainProjectGradleVersion
 
+    /**
+     * Path to the Gradle Wrapper properties file used by the main project.
+     * It will be copied to the generated benchmark project if possible.
+     */
+    internal val gradleWrapperPropertiesFiles: File = mainProjectGradleWrapperPropertiesFile
+
     internal val compilationName = compilation.name
 
     // Used internally to generate task names including this target and its compilation.
@@ -259,6 +268,7 @@ constructor(
             minSdk = target.minSdk ?: throw GradleException("`minSdk` is not set"),
             kotlinVersion = kotlinVersion,
             agpVersion = agpVersion,
+            gradleWrapperPropertiesFile = gradleWrapperPropertiesFiles,
             gradleVersion = gradleVersion.version,
             sdkDir = sdkDir.orNull,
             profilingMode = profilingMode,
@@ -276,6 +286,7 @@ constructor(
         val minSdk: Int,
         val kotlinVersion: String,
         val agpVersion: String,
+        val gradleWrapperPropertiesFile: File,
         val gradleVersion: String,
         val sdkDir: String?,
         val profilingMode: ProfilingMode,
