@@ -201,7 +201,7 @@ constructor(
     )
 
     /**
-     * How long kotlinx-benchmark will wait for the device to complete the benchmarks.
+     * How long kotlinx-benchmark will wait for the device to complete benchmarks for a single class.
      * If the limit is reached, the benchmark run will be aborted and an exception is thrown.
      */
     public var timeout: Duration = 10.minutes
