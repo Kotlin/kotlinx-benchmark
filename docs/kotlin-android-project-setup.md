@@ -190,6 +190,7 @@ options are supported on Android:
 **Supported**
 - `BenchmarkConfiguration.include()`
 - `BenchmarkConfiguration.exclude()`
+- `BenchmarkConfiguration.param()`
 
 **Not supported**
 - `BenchmarkConfiguration.iterations`
@@ -199,7 +200,6 @@ options are supported on Android:
 - `BenchmarkConfiguration.mode`
 - `BenchmarkConfiguration.outputTimeUnit`
 - `BenchmarkConfiguration.reportFormat`
-- `BenchmarkConfiguration.param()`
 - `BenchmarkConfiguration.advanced()`
 
 ## Separate source set for benchmarks

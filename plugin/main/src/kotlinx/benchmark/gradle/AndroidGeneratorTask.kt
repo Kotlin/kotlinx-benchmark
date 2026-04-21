@@ -61,6 +61,14 @@ internal abstract class AndroidGeneratorTask : DefaultTask() {
     @get:Input
     abstract val excludePatterns: ListProperty<String>
 
+    /**
+     * Overrides for`@Param` properties. Setting these will override any values defined in the user's
+     * benchmark code. The values will be replaced in all benchmark classes where the `name` matches.
+     * If the string values cannot be cast to the appropriate type, an exception will be thrown.
+     */
+    @get:Input
+    abstract val paramOverrides: MapProperty<String, List<String>>
+
     @TaskAction
     fun generate() {
         val classesJar = unpackedAarDir.get().asFile.resolve("classes.jar")
@@ -170,6 +178,7 @@ internal abstract class AndroidGeneratorTask : DefaultTask() {
             .build()
 
     private fun generateParameterizedDescriptorFile(descriptor: ClassAnnotationsDescriptor, androidTestDir: File) {
+        val originalClassName = "${descriptor.packageName}.${descriptor.name}"
         val descriptorName = "${descriptor.name}_Descriptor"
         val packageName = descriptor.packageName
         val fileSpecBuilder = FileSpec.builder(packageName, descriptorName)
@@ -202,7 +211,7 @@ internal abstract class AndroidGeneratorTask : DefaultTask() {
 
         // Generate companion object with parameters
         val companionSpec = TypeSpec.companionObjectBuilder()
-            .addFunction(generateParametersFunction(paramFields))
+            .addFunction(generateParametersFunction(originalClassName, paramFields))
             .build()
 
         typeSpecBuilder.addType(companionSpec)
@@ -215,7 +224,7 @@ internal abstract class AndroidGeneratorTask : DefaultTask() {
         }
     }
 
-    private fun generateParametersFunction(paramFields: List<FieldAnnotationsDescriptor>): FunSpec {
+    private fun generateParametersFunction(classname: String, paramFields: List<FieldAnnotationsDescriptor>): FunSpec {
         val dataFunctionBuilder = FunSpec.builder("data")
             .addAnnotation(JvmStatic::class)
             .returns(
@@ -239,15 +248,29 @@ internal abstract class AndroidGeneratorTask : DefaultTask() {
         )
 
         val paramValueLists = paramFields.map { param ->
-            val values = param.annotations
-                .find { it.name == paramAnnotationFQN }
-                ?.parameters?.get("value") as List<*>
+            // `BenchmarkConfiguration.params` overrides replace annotation values entirely
+            val configurationParams = paramOverrides.get()[param.name]
+            val values =
+                when (configurationParams != null) {
+                true -> configurationParams!!
+                false -> {
+                    (param.annotations
+                        .find { it.name == paramAnnotationFQN }?.parameters?.get("value") as List<*>)
+                        .map { paramValue -> paramValue.toString() }
+                }
+            }
+
+            // If no parameter values are found, throw an exception. This is consistent
+            // with JMH behavior.
+            if (values.isEmpty()) {
+                throw GradleException("No parameter values found for parameter '${param.name}' in $classname")
+            }
 
             values.map { value ->
                 if (param.type == "java.lang.String") {
                     "\"\"\"$value\"\"\""
                 } else {
-                    value.toString()
+                    value
                 }
             }
         }

@@ -69,6 +69,10 @@ private fun Project.createAndroidBenchmarkGenerateSourceTask(
     val buildDir = androidBenchmarkBuildDir(target, config)
     val targetName = target.name
     val unpackedDir = getUnpackAarDir(target.compilationName)
+    val paramOverrides = config.params.mapValues { (_, values) ->
+        // `null` cannot be represented as string, but will turn into "null", which is mirroring the JHM behavior
+        values.map { it.toString() }
+    }
 
     task<AndroidGeneratorTask>(generateSourcesTaskName(target, config)) {
         group = "benchmark"
@@ -81,6 +85,7 @@ private fun Project.createAndroidBenchmarkGenerateSourceTask(
         this.benchmarkProjectDir.set(buildDir.resolve("microbenchmark/src/androidTest/kotlin"))
         this.includePatterns.set(config.includes)
         this.excludePatterns.set(config.excludes)
+        this.paramOverrides.set(paramOverrides)
     }
 }
 
