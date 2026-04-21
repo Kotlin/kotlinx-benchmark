@@ -126,6 +126,11 @@ kotlin {
                 implementation(libs.jmh.core)
             }
         }
+        androidMain {
+            dependencies {
+                compileOnly(libs.androidx.benchmark)
+            }
+        }
     }
 }
 

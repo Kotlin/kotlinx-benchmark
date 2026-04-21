@@ -22,6 +22,7 @@ minSupportedKotlin = "2.2.0"
 [libraries]
 
 androidBuildTools = { module = "com.android.tools.build:gradle", version.ref = "android-build-tools" }
+androidx-benchmark = { group = "androidx.benchmark", name = "benchmark-junit4", version.ref = "android-benchmark" }
 
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect" }
 
