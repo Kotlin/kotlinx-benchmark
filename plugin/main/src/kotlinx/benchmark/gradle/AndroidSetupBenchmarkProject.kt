@@ -72,7 +72,13 @@ internal abstract class AndroidSetupBenchmarkProject @Inject constructor(
         updateTemplateValues(generatedProjectDir.resolve("microbenchmark/build.gradle.kts")) {
             // Right now this list exposes the most "relevant" API's. Which ones to
             // expose probably requires more user feedback.
+
+            // In AGP 9.0+, the `org.jetbrains.kotlin.android` plugin is included as part of com.android.library,
+            // so we do not need to apply it explicitly.
+            val isAgp9 = config.agpVersion.startsWith("9.")
+
             mapOf(
+                "DISABLE_KOTLIN_ANDROID_PLUGIN" to if (isAgp9) "//" else "",
                 "JVM_TARGET" to "JvmTarget.${config.jvmTargetName}",
                 "JVM_TOOLCHAIN" to config.jvmToolchain.toString(),
                 "NAMESPACE" to config.namespace,

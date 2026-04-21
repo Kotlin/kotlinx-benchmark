@@ -1,25 +1,28 @@
 package kotlinx.benchmark.gradle
 
-import com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation
-import com.android.build.api.dsl.KotlinMultiplatformAndroidTarget
 import kotlinx.benchmark.gradle.internal.BenchmarksPluginConstants
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.GradleException
 import org.gradle.api.file.RegularFile
-import org.gradle.api.internal.provider.Providers.internal
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSet
+import org.gradle.internal.impldep.com.google.gson.internal.bind.TypeAdapters.URI
 import org.gradle.util.GradleVersion
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
+import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrCompilation
 import java.io.File
 import java.io.Serializable
+import java.net.URI
 import java.nio.file.Path
 import java.util.Locale
+import kotlin.io.path.Path
+import kotlin.io.path.toPath
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 
@@ -152,14 +155,13 @@ constructor(
  *
  * In case of build errors, the project files can be found and reviewed in `build/benchmarks/android/`.
  */
-@Suppress("UnstableApiUsage")
 class AndroidBenchmarkTarget
 @KotlinxBenchmarkPluginInternalApi
-constructor(
+internal constructor(
     extension: BenchmarksExtension,
     name: String,
-    private val target: KotlinMultiplatformAndroidTarget,
-    compilation: KotlinMultiplatformAndroidCompilation,
+    private val target: KmpAndroidTargetCompat,
+    compilation: KotlinCompilation<*>,
     mainProjectGradleWrapperPropertiesFile: File,
     mainProjectGradleVersion: GradleVersion,
     mainProjectKotlinVersion: String,
@@ -220,13 +222,14 @@ constructor(
      *
      * See [https://developer.android.com/topic/performance/benchmarking/microbenchmark-write?utm_source=chatgpt.com#benchmark-results]]
      */
-    internal val deviceResultOutputDirectory: Path = Path.of("outputs/connected_android_test_additional_output/releaseAndroidTest/connected")
+    internal val deviceResultOutputDirectory: Path = Path("outputs/connected_android_test_additional_output/releaseAndroidTest/connected")
 
     /**
      * The JVM Target used by the benchmark library.
      * The default value is the same JVM Target used by the `androidLibrary` target in the main project.
      */
-    internal val jvmTarget: JvmTarget = target.compilations.getByName("main").compilerOptions.options.jvmTarget.get()
+    @Suppress("DEPRECATION")
+    internal val jvmTarget: JvmTarget = (compilation.compilerOptions.options as KotlinJvmCompilerOptions).jvmTarget.get()
 
     /**
      * Version of Kotlin used by the generated benchmark project. S

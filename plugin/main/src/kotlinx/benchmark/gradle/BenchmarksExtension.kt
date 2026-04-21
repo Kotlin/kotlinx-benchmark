@@ -1,6 +1,5 @@
 package kotlinx.benchmark.gradle
 
-import com.android.build.api.dsl.KotlinMultiplatformAndroidTarget
 import groovy.lang.Closure
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
@@ -66,7 +65,6 @@ constructor(
                     // We allow the name to be either a target or a source set, but prioritize matching on target first
                     val compilation = target?.compilations?.findByName(KotlinCompilation.MAIN_COMPILATION_NAME)  ?: multiplatform.targets.flatMap { it.compilations }.find { it.defaultSourceSet.name == name }
                     when (compilation) {
-
                         null -> {
                             project.logger.warn("Warning: Cannot find a benchmark compilation '$name', ignoring.")
                             BenchmarkTarget(this, name) // ignore
@@ -91,45 +89,41 @@ constructor(
                             NativeBenchmarkTarget(this, name, compilation)
                         }
 
-                        is com.android.build.api.dsl.KotlinMultiplatformAndroidCompilation -> {
-                            var androidTarget = (target as? KotlinMultiplatformAndroidTarget)
-                            if (androidTarget == null) {
-                                androidTarget = (compilation.target as? KotlinMultiplatformAndroidTarget) ?: error("Cannot cast to KotlinMultiplatformAndroidTarget: ${compilation.target}")
-                            }
-
-                            // Detect version of Kotlin used by the main project
-                            val kotlinVersion = project.getKotlinPluginVersion()
-                            // Detect version of AGP used by the main project
-                            val agpVersion = com.android.build.api.AndroidPluginVersion.getCurrent().version
-
-                            // Get path to ADB
-                            val adb = project.extensions
-                                .getByType(com.android.build.api.variant.KotlinMultiplatformAndroidComponentsExtension::class.java)
-                                .sdkComponents
-                                .adb
-
-                            // We want the generated project to use the same Gradle Wrapper binary as the
-                            // main project. To make sure they have the same setup, we copy the entire
-                            // gradle-wrapper.properties file from the main project. If not found, we instead
-                            // create one using the same Gradle version as the main project.
-                            val wrapperPropsFile = project.rootProject.rootDir.resolve("gradle/wrapper/gradle-wrapper.properties")
-
-                            AndroidBenchmarkTarget(
-                                extension = this,
-                                name = name,
-                                target = androidTarget,
-                                compilation = compilation,
-                                mainProjectGradleWrapperPropertiesFile = wrapperPropsFile,
-                                mainProjectGradleVersion = GradleVersion.current(),
-                                mainProjectKotlinVersion = kotlinVersion,
-                                mainProjectAgpVersion = agpVersion,
-                                adbReference = adb,
-                            )
-                        }
-
                         else -> {
-                            project.logger.warn("Warning: Unsupported compilation '$compilation', ignoring.")
-                            BenchmarkTarget(this, name) // ignore
+                            if (compilation.isKmpAndroidCompilation()) {
+                                val rawAndroidTarget: Any = target ?: compilation.target
+                                val androidTargetCompat = rawAndroidTarget.toKmpAndroidTargetCompat()
+
+                                // Detect version of Kotlin used by the main project
+                                val kotlinVersion = project.getKotlinPluginVersion()
+                                // Detect version of AGP used by the main project
+                                val agpClassLoader = compilation.javaClass.classLoader
+                                val agpVersion = getAgpVersion(agpClassLoader)
+
+                                // Get path to ADB
+                                val adb = project.getAndroidAdb(agpClassLoader)
+
+                                // We want the generated project to use the same Gradle Wrapper binary as the
+                                // main project. To make sure they have the same setup, we copy the entire
+                                // gradle-wrapper.properties file from the main project. If not found, we instead
+                                // create one using the same Gradle version as the main project.
+                                val wrapperPropsFile = project.rootProject.rootDir.resolve("gradle/wrapper/gradle-wrapper.properties")
+
+                                AndroidBenchmarkTarget(
+                                    extension = this,
+                                    name = name,
+                                    target = androidTargetCompat,
+                                    compilation = compilation,
+                                    mainProjectGradleWrapperPropertiesFile = wrapperPropsFile,
+                                    mainProjectGradleVersion = GradleVersion.current(),
+                                    mainProjectKotlinVersion = kotlinVersion,
+                                    mainProjectAgpVersion = agpVersion,
+                                    adbReference = adb,
+                                )
+                            } else {
+                                project.logger.warn("Warning: Unsupported compilation '$compilation', ignoring.")
+                                BenchmarkTarget(this, name) // ignore
+                            }
                         }
                     }
                 }

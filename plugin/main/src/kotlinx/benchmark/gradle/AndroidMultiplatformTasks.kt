@@ -150,7 +150,7 @@ private fun Task.collectProjectTransitiveDependencies(target: AndroidBenchmarkTa
         val stdlibTransitiveDependencies: Set<File> = artifactFilesOfType(stdlibConfig, ArtifactTypeDefinition.JAR_TYPE).files
         return project.files(jarFiles, aarFiles)
             .filter { it !in stdlibTransitiveDependencies }
-            .filter { it.name != "kotlinx-benchmark-runtime.aar" }
+            .filter { "kotlinx-benchmark-runtime" !in it.path }
     } else {
         logger.warn(
             "Could not find runtime classpath configuration for Android target '${target.name}'. " +

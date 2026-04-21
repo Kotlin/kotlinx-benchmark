@@ -4,11 +4,8 @@ class ProjectBuilder {
     private val configurations = mutableMapOf<String, BenchmarkConfiguration>()
 
     private val benchmarkLibraryVersion = "0.5.0-SNAPSHOT"
-    // The version should be set to be compatible with the Gradle version used by kotlinx-benchmarks.
-    // See https://developer.android.com/build/releases/about-agp#updating-gradle
-    private val agpMultiplatformVersion = "8.6.1"
     var kotlinVersion: String = System.getProperty("kotlin_version")
-    var jvmToolchain: Int = 11 // TODO JDK_11_DISCUSS
+    var jvmToolchain: Int = 8
 
     fun configuration(name: String, configuration: BenchmarkConfiguration.() -> Unit = {}) {
         configurations[name] = BenchmarkConfiguration().apply(configuration)
@@ -39,7 +36,7 @@ class ProjectBuilder {
         return pluginManagement + "\n\n" + original + "\n\n" + dependencyManagement
     }
 
-    fun generateBuildScript(original: String, androidSupport: Boolean): String {
+    fun generateBuildScript(original: String, agpVersion: String?): String {
 
         val script =
             """
@@ -53,7 +50,7 @@ benchmark {
         return generateBuildScript(
             kotlinVersion = kotlinVersion,
             jvmToolchain = jvmToolchain,
-            agpMultiplatformVersion = if (androidSupport) agpMultiplatformVersion else null,
+            agpVersion = agpVersion,
             benchmarkLibraryVersion = benchmarkLibraryVersion
         ) + "\n\n" + original + "\n\n" + script
     }
@@ -105,15 +102,15 @@ private val kotlin_additional_cli_options = System.getProperty("kotlin_additiona
 private fun generateBuildScript(
     kotlinVersion: String,
     jvmToolchain: Int,
-    agpMultiplatformVersion: String?,
+    agpVersion: String?,
     benchmarkLibraryVersion: String
 ) =
     """
     plugins {
         id 'org.jetbrains.kotlin.multiplatform' version '$kotlinVersion'
         ${
-            when (agpMultiplatformVersion != null) {
-                true -> "id 'com.android.kotlin.multiplatform.library' version '$agpMultiplatformVersion'"
+            when (agpVersion != null) {
+                true -> "id 'com.android.kotlin.multiplatform.library' version '$agpVersion'"
                 else -> ""
             }
         }

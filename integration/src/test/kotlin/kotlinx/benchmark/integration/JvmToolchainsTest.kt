@@ -21,8 +21,7 @@ class JvmToolchainsTest : GradleTest() {
 
     @Test
     fun testMinSupportedVersion() {
-        // TODO JDK_11_DISCUSS
-        for (jvmToolchain in listOf(11, 17, 21)) {
+        for (jvmToolchain in listOf(8, 11, 17, 21)) {
             val runner = project(
                 "kmp-with-toolchain/min-supported-version",
                 print = true,

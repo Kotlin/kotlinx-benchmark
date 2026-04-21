@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.library)
-    alias(libs.plugins.jetbrains.kotlin.android)
+    <<DISABLE_KOTLIN_ANDROID_PLUGIN>>alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.androidx.benchmark)
 }
 

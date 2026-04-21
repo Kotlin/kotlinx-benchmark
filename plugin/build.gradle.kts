@@ -131,7 +131,6 @@ dependencies {
     implementation(libs.kotlin.utilKlib)
     implementation(libs.kotlin.utilIo)
 
-    compileOnly(libs.androidBuildTools)
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.kotlin.compilerEmbeddable)
     compileOnly(libs.jmh.generatorBytecode) // used in worker
