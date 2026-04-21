@@ -1,12 +1,12 @@
 package kotlinx.benchmark.gradle
 
+import kotlinx.benchmark.gradle.internal.android.*
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.provider.*
 import org.gradle.api.tasks.*
 import java.io.*
 import java.util.*
-import java.util.concurrent.*
 import kotlin.text.get
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -65,10 +65,7 @@ internal abstract class AndroidExecTask : DefaultTask() {
         detectAndroidDevice(adbPath)
 
         val benchmarkClasses = discoverBenchmarkClasses()
-        val executeBenchmarkPath = benchmarkProjectDir.get().asFile.path
-        val osName = System.getProperty("os.name").lowercase(Locale.ROOT)
-        val gradlewPath = "$executeBenchmarkPath/gradlew" + if (osName.contains("win")) ".bat" else ""
-
+        val projectDir = benchmarkProjectDir.get().asFile
         val resultsDir = benchmarkResultsDir.get().asFile
         resultsDir.deleteRecursively()
         resultsDir.mkdirs()
@@ -84,16 +81,18 @@ internal abstract class AndroidExecTask : DefaultTask() {
 
         for (fqcn in benchmarkClasses) {
             val args = listOf(
-                "-p", executeBenchmarkPath,
                 "connectedReleaseAndroidTest",
                 "-Pandroid.testInstrumentationRunnerArguments.class=$fqcn",
                 "--stacktrace"
             )
             val userFqcn = fqcn.removeSuffix("_Descriptor")
             logger.lifecycle("Running $userFqcn")
-            logger.info("Running command: $gradlewPath ${args.joinToString(" ")}")
-
-            val (completed, exitCode) = runGradleProcess(gradlewPath, args)
+            val (completed, exitCode) = runBenchmarkProjectGradleTask(
+                projectDir = projectDir,
+                args = args,
+                showTaskOutputAsLifecycle = false,
+                timeoutMs = timeoutMs.get()
+            )
             when {
                 !completed -> throw GradleException("Android benchmark failed to complete in the allocated time: ${timeoutMs.get().milliseconds}")
                 exitCode != 0 -> throw GradleException("Android benchmark failed with exit code: $exitCode")
@@ -138,29 +137,6 @@ internal abstract class AndroidExecTask : DefaultTask() {
                 if (packageName != null) "$packageName.${file.nameWithoutExtension}" else file.nameWithoutExtension
             }
             .toList()
-    }
-
-    private fun runGradleProcess(gradlewPath: String, args: List<String>): Pair<Boolean, Int> {
-        val process = ProcessBuilder(gradlewPath, *args.toTypedArray())
-            .redirectOutput(ProcessBuilder.Redirect.PIPE)
-            .redirectError(ProcessBuilder.Redirect.PIPE)
-            .start()
-
-        val outputGobbler = StreamGobbler(process.inputStream) {
-            // Almost all log output from the spawned Gradle process will be sent to the
-            // normal input stream, regardless of log level. As we don't have a great way
-            // to filter it on this side, we just send all of it to the info log, as it
-            // can be helpful during debugging, but otherwise just pollute the main build log.
-            logger.info(it)
-        }
-        val errorGobbler = StreamGobbler(process.errorStream) {
-            logger.error(it)
-        }
-        outputGobbler.start()
-        errorGobbler.start()
-
-        val completed = process.waitFor(timeoutMs.get(), TimeUnit.MILLISECONDS)
-        return completed to process.exitValue()
     }
 
     private fun detectAndroidDevice(adb: String) {
@@ -321,13 +297,5 @@ private data class AndroidBenchmarkResult(
 
     companion object {
         private const val SEPARATOR = "    "
-    }
-}
-
-private class StreamGobbler(private val inputStream: InputStream, private val consumer: (String) -> Unit) : Thread() {
-    override fun run() {
-        inputStream.bufferedReader().useLines { lines ->
-            lines.forEach { consumer(it) }
-        }
     }
 }
