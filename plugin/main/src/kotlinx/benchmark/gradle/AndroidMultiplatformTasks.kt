@@ -19,17 +19,21 @@ import kotlin.time.Duration.Companion.minutes
 // Setup Gradle tasks needed to create and run benchmarks on Android
 internal fun Project.processAndroidCompilation(config: AndroidBenchmarkTarget) {
     project.logger.info("Configuring benchmarks for '${config.name}'")
-    createUnpackLibraryArtifactTask(config, config.compilationName)
-    createSetupAndroidProjectTask(config)
-    createAndroidBenchmarkGenerateSourceTask(config, config.compilationName)
-    createAndroidBenchmarkExecTask(config)
+    // Android doesn't support custom compilations, so we share the same compilation across all benchmark configurations
+    createUnpackLibraryArtifactTask(config)
+    config.extension.configurations.forEach { benchmarkConfig ->
+        createSetupAndroidProjectTask(config, benchmarkConfig)
+        createAndroidBenchmarkGenerateSourceTask(config, benchmarkConfig)
+        createAndroidBenchmarkExecTask(config, benchmarkConfig)
+    }
     createDeviceLockingTasks(config)
 }
 
-private fun Project.createUnpackLibraryArtifactTask(target: AndroidBenchmarkTarget, compilationName: String) {
+private fun Project.createUnpackLibraryArtifactTask(target: AndroidBenchmarkTarget) {
+    val compilationName = target.compilationName
     task<AndroidUnpackLibraryArtifactTask>(generateUnpackArtifactTaskName(target)) {
         group = "benchmark"
-        description = "Unpacks the AAR or JAR file produced by compilation '$compilationName'"
+        description = "Unpacks the AAR or JAR file produced by compilation '$compilationName}'"
         val (buildTaskName, libFile) = resolveLibraryArtifact(target)
         dependsOn(buildTaskName)
         this.libraryFile.set(libFile)
@@ -37,7 +41,7 @@ private fun Project.createUnpackLibraryArtifactTask(target: AndroidBenchmarkTarg
     }
 }
 
-private fun Project.createSetupAndroidProjectTask(target: AndroidBenchmarkTarget) {
+private fun Project.createSetupAndroidProjectTask(target: AndroidBenchmarkTarget, config: BenchmarkConfiguration) {
     val pluginJarFile = project.file(
         URLDecoder.decode(
             BenchmarksPlugin::class.java.protectionDomain.codeSource.location.path,
@@ -45,7 +49,7 @@ private fun Project.createSetupAndroidProjectTask(target: AndroidBenchmarkTarget
         )
     )
 
-    task<AndroidSetupBenchmarkProject>(generateSetupProjectTaskName(target)) {
+    task<AndroidSetupBenchmarkProject>(generateSetupProjectTaskName(target, config)) {
         group = "benchmark"
         description = "Sets up Android project to generate benchmarks into"
         val (buildTaskName, libFile) = resolveLibraryArtifact(target)
@@ -54,37 +58,42 @@ private fun Project.createSetupAndroidProjectTask(target: AndroidBenchmarkTarget
         libraryFile.set(libFile)
         pluginJar.set(pluginJarFile)
         dependencies.from(collectProjectTransitiveDependencies(target))
-        outputDir.set(benchmarkBuildDir(target))
+        outputDir.set(androidBenchmarkBuildDir(target, config))
     }
 }
 
-private fun Project.createAndroidBenchmarkGenerateSourceTask(target: AndroidBenchmarkTarget, compilationName: String) {
-    val buildDir = benchmarkBuildDir(target)
+private fun Project.createAndroidBenchmarkGenerateSourceTask(
+    target: AndroidBenchmarkTarget,
+    config: BenchmarkConfiguration
+) {
+    val buildDir = androidBenchmarkBuildDir(target, config)
     val targetName = target.name
-    val unpackedDir = getUnpackAarDir(compilationName)
+    val unpackedDir = getUnpackAarDir(target.compilationName)
 
-    task<AndroidGeneratorTask>(generateSourcesTaskName(target)) {
+    task<AndroidGeneratorTask>(generateSourcesTaskName(target, config)) {
         group = "benchmark"
         description = "Generates benchmark source files for `${targetName}`"
         dependsOn(generateUnpackArtifactTaskName(target))
-        dependsOn(generateSetupProjectTaskName(target))
+        dependsOn(generateSetupProjectTaskName(target, config))
         this.unpackedAarDir.set(unpackedDir)
-        this.compilationName.set(compilationName)
+        this.compilationName.set(config.name)
         this.targetName.set(targetName)
         this.benchmarkProjectDir.set(buildDir.resolve("microbenchmark/src/androidTest/kotlin"))
+        this.includePatterns.set(config.includes)
+        this.excludePatterns.set(config.excludes)
     }
 }
 
-private fun Project.createAndroidBenchmarkExecTask(target: AndroidBenchmarkTarget) {
-    val buildDir = benchmarkBuildDir(target)
+private fun Project.createAndroidBenchmarkExecTask(target: AndroidBenchmarkTarget, config: BenchmarkConfiguration) {
+    val buildDir = androidBenchmarkBuildDir(target, config)
     val deviceOutputDir = buildDir.resolve("microbenchmark/build/${target.deviceResultOutputDirectory}")
     val benchmarkResultsDir = layout.buildDirectory.map {
-        it.dir("${target.extension.reportsDir}/${target.name}")
+        it.dir("${target.extension.reportsDir}/${target.name}${config.capitalizedName()}")
     }
-    task<AndroidExecTask>(generateExecTaskName(target)) {
+    task<AndroidExecTask>(generateExecTaskName(target, config)) {
         group = "benchmark"
         description = "Executes benchmarks for `${target.name}`"
-        dependsOn(generateSourcesTaskName(target))
+        dependsOn(generateSourcesTaskName(target, config))
         this.adb.set(target.adb)
         this.timeoutMs.set(target.timeout.inWholeMilliseconds)
         this.benchmarkProjectDir.set(buildDir)
@@ -94,23 +103,25 @@ private fun Project.createAndroidBenchmarkExecTask(target: AndroidBenchmarkTarge
     }
 }
 
-// Pass-through `lockClocks` and `unlockClocks` to the generated benchmark project
+// Pass-through `lockClocks` and `unlockClocks` to the generated benchmark project.
+// These are not configuration-specific — they use the "main" (first) configuration's project.
 private fun Project.createDeviceLockingTasks(target: AndroidBenchmarkTarget) {
+    val mainConfig = target.extension.configurations.first()
     task<ExecBenchmarkProjectTask>("lockClocks") {
         group = "benchmark"
         description = "Locks clocks of connected, supported, rooted Android device."
-        dependsOn(generateSourcesTaskName(target))
+        dependsOn(generateSourcesTaskName(target, mainConfig))
         args.set(listOf("lockClocks"))
         timeoutMs.set(1.minutes.inWholeMilliseconds)
-        benchmarkProjectDir.set(benchmarkBuildDir(target))
+        benchmarkProjectDir.set(androidBenchmarkBuildDir(target, mainConfig))
     }
     task<ExecBenchmarkProjectTask>("unlockClocks") {
         group = "benchmark"
         description = "Unlocks clocks of Android device by rebooting"
-        dependsOn(generateSourcesTaskName(target))
+        dependsOn(generateSourcesTaskName(target, mainConfig))
         args.set(listOf("unlockClocks"))
         timeoutMs.set(1.minutes.inWholeMilliseconds)
-        benchmarkProjectDir.set(benchmarkBuildDir(target))
+        benchmarkProjectDir.set(androidBenchmarkBuildDir(target, mainConfig))
     }
 }
 
@@ -118,22 +129,16 @@ private fun generateUnpackArtifactTaskName(target: AndroidBenchmarkTarget): Stri
     return "unpack${target.gradleTaskName}Artifact"
 }
 
-private fun generateSetupProjectTaskName(target: AndroidBenchmarkTarget): String {
-    // As long as AGP doesn't support custom compilations, we ignore the configuration name and just uses the target name,
-    // E.g., instead of `setupAndroidMainBenchmarkProject` it just becomes `setupAndroidBenchmarkProject`.
-    return "setup${target.name.replaceFirstChar { it.uppercase() }}BenchmarkProject"
+private fun generateSetupProjectTaskName(target: AndroidBenchmarkTarget, config: BenchmarkConfiguration): String {
+    return "setup${target.name.replaceFirstChar { it.uppercase() }}${config.capitalizedName()}BenchmarkProject"
 }
 
-private fun generateExecTaskName(target: AndroidBenchmarkTarget): String {
-    // As long as AGP doesn't support custom compilations, we ignore the configuration name and just uses the target name,
-    // E.g., instead of `androidMainBenchmark` it just becomes `androidBenchmark`.
-    return "${target.name}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}"
+private fun generateExecTaskName(target: AndroidBenchmarkTarget, config: BenchmarkConfiguration): String {
+    return "${target.name}${config.capitalizedName()}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}"
 }
 
-private fun generateSourcesTaskName(target: AndroidBenchmarkTarget): String {
-    // As long as AGP doesn't support custom compilations, we ignore the configuration name and just uses the target name,
-    // E.g., instead of `androidMainBenchmarkGenerate` it just becomes `androidBenchmarkGenerate`.
-    return "${target.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}"
+private fun generateSourcesTaskName(target: AndroidBenchmarkTarget, config: BenchmarkConfiguration): String {
+    return "${target.name}${config.capitalizedName()}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}"
 }
 
 /**
@@ -154,6 +159,13 @@ private fun Project.resolveLibraryArtifact(target: AndroidBenchmarkTarget): Pair
 
 private fun Project.getUnpackAarDir(compilationName: String): File {
     return File("${project.projectDir}/build/outputs/unpacked-aar/$compilationName")
+}
+
+// Returns a config-specific directory for the Android benchmark project.
+private fun Project.androidBenchmarkBuildDir(target: AndroidBenchmarkTarget, config: BenchmarkConfiguration): File {
+    val suffix = "-${config.name}"
+    return layout.buildDirectory.dir("${target.extension.buildDir}/${target.name}$suffix")
+        .get().asFile
 }
 
 // Collect all transitive runtime JAR and AAR dependencies from the Android runtime classpath.

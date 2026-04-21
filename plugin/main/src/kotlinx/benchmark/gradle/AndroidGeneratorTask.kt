@@ -4,6 +4,7 @@ import com.squareup.kotlinpoet.ANY
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.asTypeName
+import kotlinx.benchmark.gradle.SuiteSourceGenerator.Companion.benchmarkAnnotationFQN
 import kotlinx.benchmark.gradle.SuiteSourceGenerator.Companion.blackholeFQN
 import kotlinx.benchmark.gradle.SuiteSourceGenerator.Companion.measureAnnotationFQN
 import kotlinx.benchmark.gradle.SuiteSourceGenerator.Companion.paramAnnotationFQN
@@ -48,6 +49,18 @@ internal abstract class AndroidGeneratorTask : DefaultTask() {
     @get:OutputDirectory
     abstract val benchmarkProjectDir: DirectoryProperty
 
+    /**
+     * List of regex patterns describing which methods should be included in the benchmark.
+     */
+    @get:Input
+    abstract val includePatterns: ListProperty<String>
+    /**
+     * List of regex patterns describing which methods should be excluded in the benchmark.
+     * Exclude has priority over include.
+     */
+    @get:Input
+    abstract val excludePatterns: ListProperty<String>
+
     @TaskAction
     fun generate() {
         val classesJar = unpackedAarDir.get().asFile.resolve("classes.jar")
@@ -70,6 +83,25 @@ internal abstract class AndroidGeneratorTask : DefaultTask() {
     }
 
     private val BLACKHOLE_PROPERTY_NAME = "blackhole"
+
+    private fun shouldIncludeMethod(packageName: String, className: String, methodName: String): Boolean {
+        val includes = includePatterns.get()
+        val excludes = excludePatterns.get()
+
+        // Fast abort for the most common case.
+        if (includes.isEmpty() && excludes.isEmpty()) {
+            return true
+        }
+
+        // Otherwise, match the test name against all defined include and exclude patterns.
+        // Patterns are allowed to only match on substrings (and not the entire name), this
+        // should mirror the behavior in JMH.
+        val fullName = "$packageName.$className.$methodName"
+        val includePatterns = if (includes.isEmpty()) listOf(Regex(".*")) else includes.map { Regex(it) }
+        val excludePatterns = excludes.map { Regex(it) }
+        return includePatterns.any { regex -> regex.containsMatchIn(fullName) }
+                && excludePatterns.none { regex -> regex.containsMatchIn(fullName) }
+    }
 
     private fun generateBenchmarkSourceFiles(
         targetDir: File,
@@ -262,10 +294,22 @@ internal abstract class AndroidGeneratorTask : DefaultTask() {
         val methods = descriptor.methods
             .filter { it.visibility == Visibility.PUBLIC }
             .filter { it.parameters.isEmpty() || it.parameters.singleOrNull() == blackholeFQN }
-            .filterNot { method ->
-                method.annotations.any { annotation -> annotation.name == paramAnnotationFQN }
+            .filter { method ->
+                val isBenchmark = method.annotations.any { it.name == benchmarkAnnotationFQN }
+                val isLifecycleMethod = method.annotations.any { it.name == setupAnnotationFQN || it.name == teardownAnnotationFQN }
+                when {
+                    isBenchmark -> shouldIncludeMethod(descriptor.packageName, descriptor.name, method.name)
+                    isLifecycleMethod -> true
+                    else -> false
+                }
             }
-            .also { hasTestMethods = it.isNotEmpty() }
+            .also { filtered ->
+                hasTestMethods = filtered.any { method ->
+                    method.annotations.any {
+                        anno -> anno.name == benchmarkAnnotationFQN
+                    }
+                }
+            }
 
         val needsBlackhole = methods.any { it.parameters.singleOrNull() == blackholeFQN }
         if (needsBlackhole) {
