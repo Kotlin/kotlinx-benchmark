@@ -6,6 +6,7 @@ import org.gradle.api.file.*
 import org.gradle.api.provider.*
 import java.io.*
 import java.net.*
+import kotlin.time.Duration.Companion.minutes
 
 /**
  * File with helper methods for creating the necessary plumbing for us to be able to generate and run benchmarks
@@ -22,6 +23,7 @@ internal fun Project.processAndroidCompilation(config: AndroidBenchmarkTarget) {
     createSetupAndroidProjectTask(config)
     createAndroidBenchmarkGenerateSourceTask(config, config.compilationName)
     createAndroidBenchmarkExecTask(config)
+    createDeviceLockingTasks(config)
 }
 
 private fun Project.createUnpackLibraryArtifactTask(target: AndroidBenchmarkTarget, compilationName: String) {
@@ -89,6 +91,26 @@ private fun Project.createAndroidBenchmarkExecTask(target: AndroidBenchmarkTarge
         this.deviceOutputDir.set(deviceOutputDir)
         this.benchmarkResultsDir.set(benchmarkResultsDir)
         this.dryRun.set(target.dryRun)
+    }
+}
+
+// Pass-through `lockClocks` and `unlockClocks` to the generated benchmark project
+private fun Project.createDeviceLockingTasks(target: AndroidBenchmarkTarget) {
+    task<ExecBenchmarkProjectTask>("lockClocks") {
+        group = "benchmark"
+        description = "Locks clocks of connected, supported, rooted Android device."
+        dependsOn(generateSourcesTaskName(target))
+        args.set(listOf("lockClocks"))
+        timeoutMs.set(1.minutes.inWholeMilliseconds)
+        benchmarkProjectDir.set(benchmarkBuildDir(target))
+    }
+    task<ExecBenchmarkProjectTask>("unlockClocks") {
+        group = "benchmark"
+        description = "Unlocks clocks of Android device by rebooting"
+        dependsOn(generateSourcesTaskName(target))
+        args.set(listOf("unlockClocks"))
+        timeoutMs.set(1.minutes.inWholeMilliseconds)
+        benchmarkProjectDir.set(benchmarkBuildDir(target))
     }
 }
 
