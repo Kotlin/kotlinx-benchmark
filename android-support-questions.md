@@ -2,14 +2,14 @@
 
 Open Questions
 
---
+---
 Q: Is it okay that support limited to `com.android.kotlin.multiplatform.library'?
 
 - Seems acceptable as `com.android.library` and `com.android.application` are
   both deprecated.
 
 
---
+---
 Q: Right now, the template project includes a bundled gradle-wrapper.jar. It 
    would be nice to avoid it, but not sure if there is a way. It could potentially
    be copied from the user's project, but we are not guaranteed they use the 
@@ -19,32 +19,17 @@ Q: Right now, the template project includes a bundled gradle-wrapper.jar. It
   version and wrapper?
 - Having the generated project completely stand-alone is nice for debugging.
 
---
-Q: Task naming: Right now we do not use `androidMain`, but only `android` as 
-   the Android Gradle Plugin doesn't support custom compilations and having to 
-   include `Main` all the time is annoying and doesn't bring value, but would it
-   be more consistent to use `androidMainBenchmark`?
 
-- At least it would set us up for a future where custom compilations might be
-  supported.
-
-
---
+---
 Q: By not supporting custom compilations, we cannot filter out Android 
    benchmark files from the library when it is compiled. At least not easily.
    How big of a problem is this?
 
+- Custom source sets fix the problem, at least visually.
 - Could we hook into the build and filter them out for users somehow?
 
 
---
-Q: Proper benchmarks require locking the CPU on devices. This is available
-   through Gradle tasks in Jetpack Microbenchmark or ADB commands. Should we
-   expose these in `kotlinx-benchmark`, making this easier for users?
-
-- Shouldn't be super hard to do, so probably.
-  
--- 
+---
 Q: A lot of `kotlinx-benchmark` annotations are not easily supported on Android. 
    Some can be worked around, others should be documented. How to handle this?
 
@@ -60,7 +45,7 @@ Q: A lot of `kotlinx-benchmark` annotations are not easily supported on Android.
 - @OutputTimeUnit: Nothing technically prevents supporting this outside an extra
   parsing step.
 
---
+---
 Q: Right now Android doesn't support `BenchmarkConfiguration.reportFormat`.
    The biggest reason is that the Android output isn't JMH compatible. How
    to handle this?
