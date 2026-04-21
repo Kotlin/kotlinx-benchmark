@@ -9,16 +9,8 @@ import kotlin.math.*
 @OutputTimeUnit(BenchmarkTimeUnit.MILLISECONDS)
 @BenchmarkMode(Mode.Throughput)
 open class CommonBenchmark {
-
-    var data1: Int = 0
-
-    var data2: String = ""
-
+    @Benchmark
     fun function1() {
         // println("function1")
-    }
-
-    fun function2() {
-        // println("function2")
     }
 }

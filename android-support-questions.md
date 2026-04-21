@@ -2,30 +2,6 @@
 
 Open Questions
 
-
---
-Q: Android Build Tools require Java 11. This is conflicting with the current
-   `kotlinx-benchmark` benchmark plugin compiling with JvmTarget.1_8.
-
-   Changing this is a _breaking_ change for anyone using JDK 8 in their build
-   system, which at least include a handful of kotlinx libraries. Note, we only
-   need to raise the min JDK level for the plugin, the runtime can stay at 
-   Java 8.
-
-- Is it acceptable to raise the minimum JVM target `kotlinx-benchmark` to Java 11?
-
-- Alternatives are unclear. Either ship Android support as some sort of extension
-  users must opt into or create two different variants of the plugin each with 
-  their own JVM target. Both will complicate the build in rather big ways.
-
-- Crazy idea: Create a copy of the Android interface, and put it in an internal
-  gradle module we can include with `compileOnly`. It will be stripped  when
-  building the plugin. The only requirement is that any instance of checks 
-  needs more guards in the code.
-
-- All known affected places in the code has been marked with `TODO JDK_11_DISCUSS`
-
-
 --
 Q: Is it okay that support limited to `com.android.kotlin.multiplatform.library'?
 
@@ -39,10 +15,6 @@ Q: Right now, the template project includes a bundled gradle-wrapper.jar. It
    be copied from the user's project, but we are not guaranteed they use the 
    wrapper.
 
-Q: Would some users object to downloading a wrapper using the default source?
-   E.g., `kotlinx-benchmarks` use `https\://cache-redirector.jetbrains.com`
-
-- Maybe allow an extra configuration for setting this URL? 
 - Is there another way to start a Gradle project using another project Gradle
   version and wrapper?
 - Having the generated project completely stand-alone is nice for debugging.
