@@ -42,6 +42,9 @@ extensions.configure<InfraExtension> {
 
         libraryRepoUrl = "https://github.com/Kotlin/kotlinx-benchmark"
     }
+    teamcity {
+        jdk = "JDK_17_0"
+    }
 }
 
 // https://youtrack.jetbrains.com/issue/KT-48410
