@@ -3,7 +3,6 @@ import kotlinx.team.infra.InfraExtension
 import org.gradle.plugin.compatibility.compatibility
 import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 buildscript {
     repositories {
@@ -126,6 +125,7 @@ dependencies {
     implementation(libs.kotlin.reflect)
 
     implementation(libs.squareup.kotlinpoet)
+    implementation(libs.jackson.databind)
 
     implementation(libs.kotlin.utilKlibMetadata)
     implementation(libs.kotlin.utilKlib)

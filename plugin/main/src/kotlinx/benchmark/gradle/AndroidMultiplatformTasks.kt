@@ -105,6 +105,7 @@ private fun Project.createAndroidBenchmarkExecTask(target: AndroidBenchmarkTarge
         this.deviceOutputDir.set(deviceOutputDir)
         this.benchmarkResultsDir.set(benchmarkResultsDir)
         this.dryRun.set(target.dryRun)
+        this.reportFormat.set(config.reportFormat ?: "text")
     }
 }
 
