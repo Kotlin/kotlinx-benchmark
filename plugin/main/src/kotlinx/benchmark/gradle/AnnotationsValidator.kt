@@ -1,15 +1,12 @@
 package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.SuiteSourceGenerator.Companion.paramAnnotationFQN
-import kotlinx.benchmark.gradle.internal.generator.RequiresKotlinCompilerEmbeddable
-import org.jetbrains.kotlin.builtins.KotlinBuiltIns
-import org.jetbrains.kotlin.builtins.UnsignedTypes
-import org.jetbrains.kotlin.descriptors.DescriptorVisibilities
-import org.jetbrains.kotlin.descriptors.FunctionDescriptor
-import org.jetbrains.kotlin.descriptors.PropertyDescriptor
-import org.jetbrains.kotlin.js.descriptorUtils.getKotlinTypeFqName
-import org.jetbrains.kotlin.name.FqName
-import org.jetbrains.kotlin.resolve.annotations.argumentValue
+import kotlinx.benchmark.gradle.internal.generator.*
+import org.jetbrains.kotlin.builtins.*
+import org.jetbrains.kotlin.descriptors.*
+import org.jetbrains.kotlin.js.descriptorUtils.*
+import org.jetbrains.kotlin.name.*
+import org.jetbrains.kotlin.resolve.annotations.*
 
 @RequiresKotlinCompilerEmbeddable
 internal fun validateBenchmarkFunctions(functions: List<FunctionDescriptor>) {

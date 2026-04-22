@@ -1,9 +1,7 @@
 package kotlinx.benchmark.gradle
 
-import com.squareup.kotlinpoet.ANY
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import com.squareup.kotlinpoet.asTypeName
 import kotlinx.benchmark.gradle.SuiteSourceGenerator.Companion.benchmarkAnnotationFQN
 import kotlinx.benchmark.gradle.SuiteSourceGenerator.Companion.blackholeFQN
 import kotlinx.benchmark.gradle.SuiteSourceGenerator.Companion.measureAnnotationFQN

@@ -3,14 +3,8 @@ package kotlinx.benchmark.gradle
 import kotlinx.benchmark.gradle.internal.android.*
 import org.gradle.api.*
 import org.gradle.api.file.*
-import org.gradle.api.internal.provider.ValueSupplier.ValueProducer.task
 import org.gradle.api.provider.*
-import org.gradle.api.publish.internal.component.MavenPublishingAwareVariant
 import org.gradle.api.tasks.*
-import org.jetbrains.kotlin.com.intellij.ide.plugins.PluginManagerCore.logger
-import java.io.*
-import java.util.*
-import kotlin.text.get
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
