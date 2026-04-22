@@ -5,7 +5,7 @@ import kotlinx.benchmark.gradle.SuiteSourceGenerator.Companion.teardownAnnotatio
 import kotlinx.benchmark.gradle.internal.generator.*
 import org.jetbrains.org.objectweb.asm.*
 import org.jetbrains.org.objectweb.asm.tree.*
-import org.slf4j.Logger
+import org.slf4j.*
 import java.util.*
 import java.util.jar.*
 

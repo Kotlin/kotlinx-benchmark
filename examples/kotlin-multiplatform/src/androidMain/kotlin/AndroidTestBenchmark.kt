@@ -3,7 +3,6 @@ package test
 import kotlinx.benchmark.*
 import kotlinx.datetime.*
 import kotlin.math.*
-import kotlin.time.*
 
 @State(Scope.Benchmark)
 // Warmup and Measurement annotations are ignored on Android

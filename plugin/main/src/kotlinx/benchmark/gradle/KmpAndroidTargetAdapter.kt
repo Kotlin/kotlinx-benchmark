@@ -1,11 +1,9 @@
 package kotlinx.benchmark.gradle
 
-import org.gradle.api.GradleException
-import org.gradle.api.Project
-import org.gradle.api.file.RegularFile
-import org.gradle.api.provider.Provider
-import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
-import org.jetbrains.kotlin.gradle.plugin.KotlinTarget
+import org.gradle.api.*
+import org.gradle.api.file.*
+import org.gradle.api.provider.*
+import org.jetbrains.kotlin.gradle.plugin.*
 
 /**
  * Android Support in Kotlin Multiplatform has changed significantly over time. This means

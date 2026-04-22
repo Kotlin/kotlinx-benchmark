@@ -1,13 +1,9 @@
 package kotlinx.benchmark.gradle.internal.android
 
-import org.codehaus.groovy.ast.tools.GeneralUtils.args
-import org.gradle.api.Task
-import org.jetbrains.kotlin.com.intellij.ide.plugins.PluginManagerCore.logger
-import java.io.File
-import java.io.InputStream
-import java.util.Locale
-import java.util.concurrent.TimeUnit
-import kotlin.sequences.forEach
+import org.gradle.api.*
+import java.io.*
+import java.util.*
+import java.util.concurrent.*
 
 // Trigger a Gradle task in the generated benchmark project
 internal fun Task.runBenchmarkProjectGradleTask(

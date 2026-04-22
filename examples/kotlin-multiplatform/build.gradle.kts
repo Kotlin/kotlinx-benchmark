@@ -1,8 +1,8 @@
 @file:OptIn(ExperimentalWasmDsl::class)
 
-import com.android.build.api.dsl.androidLibrary
+import com.android.build.api.dsl.*
 import kotlinx.benchmark.gradle.*
-import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.*
 
 plugins {
     kotlin("multiplatform")

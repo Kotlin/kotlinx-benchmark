@@ -1,11 +1,11 @@
 package kotlinx.benchmark.gradle
 
-import groovy.lang.Closure
-import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
+import groovy.lang.*
+import kotlinx.benchmark.gradle.internal.*
 import org.gradle.api.*
 import org.gradle.api.plugins.*
 import org.gradle.api.provider.*
-import org.gradle.util.GradleVersion
+import org.gradle.util.*
 import org.jetbrains.kotlin.gradle.dsl.*
 import org.jetbrains.kotlin.gradle.plugin.*
 import org.jetbrains.kotlin.gradle.plugin.mpp.*

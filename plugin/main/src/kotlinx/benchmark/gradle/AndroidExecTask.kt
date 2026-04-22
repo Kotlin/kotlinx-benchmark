@@ -1,12 +1,12 @@
 package kotlinx.benchmark.gradle
 
+import com.fasterxml.jackson.databind.*
+import com.fasterxml.jackson.databind.node.*
 import kotlinx.benchmark.gradle.internal.android.*
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.provider.*
 import org.gradle.api.tasks.*
-import com.fasterxml.jackson.databind.*
-import com.fasterxml.jackson.databind.node.*
 import java.io.*
 import java.text.*
 import java.util.*

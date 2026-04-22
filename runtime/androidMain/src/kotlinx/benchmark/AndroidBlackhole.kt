@@ -1,7 +1,7 @@
 package kotlinx.benchmark
 
-import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
-import androidx.benchmark.BlackHole
+import androidx.benchmark.*
+import kotlinx.benchmark.internal.*
 
 /**
  * Use Jetpack Microbenchmark BlackHole implementation on Android.

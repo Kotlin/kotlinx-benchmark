@@ -1,26 +1,20 @@
 package kotlinx.benchmark.gradle
 
-import kotlinx.benchmark.gradle.internal.BenchmarksPluginConstants
-import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
-import org.gradle.api.GradleException
-import org.gradle.api.file.RegularFile
-import org.gradle.api.provider.Property
-import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.SourceSet
-import org.gradle.util.GradleVersion
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
-import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
-import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
-import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
-import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrCompilation
-import java.io.File
-import java.io.Serializable
+import kotlinx.benchmark.gradle.internal.*
+import org.gradle.api.*
+import org.gradle.api.file.*
+import org.gradle.api.provider.*
+import org.gradle.api.tasks.*
+import org.gradle.util.*
+import org.jetbrains.kotlin.gradle.dsl.*
+import org.jetbrains.kotlin.gradle.plugin.*
+import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.targets.js.ir.*
+import java.io.*
 import java.nio.file.Path
-import java.util.Locale
-import kotlin.io.path.Path
-import kotlin.time.Duration
+import java.util.*
+import kotlin.io.path.*
+import kotlin.time.*
 import kotlin.time.Duration.Companion.minutes
 
 open class BenchmarkConfiguration
