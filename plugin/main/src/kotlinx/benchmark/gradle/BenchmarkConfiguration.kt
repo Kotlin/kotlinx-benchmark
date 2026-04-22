@@ -7,7 +7,6 @@ import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.SourceSet
-import org.gradle.internal.impldep.com.google.gson.internal.bind.TypeAdapters.URI
 import org.gradle.util.GradleVersion
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompilerOptions
@@ -18,11 +17,9 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrCompilation
 import java.io.File
 import java.io.Serializable
-import java.net.URI
 import java.nio.file.Path
 import java.util.Locale
 import kotlin.io.path.Path
-import kotlin.io.path.toPath
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.minutes
 

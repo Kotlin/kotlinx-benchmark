@@ -5,9 +5,11 @@ import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.provider.*
 import org.gradle.api.tasks.*
+import com.fasterxml.jackson.databind.*
+import com.fasterxml.jackson.databind.node.*
 import java.io.*
+import java.text.*
 import java.util.*
-import kotlin.text.get
 import kotlin.time.Duration.Companion.milliseconds
 
 /**
@@ -23,6 +25,7 @@ internal abstract class AndroidExecTask : DefaultTask() {
     init {
         // Regardless of any caches, we always want to run when `androidBenchmark` is triggered.
         outputs.upToDateWhen { false }
+        reportFormat.convention("text")
     }
 
     // Absolute path to the `adb` executable.
@@ -39,6 +42,11 @@ internal abstract class AndroidExecTask : DefaultTask() {
     // If `true`, no output will be generated.
     @get:Input
     abstract val dryRun: Property<Boolean>
+
+    // How to report the summarized results? Accepted values: "text", "json", "csv", "scsv"
+    // The underlying json files will be reported regardless.
+    @get:Input
+    abstract val reportFormat: Property<String>
 
     /**
      * Directory on the host where the Jetpack Microbenchmark plugin copies device results.
@@ -111,7 +119,7 @@ internal abstract class AndroidExecTask : DefaultTask() {
             dryRun.get() -> logger.lifecycle("Android benchmarks finished using `dryRun`. No results were created.")
             allResults.isEmpty() -> throw GradleException("No benchmark results found")
             else -> {
-                writeConsolidatedSummary(resultsDir, allWarnings, allResults)
+                writeConsolidatedSummary(resultsDir, allWarnings, allResults, reportFormat.get())
                 logger.lifecycle("Android benchmarks finished. Results were saved in: ${resultsDir.absolutePath}")
             }
         }
@@ -220,10 +228,28 @@ internal abstract class AndroidExecTask : DefaultTask() {
     }
 
     /**
-     * Writes one `<deviceId>.txt` summary file per device, containing all accumulated
-     * benchmark results sorted by name, with any warnings prepended.
+     * Writes one `<deviceId>.<ext>` summary file per device, containing all accumulated
+     * benchmark results.
+     *
+     * For CSV formats, warnings are not included as they cannot be represented well.
+     * The warnings can still be found in the underlying data files.
      */
     private fun writeConsolidatedSummary(
+        resultsDir: File,
+        allWarnings: Map<String, Set<String>>,
+        allResults: Map<String, List<AndroidBenchmarkResult>>,
+        format: String,
+    ) {
+        when (format.lowercase()) {
+            "json" -> writeJsonSummary(resultsDir, allWarnings, allResults)
+            "csv" -> writeCsvSummary(resultsDir, allResults, delimiter = ",")
+            "scsv" -> writeCsvSummary(resultsDir, allResults, delimiter = ";")
+            "text" -> writeTextSummary(resultsDir, allWarnings, allResults)
+            else -> throw GradleException("Unsupported `reportFormat`: $format")
+        }
+    }
+
+    private fun writeTextSummary(
         resultsDir: File,
         allWarnings: Map<String, Set<String>>,
         allResults: Map<String, List<AndroidBenchmarkResult>>
@@ -236,10 +262,80 @@ internal abstract class AndroidExecTask : DefaultTask() {
                     writer.newLine()
                 }
                 if (allWarnings[deviceId]?.isNotEmpty() == true) writer.newLine()
-                allResults[deviceId]?.sortedBy { it.benchmarkName }?.forEach {
-                    writer.appendLine(it.toString())
+                allResults[deviceId]?.sortedBy { it.benchmarkName }?.forEach { benchmark ->
+                    val separator = "    "
+                    val line = buildString {
+                        append(benchmark.benchmarkName)
+                        append(separator)
+                        append(benchmark.formattedMeasurementValue)
+                        append(" ")
+                        append(benchmark.measurementUnit)
+                        if (benchmark.allocs != null) {
+                            append(separator)
+                            benchmark.allocs
+                        }
+                    }
+                    writer.appendLine(line)
                 }
             }
+        }
+    }
+
+    private fun writeCsvSummary(
+        resultsDir: File,
+        allResults: Map<String, List<AndroidBenchmarkResult>>,
+        delimiter: String
+    ) {
+        allResults.keys.forEach { deviceId ->
+            val summaryFile = resultsDir.resolve("$deviceId.csv")
+            summaryFile.bufferedWriter().use { writer ->
+                writer.appendLine(listOf("Benchmark", "Measurement", "Unit", "Allocations").joinToString(delimiter) { "\"$it\"" })
+                allResults[deviceId]?.sortedBy { it.benchmarkName }?.forEach { benchmark ->
+                    val line = listOf(
+                        benchmark.benchmarkName.replace("\"", "\"\""), // " must be escaped using "" in CSV.
+                        benchmark.measurementValue,
+                        benchmark.measurementUnit,
+                        benchmark.allocs,
+                    )
+                    writer.appendLine(line.joinToString(delimiter) {
+                        when (it) {
+                            is String -> "\"$it\""
+                            is Double -> it.toString()
+                            null -> ""
+                            else -> it.toString()
+                        }
+                    })
+                }
+            }
+        }
+    }
+
+    private fun writeJsonSummary(
+        resultsDir: File,
+        allWarnings: Map<String, Set<String>>,
+        allResults: Map<String, List<AndroidBenchmarkResult>>
+    ) {
+        allResults.keys.forEach { deviceId ->
+            val summaryFile = resultsDir.resolve("$deviceId.json")
+            val mapper = ObjectMapper()
+            val root = mapper.createObjectNode()
+
+            val warningsNode: ArrayNode = root.putArray("warnings")
+            allWarnings[deviceId]?.forEach { warningsNode.add(it) }
+
+            val benchmarksNode: ArrayNode = root.putArray("benchmarks")
+            allResults[deviceId]?.sortedBy { it.benchmarkName }?.forEach { benchmark ->
+                val benchmarkNode = benchmarksNode.addObject()
+                benchmarkNode.put("name", benchmark.benchmarkName)
+                benchmarkNode.put("measurement", benchmark.measurementValue)
+                benchmarkNode.put("measurementUnit", benchmark.measurementUnit)
+                if (benchmark.allocs != null) {
+                    benchmarkNode.put("allocs", benchmark.allocs)
+                } else {
+                    benchmarkNode.putNull("allocs")
+                }
+            }
+            mapper.writerWithDefaultPrettyPrinter().writeValue(summaryFile, root)
         }
     }
 
@@ -264,7 +360,7 @@ internal abstract class AndroidExecTask : DefaultTask() {
             logger.debug("Skipping unidentified line: $line")
             return null
         }
-        val runtime = match.groups["time"]!!.value
+        val result = match.groups["time"]!!.value
         val allocs = match.groups["alloc"]?.value
         val benchmarkName = match.groups["metadata"]!!.value.let { metadata ->
             val metadataParts = metadata.split("\\s{4}".toPattern())
@@ -272,7 +368,7 @@ internal abstract class AndroidExecTask : DefaultTask() {
             val methodName = benchmarkIdParts.substringAfter(benchmarkResultSeparator)
             "$className.$methodName"
         }
-        return AndroidBenchmarkResult(runtime, allocs, benchmarkName)
+        return AndroidBenchmarkResult(benchmarkName, result, allocs)
     }
 }
 
@@ -280,22 +376,33 @@ private val benchmarkLineRegex = Regex(
     "(?<time>[\\d.,]+\\s+[\\w.]+)\\s*(?<alloc>[\\d.,]+\\s+[\\w.]+)?\\s*(?<metadata>.*)"
 )
 
-private data class AndroidBenchmarkResult(
-    val runtime: String,
-    val allocs: String?,
-    val benchmarkName: String
+private class AndroidBenchmarkResult(
+    val benchmarkName: String,
+    resultDescription: String,
+    allocDescription: String?,
 ) {
-    override fun toString(): String = buildString {
-        append(runtime)
-        if (allocs != null) {
-            append(SEPARATOR)
-            append(allocs)
-        }
-        append(SEPARATOR)
-        append(benchmarkName)
+    companion object {
+        // Requirements for output values are not 100% clear, for now just use the same approach as input numbers.
+        // I.e., only one (optional) decimal place using US seperators.
+        private val outputFormatter = DecimalFormat("#,##0.#", DecimalFormatSymbols(Locale.US))
     }
 
-    companion object {
-        private const val SEPARATOR = "    "
+    val measurementValue: Double
+    val formattedMeasurementValue: String
+    val measurementUnit: String
+    val allocs: Int?
+
+    init {
+        // Jetpack Microbenchmark uses a hard-coded Locale.US to report their numbers
+        // See https://github.com/androidx/androidx/blob/24524a9634c6923a39372d7e3154524608968eb8/benchmark/benchmark-common/src/main/java/androidx/benchmark/InstrumentationResults.kt#L228C13-L228C75
+        val resultParts = resultDescription.trim().split("\\s+".toRegex())
+        if (resultParts.size != 2) throw GradleException("Unrecognized measurement: $resultDescription")
+        val inputFormatter = NumberFormat.getNumberInstance(Locale.US)
+        measurementValue = inputFormatter.parse(resultParts[0]).toDouble()
+        formattedMeasurementValue = outputFormatter.format(measurementValue)
+        measurementUnit = resultParts[1]
+        allocs = allocDescription?.trim()?.split("\\s+".toRegex())?.let { allocParts ->
+            allocParts[0].toInt()
+        }
     }
 }
