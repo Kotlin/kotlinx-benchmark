@@ -17,6 +17,10 @@ dependencies {
     testImplementation(kotlin("test-junit"))
 }
 
+kotlin {
+    jvmToolchain(17)
+}
+
 tasks.test {
     dependsOn(plugin.task(":publishToBuildLocal"))
     dependsOn(runtime.tasks.getByName("publishToBuildLocal"))
