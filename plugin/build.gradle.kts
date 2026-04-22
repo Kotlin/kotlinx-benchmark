@@ -3,6 +3,7 @@ import kotlinx.team.infra.InfraExtension
 import org.gradle.plugin.compatibility.compatibility
 import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 buildscript {
     repositories {
@@ -94,12 +95,14 @@ sourceSets {
 }
 
 kotlin {
-    jvmToolchain(8)
+    jvmToolchain(17)
 
     @OptIn(ExperimentalBuildToolsApi::class, ExperimentalKotlinGradlePluginApi::class)
     compilerVersion = libs.versions.kotlin.`for`.gradle.plugin.get()
 
     compilerOptions {
+        jvmTarget = JvmTarget.JVM_1_8
+
         optIn.addAll(
                 "kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi",
                 "kotlin.RequiresOptIn",
@@ -207,4 +210,8 @@ tasks.withType<AbstractPublishToMaven>().configureEach {
 
 apiValidation {
     nonPublicMarkers += listOf("kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi")
+}
+
+tasks.withType(JavaCompile::class).configureEach {
+    options.release.set(8)
 }
