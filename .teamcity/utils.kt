@@ -13,7 +13,7 @@ const val publicationCommandParameter = "publicationCommand"
 const val libraryStagingRepoDescription = "<<LIBRARY_STAGING_REPO_DESCRIPTION>>"
 
 val platforms = Platform.values()
-const val jdk = "JDK_18"
+const val jdk = "JDK_17_0"
 
 enum class Platform {
     Windows, Linux, MacOS;
