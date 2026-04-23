@@ -3,16 +3,16 @@
 [![Kotlin Alpha](https://kotl.in/badges/alpha.svg)](https://kotlinlang.org/docs/components-stability.html)
 [![JetBrains incubator project](https://jb.gg/badges/incubator.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 [![GitHub license](https://img.shields.io/github/license/kotlin/kotlinx-benchmark)](LICENSE)
-[![Build status](https://teamcity.jetbrains.com/guestAuth/app/rest/builds/buildType:(id:KotlinTools_KotlinxBenchmark_Build_All)/statusIcon.svg)](https://teamcity.jetbrains.com/viewType.html?buildTypeId=KotlinTools_KotlinxBenchmark_Build_All)
+[![Build status](https://teamcity.jetbrains.com/app/rest/builds/buildType:id:KotlinTools_KotlinxBenchmark_Build_All,branch:name:master/statusIcon.svg)](https://teamcity.jetbrains.com/viewType.html?buildTypeId=KotlinTools_KotlinxBenchmark_Build_All)
 [![Maven Central](https://img.shields.io/maven-central/v/org.jetbrains.kotlinx/kotlinx-benchmark-runtime.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/org.jetbrains.kotlinx/kotlinx-benchmark-runtime)
 [![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v?label=Gradle%20Plugin&metadataUrl=https://plugins.gradle.org/m2/org/jetbrains/kotlinx/kotlinx-benchmark-plugin/maven-metadata.xml)](https://plugins.gradle.org/plugin/org.jetbrains.kotlinx.benchmark)
 
 `kotlinx-benchmark` is a toolkit for running benchmarks for multiplatform code written in Kotlin.
 It is designed to work with Kotlin/JVM, Kotlin/JS, Kotlin/Native, and Kotlin/WasmJs (experimental) targets.
 
-To get started, ensure you're using Kotlin 2.0.0 or newer and Gradle 7.4 or newer.
+To get started, ensure you're using Kotlin 2.2.0 or newer and the latest stable Gradle 8 release or newer.
 However, because the Kotlin/WasmJs target is experimental and in an active development phase, it guarantees support
-only for the specific Kotlin version used to build the library. For the latest version, this is Kotlin 2.0.20.
+only for the specific Kotlin version used to build the library. For the latest version, this is Kotlin 2.2.0.
 
 ## Features
 
@@ -183,7 +183,7 @@ To run benchmarks in Kotlin/JVM:
     ```kotlin
     // build.gradle.kts
     plugins {
-        kotlin("plugin.allopen") version "2.0.20"
+        kotlin("plugin.allopen") version "2.2.0"
     }
 
     allOpen {
@@ -216,7 +216,7 @@ To run benchmarks in Kotlin/JVM:
     ```kotlin
     // build.gradle.kts
     plugins {
-        kotlin("plugin.allopen") version "2.0.20"
+        kotlin("plugin.allopen") version "2.2.0"
     }
 
     allOpen {

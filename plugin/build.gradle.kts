@@ -1,7 +1,9 @@
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import kotlinx.team.infra.InfraExtension
+import org.gradle.plugin.compatibility.compatibility
 import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 buildscript {
     repositories {
@@ -25,6 +27,7 @@ buildscript {
 plugins {
     `java-gradle-plugin`
     `maven-publish`
+    signing
     alias(libs.plugins.gradle.pluginPublish)
     alias(libs.plugins.kotlinx.binaryCompatibilityValidator)
     alias(libs.plugins.kotlin.jvm)
@@ -38,6 +41,11 @@ extensions.configure<InfraExtension> {
 
         libraryRepoUrl = "https://github.com/Kotlin/kotlinx-benchmark"
     }
+}
+
+signing {
+    // disable signing if private key isn't passed
+    isRequired = findProperty("libs.sign.key.private") != null
 }
 
 logger.info("Using Kotlin ${libs.versions.kotlin.asProvider().get()} for project ${project.name}")
@@ -63,6 +71,12 @@ gradlePlugin {
             displayName = "Gradle plugin for benchmarking"
             description = "Toolkit for running benchmarks for multiplatform Kotlin code."
             tags.set(listOf("benchmarking", "multiplatform", "kotlin"))
+
+            compatibility {
+                features {
+                    configurationCache = true
+                }
+            }
         }
     }
 }
@@ -81,25 +95,26 @@ sourceSets {
 }
 
 kotlin {
-    jvmToolchain(8)
+    jvmToolchain(17)
 
     @OptIn(ExperimentalBuildToolsApi::class, ExperimentalKotlinGradlePluginApi::class)
     compilerVersion = libs.versions.kotlin.`for`.gradle.plugin.get()
 
     compilerOptions {
+        jvmTarget = JvmTarget.JVM_1_8
+
         optIn.addAll(
                 "kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi",
                 "kotlin.RequiresOptIn",
         )
         /**
-         * Those versions are configured according to https://docs.gradle.org/current/userguide/compatibility.html
-         * and the Kotlin compiler compatibility policy stating that Kotlin 1.4 is compatible with 1.5 binaries
+         * Gradle 8.0 embeds Kotlin 1.8.x, so the plugin can be built against Kotlin language and API 1.8
+         * while remaining compatible with the minimum supported Gradle version.
          */
         @Suppress("DEPRECATION", "DEPRECATION_ERROR")
         run {
-            languageVersion = KotlinVersion.KOTLIN_1_5
-            // The API available in the Kotlin stdlib embedded in the minimum supported Gradle.
-            apiVersion = KotlinVersion.KOTLIN_1_4
+            languageVersion = KotlinVersion.KOTLIN_1_8
+            apiVersion = KotlinVersion.KOTLIN_1_8
         }
     }
 }
@@ -195,4 +210,8 @@ tasks.withType<AbstractPublishToMaven>().configureEach {
 
 apiValidation {
     nonPublicMarkers += listOf("kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi")
+}
+
+tasks.withType(JavaCompile::class).configureEach {
+    options.release.set(8)
 }

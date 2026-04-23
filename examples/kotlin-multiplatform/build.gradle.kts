@@ -6,7 +6,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 
 plugins {
     kotlin("multiplatform")
-    kotlin("plugin.allopen") version "2.0.20"
+    kotlin("plugin.allopen") version "2.2.0"
     id("org.jetbrains.kotlinx.benchmark")
 }
 
@@ -27,6 +27,7 @@ kotlin {
     wasmJs { nodejs() }
 
     // Native targets
+    @Suppress("DEPRECATION", "DEPRECATION_ERROR")
     macosX64()
     macosArm64()
     linuxX64()
