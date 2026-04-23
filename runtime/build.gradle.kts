@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
@@ -15,7 +16,7 @@ repositories {
 }
 
 kotlin {
-    jvmToolchain(8)
+    jvmToolchain(17)
 
     // According to https://kotlinlang.org/docs/native-target-support.html
 
@@ -50,7 +51,12 @@ kotlin {
     @Suppress("DEPRECATION", "DEPRECATION_ERROR")
     watchosX64()
 
-    jvm()
+    jvm {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_1_8
+        }
+    }
+
     js { nodejs() }
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
@@ -113,6 +119,10 @@ kotlin {
             }
         }
     }
+}
+
+tasks.withType(JavaCompile::class).configureEach {
+    options.release.set(8)
 }
 
 if (project.findProperty("publication_repository") == "space") {
