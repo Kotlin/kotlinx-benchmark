@@ -141,7 +141,6 @@ class JsBenchmarkExecutor(name: String, @Suppress("UNUSED_PARAMETER") dummy_args
                         )
                     }
                 }
-                Unit
             }
         }
         jsSuite.run()
