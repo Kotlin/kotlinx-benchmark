@@ -7,7 +7,13 @@ kotlinx-binaryCompatibilityValidator = "0.16.2"
 kotlinx-teamInfra = "0.4.0-dev-85"
 squareup-kotlinpoet = "2.3.0" # https://github.com/square/kotlinpoet
 jmh = "1.37"
-jackson = "2.21.2" # https://github.com/FasterXML/jackson-databind
+# Jackson ships as a multirelease JAR with bytecode that possibly cannot be
+# read by Gradle due to its ASM dependency being outdated.
+# - Gradle 8.0 cannot read Java 21 bytecode (minimum supported version)
+# - Gradle 7.3 cannot read Java 19 bytecode (we use this version in integration tests)
+# To make the entire build happy, the last version that can be used is
+# 2.14.3. For runtime only (with Gradle 8.0), this limit is 2.16.0.
+jackson = "2.14.3" # https://github.com/FasterXML/jackson-databind
 gradle-pluginPublish = "2.1.1"
 # The version should be set to be compatible with the Gradle version used by kotlinx-benchmarks.
 # See https://developer.android.com/build/releases/about-agp#updating-gradle
