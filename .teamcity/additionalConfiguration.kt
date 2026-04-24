@@ -44,8 +44,7 @@ fun Project.additionalConfiguration() {
 
     // Check with Kotlin master only on Linux
     buildWithKotlinMaster(Platform.Linux, knownBuilds.buildVersion).also {
-        // TODO: enable it back once issues are fixed on the Kotlin side
-        // knownBuilds.buildAll.dependsOnSnapshot(it, onFailure = FailureAction.ADD_PROBLEM)
+        knownBuilds.buildAll.dependsOnSnapshot(it, onFailure = FailureAction.ADD_PROBLEM)
     }
 
     knownBuilds.deployPublish.dependsOnSnapshot(cpyTask, onFailure = FailureAction.ADD_PROBLEM)
