@@ -1,8 +1,8 @@
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import kotlinx.team.infra.InfraExtension
+import org.jetbrains.kotlin.gradle.dsl.*
+import kotlinx.team.infra.*
 import org.gradle.plugin.compatibility.compatibility
-import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.buildtools.api.*
+import org.jetbrains.kotlin.gradle.*
 
 buildscript {
     repositories {
