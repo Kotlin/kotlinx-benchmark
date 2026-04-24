@@ -5,15 +5,31 @@ kotlin = "2.2.0"
 kotlin-for-gradle-plugin = "2.2.0"
 kotlinx-binaryCompatibilityValidator = "0.16.2"
 kotlinx-teamInfra = "0.4.0-dev-85"
-squareup-kotlinpoet = "1.3.0"
+squareup-kotlinpoet = "2.3.0" # https://github.com/square/kotlinpoet
 jmh = "1.37"
+# Jackson ships as a multirelease JAR with bytecode that possibly cannot be
+# read by Gradle due to its ASM dependency being outdated.
+# - Gradle 8.0 cannot read Java 21 bytecode (minimum supported version)
+# - Gradle 7.3 cannot read Java 19 bytecode (we use this version in integration tests)
+# To make the entire build happy, the last version that can be used is
+# 2.14.3. For runtime only (with Gradle 8.0), this limit is 2.16.0.
+jackson = "2.14.3" # https://github.com/FasterXML/jackson-databind
 gradle-pluginPublish = "2.1.1"
+# The version should be set to be compatible with the Gradle version used by kotlinx-benchmarks.
+# See https://developer.android.com/build/releases/about-agp#updating-gradle
+android-build-tools = "8.6.1"
+android-agp = "8.6.1"
+android-benchmark = "1.5.0-alpha05" # https://developer.android.com/jetpack/androidx/releases/benchmark
+android-test-ext = "1.3.0" # https://developer.android.com/jetpack/androidx/releases/test
 
 # Note: This version can be overridden by passing `-Pmin_supported_gradle_version=<version>`
 minSupportedGradle = "8.0"
 minSupportedKotlin = "2.2.0"
 
 [libraries]
+
+androidBuildTools = { module = "com.android.tools.build:gradle", version.ref = "android-build-tools" }
+androidx-benchmark = { group = "androidx.benchmark", name = "benchmark-junit4", version.ref = "android-benchmark" }
 
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect" }
 
@@ -29,11 +45,13 @@ kotlinx-teamInfraGradlePlugin = { module = "kotlinx.team:kotlinx.team.infra", ve
 
 squareup-kotlinpoet = { module = "com.squareup:kotlinpoet", version.ref = "squareup-kotlinpoet" }
 
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+
 jmh-core = { module = "org.openjdk.jmh:jmh-core", version.ref = "jmh" }
 jmh-generatorBytecode = { module = "org.openjdk.jmh:jmh-generator-bytecode", version.ref = "jmh" }
 
 [plugins]
-
+android-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "android-agp" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlinx-binaryCompatibilityValidator = { id = "org.jetbrains.kotlinx.binary-compatibility-validator", version.ref = "kotlinx-binaryCompatibilityValidator" }

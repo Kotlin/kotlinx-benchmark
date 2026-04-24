@@ -1,3 +1,14 @@
+public final class kotlinx/benchmark/gradle/AndroidBenchmarkTarget : kotlinx/benchmark/gradle/BenchmarkTarget {
+	public final fun getDryRun ()Z
+	public final fun getInstrumentationRunnerArguments ()Ljava/util/Map;
+	public final fun getProfilingMode ()Lkotlinx/benchmark/gradle/ProfilingMode;
+	public final fun getSdkDir ()Lorg/gradle/api/provider/Property;
+	public final fun getTimeout-UwyO8pc ()J
+	public final fun setDryRun (Z)V
+	public final fun setProfilingMode (Lkotlinx/benchmark/gradle/ProfilingMode;)V
+	public final fun setTimeout-LRDsOJo (J)V
+}
+
 public class kotlinx/benchmark/gradle/BenchmarkConfiguration {
 	public final fun advanced (Ljava/lang/String;Ljava/lang/Object;)V
 	public final fun exclude (Ljava/lang/String;)V
@@ -185,6 +196,15 @@ public abstract class kotlinx/benchmark/gradle/NativeSourceGeneratorTask : org/g
 	public final fun setOutputResourcesDir (Ljava/io/File;)V
 	public final fun setOutputSourcesDir (Ljava/io/File;)V
 	public final fun setTitle (Ljava/lang/String;)V
+}
+
+public final class kotlinx/benchmark/gradle/ProfilingMode : java/lang/Enum {
+	public static final field Default Lkotlinx/benchmark/gradle/ProfilingMode;
+	public static final field MethodTracing Lkotlinx/benchmark/gradle/ProfilingMode;
+	public static final field None Lkotlinx/benchmark/gradle/ProfilingMode;
+	public static final field StackSampling Lkotlinx/benchmark/gradle/ProfilingMode;
+	public static fun valueOf (Ljava/lang/String;)Lkotlinx/benchmark/gradle/ProfilingMode;
+	public static fun values ()[Lkotlinx/benchmark/gradle/ProfilingMode;
 }
 
 public final class kotlinx/benchmark/gradle/UtilsKt$sam$i$org_gradle_api_Action$0 : org/gradle/api/Action {

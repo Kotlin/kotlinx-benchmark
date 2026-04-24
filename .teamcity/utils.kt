@@ -4,6 +4,7 @@
  */
 
 import jetbrains.buildServer.configs.kotlin.*
+import jetbrains.buildServer.configs.kotlin.buildSteps.*
 
 const val versionSuffixParameter = "versionSuffix"
 const val teamcitySuffixParameter = "teamcitySuffix"
@@ -73,6 +74,7 @@ fun Project.buildType(name: String, platform: Platform, configure: BuildType.() 
 fun BuildType.commonConfigure() {
     requirements {
         noLessThan("teamcity.agent.hardware.memorySizeMb", "6144")
+        exists("env.ANDROID_HOME")
     }
 
     // Allow to fetch build status through API for badges
@@ -95,6 +97,25 @@ fun BuildType.commonConfigure() {
         feature {
             id = "perfmon"
             type = "perfmon"
+        }
+    }
+
+    installAndroidSdkDependencies()
+}
+
+fun BuildType.installAndroidSdkDependencies() {
+    steps {
+        script {
+            name = "Install Android SDK dependencies"
+            scriptContent = """
+                #!/bin/bash
+                echo "${'$'}ANDROID_HOME"
+                "${'$'}ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+                  "platform-tools" \
+                  "platforms;android-34" \
+                  "platforms;android-35" \
+                  "platforms;android-36"
+            """.trimIndent()
         }
     }
 }

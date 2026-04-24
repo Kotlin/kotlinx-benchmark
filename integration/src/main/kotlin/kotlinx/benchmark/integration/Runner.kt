@@ -99,4 +99,16 @@ class Runner(
             projectDir.resolve("build/benchmarks/${targetName}/sources/kotlinx/benchmark/generated").resolve(filePath)
         )
     }
+
+    fun generatedAndroidDir(targetName: String, filePath: String, fileTestAction: (File) -> Unit) {
+        fileTestAction(
+            projectDir.resolve("build/benchmarks/$targetName").resolve(filePath)
+        )
+    }
+
+    fun generatedOutputDir(targetName: String, filePath: String, fileTestAction: (File) -> Unit) {
+        fileTestAction(
+            projectDir.resolve("build/reports/benchmarks/$targetName").resolve(filePath)
+        )
+    }
 }

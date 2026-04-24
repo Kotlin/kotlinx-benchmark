@@ -23,6 +23,7 @@ abstract class GradleTest {
         gradleVersion: GradleTestVersion? = null,
         kotlinVersion: String? = null,
         jvmToolchain: Int? = null,
+        agpVersion: String? = null,
         build: ProjectBuilder.() -> Unit = {}
     ): Runner {
         val builder = ProjectBuilder().apply {
@@ -31,12 +32,12 @@ abstract class GradleTest {
         }.apply(build)
         rootProjectDir.deleteRecursively()
         templates.resolve(name).copyRecursively(rootProjectDir)
-        file("build.gradle").modify(builder::generateBuildScript)
+        file("build.gradle").modify { builder.generateBuildScript(it, agpVersion) }
         val settingsFile = file("settings.gradle")
         if (settingsFile.exists()) {
-            settingsFile.modify(builder::generateSettingsScripts)
+            settingsFile.modify { builder.generateSettingsScripts(it, androidSupport = agpVersion != null) }
         } else {
-            settingsFile.writeText(builder.generateSettingsScripts(""))
+            settingsFile.writeText(builder.generateSettingsScripts("", androidSupport = agpVersion != null))
         }
         return Runner(
             rootProjectDir, print, gradleVersion,

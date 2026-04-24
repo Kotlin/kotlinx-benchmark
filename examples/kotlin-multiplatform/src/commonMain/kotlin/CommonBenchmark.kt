@@ -27,8 +27,9 @@ class CommonBenchmark {
     fun exception() {
         try {
             fail()   
-        } catch (e: Throwable) {
-            throw Exception("I failed!", e)
+        } catch (ignore: Throwable) {
+            // Do not rethrow exception as it might cause test failure.
+            // We just want to measure exception performance
         }
     }
 
