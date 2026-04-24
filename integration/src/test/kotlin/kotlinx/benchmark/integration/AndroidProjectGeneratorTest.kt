@@ -127,7 +127,7 @@ class AndroidProjectGeneratorTest: GradleTest() {
     }
 
     private fun Runner.assertProjectGenerated() {
-        generatedAndroidDir("android", "") { generatedAndroidDir ->
+        generatedAndroidDir("android-main", "") { generatedAndroidDir ->
             assertTrue(generatedAndroidDir.exists(), "Generated Android project does not exist")
             val benchmarkGradleFile = generatedAndroidDir.resolve("microbenchmark/build.gradle.kts")
             assertTrue(benchmarkGradleFile.exists(), "Generated Microbenchmark build.gradle.kts file does not exists")
