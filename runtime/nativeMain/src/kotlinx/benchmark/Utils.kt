@@ -3,6 +3,8 @@ package kotlinx.benchmark
 import kotlinx.benchmark.native.NativeExecutor
 import kotlinx.cinterop.*
 import platform.posix.*
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
 
 internal actual fun Double.format(precision: Int, useGrouping: Boolean): String {
     val longPart = toLong()
@@ -63,3 +65,34 @@ internal fun String.parseBenchmarkConfig(): NativeExecutor.BenchmarkRun {
 }
 
 internal actual inline fun measureNanoseconds(block: () -> Unit): Long = TODO("Not implemented for this platform")
+
+// Iteration results for a single thread
+internal class IterationResult(val duration: Duration, val operations: Long)
+
+internal class AggregateIterationResult(
+    val results: Array<IterationResult>
+)
+
+// Iteration results for all threads
+internal fun AggregateIterationResult.nanosToText(mode: Mode, unit: BenchmarkTimeUnit): String {
+    val value = nanosToSample(mode, unit)
+    return when (mode) {
+        Mode.Throughput -> "${value.formatSignificant(6)} ops/${unit.toText()}"
+        Mode.AverageTime -> "${value.formatSignificant(6)} ${unit.toText()}/op"
+    }
+}
+
+internal fun AggregateIterationResult.nanosToSample(mode: Mode, unit: BenchmarkTimeUnit): Double {
+    return when (mode) {
+        Mode.Throughput -> results.sumOf { it.operations / it.duration.toDouble(unit.toDurationUnit()) }
+        Mode.AverageTime -> results.map { it.duration.toDouble(unit.toDurationUnit()) / it.operations }.average()
+    }
+}
+
+internal fun BenchmarkTimeUnit.toDurationUnit(): DurationUnit = when (this) {
+    BenchmarkTimeUnit.MINUTES -> DurationUnit.MINUTES
+    BenchmarkTimeUnit.SECONDS -> DurationUnit.SECONDS
+    BenchmarkTimeUnit.MILLISECONDS -> DurationUnit.MILLISECONDS
+    BenchmarkTimeUnit.MICROSECONDS -> DurationUnit.MICROSECONDS
+    BenchmarkTimeUnit.NANOSECONDS -> DurationUnit.NANOSECONDS
+}
