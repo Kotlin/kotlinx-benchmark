@@ -41,12 +41,9 @@ extensions.configure<InfraExtension> {
         include(":kotlinx-benchmark-runtime")
 
         libraryRepoUrl = "https://github.com/Kotlin/kotlinx-benchmark"
-
-        if (project.findProperty("publication_repository") == "sonatype") {
-            sonatype {
-                libraryStagingRepoDescription = project.name
-            }
-        }
+    }
+    teamcity {
+        jdk = "JDK_17_0"
     }
 }
 

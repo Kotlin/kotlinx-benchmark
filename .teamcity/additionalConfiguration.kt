@@ -1,10 +1,10 @@
 /*
- * Copyright 2016-2020 JetBrains s.r.o.
+ * Copyright 2016-2026 JetBrains s.r.o.
  * Use of this source code is governed by the Apache 2.0 License that can be found in the LICENSE.txt file.
  */
 
 import jetbrains.buildServer.configs.kotlin.*
-import jetbrains.buildServer.configs.kotlin.buildFeatures.commitStatusPublisher
+import jetbrains.buildServer.configs.kotlin.buildFeatures.*
 import jetbrains.buildServer.configs.kotlin.buildSteps.gradle
 
 fun Project.additionalConfiguration() {
@@ -22,17 +22,16 @@ fun Project.additionalConfiguration() {
             }
         }
     }
-    platforms.forEach { platform ->
-        knownBuilds.deployPublish.params {
-            select("reverse.dep.*.system.publication_repository", "space", display = ParameterDisplay.PROMPT, label = "Publication Repository", options = listOf("space", "sonatype"))
-        }
-        knownBuilds.deployOn(platform).params {
-            param("system.space.user", "abduqodiri.qurbonzoda")
-            password("system.space.token", "credentialsJSON:7aa03210-1f86-452e-b786-920f8a321b7d")
-        }
-    }
 
-    deployPlugin()
+    val deployment = knownBuilds.deploymentSubproject
+    val deployStart = deployment.knownBuilds.deployStart
+    deployStart.params.param("reverse.dep.*.DeploymentName", "kotlinx.collections.immutable %releaseVersion%")
+
+    val deployPlugin = deployment.deployPlugin(deployment.knownBuilds.deployVersion, false, DEPLOY_PUBLISH_PLUGIN_ID, "Deploy (Publish Plugin)")
+    val testDeployPlugin = deployment.deployPlugin(deployment.knownBuilds.deployVersion, true, VALIDATE_PUBLISH_PLUGIN_ID, "Validate (Publish Plugin)")
+    deployPlugin.dependsOnSnapshot(testDeployPlugin)
+    deployStart.dependsOnSnapshot(deployPlugin)
+    deployStart.dependsOnSnapshot(testDeployPlugin)
 
     // Check with Kotlin master only on Linux
     buildWithKotlinMaster(Platform.Linux, knownBuilds.buildVersion).also {
@@ -44,20 +43,32 @@ const val gradlePublishKey = "gradle.publish.key"
 const val gradlePublishSecret = "gradle.publish.secret"
 
 const val DEPLOY_PUBLISH_PLUGIN_ID = "Deploy_Publish_Plugin"
+const val VALIDATE_PUBLISH_PLUGIN_ID = "Validate_Plugin_Publication"
+
 const val BUILD_WITH_KOTLIN_MASTER_ID = "Build_with_Kotlin_Master_Linux"
 
-fun Project.deployPlugin() = BuildType {
-    id(DEPLOY_PUBLISH_PLUGIN_ID)
-    this.name = "Deploy (Publish Plugin)"
+fun Project.deployPlugin(deployVersion: BuildType, validateOnly: Boolean, taskId: String, taskName: String) = BuildType {
+    id(taskId)
+    this.name = taskName
     commonConfigure()
+
+    if (!validateOnly) {
+        features {
+            approval {
+                approvalRules = "user:filipp.zhinkin"
+                manualRunsApproved = false
+            }
+        }
+    }
 
     requirements {
         // Require Linux for publishPlugins
         contains("teamcity.agent.jvm.os.name", "Linux")
     }
 
-    dependsOnSnapshot(this@deployPlugin.knownBuilds.buildAll)
-    buildNumberPattern = this@deployPlugin.knownBuilds.buildVersion.depParamRefs.buildNumber.ref
+    // dependsOnSnapshot(this@deployPlugin.knownBuilds.buildAll)
+    dependsOnSnapshot(deployVersion)
+    buildNumberPattern = deployVersion.depParamRefs.buildNumber.ref
 
     type = BuildTypeSettings.Type.DEPLOYMENT
     enablePersonalBuilds = false
@@ -77,8 +88,9 @@ fun Project.deployPlugin() = BuildType {
             name = "Publish Plugin"
             jdkHome = "%env.$jdk%"
             jvmArgs = "-Xmx1g"
-            gradleParams = "--info --stacktrace -P$releaseVersionParameter=%$releaseVersionParameter% -P$gradlePublishKey=%$gradlePublishKey% -P$gradlePublishSecret=%$gradlePublishSecret%"
-            tasks = "clean :plugin:publishPlugins"
+            gradleParams = "--info --stacktrace -P$releaseVersionParameter=%$releaseVersionParameter% " +
+                    "-P$gradlePublishKey=%$gradlePublishKey% -P$gradlePublishSecret=%$gradlePublishSecret%"
+            tasks = "clean :plugin:publishPlugins" + (if (validateOnly) " --validate-only" else "")
             buildFile = ""
             gradleWrapperPath = ""
         }
