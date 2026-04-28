@@ -12,6 +12,7 @@ public class kotlinx/benchmark/gradle/BenchmarkConfiguration {
 	public final fun getOutputTimeUnit ()Ljava/lang/String;
 	public final fun getParams ()Ljava/util/Map;
 	public final fun getReportFormat ()Ljava/lang/String;
+	public final fun getThreads ()Ljava/lang/Integer;
 	public final fun getWarmups ()Ljava/lang/Integer;
 	public final fun include (Ljava/lang/String;)V
 	public final fun param (Ljava/lang/String;[Ljava/lang/Object;)V
@@ -25,6 +26,7 @@ public class kotlinx/benchmark/gradle/BenchmarkConfiguration {
 	public final fun setOutputTimeUnit (Ljava/lang/String;)V
 	public final fun setParams (Ljava/util/Map;)V
 	public final fun setReportFormat (Ljava/lang/String;)V
+	public final fun setThreads (Ljava/lang/Integer;)V
 	public final fun setWarmups (Ljava/lang/Integer;)V
 }
 

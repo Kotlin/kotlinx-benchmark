@@ -9,6 +9,7 @@ object DefaultDescriptorParameters {
     val iterationTime = IterationTime(10, BenchmarkTimeUnit.SECONDS)
     val outputTimeUnit = BenchmarkTimeUnit.SECONDS
     val mode = Mode.Throughput
+    val threads = 1
 }
 
 @KotlinxBenchmarkRuntimeInternalApi
@@ -27,7 +28,8 @@ open class SuiteDescriptor<T>(
 
     val iterationTime: IterationTime = DefaultDescriptorParameters.iterationTime,
     val outputTimeUnit: BenchmarkTimeUnit = DefaultDescriptorParameters.outputTimeUnit,
-    val mode: Mode = DefaultDescriptorParameters.mode
+    val mode: Mode = DefaultDescriptorParameters.mode,
+    val threads: Int = DefaultDescriptorParameters.threads,
 ) {
     private val _benchmarks = mutableListOf<BenchmarkDescriptor<T>>()
 

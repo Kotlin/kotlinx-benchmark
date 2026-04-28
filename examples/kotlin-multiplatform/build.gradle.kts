@@ -106,6 +106,13 @@ benchmark {
             advanced("jvmForks", "definedByJmh") // see README.md for possible "jvmForks" values
             advanced("nativeFork", "perIteration") // see README.md for possible "nativeFork" values
         }
+
+        create("mt") {
+            iterations = 2
+            iterationTime = 300
+            iterationTimeUnit = "ms"
+            include("Multithreaded")
+        }
     }
 
     // Setup configurations

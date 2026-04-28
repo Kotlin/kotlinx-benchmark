@@ -111,6 +111,7 @@ class OptionsValidationTest : GradleTest() {
                 iterationTime = 1
                 iterationTimeUnit = "SECONDS"
                 mode = "AverageTime"
+                threads = 2
             }
         }
         runner.runAndSucceed("validOptionsBenchmark")
@@ -269,6 +270,33 @@ class OptionsValidationTest : GradleTest() {
         }
         runner.runAndFail("invalidJmhIgnoreLock") {
             assertOutputContains("Invalid value for 'jmhIgnoreLock': 'x'. Expected a Boolean value.")
+        }
+    }
+
+    @Test
+    fun testThreadsValidation() {
+        val runner = project("kotlin-multiplatform") {
+            configuration("invalidThreads") {
+                iterations = 1
+                iterationTime = 100
+                iterationTimeUnit = "ms"
+                threads = 0
+            }
+
+            configuration("negativeThreads") {
+                iterations = 1
+                iterationTime = 100
+                iterationTimeUnit = "ms"
+                threads = -10
+            }
+        }
+
+        runner.runAndFail("invalidThreadsBenchmark") {
+            assertOutputContains("Invalid threads: '0'. Expected a positive integer or a special THREADS_CPU_COUNT value (e.g., threads = 4).")
+        }
+
+        runner.runAndFail("negativeThreadsBenchmark") {
+            assertOutputContains("Invalid threads: '-10'. Expected a positive integer or a special THREADS_CPU_COUNT value (e.g., threads = 4).")
         }
     }
 }
