@@ -25,7 +25,7 @@ fun Project.additionalConfiguration() {
 
     val deployment = knownBuilds.deploymentSubproject
     val deployStart = deployment.knownBuilds.deployStart
-    deployStart.params.param("reverse.dep.*.DeploymentName", "kotlinx.collections.immutable %releaseVersion%")
+    deployStart.params.param("reverse.dep.*.DeploymentName", "kotlinx-benachmark %releaseVersion%")
 
     val deployPlugin = deployment.deployPlugin(deployment.knownBuilds.deployVersion, false, DEPLOY_PUBLISH_PLUGIN_ID, "Deploy (Publish Plugin)")
     val testDeployPlugin = deployment.deployPlugin(deployment.knownBuilds.deployVersion, true, VALIDATE_PUBLISH_PLUGIN_ID, "Validate (Publish Plugin)")
