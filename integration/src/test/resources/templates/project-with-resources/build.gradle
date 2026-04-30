@@ -11,6 +11,9 @@ kotlin {
     wasmJs {
         nodejs()
     }
+    wasmWasi {
+        nodejs()
+    }
     js() {
         nodejs()
     }
@@ -24,5 +27,6 @@ benchmark {
         }
         register("js")
         register("wasmJs")
+        register("wasmWasi")
     }
 }

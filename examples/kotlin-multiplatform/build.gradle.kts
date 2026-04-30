@@ -25,6 +25,7 @@ kotlin {
         compilations.create("builtInExecutor") { associateWith(mainCompilation) }
     }
     wasmJs { nodejs() }
+    wasmWasi { nodejs() }
 
     // Native targets
     @Suppress("DEPRECATION", "DEPRECATION_ERROR")
@@ -45,6 +46,8 @@ kotlin {
         jvmMain {}
 
         wasmJsMain {}
+
+        wasmWasiMain {}
 
         val jsMain by getting
 
@@ -128,6 +131,7 @@ benchmark {
             jsBenchmarksExecutor = JsBenchmarksExecutor.BuiltIn
         }
         register("wasmJs")
+        register("wasmWasi")
 
         // Native targets
         register("macosX64")
