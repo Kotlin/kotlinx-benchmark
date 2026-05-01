@@ -1,3 +1,6 @@
+public abstract interface annotation class kotlinx/benchmark/KotlinxBenchmarkRuntimeExperimentalApi : java/lang/annotation/Annotation {
+}
+
 public abstract interface annotation class kotlinx/benchmark/internal/KotlinxBenchmarkRuntimeInternalApi : java/lang/annotation/Annotation {
 }
 

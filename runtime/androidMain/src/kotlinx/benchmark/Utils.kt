@@ -9,6 +9,3 @@ internal actual fun String.writeFile(text: String): Unit =
 
 internal actual fun String.readFile(): String =
     error("Not supported on Android yet")
-
-internal actual inline fun measureNanoseconds(block: () -> Unit): Long =
-    error("Not supported on Android yet")

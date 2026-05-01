@@ -101,10 +101,10 @@ internal fun getAgpVersion(classLoader: ClassLoader): String {
  *
  * @param agpClassLoader a classloader that has AGP on it (e.g. `compilation.javaClass.classLoader`)
  */
+@Suppress("UNCHECKED_CAST")
 internal fun Project.getAndroidAdb(agpClassLoader: ClassLoader): Provider<RegularFile> {
     val extensionClass = Class.forName(AGP_COMPONENTS_CLASS, false, agpClassLoader) as Class<Any>
     val extension = extensions.getByType(extensionClass)
     val sdkComponents = extension.javaClass.getMethod("getSdkComponents").invoke(extension)
-    @Suppress("UNCHECKED_CAST")
     return sdkComponents.javaClass.getMethod("getAdb").invoke(sdkComponents) as Provider<RegularFile>
 }
