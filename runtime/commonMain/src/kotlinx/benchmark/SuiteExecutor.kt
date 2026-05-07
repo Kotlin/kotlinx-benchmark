@@ -53,9 +53,9 @@ abstract class SuiteExecutor(
         }
 
         run(config, benchmarks, { reporter.startSuite(executionName) }) {
-            val summary = TextBenchmarkReportFormatter.format(results)
+            val summary = TextBenchmarkReportFormatter.format(results, config.compilationMode)
             reporter.endSuite(executionName, summary)
-            config.reportFile.writeFile(reportFormatter.format(results))
+            config.reportFile.writeFile(reportFormatter.format(results, config.compilationMode))
         }
     }
 

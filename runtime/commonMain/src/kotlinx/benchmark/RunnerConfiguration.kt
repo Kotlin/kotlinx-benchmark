@@ -68,6 +68,8 @@ class RunnerConfiguration(config: String) {
         "mode"
     ) { it.toMode() }
 
+    val compilationMode = singleValueOrNull("compilationMode")
+
     override fun toString(): String {
         return """$name -> $reportFile ($traceFormat, $reportFormat)
 params: ${params.entries.joinToString(prefix = "{", postfix = "}") { "${it.key}: ${it.value}" }}
@@ -78,7 +80,7 @@ warmups: $warmups
 iterationTime: $iterationTime            
 iterationTimeUnit: $iterationTimeUnit            
 outputTimeUnit: $outputTimeUnit            
-mode: $mode
+mode: $mode${compilationMode?.let { "\ncompilationMode: $it" } ?: ""}
 advanced: $advanced
 """
     }

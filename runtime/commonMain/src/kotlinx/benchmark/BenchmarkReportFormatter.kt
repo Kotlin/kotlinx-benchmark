@@ -5,7 +5,7 @@ import kotlin.math.*
 
 @KotlinxBenchmarkRuntimeInternalApi
 sealed class BenchmarkReportFormatter {
-    abstract fun format(results: Collection<ReportBenchmarkResult>): String
+    abstract fun format(results: Collection<ReportBenchmarkResult>, compilationMode: String?): String
 
     @KotlinxBenchmarkRuntimeInternalApi
     companion object {
@@ -22,7 +22,7 @@ sealed class BenchmarkReportFormatter {
 internal object TextBenchmarkReportFormatter : BenchmarkReportFormatter() {
     private const val padding = 2
 
-    override fun format(results: Collection<ReportBenchmarkResult>): String {
+    override fun format(results: Collection<ReportBenchmarkResult>, compilationMode: String?): String {
         fun columnLength(column: String, selector: (ReportBenchmarkResult) -> String): Int =
             max(column.length, results.maxOfOrNull { selector(it).length } ?: 0)
 
@@ -115,7 +115,7 @@ internal object TextBenchmarkReportFormatter : BenchmarkReportFormatter() {
 }
 
 private class CsvBenchmarkReportFormatter(val delimiter: String) : BenchmarkReportFormatter() {
-    override fun format(results: Collection<ReportBenchmarkResult>): String = buildString {
+    override fun format(results: Collection<ReportBenchmarkResult>, compilationMode: String?): String = buildString {
         val allParams = results.flatMap { it.params.keys }.toSet()
         appendHeader(allParams)
         results.forEach {
@@ -162,14 +162,14 @@ private class CsvBenchmarkReportFormatter(val delimiter: String) : BenchmarkRepo
 
 private object JsonBenchmarkReportFormatter : BenchmarkReportFormatter() {
 
-    override fun format(results: Collection<ReportBenchmarkResult>): String =
-        results.joinToString(",", prefix = "[", postfix = "\n]", transform = this::format)
+    override fun format(results: Collection<ReportBenchmarkResult>, compilationMode: String?): String =
+        results.joinToString(",", prefix = "[", postfix = "\n]") { format(it, compilationMode) }
 
-    private fun format(result: ReportBenchmarkResult): String =
+    private fun format(result: ReportBenchmarkResult, compilationMode: String?): String =
         """
   {
     "benchmark" : "${result.benchmark.name.escape()}",
-    "mode" : "${result.config.mode.toText()}",
+    "mode" : "${result.config.mode.toText()}",${compilationMode?.let { "\n    \"compilationMode\": \"$it\"," } ?: ""}
     "warmupIterations" : ${result.config.warmups},
     "warmupTime" : "${result.config.iterationTime} ${result.config.iterationTimeUnit.toText()}",
     "measurementIterations" : ${result.config.iterations},

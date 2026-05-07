@@ -9,6 +9,7 @@ import org.gradle.api.Project
 import org.gradle.api.file.RegularFile
 import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.TaskProvider
+import org.gradle.configurationcache.extensions.capitalized
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
 import org.jetbrains.kotlin.gradle.targets.js.ir.JsIrBinary
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrCompilation
@@ -44,7 +45,7 @@ fun createJsEngineBenchmarkExecTask(
     }
 
     val taskName = "${binary.name}${config.capitalizedName()}${BenchmarksPlugin.BENCHMARK_EXEC_SUFFIX}"
-    val execTask = createNodeJsExec(config, target, binary.compilation, executableFile, taskName)
+    val execTask = createNodeJsExec(config, target, binary, executableFile, taskName)
     execTask.configure { it.dependsOn(binary.linkTask) }
     return execTask
 }
@@ -60,17 +61,20 @@ private fun MutableList<String>.addJsArguments() {
 private fun createNodeJsExec(
     config: BenchmarkConfiguration,
     target: BenchmarkTarget,
-    compilation: KotlinJsIrCompilation,
+    binary: JsIrBinary,
     executableFile: Provider<RegularFile>,
     taskName: String
-): TaskProvider<NodeJsExec> = NodeJsExec.register(compilation, taskName) {
-    dependsOn(compilation.runtimeDependencyFiles)
-    inputFileProperty.set(executableFile)
-    with(nodeArgs) {
-        if (!compilation.isWasmCompilation) {
-            addJsArguments()
+): TaskProvider<NodeJsExec> {
+    val compilationMode = binary.mode.name.lowercase().capitalized()
+    return NodeJsExec.register(binary.compilation, taskName) {
+        dependsOn(compilation.runtimeDependencyFiles)
+        inputFileProperty.set(executableFile)
+        with(nodeArgs) {
+            if (!compilation.isWasmCompilation) {
+                addJsArguments()
+            }
         }
+        val reportFile = setupReporting(target, config)
+        args(writeParameters(target.name, reportFile, traceFormat(), config, compilationMode))
     }
-    val reportFile = setupReporting(target, config)
-    args(writeParameters(target.name, reportFile, traceFormat(), config))
 }
