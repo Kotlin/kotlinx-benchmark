@@ -117,6 +117,7 @@ fun Task.writeParameters(
     reportFile: Provider<RegularFile>,
     format: String,
     config: BenchmarkConfiguration,
+    compilationMode: String? = null,
 ): File {
     validateConfig(config)
     val baseConfiguration = buildString {
@@ -129,6 +130,7 @@ fun Task.writeParameters(
         config.iterationTimeUnit?.let { appendLine("iterationTimeUnit:$it") }
         config.outputTimeUnit?.let { appendLine("outputTimeUnit:$it") }
         config.mode?.let { appendLine("mode:$it") }
+        compilationMode?.let { appendLine("compilationMode:$compilationMode") }
 
         config.includes.forEach {
             appendLine("include:$it")
@@ -169,7 +171,6 @@ fun Task.writeParameters(
         }
         configFileProvider.get().asFile.writeText(fullConfiguration)
     }
-
     return configFile
 }
 
