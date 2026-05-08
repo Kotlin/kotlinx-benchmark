@@ -15,6 +15,7 @@ dependencies {
     implementation(gradleTestKit())
 
     testImplementation(kotlin("test-junit"))
+    testImplementation(libs.kotlinx.serialization.json)
 }
 
 kotlin {
