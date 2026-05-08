@@ -131,6 +131,7 @@ fun Task.writeParameters(
         config.outputTimeUnit?.let { appendLine("outputTimeUnit:$it") }
         config.mode?.let { appendLine("mode:$it") }
         compilationMode?.let { appendLine("compilationMode:$compilationMode") }
+        appendLine("configurationName:${config.name}")
 
         config.includes.forEach {
             appendLine("include:$it")
