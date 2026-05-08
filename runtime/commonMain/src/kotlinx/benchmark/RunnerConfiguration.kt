@@ -69,6 +69,7 @@ class RunnerConfiguration(config: String) {
     ) { it.toMode() }
 
     val compilationMode = singleValueOrNull("compilationMode")
+    val configurationName = singleValue("configurationName")
 
     override fun toString(): String {
         return """$name -> $reportFile ($traceFormat, $reportFormat)
@@ -81,6 +82,7 @@ iterationTime: $iterationTime
 iterationTimeUnit: $iterationTimeUnit            
 outputTimeUnit: $outputTimeUnit            
 mode: $mode${compilationMode?.let { "\ncompilationMode: $it" } ?: ""}
+configurationName: $configurationName
 advanced: $advanced
 """
     }
