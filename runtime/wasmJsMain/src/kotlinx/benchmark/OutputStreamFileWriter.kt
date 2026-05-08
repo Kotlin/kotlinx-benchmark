@@ -22,7 +22,7 @@ internal object ConsoleLinesStream : OutputStream() {
 }
 
 private fun appendToFile(filePath: String, textToAppend: String): Unit =
-    js("require('fs').appendFileSync(filePath, textToAppend, 'utf8')")
+    fs.appendFileSync(filePath, textToAppend, "utf8")
 
 internal class FileStream(val filename: String) : OutputStream() {
     override fun flush() {

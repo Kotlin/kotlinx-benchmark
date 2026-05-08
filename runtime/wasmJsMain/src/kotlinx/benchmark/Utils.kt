@@ -9,4 +9,4 @@ internal fun nodeJsEngineBinaryPath(): String = js("process.argv[0]")
 
 internal fun nodeJsEngineModulePath(): String = js("process.argv[1]")
 
-internal fun nodeJsGetDirName(filePath: String): String = js("require('path').dirname(filePath)")
+internal fun nodeJsGetDirName(filePath: String): String = path.dirname(filePath)

@@ -4,14 +4,14 @@ import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 import kotlin.js.Promise
 
 private fun jsSpawnProcess(
+    childProcess: ChildProcess,
     binaryPath: String,
     workingDir: String,
     engineArguments: JsArray<JsString>,
     outputHandler: (String) -> Unit,
 ): Promise<JsNumber> = js("""{
-    const cp = require('child_process');
     return new Promise((resolve, reject) => {
-        const child = cp.spawn(binaryPath, engineArguments, { cwd: workingDir, stdio: ['inherit', 'pipe', 'inherit'] });
+        const child = childProcess.spawn(binaryPath, engineArguments, { cwd: workingDir, stdio: ['inherit', 'pipe', 'inherit'] });
         child.stdout.setEncoding('utf8');
         child.stdout.on('data', outputHandler);
         child.on('close', resolve);
@@ -20,7 +20,7 @@ private fun jsSpawnProcess(
 
 internal fun spawnProcessAndGetResult(binaryPath: String, workingDir: String, engineArguments: JsArray<JsString>): String? {
     var resultValue: String? = null
-    jsSpawnProcess(binaryPath, workingDir, engineArguments) {
+    jsSpawnProcess(childProcess, binaryPath, workingDir, engineArguments) {
         val trimmed = it.trimEnd()
         val result = Regex("<RESULT>(.*)</RESULT>").find(trimmed)
         if (result != null) {
@@ -34,7 +34,7 @@ internal fun spawnProcessAndGetResult(binaryPath: String, workingDir: String, en
 
 internal fun spawnProcess(binaryPath: String, workingDir: String, engineArguments: JsArray<JsString>) {
     val stream = ConsoleAndFilesOutputStream()
-    jsSpawnProcess(binaryPath, workingDir, engineArguments) {
+    jsSpawnProcess(childProcess, binaryPath, workingDir, engineArguments) {
         val trimmed = it.trimEnd()
         trimmed.forEach(stream::write)
         if (trimmed.length != it.length) {

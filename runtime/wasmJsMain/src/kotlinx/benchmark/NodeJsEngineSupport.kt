@@ -3,35 +3,15 @@ package kotlinx.benchmark
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-@JsFun("""
-    (globalThis.module = (typeof process !== 'undefined') && (process.release.name === 'node') ?
-        await import(/* webpackIgnore: true */'node:module') : void 0, () => {})
-""")
-private external fun persistModule()
-
-private fun getRequire(): JsAny =
-    js("""{ 
-    const importMeta = import.meta;
-    return globalThis.module.default.createRequire(importMeta.url);
-}""")
-
-private fun nodeJsWriteFile(require: JsAny, path: String, text: String): Unit =
-    js("require('fs').writeFileSync(path, text, 'utf8')")
-
-private fun nodeJsReadFile(require: JsAny, path: String): String =
-    js("require('fs').readFileSync(path, 'utf8')")
-
 private fun nodeJsArguments(): String =
     js("process.argv.slice(2).join(' ')")
 
 private object NodeJsEngineSupport : BenchmarkEngineSupport() {
-    private val require by lazy { persistModule().let { getRequire() } }
-
     override fun writeFile(path: String, content: String) =
-        nodeJsWriteFile(require, path, content)
+        fs.writeFileSync(path, content, "utf8")
 
     override fun readFile(path: String): String =
-        nodeJsReadFile(require, path)
+        fs.readFileSync(path, "utf8")
 
     override fun arguments(): Array<out String> =
         nodeJsArguments().split(' ').toTypedArray()
