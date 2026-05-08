@@ -8,7 +8,7 @@
 [![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v?label=Gradle%20Plugin&metadataUrl=https://plugins.gradle.org/m2/org/jetbrains/kotlinx/kotlinx-benchmark-plugin/maven-metadata.xml)](https://plugins.gradle.org/plugin/org.jetbrains.kotlinx.benchmark)
 
 `kotlinx-benchmark` is a toolkit for running benchmarks for multiplatform code written in Kotlin.
-It is designed to work with Kotlin/JVM, Kotlin/JS, Kotlin/Native, and Kotlin/WasmJs (experimental) targets.
+It is designed to work with Kotlin/JVM, Kotlin/JS, Kotlin/Native, and Kotlin/WasmJs and WasmWasi (experimental) targets.
 
 To get started, ensure you're using Kotlin 2.2.0 or newer and the latest stable Gradle 8 release or newer.
 However, because the Kotlin/WasmJs target is experimental and in an active development phase, it guarantees support
@@ -60,7 +60,7 @@ dedicated to setting up benchmarking in those specific project types.
     ```kotlin
     // build.gradle.kts
     plugins {
-        id("org.jetbrains.kotlinx.benchmark") version "0.4.16"
+        id("org.jetbrains.kotlinx.benchmark") version "0.4.17"
     }
     ```
 
@@ -83,7 +83,7 @@ dedicated to setting up benchmarking in those specific project types.
         sourceSets {
             commonMain {
                 dependencies {
-                    implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.16")
+                    implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.17")
                 }
             }
         }
@@ -108,7 +108,7 @@ dedicated to setting up benchmarking in those specific project types.
     ```groovy
     // build.gradle
     plugins {
-        id 'org.jetbrains.kotlinx.benchmark' version '0.4.16'
+        id 'org.jetbrains.kotlinx.benchmark' version '0.4.17'
     }
     ```
 
@@ -131,7 +131,7 @@ dedicated to setting up benchmarking in those specific project types.
         sourceSets {
             commonMain {
                 dependencies {
-                    implementation 'org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.16'
+                    implementation 'org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.17'
                 }
             }
         }

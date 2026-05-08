@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## 0.4.17
+
+- Updated minimum support Kotlin version to `2.2.0` and Gradle version to `8.x` [#360](https://github.com/Kotlin/kotlinx-benchmark/pull/360)
+- Added experimental Wasm WASI target support [#361](https://github.com/Kotlin/kotlinx-benchmark/pull/361)
+- JSON reports for Web and Native targets now include information about configuration name and binaries type [#373](https://github.com/Kotlin/kotlinx-benchmark/pull/373), [#374](https://github.com/Kotlin/kotlinx-benchmark/pull/374)
+- Included information about the library version into published JAR files [#344](https://github.com/Kotlin/kotlinx-benchmark/pull/344)
+- Various build infrastructure updates ([#346](https://github.com/Kotlin/kotlinx-benchmark/pull/346), [#351](https://github.com/Kotlin/kotlinx-benchmark/pull/351),
+  [#357](https://github.com/Kotlin/kotlinx-benchmark/pull/357), [#363](https://github.com/Kotlin/kotlinx-benchmark/pull/363),
+  [#365](https://github.com/Kotlin/kotlinx-benchmark/pull/365), [#366](https://github.com/Kotlin/kotlinx-benchmark/pull/366),
+  [#369](https://github.com/Kotlin/kotlinx-benchmark/pull/369), [#370](https://github.com/Kotlin/kotlinx-benchmark/pull/370))
+
 ## 0.4.16
 
 - Restored compatibility with Gradle's project isolation that was broken after #312 [#349](https://github.com/Kotlin/kotlinx-benchmark/pull/349)
