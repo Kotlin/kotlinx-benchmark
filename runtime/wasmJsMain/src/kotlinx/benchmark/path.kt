@@ -12,5 +12,10 @@ internal external interface Path {
     fun dirname(path: String): String
 }
 
-@JsModule("node:path")
-internal external val path: Path
+internal val path: Path by lazy {
+    @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
+    (loadPath() ?: throwModuleCannotBeImported("path")) as Path
+}
+
+@JsFun("${LOAD_MODULE_PREFIX}path${LOAD_MODULE_POSTFIX}")
+private external fun loadPath(): JsAny?

@@ -22,5 +22,10 @@ internal external interface Fs {
     fun appendFileSync(file: String, text: String, options: String?)
 }
 
-@JsModule("node:fs")
-internal external val fs: Fs
+internal val fs: Fs by lazy {
+    @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
+    (loadFs() ?: throwModuleCannotBeImported("fs")) as Fs
+}
+
+@JsFun("${LOAD_MODULE_PREFIX}fs${LOAD_MODULE_POSTFIX}")
+private external fun loadFs(): JsAny?

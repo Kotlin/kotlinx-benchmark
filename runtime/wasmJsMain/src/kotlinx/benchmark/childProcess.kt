@@ -7,5 +7,10 @@ package kotlinx.benchmark
 
 internal external interface ChildProcess
 
-@JsModule("node:child_process")
-internal external val childProcess: ChildProcess
+internal val childProcess: ChildProcess by lazy {
+    @Suppress("UNCHECKED_CAST_TO_EXTERNAL_INTERFACE")
+    (loadChildProcess() ?: throwModuleCannotBeImported("child_process")) as ChildProcess
+}
+
+@JsFun("${LOAD_MODULE_PREFIX}child_process${LOAD_MODULE_POSTFIX}")
+private external fun loadChildProcess(): JsAny?
