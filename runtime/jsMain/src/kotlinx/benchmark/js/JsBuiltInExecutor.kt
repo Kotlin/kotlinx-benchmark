@@ -5,15 +5,36 @@ import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 
 @KotlinxBenchmarkRuntimeInternalApi
 fun runBenchmarksBuiltIn(name: String, args: Array<out String>, declareAndExecuteSuites: (SuiteExecutorBase) -> Unit) {
-    declareAndExecuteSuites(JsBuiltInExecutor(name, args))
+    val arguments = engineSupport.arguments()
+    val configPath = arguments[0]
+
+    val executor = when (arguments.size) {
+        2 -> {
+            check(arguments[1] == "startAll")
+            JsBuiltInExecutor(name, configPath)
+        }
+        3 -> {
+            SingleBenchmarkExecutor(
+                executionName = name,
+                runnerConfiguration = RunnerConfiguration(configPath.readFile()),
+                suiteIndex = arguments[1].toInt(),
+                benchmarkId = arguments[2],
+            )
+        }
+        else -> {
+            JsBuiltInExecutor(name, configPath)
+        }
+    }
+
+    declareAndExecuteSuites(executor)
 }
 
 private class JsBuiltInExecutor(
     name: String,
-    @Suppress("UNUSED_PARAMETER") dummy_args: Array<out String>
+    configPath: String,
 ) : SuiteExecutor(
     executionName = name,
-    configPath = engineSupport.arguments()[0],
+    configPath = configPath,
 ), RunAllBenchmarksExtension, CommonBenchmarkExtension  {
 
     private val BenchmarkConfiguration.notUseJsBridge: Boolean
