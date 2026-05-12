@@ -8,32 +8,23 @@ import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
 @Suppress("OPT_IN_USAGE")
-@JsFun("""
-    (globalThis.module = (typeof process !== 'undefined') && (process.release.name === 'node') ?
-        await import(/* webpackIgnore: true */'node:module') : void 0, () => {})
-""")
-private external fun persistModule()
-
-@Suppress("OPT_IN_USAGE")
-private fun getRequire(): JsAny =
-    js("""{ 
-    const importMeta = import.meta;
-    return globalThis.module.default.createRequire(importMeta.url);
-}""")
-
-@Suppress("OPT_IN_USAGE")
-private fun nodeJsReadFile(require: JsAny, path: String): String =
-    js("require('fs').readFileSync(path, 'utf8')")
-
-@Suppress("OPT_IN_USAGE")
 private fun nodeJsArguments(): String =
     js("process.argv.slice(2).join(' ')")
 
 @Suppress("OPT_IN_USAGE")
+@JsModule("node:fs")
+private external val fs: Fs
+
+internal external interface Fs {
+    /**
+     * See https://nodejs.org/api/fs.html#fsreadfilesyncpath-options
+     */
+    fun readFileSync(file: String, options: String?): String
+}
+
+@Suppress("OPT_IN_USAGE")
 @OptIn(KotlinxBenchmarkRuntimeExperimentalApi::class)
 private object FakeEngineSupport : BenchmarkEngineSupport() {
-    private val require by lazy { persistModule().let { getRequire() } }
-
     override fun writeFile(path: String, content: String) {
         println("Custom engine write to file")
         println("<FILE:$path>$content<ENDFILE>")
@@ -41,7 +32,7 @@ private object FakeEngineSupport : BenchmarkEngineSupport() {
 
     override fun readFile(path: String): String {
         println("Custom engine read from file")
-        return nodeJsReadFile(require, path)
+        return fs.readFileSync(path, "utf8")
     }
 
     override fun arguments(): Array<out String> =
