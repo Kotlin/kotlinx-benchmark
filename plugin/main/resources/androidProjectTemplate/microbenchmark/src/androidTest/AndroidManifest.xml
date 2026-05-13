@@ -1,0 +1,8 @@
+<!-- Manifest for running the Jetpack Microbenchmarks -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Requesting legacy storage is needed to be able to write to additionalTestOutputDir on API 29 -->
+    <application android:requestLegacyExternalStorage="true">
+        <!-- Allow optional profiling for the benchmark app. -->
+        <profileable android:shell="true" />
+    </application>
+</manifest>

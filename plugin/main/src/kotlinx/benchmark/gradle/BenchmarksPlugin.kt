@@ -1,15 +1,13 @@
 package kotlinx.benchmark.gradle
 
-import kotlinx.benchmark.gradle.internal.BenchmarkDependencies
-import kotlinx.benchmark.gradle.internal.BenchmarksPluginConstants
+import kotlinx.benchmark.gradle.internal.*
 import kotlinx.benchmark.gradle.internal.BenchmarksPluginConstants.DEFAULT_KOTLIN_COMPILER_VERSION
 import kotlinx.benchmark.gradle.internal.BenchmarksPluginConstants.MIN_SUPPORTED_GRADLE_VERSION
 import kotlinx.benchmark.gradle.internal.BenchmarksPluginConstants.MIN_SUPPORTED_KOTLIN_VERSION
-import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
 import org.gradle.api.provider.*
-import org.gradle.util.GradleVersion
-import javax.inject.Inject
+import org.gradle.util.*
+import javax.inject.*
 
 @Suppress("unused")
 abstract class BenchmarksPlugin
@@ -118,6 +116,7 @@ constructor(
                 is JsBenchmarkTarget -> processJsCompilation(config)
                 is WasmBenchmarkTarget -> processWasmCompilation(config)
                 is NativeBenchmarkTarget -> processNativeCompilation(config)
+                is AndroidBenchmarkTarget -> processAndroidCompilation(config)
             }
         }
         extension.checkConflictingJmhVersions()

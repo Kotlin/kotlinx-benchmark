@@ -1,14 +1,14 @@
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import kotlinx.team.infra.InfraExtension
+import org.jetbrains.kotlin.gradle.dsl.*
+import kotlinx.team.infra.*
 import org.gradle.plugin.compatibility.compatibility
-import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.buildtools.api.*
+import org.jetbrains.kotlin.gradle.*
 
 buildscript {
     repositories {
         maven("https://packages.jetbrains.team/maven/p/kotlinx-team-infra/maven")
         mavenCentral()
+        google()
         val kotlinRepoUrl = providers.gradleProperty("kotlin_repo_url").orNull
         if (kotlinRepoUrl != null) {
             maven(kotlinRepoUrl)
@@ -53,6 +53,7 @@ logger.info("Using Kotlin ${libs.versions.kotlin.asProvider().get()} for project
 repositories {
     mavenCentral()
     gradlePluginPortal()
+    google()
 
     val kotlinRepoUrl = providers.gradleProperty("kotlin_repo_url").orNull
     if (kotlinRepoUrl != null) {
@@ -107,6 +108,7 @@ kotlin {
                 "kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi",
                 "kotlin.RequiresOptIn",
         )
+
         /**
          * Gradle 8.0 embeds Kotlin 1.8.x, so the plugin can be built against Kotlin language and API 1.8
          * while remaining compatible with the minimum supported Gradle version.
@@ -123,6 +125,7 @@ dependencies {
     implementation(libs.kotlin.reflect)
 
     implementation(libs.squareup.kotlinpoet)
+    implementation(libs.jackson.databind)
 
     implementation(libs.kotlin.utilKlibMetadata)
     implementation(libs.kotlin.utilKlib)
@@ -167,6 +170,8 @@ val generatePluginConstants by tasks.registering {
                 |  const val MIN_SUPPORTED_KOTLIN_VERSION = "${minSupportedKotlinVersion.get()}"
                 |  const val DEFAULT_KOTLIN_COMPILER_VERSION = "${kotlinCompilerVersion.get()}"
                 |  const val DEFAULT_JMH_VERSION = "${defaultJvmVersion.get()}"
+                |  const val DEFAULT_ANDROIDX_BENCHMARK_VERSION = "${libs.versions.android.benchmark.get()}"
+                |  const val DEFAULT_ANDROIDX_TEST_EXT_VERSION = "${libs.versions.android.test.ext.get()}"
                 |}
                 |""".trimMargin()
         )
