@@ -17,7 +17,7 @@ fun runBenchmarksBuiltIn(name: String, args: Array<out String>, declareAndExecut
             SingleBenchmarkExecutor(
                 executionName = name,
                 runnerConfiguration = RunnerConfiguration(configPath.readFile()),
-                suiteIndex = arguments[1].toInt(),
+                suiteId = arguments[1],
                 benchmarkId = arguments[2],
             )
         }
