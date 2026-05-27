@@ -100,7 +100,7 @@ internal class NativeExecutor(
                     workersPool,
                     iteration.toInt()
                 )
-                resultsFile.writeFile("1") // Iterations number for backward compatibility
+                resultsFile.writeFile("1") // Iterations number for backward compatibility w/ NativeBenchmarkExec
             } catch (e: Throwable) {
                 val error = e.toString()
                 val stacktrace = e.stacktrace()
