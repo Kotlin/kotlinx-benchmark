@@ -1,5 +1,8 @@
 package kotlinx.benchmark
 
+internal const val SINGLE_THREADED_WARNING =
+    "WARNING: Runtime is single-threaded, so requested benchmark threads value is ignored and only one thread will be used."
+
 /**
  * Runs a complete benchmark suite by iterating over all configured benchmarks and their parameter combinations.
  *
@@ -17,6 +20,17 @@ internal interface RunAllBenchmarksExtension {
     val reporter: BenchmarkProgress
     val executionName: String
     fun result(result: ReportBenchmarkResult)
+
+    fun normalizeConfiguration(
+        benchmark: BenchmarkDescriptor<Any?>,
+        configuration: BenchmarkConfiguration,
+        parameters: Map<String, String>,
+        id: String,
+    ): BenchmarkConfiguration {
+        if (configuration.threads == 1) return configuration
+        reporter.output(executionName, id, SINGLE_THREADED_WARNING)
+        return configuration.withUpdatedThreadsCount(1)
+    }
 
     fun runBenchmark(
         benchmark: BenchmarkDescriptor<Any?>,
@@ -51,9 +65,10 @@ internal interface RunAllBenchmarksExtension {
         start()
         for (benchmark in benchmarks) {
             val suite = benchmark.suite
-            val benchmarkConfiguration = BenchmarkConfiguration(runnerConfiguration, suite)
+            val baseConfiguration = BenchmarkConfiguration(runnerConfiguration, suite)
             runWithParameters(suite.parameters, runnerConfiguration.params, suite.defaultParameters) { parameters ->
                 val id = id(benchmark.name, parameters)
+                val benchmarkConfiguration = normalizeConfiguration(benchmark, baseConfiguration, parameters, id)
                 reporter.startBenchmark(executionName, id)
                 val samples = runBenchmark(benchmark, benchmarkConfiguration, parameters, id, reporter)
                 if (samples != null) {
