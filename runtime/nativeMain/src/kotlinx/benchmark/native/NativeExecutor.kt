@@ -160,7 +160,9 @@ internal class NativeExecutor(
         val samples = WorkersPool(benchmarkRun.config.threads).use { workersPool ->
             try {
                 // Execute warmup
-                warmup(suite.name, benchmarkRun.config, instance, benchmark, workersPool)
+                if (benchmarkRun.config.nativeFork == NativeFork.PerBenchmark) {
+                    warmup(suite.name, benchmarkRun.config, instance, benchmark, workersPool)
+                }
                 val nativeGCAfterIteration = benchmarkRun.config.nativeGCAfterIteration
                 val iterationDuration = benchmarkRun.config.iterationDuration
                 DoubleArray(iterations) { iteration ->
