@@ -90,12 +90,16 @@ internal fun validateParameterProperties(properties: List<PropertyDescriptor>) {
 }
 
 @RequiresKotlinCompilerEmbeddable
-internal fun validateThreadsAnnotation(threads: AnnotationDescriptor?) {
+internal fun validateThreadsAnnotation(platform: Platform, suppressThreadsWarning: Boolean, threads: AnnotationDescriptor?) {
     if (threads == null) return
 
     val value = threads.argumentValue("value")!!.value as Int
 
     if (value != -1 /* THREADS_CPU_COUNT */ && value <= 0) {
         error("@Threads annotation accepts only positive integers and special value THREADS_CPU_COUNT, but $value was specified.")
+    }
+
+    if (!suppressThreadsWarning && value != 1 && platform != Platform.NativeBuiltIn) {
+        ThreadsValueValidator.warnAboutThreadsAnnotationOnUnsupportedPlatform(platform.printableName, value)
     }
 }

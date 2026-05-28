@@ -75,6 +75,6 @@ private fun createNodeJsExec(
             }
         }
         val reportFile = setupReporting(target, config)
-        args(writeParameters(target.name, reportFile, traceFormat(), config, compilationMode))
+        args(writeParameters(target, reportFile, traceFormat(), config, compilationMode))
     }
 }

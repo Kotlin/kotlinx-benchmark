@@ -30,6 +30,7 @@ internal abstract class GenerateWasmSourceWorker : WorkAction<GenerateWasmSource
         val inputDependencies: ConfigurableFileCollection
         val outputSourcesDir: DirectoryProperty
         val outputResourcesDir: DirectoryProperty
+        val suppressThreadsWarning: Property<Boolean>
     }
 
     override fun execute() {
@@ -47,6 +48,7 @@ internal abstract class GenerateWasmSourceWorker : WorkAction<GenerateWasmSource
                 lib = lib,
                 inputDependencies = inputDependencies,
                 outputSourcesDir = outputSourcesDir,
+                suppressThreadsWarning = parameters.suppressThreadsWarning.get()
             )
         }
     }
@@ -56,6 +58,7 @@ internal abstract class GenerateWasmSourceWorker : WorkAction<GenerateWasmSource
         lib: File,
         inputDependencies: Set<File>,
         outputSourcesDir: File,
+        suppressThreadsWarning: Boolean
     ) {
         val modules = loadIr(
             lib,
@@ -67,7 +70,8 @@ internal abstract class GenerateWasmSourceWorker : WorkAction<GenerateWasmSource
                 title,
                 module,
                 outputSourcesDir,
-                Platform.WasmBuiltIn
+                Platform.WasmBuiltIn,
+                suppressThreadsWarning
             )
             generator.generate()
         }

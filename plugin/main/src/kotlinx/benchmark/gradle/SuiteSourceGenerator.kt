@@ -22,31 +22,36 @@ enum class Platform(
     val runBenchmarks: String,
     val suiteDescriptorClass: String,
     val benchmarkDescriptorClass: String,
-    val benchmarkDescriptorWithBlackholeParameterClass: String
+    val benchmarkDescriptorWithBlackholeParameterClass: String,
+    val printableName: String
 ) {
     JsBuiltIn(
         runBenchmarks = "kotlinx.benchmark.js.runBenchmarksBuiltIn",
         suiteDescriptorClass = "kotlinx.benchmark.SuiteDescriptor",
         benchmarkDescriptorClass = "kotlinx.benchmark.js.JsBenchmarkDescriptorWithNoBlackholeParameter",
         benchmarkDescriptorWithBlackholeParameterClass = "kotlinx.benchmark.js.JsBenchmarkDescriptorWithBlackholeParameter",
+        printableName = "JS"
     ),
     JsBenchmarkJs(
         runBenchmarks = "kotlinx.benchmark.js.runBenchmarks",
         suiteDescriptorClass = "kotlinx.benchmark.SuiteDescriptor",
         benchmarkDescriptorClass = "kotlinx.benchmark.js.JsBenchmarkDescriptorWithNoBlackholeParameter",
         benchmarkDescriptorWithBlackholeParameterClass = "kotlinx.benchmark.js.JsBenchmarkDescriptorWithBlackholeParameter",
+        printableName = "JS"
     ),
     NativeBuiltIn(
         runBenchmarks = "kotlinx.benchmark.native.runBenchmarks",
         suiteDescriptorClass = "kotlinx.benchmark.SuiteDescriptor",
         benchmarkDescriptorClass = "kotlinx.benchmark.BenchmarkDescriptorWithNoBlackholeParameter",
         benchmarkDescriptorWithBlackholeParameterClass = "kotlinx.benchmark.BenchmarkDescriptorWithBlackholeParameter",
+        printableName = "Native"
     ),
     WasmBuiltIn(
         runBenchmarks = "kotlinx.benchmark.wasm.runBenchmarks",
         suiteDescriptorClass = "kotlinx.benchmark.SuiteDescriptor",
         benchmarkDescriptorClass = "kotlinx.benchmark.BenchmarkDescriptorWithNoBlackholeParameter",
         benchmarkDescriptorWithBlackholeParameterClass = "kotlinx.benchmark.BenchmarkDescriptorWithBlackholeParameter",
+        printableName = "Wasm"
     )
 }
 
@@ -56,7 +61,8 @@ class SuiteSourceGenerator(
     val title: String,
     val module: ModuleDescriptor,
     val output: File,
-    val platform: Platform
+    val platform: Platform,
+    val suppressThreadsWarning: Boolean
 ) {
 
     @KotlinxBenchmarkPluginInternalApi
@@ -168,7 +174,7 @@ class SuiteSourceGenerator(
         val modeAnnotation = original.annotations.singleOrNull { it.fqName.toString() == modeAnnotationFQN }
         val threadsAnnotation = original.annotations.singleOrNull { it.fqName.toString() == threadsAnnotationFQN }
 
-        validateThreadsAnnotation(threadsAnnotation)
+        validateThreadsAnnotation(platform, suppressThreadsWarning, threadsAnnotation)
 
         val outputTimeUnitValue = outputTimeAnnotation?.argumentValue("value") as EnumValue?
         val outputTimeUnit = outputTimeUnitValue?.enumEntryName?.toString()

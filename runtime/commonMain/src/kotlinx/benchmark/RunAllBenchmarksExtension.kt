@@ -1,8 +1,5 @@
 package kotlinx.benchmark
 
-internal const val SINGLE_THREADED_WARNING =
-    "WARNING: Runtime is single-threaded, so requested benchmark threads value is ignored and only one thread will be used."
-
 /**
  * Runs a complete benchmark suite by iterating over all configured benchmarks and their parameter combinations.
  *
@@ -28,7 +25,6 @@ internal interface RunAllBenchmarksExtension {
         id: String,
     ): BenchmarkConfiguration {
         if (configuration.threads == 1) return configuration
-        reporter.output(executionName, id, SINGLE_THREADED_WARNING)
         return configuration.withUpdatedThreadsCount(1)
     }
 

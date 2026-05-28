@@ -8,6 +8,7 @@ import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
 import org.gradle.api.file.Directory
 import org.gradle.api.file.RegularFile
+import org.gradle.api.logging.Logging
 import org.gradle.api.plugins.*
 import org.gradle.api.provider.*
 import org.gradle.api.tasks.*
@@ -20,6 +21,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import kotlin.jvm.java
 
 @KotlinxBenchmarkPluginInternalApi
 @Deprecated("Unused - replace with Kotlin stdlib function", ReplaceWith("file.deleteRecursively()"))
@@ -113,15 +115,15 @@ val Path.absolutePath: String get() = toAbsolutePath().toFile().invariantSeparat
 
 @KotlinxBenchmarkPluginInternalApi
 fun Task.writeParameters(
-    name: String,
+    target: BenchmarkTarget,
     reportFile: Provider<RegularFile>,
     format: String,
     config: BenchmarkConfiguration,
     compilationMode: String? = null,
 ): File {
-    validateConfig(config)
+    validateConfig(target, config)
     val baseConfiguration = buildString {
-        appendLine("name:$name")
+        appendLine("name:${target.name}")
         appendLine("traceFormat:$format")
         config.reportFormat?.let { appendLine("reportFormat:$it") }
         config.iterations?.let { appendLine("iterations:$it") }
@@ -176,7 +178,7 @@ fun Task.writeParameters(
     return configFile
 }
 
-private fun validateConfig(config: BenchmarkConfiguration) {
+private fun validateConfig(target: BenchmarkTarget, config: BenchmarkConfiguration) {
     config.reportFormat?.let {
         require(it.toLowerCase() in ValidOptions.format) {
             "Invalid report format: '$it'. Accepted formats: ${ValidOptions.format.joinToString(", ")} (e.g., reportFormat = \"json\")."
@@ -228,6 +230,11 @@ private fun validateConfig(config: BenchmarkConfiguration) {
     config.threads?.let {
         require(it > 0 || it == -1 /*THREADS_CPU_COUNT*/) {
             "Invalid threads: '$it'. Expected a positive integer or a special THREADS_CPU_COUNT value (e.g., threads = 4)."
+        }
+        if (it != 1 && target !is JvmBenchmarkTarget && target !is NativeBenchmarkTarget) {
+            if (!ThreadsValueValidator.suppressThreadsWarningsProvider(target.extension.project).get()) {
+                ThreadsValueValidator.warnAboutThreadsParameterForUnsupportedTarget(target.name, it)
+            }
         }
     }
 
@@ -375,4 +382,30 @@ internal fun BenchmarksExtension.checkConflictingJmhVersions() {
     project.logger.warn("Project ${project.name} configures several JVM benchmarking targets that use different " +
             "JMH versions ($clarification). Such configuration is not supported and may lead to runtime errors. " +
             "Consider using the same JMH version across all benchmarking targets.")
+}
+
+internal object ThreadsValueValidator {
+    private val threadsSettingLogger = Logging.getLogger("kotlinx-benchmarks")
+
+    internal fun suppressThreadsWarningsProvider(project: Project): Provider<Boolean> {
+        return project.providers.gradleProperty("benchmarks_suppress_threads_warning").map {
+            it.toBooleanStrictOrNull() == true
+        }.orElse(false)
+    }
+
+    fun warnAboutThreadsAnnotationOnUnsupportedPlatform(platformName: String, threadsValue: Int) {
+        threadsSettingLogger.warn(
+            "Using @Threads annotation with value other than 1 will have no effect " +
+                    "on the $platformName platform. The value: $threadsValue. " +
+                    "To suppress this warning, set Gradle property benchmarks_suppress_threads_warning=true"
+        )
+    }
+
+    fun warnAboutThreadsParameterForUnsupportedTarget(targetName: String, threadsValue: Int) {
+        threadsSettingLogger.warn(
+            "Using threads configuration parameter with value other than 1 will have no effect " +
+                    "for the target $targetName. The value: $threadsValue. " +
+                    "To suppress this warning, set Gradle property benchmarks_suppress_threads_warning=true"
+        )
+    }
 }

@@ -35,8 +35,7 @@ private class JsBenchmarkExecutor(name: String, @Suppress("UNUSED_PARAMETER") du
 
             runWithParameters(suite.parameters, runnerConfiguration.params, suite.defaultParameters) { params ->
                 val id = id(benchmark.name, params)
-                val warnAboutThreadsCount = baseConfig.threads != 1
-                val config = if (warnAboutThreadsCount) baseConfig.withUpdatedThreadsCount(1) else baseConfig
+                val config = if (baseConfig.threads != 1) baseConfig.withUpdatedThreadsCount(1) else baseConfig
 
                 val instance = suite.factory() // TODO: should we create instance per bench or per suite?
                 suite.parametrize(instance, params)
@@ -92,9 +91,6 @@ private class JsBenchmarkExecutor(name: String, @Suppress("UNUSED_PARAMETER") du
 
                 jsBenchmark.on("start") { _ ->
                     reporter.startBenchmark(executionName, id)
-                    if (warnAboutThreadsCount) {
-                        reporter.output(executionName, id, SINGLE_THREADED_WARNING)
-                    }
                     suite.setup(instance)
                 }
                 var iteration = 0
