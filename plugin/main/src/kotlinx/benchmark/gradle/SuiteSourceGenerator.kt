@@ -19,31 +19,31 @@ import java.io.File
 
 @KotlinxBenchmarkPluginInternalApi
 enum class Platform(
-    val executorClass: String,
+    val runBenchmarks: String,
     val suiteDescriptorClass: String,
     val benchmarkDescriptorClass: String,
     val benchmarkDescriptorWithBlackholeParameterClass: String
 ) {
     JsBuiltIn(
-        executorClass = "kotlinx.benchmark.js.JsBuiltInExecutor",
+        runBenchmarks = "kotlinx.benchmark.js.runBenchmarksBuiltIn",
         suiteDescriptorClass = "kotlinx.benchmark.SuiteDescriptor",
         benchmarkDescriptorClass = "kotlinx.benchmark.js.JsBenchmarkDescriptorWithNoBlackholeParameter",
         benchmarkDescriptorWithBlackholeParameterClass = "kotlinx.benchmark.js.JsBenchmarkDescriptorWithBlackholeParameter",
     ),
     JsBenchmarkJs(
-        executorClass = "kotlinx.benchmark.js.JsBenchmarkExecutor",
+        runBenchmarks = "kotlinx.benchmark.js.runBenchmarks",
         suiteDescriptorClass = "kotlinx.benchmark.SuiteDescriptor",
         benchmarkDescriptorClass = "kotlinx.benchmark.js.JsBenchmarkDescriptorWithNoBlackholeParameter",
         benchmarkDescriptorWithBlackholeParameterClass = "kotlinx.benchmark.js.JsBenchmarkDescriptorWithBlackholeParameter",
     ),
     NativeBuiltIn(
-        executorClass = "kotlinx.benchmark.native.NativeExecutor",
+        runBenchmarks = "kotlinx.benchmark.native.runBenchmarks",
         suiteDescriptorClass = "kotlinx.benchmark.SuiteDescriptor",
         benchmarkDescriptorClass = "kotlinx.benchmark.BenchmarkDescriptorWithNoBlackholeParameter",
         benchmarkDescriptorWithBlackholeParameterClass = "kotlinx.benchmark.BenchmarkDescriptorWithBlackholeParameter",
     ),
     WasmBuiltIn(
-        executorClass = "kotlinx.benchmark.wasm.WasmBuiltInExecutor",
+        runBenchmarks = "kotlinx.benchmark.wasm.runBenchmarks",
         suiteDescriptorClass = "kotlinx.benchmark.SuiteDescriptor",
         benchmarkDescriptorClass = "kotlinx.benchmark.BenchmarkDescriptorWithNoBlackholeParameter",
         benchmarkDescriptorWithBlackholeParameterClass = "kotlinx.benchmark.BenchmarkDescriptorWithBlackholeParameter",
@@ -65,6 +65,7 @@ class SuiteSourceGenerator(
         val teardownFunctionName = "tearDown"
         val parametersFunctionName = "parametrize"
 
+        val suiteExecutorFQN = "kotlinx.benchmark.SuiteExecutorBase"
         val externalConfigurationFQN = "kotlinx.benchmark.ExternalConfiguration"
         val benchmarkAnnotationFQN = "kotlinx.benchmark.Benchmark"
         val setupAnnotationFQN = "kotlinx.benchmark.Setup"
@@ -91,7 +92,6 @@ class SuiteSourceGenerator(
         ).build()
     }
 
-    private val executorType = ClassName.bestGuess(platform.executorClass)
     private val suiteDescriptorType = ClassName.bestGuess(platform.suiteDescriptorClass)
 
     val benchmarks = mutableListOf<ClassName>()
@@ -108,7 +108,13 @@ class SuiteSourceGenerator(
                 val array = ClassName("kotlin", "Array")
                 val arrayOfStrings = array.parameterizedBy(WildcardTypeName.producerOf(String::class))
                 addParameter("args", arrayOfStrings)
-                addStatement("val executor = %T(%S, args)", executorType, title)
+                addStatement("${platform.runBenchmarks}(%S, args, ::declareAndExecuteSuites)", title)
+            }
+
+            function("declareAndExecuteSuites") {
+                addAnnotation(optInRuntimeInternalApi)
+                val suiteExecutorClass = ClassName.bestGuess(suiteExecutorFQN)
+                addParameter("executor", suiteExecutorClass)
                 for (benchmark in benchmarks) {
                     addStatement("executor.suite(%T.describe())", benchmark)
                 }

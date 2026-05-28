@@ -2,12 +2,31 @@ package kotlinx.benchmark
 
 import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 
+internal fun id(name: String, params: Map<String, String>): String {
+    val id = if (params.isEmpty())
+        name
+    else
+        name + params.entries.joinToString(prefix = " | ") { "${it.key}=${it.value}" }
+    return id
+}
+
+@KotlinxBenchmarkRuntimeInternalApi
+abstract class SuiteExecutorBase {
+    protected val suites = mutableListOf<SuiteDescriptor<*>>()
+
+    fun <T> suite(descriptor: SuiteDescriptor<T>) {
+        suites.add(descriptor)
+    }
+
+    abstract fun run()
+}
+
 @KotlinxBenchmarkRuntimeInternalApi
 abstract class SuiteExecutor(
     val executionName: String,
     configPath: String,
     xmlReporter: (() -> BenchmarkProgress)? = null
-) {
+): SuiteExecutorBase() {
     private val config = RunnerConfiguration(configPath.readFile())
 
     val reporter = BenchmarkProgress.create(config.traceFormat, xmlReporter)
@@ -16,13 +35,7 @@ abstract class SuiteExecutor(
 
     private val results = mutableListOf<ReportBenchmarkResult>()
 
-    private val suites = mutableListOf<SuiteDescriptor<*>>()
-
-    fun <T> suite(descriptor: SuiteDescriptor<T>) {
-        suites.add(descriptor)
-    }
-
-    fun run() {
+    override fun run() {
         //println(config.toString())
         val include = if (config.include.isEmpty())
             listOf(Regex(".*"))
@@ -40,9 +53,9 @@ abstract class SuiteExecutor(
         }
 
         run(config, benchmarks, { reporter.startSuite(executionName) }) {
-            val summary = TextBenchmarkReportFormatter.format(results)
+            val summary = TextBenchmarkReportFormatter.format(results, config.compilationMode, config.configurationName)
             reporter.endSuite(executionName, summary)
-            config.reportFile.writeFile(reportFormatter.format(results))
+            config.reportFile.writeFile(reportFormatter.format(results, config.compilationMode, config.configurationName))
         }
     }
 
@@ -56,14 +69,6 @@ abstract class SuiteExecutor(
         start: () -> Unit,
         complete: () -> Unit
     )
-
-    protected fun id(name: String, params: Map<String, String>): String {
-        val id = if (params.isEmpty())
-            name
-        else
-            name + params.entries.joinToString(prefix = " | ") { "${it.key}=${it.value}" }
-        return id
-    }
 }
 
 @KotlinxBenchmarkRuntimeInternalApi

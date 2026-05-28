@@ -3,12 +3,12 @@
 [![Kotlin Alpha](https://kotl.in/badges/alpha.svg)](https://kotlinlang.org/docs/components-stability.html)
 [![JetBrains incubator project](https://jb.gg/badges/incubator.svg)](https://confluence.jetbrains.com/display/ALL/JetBrains+on+GitHub)
 [![GitHub license](https://img.shields.io/github/license/kotlin/kotlinx-benchmark)](LICENSE)
-[![Build status](https://teamcity.jetbrains.com/guestAuth/app/rest/builds/buildType:(id:KotlinTools_KotlinxBenchmark_Build_All)/statusIcon.svg)](https://teamcity.jetbrains.com/viewType.html?buildTypeId=KotlinTools_KotlinxBenchmark_Build_All)
+[![Build status](https://teamcity.jetbrains.com/app/rest/builds/buildType:id:KotlinTools_KotlinxBenchmark_Build_All,branch:name:master/statusIcon.svg)](https://teamcity.jetbrains.com/viewType.html?buildTypeId=KotlinTools_KotlinxBenchmark_Build_All)
 [![Maven Central](https://img.shields.io/maven-central/v/org.jetbrains.kotlinx/kotlinx-benchmark-runtime.svg?label=Maven%20Central)](https://central.sonatype.com/artifact/org.jetbrains.kotlinx/kotlinx-benchmark-runtime)
 [![Gradle Plugin Portal](https://img.shields.io/maven-metadata/v?label=Gradle%20Plugin&metadataUrl=https://plugins.gradle.org/m2/org/jetbrains/kotlinx/kotlinx-benchmark-plugin/maven-metadata.xml)](https://plugins.gradle.org/plugin/org.jetbrains.kotlinx.benchmark)
 
 `kotlinx-benchmark` is a toolkit for running benchmarks for multiplatform code written in Kotlin.
-It is designed to work with Kotlin/JVM, Kotlin/JS, Kotlin/Native, and Kotlin/WasmJs (experimental) targets.
+It is designed to work with Kotlin/JVM, Kotlin/JS, Kotlin/Native, and Kotlin/WasmJs and WasmWasi (experimental) targets.
 
 To get started, ensure you're using Kotlin 2.2.0 or newer and the latest stable Gradle 8 release or newer.
 However, because the Kotlin/WasmJs target is experimental and in an active development phase, it guarantees support
@@ -60,7 +60,7 @@ dedicated to setting up benchmarking in those specific project types.
     ```kotlin
     // build.gradle.kts
     plugins {
-        id("org.jetbrains.kotlinx.benchmark") version "0.4.16"
+        id("org.jetbrains.kotlinx.benchmark") version "0.4.17"
     }
     ```
 
@@ -83,7 +83,7 @@ dedicated to setting up benchmarking in those specific project types.
         sourceSets {
             commonMain {
                 dependencies {
-                    implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.16")
+                    implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.17")
                 }
             }
         }
@@ -108,7 +108,7 @@ dedicated to setting up benchmarking in those specific project types.
     ```groovy
     // build.gradle
     plugins {
-        id 'org.jetbrains.kotlinx.benchmark' version '0.4.16'
+        id 'org.jetbrains.kotlinx.benchmark' version '0.4.17'
     }
     ```
 
@@ -131,7 +131,7 @@ dedicated to setting up benchmarking in those specific project types.
         sourceSets {
             commonMain {
                 dependencies {
-                    implementation 'org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.16'
+                    implementation 'org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.4.17'
                 }
             }
         }
@@ -305,6 +305,7 @@ To run benchmarks in Kotlin/Wasm:
         }
     }
     ```
+The similar configuration could be applied to compile `WasmWasi` target.
 
 Note: Kotlin/Wasm is an experimental compilation target for Kotlin. It may be dropped or changed at any time. Refer to 
 [Kotlin/Wasm documentation](https://kotlinlang.org/docs/wasm-overview.html) for up-to-date information about the target stability.

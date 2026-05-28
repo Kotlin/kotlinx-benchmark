@@ -4,6 +4,7 @@ import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.tasks.*
+import org.gradle.configurationcache.extensions.capitalized
 import org.gradle.process.ExecOperations
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.konan.target.*
@@ -136,8 +137,10 @@ fun Project.createNativeBenchmarkExecTask(
             .dir("${target.extension.benchsDescriptionDir}/${config.name}")
             .get().asFile
 
-        reportFile = setupReporting(target, config)
-        configFile = writeParameters(target.name, reportFile, traceFormat(), config)
+        val newReportFile = setupReporting(target, config)
+        reportFile = newReportFile.get().asFile
+        val compilationMode = target.buildType.name.lowercase().capitalized()
+        configFile = writeParameters(target.name, newReportFile, traceFormat(), config, compilationMode)
 
         doFirst {
             benchsDescriptionDir.deleteRecursively()

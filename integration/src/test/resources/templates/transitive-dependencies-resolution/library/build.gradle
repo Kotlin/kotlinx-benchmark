@@ -13,6 +13,9 @@ kotlin {
     wasmJs {
         nodejs()
     }
+    wasmWasi {
+        nodejs()
+    }
     js() {
         nodejs()
     }
@@ -29,6 +32,11 @@ kotlin {
             }
         }
         wasmJsMain {
+            dependencies {
+                implementation(kotlin("test"))
+            }
+        }
+        wasmWasiMain {
             dependencies {
                 implementation(kotlin("test"))
             }

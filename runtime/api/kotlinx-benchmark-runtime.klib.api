@@ -1,5 +1,5 @@
 // Klib ABI Dump
-// Targets: [androidNativeArm32, androidNativeArm64, androidNativeX64, androidNativeX86, iosArm64, iosSimulatorArm64, iosX64, js, linuxArm64, linuxX64, macosArm64, macosX64, mingwX64, tvosArm64, tvosSimulatorArm64, tvosX64, wasmJs, watchosArm32, watchosArm64, watchosDeviceArm64, watchosSimulatorArm64, watchosX64]
+// Targets: [androidNativeArm32, androidNativeArm64, androidNativeX64, androidNativeX86, iosArm64, iosSimulatorArm64, iosX64, js, linuxArm64, linuxX64, macosArm64, macosX64, mingwX64, tvosArm64, tvosSimulatorArm64, tvosX64, wasmJs, wasmWasi, watchosArm32, watchosArm64, watchosDeviceArm64, watchosSimulatorArm64, watchosX64]
 // Rendering settings:
 // - Signature version: 2
 // - Show manifest properties: true
@@ -19,6 +19,10 @@ open annotation class kotlinx.benchmark/BenchmarkMode : kotlin/Annotation { // k
 
     final val value // kotlinx.benchmark/BenchmarkMode.value|{}value[0]
         final fun <get-value>(): kotlin/Array<out kotlinx.benchmark/Mode> // kotlinx.benchmark/BenchmarkMode.value.<get-value>|<get-value>(){}[0]
+}
+
+open annotation class kotlinx.benchmark/KotlinxBenchmarkRuntimeExperimentalApi : kotlin/Annotation { // kotlinx.benchmark/KotlinxBenchmarkRuntimeExperimentalApi|null[0]
+    constructor <init>() // kotlinx.benchmark/KotlinxBenchmarkRuntimeExperimentalApi.<init>|<init>(){}[0]
 }
 
 open annotation class kotlinx.benchmark/Measurement : kotlin/Annotation { // kotlinx.benchmark/Measurement|null[0]
@@ -124,9 +128,40 @@ final class kotlinx.benchmark/Blackhole { // kotlinx.benchmark/Blackhole|null[0]
     final inline fun consume(kotlin/Long) // kotlinx.benchmark/Blackhole.consume|consume(kotlin.Long){}[0]
     final inline fun consume(kotlin/Short) // kotlinx.benchmark/Blackhole.consume|consume(kotlin.Short){}[0]
 
-    // Targets: [js, wasmJs]
+    // Targets: [js, wasmJs, wasmWasi]
     final fun consumeAny(kotlin/Any?) // kotlinx.benchmark/Blackhole.consumeAny|consumeAny(kotlin.Any?){}[0]
 
-    // Targets: [js, wasmJs]
+    // Targets: [js, wasmJs, wasmWasi]
     final fun consumeInt(kotlin/Int) // kotlinx.benchmark/Blackhole.consumeInt|consumeInt(kotlin.Int){}[0]
 }
+
+// Targets: [js, wasmJs, wasmWasi]
+abstract interface kotlinx.benchmark/CommonBenchmarkExtension { // kotlinx.benchmark/CommonBenchmarkExtension|null[0]
+    abstract val executionName // kotlinx.benchmark/CommonBenchmarkExtension.executionName|{}executionName[0]
+        abstract fun <get-executionName>(): kotlin/String // kotlinx.benchmark/CommonBenchmarkExtension.executionName.<get-executionName>|<get-executionName>(){}[0]
+
+    open fun <#A1: kotlin/Any?> createIterationMeasurer(#A1, kotlinx.benchmark/BenchmarkDescriptor<#A1>, kotlinx.benchmark/BenchmarkConfiguration, kotlin/Int): kotlin/Function0<kotlin/Long> // kotlinx.benchmark/CommonBenchmarkExtension.createIterationMeasurer|createIterationMeasurer(0:0;kotlinx.benchmark.BenchmarkDescriptor<0:0>;kotlinx.benchmark.BenchmarkConfiguration;kotlin.Int){0§<kotlin.Any?>}[0]
+    open fun runBenchmark(kotlinx.benchmark/BenchmarkDescriptor<kotlin/Any?>, kotlinx.benchmark/BenchmarkConfiguration, kotlin.collections/Map<kotlin/String, kotlin/String>, kotlin/String, kotlinx.benchmark/BenchmarkProgress): kotlin/DoubleArray? // kotlinx.benchmark/CommonBenchmarkExtension.runBenchmark|runBenchmark(kotlinx.benchmark.BenchmarkDescriptor<kotlin.Any?>;kotlinx.benchmark.BenchmarkConfiguration;kotlin.collections.Map<kotlin.String,kotlin.String>;kotlin.String;kotlinx.benchmark.BenchmarkProgress){}[0]
+}
+
+// Targets: [js, wasmJs, wasmWasi]
+abstract class kotlinx.benchmark/BenchmarkEngineSupport { // kotlinx.benchmark/BenchmarkEngineSupport|null[0]
+    constructor <init>() // kotlinx.benchmark/BenchmarkEngineSupport.<init>|<init>(){}[0]
+
+    abstract fun arguments(): kotlin/Array<out kotlin/String> // kotlinx.benchmark/BenchmarkEngineSupport.arguments|arguments(){}[0]
+    abstract fun getMeasurer(): kotlinx.benchmark/Measurer // kotlinx.benchmark/BenchmarkEngineSupport.getMeasurer|getMeasurer(){}[0]
+    abstract fun isSupported(): kotlin/Boolean // kotlinx.benchmark/BenchmarkEngineSupport.isSupported|isSupported(){}[0]
+    abstract fun readFile(kotlin/String): kotlin/String // kotlinx.benchmark/BenchmarkEngineSupport.readFile|readFile(kotlin.String){}[0]
+    abstract fun writeFile(kotlin/String, kotlin/String) // kotlinx.benchmark/BenchmarkEngineSupport.writeFile|writeFile(kotlin.String;kotlin.String){}[0]
+}
+
+// Targets: [js, wasmJs, wasmWasi]
+abstract class kotlinx.benchmark/Measurer { // kotlinx.benchmark/Measurer|null[0]
+    constructor <init>() // kotlinx.benchmark/Measurer.<init>|<init>(){}[0]
+
+    abstract fun measureFinish(): kotlin/Long // kotlinx.benchmark/Measurer.measureFinish|measureFinish(){}[0]
+    abstract fun measureStart() // kotlinx.benchmark/Measurer.measureStart|measureStart(){}[0]
+}
+
+// Targets: [js, wasmJs, wasmWasi]
+final fun kotlinx.benchmark/overrideEngineSupport(kotlinx.benchmark/BenchmarkEngineSupport) // kotlinx.benchmark/overrideEngineSupport|overrideEngineSupport(kotlinx.benchmark.BenchmarkEngineSupport){}[0]

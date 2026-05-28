@@ -1,0 +1,28 @@
+import kotlinx.benchmark.gradle.CustomEngine
+import org.jetbrains.kotlin.gradle.targets.wasm.nodejs.WasmNodeJsEnvSpec
+
+kotlin {
+    wasmJs { nodejs() }
+}
+
+def nodeJsSpec = extensions.getByName('kotlinWasmNodeJsSpec') as WasmNodeJsEnvSpec
+nodeJsSpec.version.set('25.0.0') //Needed to support V8 JSPI
+
+def nodeJsEngine = new CustomEngine(
+    'CustomNodeJs',
+    layout.file(nodeJsSpec.executable.map { new File(it) }),
+    null,
+    provider { ['<MODULE>', '<ARGUMENTS>'] }
+)
+
+benchmark {
+    targets {
+        register("wasmJs")
+    }
+
+    configurations {
+        main {
+            setCustomEngine(nodeJsEngine)
+        }
+    }
+}

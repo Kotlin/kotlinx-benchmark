@@ -1,8 +1,10 @@
 import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
+import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
 import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
 import java.util.*
 
@@ -15,7 +17,7 @@ repositories {
 }
 
 kotlin {
-    jvmToolchain(8)
+    jvmToolchain(17)
 
     // According to https://kotlinlang.org/docs/native-target-support.html
 
@@ -50,12 +52,20 @@ kotlin {
     @Suppress("DEPRECATION", "DEPRECATION_ERROR")
     watchosX64()
 
-    jvm()
+    jvm {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_1_8
+        }
+    }
+
     js { nodejs() }
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         nodejs()
-        d8()
+    }
+    @OptIn(ExperimentalWasmDsl::class)
+    wasmWasi {
+        nodejs()
     }
 
     @OptIn(ExperimentalKotlinGradlePluginApi::class)
@@ -64,6 +74,7 @@ kotlin {
             group("jsWasmJsShared") {
                 withJs()
                 withWasmJs()
+                withWasmWasi()
             }
         }
     }
@@ -75,6 +86,7 @@ kotlin {
                     freeCompilerArgs.add("-Xexpect-actual-classes")
                     optIn.addAll(
                         "kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi",
+                        "kotlinx.benchmark.KotlinxBenchmarkRuntimeExperimentalApi",
                         "kotlin.RequiresOptIn",
                     )
                 }
@@ -83,8 +95,9 @@ kotlin {
             // If a compiler version is below 2.2.20, ExperimentalWasmJsInterop may not be resolved.
             if (kotlin.isCompilerVersionAtLeast(2, 2, 20)) {
                 if (target.platformType == KotlinPlatformType.wasm) {
+                    val interopOptIn = if (target.name == "wasmJs") "kotlin.js.ExperimentalWasmJsInterop" else "kotlin.wasm.ExperimentalWasmInterop"
                     compileTaskProvider.configure {
-                        compilerOptions.optIn.add("kotlin.js.ExperimentalWasmJsInterop")
+                        compilerOptions.optIn.add(interopOptIn)
                     }
                 }
             }
@@ -113,6 +126,10 @@ kotlin {
             }
         }
     }
+}
+
+tasks.withType(JavaCompile::class).configureEach {
+    options.release.set(8)
 }
 
 if (project.findProperty("publication_repository") == "space") {
@@ -144,6 +161,28 @@ tasks.withType(KotlinNativeCompile::class).configureEach {
         "-opt-in=kotlin.native.runtime.NativeRuntimeApi",
         "-opt-in=kotlinx.cinterop.ExperimentalForeignApi",
     )
+}
+
+// Add Implementation-* attributes to JAR's manifest
+// While the manifest and these attributes could be added to any JAR file,
+// it does not make a lot of sense for anything but JAR files with actual implementation.
+// Those are JAR files without a classifier (where classifier is sources, javadoc, you name it).
+// Unfortunately, archiveClassifier is always empty during the configuration phase,
+// so the check is postponed until the actual task execution.
+tasks.withType<Jar>().configureEach {
+    doFirst {
+        // Skip all non-main JARs (sources, javadoc, etc)
+        if (archiveClassifier.getOrElse("").isNotEmpty()) return@doFirst
+        // Skip multiplatform metadata JARs
+        if (archiveAppendix.getOrElse("") != "jvm") return@doFirst
+        manifest {
+            attributes(
+                "Implementation-Vendor" to "JetBrains",
+                "Implementation-Title" to project.name,
+                "Implementation-Version" to project.version,
+            )
+        }
+    }
 }
 
 @OptIn(ExperimentalBuildToolsApi::class, ExperimentalKotlinGradlePluginApi::class)

@@ -61,5 +61,3 @@ internal fun String.parseBenchmarkConfig(): NativeExecutor.BenchmarkRun {
     val parameters = lines[2].getElement("parameters").parseMap()
     return NativeExecutor.BenchmarkRun(name, configuration, parameters)
 }
-
-internal actual inline fun measureNanoseconds(block: () -> Unit): Long = TODO("Not implemented for this platform")
