@@ -56,7 +56,7 @@ internal fun runBenchmarksImpl(name: String, @Suppress("unused") args: Array<out
             SingleBenchmarkExecutor(
                 executionName = name,
                 runnerConfiguration = config,
-                suiteIndex = arguments[1].toInt(),
+                suiteId = arguments[1],
                 benchmarkId = arguments[2],
             )
         }

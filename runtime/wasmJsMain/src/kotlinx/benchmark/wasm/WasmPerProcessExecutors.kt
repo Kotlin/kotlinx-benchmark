@@ -21,14 +21,13 @@ internal class SpawnBenchmarkExecutor(
         id: String,
         progress: BenchmarkProgress,
     ): DoubleArray? {
-        val suiteIndex = suites.indexOf(benchmark.suite)
-        check(suiteIndex >= 0)
         val benchmarkId = id.replaceSpaceWithPercent()
+        val suiteId = benchmark.suite.name.replaceSpaceWithPercent()
         val modulePath = nodeJsEngineModulePath()
         val scriptDirectory = engineWorkingDir ?: nodeJsGetDirName(modulePath)
 
         val jsParameters =
-            getJsParameters(engineArguments, modulePath, listOf(configPath, suiteIndex.toString(), benchmarkId))
+            getJsParameters(engineArguments, modulePath, listOf(configPath, suiteId, benchmarkId))
 
         val result = spawnProcessAndGetResult(engineBinaryPath, scriptDirectory, jsParameters)
 

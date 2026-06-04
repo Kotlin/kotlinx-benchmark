@@ -23,7 +23,7 @@ fun runBenchmarks(name: String, @Suppress("unused") args: Array<out String>, dec
             SingleBenchmarkExecutor(
                 executionName = name,
                 runnerConfiguration = config,
-                suiteIndex = arguments[3].toInt(),
+                suiteId = arguments[3],
                 benchmarkId = arguments[4],
             )
         }
