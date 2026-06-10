@@ -29,3 +29,5 @@ internal const val LOAD_MODULE_PREFIX =
     "((module) => () => module)(((typeof process !== 'undefined') && (process.release.name === 'node')) ? await import(/* webpackIgnore: true */'node:"
 
 internal const val LOAD_MODULE_POSTFIX = "') : null)"
+
+internal const val RunSingleWithOutputSplitter = "runSingleWithOutputSplitter"

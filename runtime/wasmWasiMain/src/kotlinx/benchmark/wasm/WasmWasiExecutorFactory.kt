@@ -7,18 +7,16 @@ import kotlinx.benchmark.wasm.wasi.wasiGetArguments
 @KotlinxBenchmarkRuntimeInternalApi
 fun runBenchmarks(name: String, @Suppress("unused") args: Array<out String>, declareAndExecuteSuites: (SuiteExecutorBase) -> Unit) {
     val arguments = wasiGetArguments()
-    check (arguments.size >= 3) { "Unexpected number of arguments: ${arguments.size}"}
-    val configPath = arguments[2]
 
-    val executor = when (arguments.size) {
-        3 -> {
+    val executor = when {
+        arguments.any { it == "startAll" } -> {
+            val newArguments = arguments.filterNot { it == "startAll" }.toTypedArray()
+            val configPath = newArguments[2]
             WasmWasiBuiltInExecutor(name, configPath)
         }
-        4 -> {
-            check (arguments[3] == "startAll")
-            WasmWasiBuiltInExecutor(name, configPath)
-        }
-        5 -> {
+        arguments.any { it == "runSingle" } -> {
+            val newArguments = arguments.filterNot { it == "runSingle" }.toTypedArray()
+            val configPath = newArguments[2]
             val config = RunnerConfiguration(configPath.readFile())
             SingleBenchmarkExecutor(
                 executionName = name,
@@ -27,7 +25,10 @@ fun runBenchmarks(name: String, @Suppress("unused") args: Array<out String>, dec
                 benchmarkId = arguments[4],
             )
         }
-        else -> error("Unexpected number of arguments: ${arguments.size}")
+        else -> {
+            val configPath = arguments[2]
+            WasmWasiBuiltInExecutor(name, configPath)
+        }
     }
 
     declareAndExecuteSuites(executor)

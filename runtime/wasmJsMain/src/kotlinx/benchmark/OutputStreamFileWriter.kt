@@ -35,7 +35,18 @@ internal class FileStream(val filename: String) : OutputStream() {
     }
 }
 
-internal class ConsoleAndFilesOutputStream : OutputStream() {
+internal object Fd3Stream : OutputStream() {
+    override fun flush() {
+        fs.writeSync(3, buffer.toString())
+        buffer.clear()
+    }
+
+    override fun write(b: Char) {
+        buffer.append(b)
+    }
+}
+
+internal class SplittedOutputStream(private val processResultTags: Boolean) : OutputStream() {
     private var currentStream: OutputStream = ConsoleLinesStream
     private val fileTag = "<FILE:"
     private val endFileTag = "<ENDFILE>"
@@ -51,12 +62,16 @@ internal class ConsoleAndFilesOutputStream : OutputStream() {
         if (tag.startsWith(fileTag)) {
             check(currentStream !is FileStream) { "$endFileTag not found" }
             val fileName = tag.substring(fileTag.length, tag.lastIndex)
-            println(fileName)
             currentStream = FileStream(fileName)
         } else if (tag == endFileTag) {
-            val currentFile = currentStream as? FileStream
-            check(currentFile != null) { "$fileTag not found" }
-            currentFile.flush()
+            check(currentStream is FileStream) { "$fileTag not found" }
+            currentStream.flush()
+            currentStream = ConsoleLinesStream
+        } else if (processResultTags && tag == resultTag) {
+            currentStream = Fd3Stream
+        } else if (processResultTags && tag == endResultTag) {
+            check(currentStream is Fd3Stream) { "$resultTag not found" }
+            currentStream.flush()
             currentStream = ConsoleLinesStream
         } else {
             writeToCurrentStream()
