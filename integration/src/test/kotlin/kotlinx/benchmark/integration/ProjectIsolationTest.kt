@@ -1,8 +1,10 @@
 package kotlinx.benchmark.integration
 
+import kotlin.test.Ignore
 import kotlin.test.Test
 
 class ProjectIsolationTest : GradleTest() {
+    @Ignore("https://github.com/Kotlin/kotlinx-benchmark/issues/379")
     @Test
     fun testIsolation() {
         // Use either 2.3.0, or a Kotlin version used to build tests, if it is a more recent one
