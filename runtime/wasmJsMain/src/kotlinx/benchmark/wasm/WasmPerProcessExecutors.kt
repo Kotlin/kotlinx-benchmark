@@ -8,10 +8,6 @@ import kotlinx.benchmark.*
 internal class SpawnBenchmarkExecutor(
     name: String,
     private val configPath: String,
-    private val engineName: String,
-    private val engineBinaryPath: String,
-    private val engineWorkingDir: String?,
-    private val engineArguments: List<String>?,
     xmlReporter: (() -> BenchmarkProgress)? = null,
 ) : RunAllBenchmarksExtension, SuiteExecutor(name, configPath, xmlReporter) {
     override fun runBenchmark(
@@ -23,26 +19,36 @@ internal class SpawnBenchmarkExecutor(
     ): DoubleArray? {
         val benchmarkId = id.replaceSpaceWithPercent()
         val suiteId = benchmark.suite.name.replaceSpaceWithPercent()
+
+        val nodeJsPath = nodeJsEngineBinaryPath()
         val modulePath = nodeJsEngineModulePath()
-        val scriptDirectory = engineWorkingDir ?: nodeJsGetDirName(modulePath)
+        val workingDir = nodeJsGetDirName(modulePath)
 
-        val jsParameters =
-            getJsParameters(engineArguments, modulePath, listOf(configPath, suiteId, benchmarkId))
+        val jsParameters = getJsParameters(
+            engineArguments = null,
+            modulePath = modulePath,
+            arguments = listOf(configPath, suiteId, benchmarkId, RunSingleWithOutputSplitter)
+        )
 
-        val result = spawnProcessAndGetResult(engineBinaryPath, scriptDirectory, jsParameters)
+        val result = jsSpawnProcessWithExtraPipeSyncAndGetResult(
+            childProcess = childProcess,
+            binaryPath = nodeJsPath,
+            workingDir = workingDir,
+            engineArguments = jsParameters,
+        )
+
+        if (result.isNullOrBlank()) return null
 
         return result
-            ?.split(',')
-            ?.map { Double.fromBits(it.toLong()) }
-            ?.toDoubleArray()
+            .split(',')
+            .map { Double.fromBits(it.toLong()) }
+            .toDoubleArray()
     }
 
     override fun run(
         runnerConfiguration: RunnerConfiguration,
         benchmarks: List<BenchmarkDescriptor<Any?>>,
         start: () -> Unit,
-        complete: () -> Unit) {
-            println("Spawning $engineName...")
-            super<RunAllBenchmarksExtension>.run(runnerConfiguration, benchmarks, start, complete)
-        }
+        complete: () -> Unit
+    ) = super<RunAllBenchmarksExtension>.run(runnerConfiguration, benchmarks, start, complete)
 }

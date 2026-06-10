@@ -1,9 +1,8 @@
 package kotlinx.benchmark
 
-import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 import kotlin.js.Promise
 
-private fun jsSpawnProcess(
+private fun jsSpawnProcessAsync(
     childProcess: ChildProcess,
     binaryPath: String,
     workingDir: String,
@@ -18,30 +17,18 @@ private fun jsSpawnProcess(
     });
 }""")
 
-internal fun spawnProcessAndGetResult(binaryPath: String, workingDir: String, engineArguments: JsArray<JsString>): String? {
-    var resultValue: String? = null
-    jsSpawnProcess(childProcess, binaryPath, workingDir, engineArguments) {
-        val trimmed = it.trimEnd()
-        val result = Regex("<RESULT>(.*)</RESULT>").find(trimmed)
-        if (result != null) {
-            resultValue = result.groupValues[1]
-        } else {
-            print(trimmed)
-        }
-    }.await()
-    return resultValue?.takeIf { it.isNotEmpty() }
-}
-
-internal fun spawnProcess(binaryPath: String, workingDir: String, engineArguments: JsArray<JsString>) {
-    val stream = ConsoleAndFilesOutputStream()
-    jsSpawnProcess(childProcess, binaryPath, workingDir, engineArguments) {
+internal fun spawnProcessAsyncAndProcessTags(binaryPath: String, workingDir: String, engineArguments: JsArray<JsString>, processResultTags: Boolean) {
+    val stream = SplittedOutputStream(processResultTags)
+    jsSpawnProcessAsync(childProcess, binaryPath, workingDir, engineArguments) {
         val trimmed = it.trimEnd()
         trimmed.forEach(stream::write)
         if (trimmed.length != it.length) {
             stream.flush()
         }
-    }.await()
-    stream.flush()
+    }.then {
+        stream.flush()
+        it
+    }
 }
 
 internal fun getJsParameters(engineArguments: List<String>?, modulePath: String, arguments: List<String>): JsArray<JsString> {
@@ -64,19 +51,12 @@ internal fun getJsParameters(engineArguments: List<String>?, modulePath: String,
     return jsArguments
 }
 
-@JsFun("""(typeof WebAssembly.Suspending === 'undefined')
-    ? () => { throw new Error('The node.js version is outdated. Please use version 25 or higher.'); }
-    : new WebAssembly.Suspending((p) => p)""")
-private external fun <T : JsAny> await(p: Promise<T>): T
-
-private fun <T : JsAny> Promise<T>.await(): T = await(this)
-
-@OptIn(ExperimentalJsExport::class)
-@JsExport
-@KotlinxBenchmarkRuntimeInternalApi
-fun jsPromisingStart(body: JsReference<() -> Unit>): Unit = body.get().invoke()
-
-private fun jsPromiseIntegration(body: JsReference<() -> Unit>): Unit =
-    js("""(typeof WebAssembly.promising === 'undefined') ? wasmExports.jsPromisingStart(body) : WebAssembly.promising(wasmExports.jsPromisingStart)(body)""")
-
-internal fun jsPromiseIntegration(body: () -> Unit) = jsPromiseIntegration(body.toJsReference())
+internal fun jsSpawnProcessWithExtraPipeSyncAndGetResult(
+    childProcess: ChildProcess,
+    binaryPath: String,
+    workingDir: String,
+    engineArguments: JsArray<JsString>,
+): String? = js("""{
+   const process = childProcess.spawnSync(binaryPath, engineArguments, { cwd: workingDir, encoding: 'utf8', stdio: ['inherit', 'inherit', 'inherit', 'pipe'] });
+   return (process.status === 0) ? process.output[3] : null;
+}""")

@@ -6,22 +6,26 @@ import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 @KotlinxBenchmarkRuntimeInternalApi
 fun runBenchmarksBuiltIn(name: String, args: Array<out String>, declareAndExecuteSuites: (SuiteExecutorBase) -> Unit) {
     val arguments = engineSupport.arguments()
-    val configPath = arguments[0]
 
-    val executor = when (arguments.size) {
-        2 -> {
-            check(arguments[1] == "startAll")
+    val executor = when {
+        arguments.any { it == "startAll" } -> {
+            val newArguments = arguments.filterNot { it == "startAll" }.toTypedArray()
+            val configPath = newArguments[0]
             JsBuiltInExecutor(name, configPath)
         }
-        3 -> {
+        arguments.any { it == "runSingle" } -> {
+            val newArguments = arguments.filterNot { it == "runSingle" }.toTypedArray()
+            val configPath = newArguments[0]
+            val config = RunnerConfiguration(configPath.readFile())
             SingleBenchmarkExecutor(
                 executionName = name,
-                runnerConfiguration = RunnerConfiguration(configPath.readFile()),
+                runnerConfiguration = config,
                 suiteId = arguments[1],
                 benchmarkId = arguments[2],
             )
         }
         else -> {
+            val configPath = arguments[0]
             JsBuiltInExecutor(name, configPath)
         }
     }

@@ -20,7 +20,7 @@ internal class SingleBenchmarkExecutor(
             @Suppress("UNCHECKED_CAST")
             val result = runBenchmark(benchmarkToRun as BenchmarkDescriptor<Any?>, benchmarkConfiguration, parameters, benchmarkId, progress)
             val stringifiedResult = result?.joinToString(separator = ",") { it.toRawBits().toString() } ?: ""
-            println("<RESULT>$stringifiedResult</RESULT>")
+            println("$resultTag$stringifiedResult$endResultTag")
         }
     }
 }
