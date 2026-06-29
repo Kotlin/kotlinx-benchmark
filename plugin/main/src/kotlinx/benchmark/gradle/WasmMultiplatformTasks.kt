@@ -5,6 +5,7 @@ import org.gradle.api.Project
 import org.gradle.api.file.RegularFile
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.internal.platform.wasm.WasmTarget
+import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsBinaryMode
 import org.jetbrains.kotlin.gradle.targets.js.dsl.KotlinJsTargetDsl
 import org.jetbrains.kotlin.gradle.targets.js.ir.ExecutableWasm
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrCompilation
@@ -41,7 +42,11 @@ fun Project.processWasmCompilation(target: WasmBenchmarkTarget) {
 
         val fileToExecute = if (compilation.wasmTarget == WasmTarget.WASI)
             @OptIn(ExperimentalWasmDsl::class)
-            (binary as ExecutableWasm).mainOptimizedFile else binary.mainFileSyncPath
+            if (binary.mode == KotlinJsBinaryMode.PRODUCTION)
+                (binary as ExecutableWasm).mainOptimizedFile
+            else
+                (binary as ExecutableWasm).mainFile
+        else binary.mainFileSyncPath
 
         target.extension.configurations.forEach {
             val execTask = createJsEngineBenchmarkExecTask(it, target, binary, fileToExecute)
