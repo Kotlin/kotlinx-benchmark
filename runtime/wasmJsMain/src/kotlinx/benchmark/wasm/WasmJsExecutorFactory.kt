@@ -27,9 +27,8 @@ fun runBenchmarks(name: String, args: Array<out String>, declareAndExecuteSuites
  * @param declareAndExecuteSuites callback that declares benchmark suites and executes them with the selected executor
  */
 internal fun runBenchmarksImpl(name: String, @Suppress("unused") args: Array<out String>, declareAndExecuteSuites: (SuiteExecutorBase) -> Unit) {
-    val arguments = engineSupport.arguments()
-    val configPath = arguments[0]
-    val config = RunnerConfiguration(configPath.readFile())
+    val arguments = StartArguments.parse(engineSupport.arguments())
+    val config = RunnerConfiguration(arguments.config.readFile())
 
     val engineName= config.advanced["customEngineName"] ?: "Custom Engine"
     val engineBinaryPath = config.advanced["customEngineBinaryPath"]
@@ -44,28 +43,25 @@ internal fun runBenchmarksImpl(name: String, @Suppress("unused") args: Array<out
         engineArgumentIndex++
     }
 
-    val executor = when {
-        arguments.any { it == "startAll" } -> {
-            WasmBuiltInExecutor(name, configPath)
+    val executor = when (arguments.mode) {
+        StartMode.StartAll -> {
+            WasmBuiltInExecutor(name, arguments.config)
         }
 
-        arguments.any { it == "runSingle" } -> {
-            val newArguments = arguments.filterNot { it == "runSingle" }.toTypedArray()
+        StartMode.RunSingle -> {
             SingleBenchmarkExecutor(
                 executionName = name,
                 runnerConfiguration = config,
-                suiteId = newArguments[1],
-                benchmarkId = newArguments[2],
+                suiteId = arguments.suiteId ?: error("suiteId must be specified"),
+                benchmarkId = arguments.benchmarkId ?: error("benchmarkId must be specified"),
             )
         }
 
-        arguments.any { it == RunSingleWithOutputSplitter } -> {
+        StartMode.RunSingleWithOutputSplitter -> {
             val modulePath = nodeJsEngineModulePath()
             val engineBinaryPath = engineBinaryPath ?: nodeJsEngineBinaryPath()
             val engineWorkingPath = engineWorkingPath ?: nodeJsGetDirName(modulePath)
-
-            val runSingleArguments = arguments.filterNot { it == RunSingleWithOutputSplitter } + "runSingle"
-            val jsArguments = getJsParameters(engineArguments, modulePath, runSingleArguments)
+            val jsArguments = getJsParameters(engineArguments, modulePath, arguments.copy(mode = StartMode.RunSingle))
 
             println("Spawning $engineName...")
             spawnProcessAsyncAndProcessTags(
@@ -77,25 +73,33 @@ internal fun runBenchmarksImpl(name: String, @Suppress("unused") args: Array<out
             return
         }
 
-        config.advanced["wasmFork"] == "perBenchmark" -> {
-            SpawnBenchmarkExecutor(name = name, configPath = configPath)
-        }
+        StartMode.Default -> {
+            when {
+                config.advanced["wasmFork"] == "perBenchmark" -> {
+                    SpawnBenchmarkExecutor(name = name, configPath = arguments.config)
+                }
 
-        else -> {
-            if (engineBinaryPath == null && engineArguments == null) {
-                WasmBuiltInExecutor(name, configPath)
-            } else {
-                val modulePath = nodeJsEngineModulePath()
-                val scriptDirectory = engineWorkingPath ?: nodeJsGetDirName(modulePath)
-                val jsParameters = getJsParameters(engineArguments, modulePath, listOf(configPath, "startAll"))
-                println("Spawning $engineName...")
-                spawnProcessAsyncAndProcessTags(
-                    binaryPath = engineBinaryPath ?: nodeJsEngineBinaryPath(),
-                    workingDir = scriptDirectory,
-                    engineArguments = jsParameters,
-                    processResultTags = false,
-                )
-                return
+                engineBinaryPath == null && engineArguments == null -> {
+                    WasmBuiltInExecutor(name, arguments.config)
+                }
+
+                else  -> {
+                    val modulePath = nodeJsEngineModulePath()
+                    val scriptDirectory = engineWorkingPath ?: nodeJsGetDirName(modulePath)
+                    val jsParameters = getJsParameters(
+                        engineArguments,
+                        modulePath,
+                        StartArguments(arguments.config, StartMode.StartAll)
+                    )
+                    println("Spawning $engineName...")
+                    spawnProcessAsyncAndProcessTags(
+                        binaryPath = engineBinaryPath ?: nodeJsEngineBinaryPath(),
+                        workingDir = scriptDirectory,
+                        engineArguments = jsParameters,
+                        processResultTags = false,
+                    )
+                    return
+                }
             }
         }
     }

@@ -5,28 +5,23 @@ import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 
 @KotlinxBenchmarkRuntimeInternalApi
 fun runBenchmarksBuiltIn(name: String, args: Array<out String>, declareAndExecuteSuites: (SuiteExecutorBase) -> Unit) {
-    val arguments = engineSupport.arguments()
+    val arguments = StartArguments.parse(engineSupport.arguments())
 
-    val executor = when {
-        arguments.any { it == "startAll" } -> {
-            val newArguments = arguments.filterNot { it == "startAll" }.toTypedArray()
-            val configPath = newArguments[0]
-            JsBuiltInExecutor(name, configPath)
+    val executor = when(arguments.mode) {
+        StartMode.Default, StartMode.StartAll -> {
+            JsBuiltInExecutor(name, arguments.config)
         }
-        arguments.any { it == "runSingle" } -> {
-            val newArguments = arguments.filterNot { it == "runSingle" }.toTypedArray()
-            val configPath = newArguments[0]
-            val config = RunnerConfiguration(configPath.readFile())
+        StartMode.RunSingle -> {
+            val config = RunnerConfiguration(arguments.config.readFile())
             SingleBenchmarkExecutor(
                 executionName = name,
                 runnerConfiguration = config,
-                suiteId = arguments[1],
-                benchmarkId = arguments[2],
+                suiteId = arguments.suiteId ?: error("suiteId must be specified"),
+                benchmarkId = arguments.benchmarkId ?: error("benchmarkId must be specified"),
             )
         }
         else -> {
-            val configPath = arguments[0]
-            JsBuiltInExecutor(name, configPath)
+            error("Unexpected arguments ${arguments.toArray().joinToString(" ")}")
         }
     }
 

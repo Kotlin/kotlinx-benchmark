@@ -2,32 +2,25 @@ package kotlinx.benchmark.wasm
 
 import kotlinx.benchmark.*
 import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
-import kotlinx.benchmark.wasm.wasi.wasiGetArguments
 
 @KotlinxBenchmarkRuntimeInternalApi
 fun runBenchmarks(name: String, @Suppress("unused") args: Array<out String>, declareAndExecuteSuites: (SuiteExecutorBase) -> Unit) {
-    val arguments = wasiGetArguments()
+    val arguments = StartArguments.parse(engineSupport.arguments())
 
-    val executor = when {
-        arguments.any { it == "startAll" } -> {
-            val newArguments = arguments.filterNot { it == "startAll" }.toTypedArray()
-            val configPath = newArguments[2]
-            WasmWasiBuiltInExecutor(name, configPath)
+    val executor = when(arguments.mode) {
+        StartMode.Default, StartMode.StartAll -> {
+            WasmWasiBuiltInExecutor(name, arguments.config)
         }
-        arguments.any { it == "runSingle" } -> {
-            val newArguments = arguments.filterNot { it == "runSingle" }.toTypedArray()
-            val configPath = newArguments[2]
-            val config = RunnerConfiguration(configPath.readFile())
+        StartMode.RunSingle -> {
             SingleBenchmarkExecutor(
                 executionName = name,
-                runnerConfiguration = config,
-                suiteId = arguments[3],
-                benchmarkId = arguments[4],
+                runnerConfiguration = RunnerConfiguration(arguments.config.readFile()),
+                suiteId = arguments.suiteId ?: error("suiteId must be specified"),
+                benchmarkId = arguments.benchmarkId ?: error("benchmarkId must be specified"),
             )
         }
         else -> {
-            val configPath = arguments[2]
-            WasmWasiBuiltInExecutor(name, configPath)
+            error("Unexpected arguments ${arguments.toArray().joinToString(" ")}")
         }
     }
 
