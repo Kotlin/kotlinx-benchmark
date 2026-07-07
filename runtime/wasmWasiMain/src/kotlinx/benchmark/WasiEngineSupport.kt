@@ -79,7 +79,7 @@ private object WasiEngineSupport : BenchmarkEngineSupport() {
     }
 
     override fun arguments(): Array<out String> =
-        wasiGetArguments().toTypedArray()
+        wasiGetArguments().let { it.slice(2 .. it.lastIndex) }.toTypedArray()
 
     override fun getMeasurer(): Measurer = WasiMeasurer()
 

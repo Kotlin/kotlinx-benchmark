@@ -31,7 +31,7 @@ internal fun spawnProcessAsyncAndProcessTags(binaryPath: String, workingDir: Str
     }
 }
 
-internal fun getJsParameters(engineArguments: List<String>?, modulePath: String, arguments: List<String>): JsArray<JsString> {
+internal fun getJsParameters(engineArguments: List<String>?, modulePath: String, startArguments: StartArguments): JsArray<JsString> {
     val actualEngineArguments = engineArguments ?: listOf("<MODULE>", "<ARGUMENTS>")
 
     val jsArguments = JsArray<JsString>()
@@ -44,7 +44,7 @@ internal fun getJsParameters(engineArguments: List<String>?, modulePath: String,
     actualEngineArguments.forEach { engineArgument ->
         when (engineArgument) {
             "<MODULE>" -> addJsArgument(modulePath)
-            "<ARGUMENTS>" -> arguments.forEach(::addJsArgument)
+            "<ARGUMENTS>" -> startArguments.toArray().forEach(::addJsArgument)
             else -> addJsArgument(engineArgument)
         }
     }

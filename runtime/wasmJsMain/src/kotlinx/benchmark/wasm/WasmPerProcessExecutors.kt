@@ -24,10 +24,11 @@ internal class SpawnBenchmarkExecutor(
         val modulePath = nodeJsEngineModulePath()
         val workingDir = nodeJsGetDirName(modulePath)
 
+        val arguments = StartArguments(configPath, StartMode.RunSingleWithOutputSplitter, suiteId, benchmarkId)
         val jsParameters = getJsParameters(
             engineArguments = null,
             modulePath = modulePath,
-            arguments = listOf(configPath, suiteId, benchmarkId, RunSingleWithOutputSplitter)
+            startArguments = arguments
         )
 
         val result = jsSpawnProcessWithExtraPipeSyncAndGetResult(
