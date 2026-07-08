@@ -6,7 +6,7 @@ kotlin {
 }
 
 def nodeJsSpec = extensions.getByName('kotlinWasmNodeJsSpec') as WasmNodeJsEnvSpec
-nodeJsSpec.version.set('25.0.0') //Needed to support V8 JSPI
+nodeJsSpec.version.set('26.5.0') // Needed to support V8 JSPI
 
 def nodeJsEngine = new CustomEngine(
     'CustomNodeJs',
