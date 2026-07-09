@@ -1,7 +1,6 @@
 package kotlinx.benchmark.integration
 
-import kotlinx.serialization.json.*
-import kotlin.test.*
+import kotlin.test.Test
 
 class KotlinWasmTest : GradleTest() {
 
