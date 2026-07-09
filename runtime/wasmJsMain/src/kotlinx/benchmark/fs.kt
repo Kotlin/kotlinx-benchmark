@@ -20,6 +20,11 @@ internal external interface Fs {
      * See https://nodejs.org/api/fs.html#fsappendfilesyncpath-data-options
      */
     fun appendFileSync(file: String, text: String, options: String?)
+
+    /**
+     * See https://nodejs.org/api/fs.html#fswritesyncfd-buffer-options
+     */
+    fun writeSync(fd: Int, data: String)
 }
 
 internal val fs: Fs by lazy {

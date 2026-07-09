@@ -5,9 +5,7 @@ import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 
 @KotlinxBenchmarkRuntimeInternalApi
 fun runBenchmarks(name: String, args: Array<out String>, declareAndExecuteSuites: (SuiteExecutorBase) -> Unit) {
-    jsPromiseIntegration {
-        runBenchmarksImpl(name, args, declareAndExecuteSuites)
-    }
+    runBenchmarksImpl(name, args, declareAndExecuteSuites)
 }
 
 /**
@@ -29,9 +27,8 @@ fun runBenchmarks(name: String, args: Array<out String>, declareAndExecuteSuites
  * @param declareAndExecuteSuites callback that declares benchmark suites and executes them with the selected executor
  */
 internal fun runBenchmarksImpl(name: String, @Suppress("unused") args: Array<out String>, declareAndExecuteSuites: (SuiteExecutorBase) -> Unit) {
-    val arguments = engineSupport.arguments()
-    val configPath = arguments[0]
-    val config = RunnerConfiguration(configPath.readFile())
+    val arguments = StartArguments.parse(engineSupport.arguments())
+    val config = RunnerConfiguration(arguments.config.readFile())
 
     val engineName= config.advanced["customEngineName"] ?: "Custom Engine"
     val engineBinaryPath = config.advanced["customEngineBinaryPath"]
@@ -46,51 +43,64 @@ internal fun runBenchmarksImpl(name: String, @Suppress("unused") args: Array<out
         engineArgumentIndex++
     }
 
-    val executor = when {
-        arguments.size == 2 -> {
-            check (arguments[1] == "startAll")
-            WasmBuiltInExecutor(name, configPath)
+    val executor = when (arguments.mode) {
+        StartMode.StartAll -> {
+            WasmBuiltInExecutor(name, arguments.config)
         }
 
-        arguments.size == 3 -> {
+        StartMode.RunSingle -> {
             SingleBenchmarkExecutor(
                 executionName = name,
                 runnerConfiguration = config,
-                suiteIndex = arguments[1].toInt(),
-                benchmarkId = arguments[2],
+                suiteId = arguments.suiteId ?: error("suiteId must be specified"),
+                benchmarkId = arguments.benchmarkId ?: error("benchmarkId must be specified"),
             )
         }
 
-        arguments.size > 3 -> {
-            error("Unexpected ${arguments.size} argument(s)")
+        StartMode.RunSingleWithOutputSplitter -> {
+            val modulePath = nodeJsEngineModulePath()
+            val engineBinaryPath = engineBinaryPath ?: nodeJsEngineBinaryPath()
+            val engineWorkingPath = engineWorkingPath ?: nodeJsGetDirName(modulePath)
+            val jsArguments = getJsParameters(engineArguments, modulePath, arguments.copy(mode = StartMode.RunSingle))
+
+            println("Spawning $engineName...")
+            spawnProcessAsyncAndProcessTags(
+                binaryPath = engineBinaryPath,
+                workingDir = engineWorkingPath,
+                engineArguments = jsArguments,
+                processResultTags = true
+            )
+            return
         }
 
-        config.advanced["wasmFork"] != "perBenchmark" -> {
-            if (engineBinaryPath == null && engineArguments == null) {
-                WasmBuiltInExecutor(name, configPath)
-            } else {
-                val modulePath = nodeJsEngineModulePath()
-                val scriptDirectory = engineWorkingPath ?: nodeJsGetDirName(modulePath)
-                val jsParameters = getJsParameters(engineArguments, modulePath, listOf(configPath, "startAll"))
-                println("Spawning $engineName...")
-                spawnProcess(
-                    binaryPath = engineBinaryPath ?: nodeJsEngineBinaryPath(),
-                    workingDir = scriptDirectory,
-                    engineArguments = jsParameters,
-                )
-                return
+        StartMode.Default -> {
+            when {
+                config.advanced["wasmFork"] == "perBenchmark" -> {
+                    SpawnBenchmarkExecutor(name = name, configPath = arguments.config)
+                }
+
+                engineBinaryPath == null && engineArguments == null -> {
+                    WasmBuiltInExecutor(name, arguments.config)
+                }
+
+                else  -> {
+                    val modulePath = nodeJsEngineModulePath()
+                    val scriptDirectory = engineWorkingPath ?: nodeJsGetDirName(modulePath)
+                    val jsParameters = getJsParameters(
+                        engineArguments,
+                        modulePath,
+                        StartArguments(arguments.config, StartMode.StartAll)
+                    )
+                    println("Spawning $engineName...")
+                    spawnProcessAsyncAndProcessTags(
+                        binaryPath = engineBinaryPath ?: nodeJsEngineBinaryPath(),
+                        workingDir = scriptDirectory,
+                        engineArguments = jsParameters,
+                        processResultTags = false,
+                    )
+                    return
+                }
             }
-        }
-
-        else -> {
-            SpawnBenchmarkExecutor(
-                name = name,
-                configPath = configPath,
-                engineName = engineName,
-                engineBinaryPath = engineBinaryPath ?: nodeJsEngineBinaryPath(),
-                engineWorkingDir = engineWorkingPath,
-                engineArguments = engineArguments,
-            )
         }
     }
 

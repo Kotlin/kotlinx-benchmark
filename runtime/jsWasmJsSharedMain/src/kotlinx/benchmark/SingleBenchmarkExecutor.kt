@@ -3,11 +3,11 @@ package kotlinx.benchmark
 internal class SingleBenchmarkExecutor(
     override val executionName: String,
     private val runnerConfiguration: RunnerConfiguration,
-    private val suiteIndex: Int,
+    private val suiteId: String,
     private val benchmarkId: String,
 ) : SuiteExecutorBase(), CommonBenchmarkExtension {
     override fun run() {
-        val suiteToRun = suites[suiteIndex]
+        val suiteToRun = suites.firstOrNull { it.name.replaceSpaceWithPercent() == suiteId } ?: return
         val benchmarkConfiguration = BenchmarkConfiguration(runnerConfiguration, suiteToRun)
 
         runWithParameters(suiteToRun.parameters, runnerConfiguration.params, suiteToRun.defaultParameters) { parameters ->
@@ -20,7 +20,7 @@ internal class SingleBenchmarkExecutor(
             @Suppress("UNCHECKED_CAST")
             val result = runBenchmark(benchmarkToRun as BenchmarkDescriptor<Any?>, benchmarkConfiguration, parameters, benchmarkId, progress)
             val stringifiedResult = result?.joinToString(separator = ",") { it.toRawBits().toString() } ?: ""
-            println("<RESULT>$stringifiedResult</RESULT>")
+            println("$resultTag$stringifiedResult$endResultTag")
         }
     }
 }
