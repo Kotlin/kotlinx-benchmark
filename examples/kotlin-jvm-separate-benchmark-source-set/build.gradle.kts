@@ -3,7 +3,7 @@ import kotlinx.benchmark.gradle.JvmBenchmarkTarget
 plugins {
     kotlin("jvm")
     id("org.jetbrains.kotlin.plugin.allopen") version "2.2.0"
-    id("org.jetbrains.kotlinx.benchmark")
+    id("org.jetbrains.kotlinx.benchmark") version "0.4.17"
 }
 
 // how to apply plugin to a specific source set?

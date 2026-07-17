@@ -6,10 +6,11 @@ repositories {
     mavenCentral()
 }
 
+evaluationDependsOn(":kotlinx-benchmark-plugin")
 evaluationDependsOn(":kotlinx-benchmark-runtime")
 
 val runtime get() = project(":kotlinx-benchmark-runtime")
-val plugin get() = gradle.includedBuild("plugin")
+val plugin get() = project(":kotlinx-benchmark-plugin")
 
 dependencies {
     implementation(gradleTestKit())
@@ -23,10 +24,10 @@ kotlin {
 }
 
 tasks.test {
-    dependsOn(plugin.task(":publishToBuildLocal"))
+    dependsOn(plugin.tasks.getByName("publishToBuildLocal"))
     dependsOn(runtime.tasks.getByName("publishToBuildLocal"))
 
-    systemProperty("plugin_repo_url", plugin.projectDir.resolve("build/maven").absoluteFile.invariantSeparatorsPath)
+    systemProperty("plugin_repo_url", rootProject.buildDir.resolve("maven").absoluteFile.invariantSeparatorsPath)
     systemProperty("runtime_repo_url", rootProject.buildDir.resolve("maven").absoluteFile.invariantSeparatorsPath)
     getKotlinDevRepositoryUrl(project)?.let {
         systemProperty("kotlin_repo_url", it)

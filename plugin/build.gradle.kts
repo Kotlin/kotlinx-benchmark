@@ -1,46 +1,15 @@
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-import kotlinx.team.infra.InfraExtension
 import org.gradle.plugin.compatibility.compatibility
 import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
-buildscript {
-    repositories {
-        maven("https://packages.jetbrains.team/maven/p/kotlinx-team-infra/maven")
-        mavenCentral()
-        val kotlinRepoUrl = providers.gradleProperty("kotlin_repo_url").orNull
-        if (kotlinRepoUrl != null) {
-            maven(kotlinRepoUrl)
-        }
-    }
-
-    dependencies {
-        classpath(libs.kotlinx.teamInfraGradlePlugin)
-        // Note: unlike the root project, don't override KGP version in this project.
-        // Gradle plugins should only use the embedded-kotlin version.
-        // kotlinx-benchmark uses an external KGP the moment... but that should be fixed
-        // https://github.com/Kotlin/kotlinx-benchmark/issues/244
-    }
-}
 
 plugins {
     `java-gradle-plugin`
     `maven-publish`
     signing
     alias(libs.plugins.gradle.pluginPublish)
-    alias(libs.plugins.kotlinx.binaryCompatibilityValidator)
-    alias(libs.plugins.kotlin.jvm)
-}
-
-apply(plugin = "kotlinx.team.infra")
-
-extensions.configure<InfraExtension> {
-    publishing {
-        include(":")
-
-        libraryRepoUrl = "https://github.com/Kotlin/kotlinx-benchmark"
-    }
+    id("org.jetbrains.kotlin.jvm")
 }
 
 signing {
@@ -99,6 +68,7 @@ kotlin {
 
     @OptIn(ExperimentalBuildToolsApi::class, ExperimentalKotlinGradlePluginApi::class)
     compilerVersion = libs.versions.kotlin.`for`.gradle.plugin.get()
+    coreLibrariesVersion = "1.8.0"
 
     compilerOptions {
         jvmTarget = JvmTarget.JVM_1_8
@@ -221,10 +191,6 @@ tasks.withType<Jar>().configureEach {
             )
         }
     }
-}
-
-apiValidation {
-    nonPublicMarkers += listOf("kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi")
 }
 
 tasks.withType(JavaCompile::class).configureEach {
