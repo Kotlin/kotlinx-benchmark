@@ -7,7 +7,7 @@ import org.jetbrains.kotlin.allopen.gradle.*
 plugins {
     kotlin("jvm")
     kotlin("plugin.allopen") version "2.2.0"
-    id("org.jetbrains.kotlinx.benchmark")
+    id("org.jetbrains.kotlinx.benchmark") version "0.4.17"
 }
 
 sourceSets.configureEach {

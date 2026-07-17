@@ -29,7 +29,8 @@ dependencyResolutionManagement {
 
 rootProject.name = "kotlinx-benchmark"
 
-includeBuild("plugin")
+include(":plugin")
+project(":plugin").name = "kotlinx-benchmark-plugin"
 
 include(":runtime")
 project(":runtime").name = "kotlinx-benchmark-runtime"

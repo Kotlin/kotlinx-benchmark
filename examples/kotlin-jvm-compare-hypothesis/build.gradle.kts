@@ -2,7 +2,7 @@ import kotlinx.benchmark.gradle.*
 
 plugins {
     kotlin("jvm")
-    id("org.jetbrains.kotlinx.benchmark")
+    id("org.jetbrains.kotlinx.benchmark") version "0.4.17"
 }
 
 sourceSets.configureEach {

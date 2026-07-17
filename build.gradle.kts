@@ -38,6 +38,7 @@ apply(plugin = "kotlinx.team.infra")
 
 extensions.configure<InfraExtension> {
     publishing {
+        include(":kotlinx-benchmark-plugin")
         include(":kotlinx-benchmark-runtime")
 
         libraryRepoUrl = "https://github.com/Kotlin/kotlinx-benchmark"
@@ -51,25 +52,6 @@ extensions.configure<InfraExtension> {
 repositories {
     mavenCentral()
 }
-
-// region Workarounds for https://github.com/gradle/gradle/issues/22335
-tasks.register("apiDump") {
-    dependsOn(gradle.includedBuild("plugin").task(":apiDump"))
-}
-
-tasks.register("apiCheck") {
-    dependsOn(gradle.includedBuild("plugin").task(":apiCheck"))
-}
-
-afterEvaluate {
-    gradle.includedBuilds.forEach { included ->
-        project(":kotlinx-benchmark-runtime").tasks.named("publishToMavenLocal") { dependsOn(included.task(":publishToMavenLocal")) }
-    }
-}
-tasks.register("publishToMavenLocal") {
-    dependsOn(gradle.includedBuild("plugin").task(":publishToMavenLocal"))
-}
-//endregion
 
 val currentKgpVersion = getKotlinPluginVersion()
 logger.info("Using Kotlin Gradle Plugin $currentKgpVersion")
@@ -90,6 +72,8 @@ allprojects {
     repositories {
         addDevRepositoryIfEnabled(this, project)
     }
+
+    if (name == "kotlinx-benchmark-plugin") return@allprojects
 
     tasks.withType<KotlinCompilationTask<*>>().configureEach {
         compilerOptions {
@@ -126,7 +110,10 @@ apiValidation {
         "integration",
     )
 
-    nonPublicMarkers += listOf("kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi")
+    nonPublicMarkers += listOf(
+        "kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi",
+        "kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi",
+    )
 
     @OptIn(ExperimentalBCVApi::class)
     klib {
@@ -143,5 +130,4 @@ val checkReadme by tasks.registering(CheckReadmeTask::class) {
 
 tasks.check {
     dependsOn(checkReadme)
-    dependsOn(tasks.named("apiCheck"))
 }
