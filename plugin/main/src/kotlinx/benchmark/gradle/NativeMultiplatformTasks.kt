@@ -6,6 +6,7 @@ import org.gradle.api.model.ObjectFactory
 import org.gradle.api.tasks.*
 import org.gradle.configurationcache.extensions.capitalized
 import org.gradle.process.ExecOperations
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
 import org.jetbrains.kotlin.konan.target.*
 import java.io.File
@@ -38,6 +39,32 @@ private fun generateSourceTaskName(target: NativeBenchmarkTarget) =
 
 private fun Project.createNativeBenchmarkGenerateSourceTask(target: NativeBenchmarkTarget) {
     val benchmarkBuildDir = benchmarkBuildDir(target)
+    task<NativeSourceGeneratorWithKSPTask>(generateSourceTaskName(target)) {
+        group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
+        description = "Generate Native source files for '${target.name}'"
+        val compilation = target.compilation
+        this.nativeTarget = compilation.target.konanTarget.name
+        title = target.name
+        inputClassesDirs = compilation.output.classesDirs
+        inputDependencies = compilation.compileDependencyFiles
+
+        outputResourcesDir = file("$benchmarkBuildDir/resources")
+        outputSourcesDir = file("$benchmarkBuildDir/sources")
+        outputClassesDir = file("$benchmarkBuildDir/classes")
+
+        projectDir = project.projectDir
+        outputBaseDir = benchmarkBuildDir
+        cachesDir = file("$benchmarkBuildDir/cache")
+
+        languageVersion.set(target.compilation.compileTaskProvider.map { it.compilerOptions.languageVersion.getOrElse(KotlinVersion.DEFAULT).version })
+        apiVersion.set(target.compilation.compileTaskProvider.map { it.compilerOptions.apiVersion.getOrElse(KotlinVersion.DEFAULT).version })
+        compilation.allKotlinSourceSets.forAll { sourceSet ->
+            sourceRoots.from(sourceSet.kotlin.srcDirs.map {
+                project.objects.fileTree().from(it).matching { it.include("**/*.kt") }
+            })
+        }
+    }
+    /*
     task<NativeSourceGeneratorTask>(generateSourceTaskName(target)) {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Generate Native source files for '${target.name}'"
@@ -50,6 +77,7 @@ private fun Project.createNativeBenchmarkGenerateSourceTask(target: NativeBenchm
         outputResourcesDir = file("$benchmarkBuildDir/resources")
         outputSourcesDir = file("$benchmarkBuildDir/sources")
     }
+     */
 }
 
 private fun Project.createNativeBenchmarkCompileTask(target: NativeBenchmarkTarget): KotlinNativeCompilation {
