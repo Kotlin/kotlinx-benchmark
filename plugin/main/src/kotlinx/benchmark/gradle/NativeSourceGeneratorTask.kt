@@ -2,14 +2,15 @@ package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import kotlinx.benchmark.gradle.internal.generator.RequiresKotlinCompilerEmbeddable
+import kotlinx.benchmark.klib.KlibModule
+import kotlinx.benchmark.klib.Platform
+import kotlinx.benchmark.klib.SuiteSourceGenerator
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
 import org.gradle.workers.WorkerExecutor
-import org.jetbrains.kotlin.library.KLIB_FILE_EXTENSION_WITH_DOT
-import org.jetbrains.kotlin.storage.LockBasedStorageManager
 import java.io.File
 import javax.inject.Inject
 
@@ -101,14 +102,12 @@ abstract class NativeSourceGeneratorWorker : WorkAction<NativeSourceGeneratorWor
         parameters.outputResourcesDir.deleteRecursively()
         parameters.inputClassesDirs
             // expect either a packed .klib file or non-packed klib directory
-            .filter { it.exists() && it.name.endsWith(KLIB_FILE_EXTENSION_WITH_DOT) || it.isDirectory && it.resolve("default/manifest").isFile }
+            .filter { it.exists() && it.name.endsWith(".klib") || it.isDirectory && it.resolve("default/manifest").isFile }
             .forEach { lib ->
                 if (parameters.target.isEmpty())
                     throw Exception("nativeTarget should be specified for API generator for native targets")
 
-                val storageManager = LockBasedStorageManager("Inspect")
-                val module =
-                    KlibResolver.Native.createModuleDescriptor(lib, parameters.inputDependencies, storageManager)
+                val module = KlibModule.loadNativeModule(lib, parameters.inputDependencies)
                 val generator = SuiteSourceGenerator(
                     parameters.title,
                     module,

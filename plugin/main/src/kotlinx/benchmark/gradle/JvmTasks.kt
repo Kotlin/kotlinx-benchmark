@@ -7,7 +7,6 @@ import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.compile.*
 import org.gradle.jvm.tasks.*
-import org.jetbrains.kotlin.cli.common.toBooleanLenient
 import java.io.*
 
 @KotlinxBenchmarkPluginInternalApi

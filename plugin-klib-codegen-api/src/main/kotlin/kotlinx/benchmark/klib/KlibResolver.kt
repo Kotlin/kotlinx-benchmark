@@ -1,6 +1,5 @@
-package kotlinx.benchmark.gradle
+package kotlinx.benchmark.klib
 
-import kotlinx.benchmark.gradle.internal.generator.RequiresKotlinCompilerEmbeddable
 import org.jetbrains.kotlin.backend.common.serialization.metadata.DynamicTypeDeserializer
 import org.jetbrains.kotlin.builtins.DefaultBuiltIns
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
@@ -23,7 +22,6 @@ import org.jetbrains.kotlin.konan.file.File as KonanFile
 
 internal enum class KlibResolver { JS, Native }
 
-@RequiresKotlinCompilerEmbeddable
 internal fun KlibResolver.createModuleDescriptor(
     lib: File,
     inputDependencies: Set<File>,
@@ -67,7 +65,6 @@ internal fun KlibResolver.createModuleDescriptor(
     return module
 }
 
-@RequiresKotlinCompilerEmbeddable
 private fun KlibResolver.klibMetadataFactories() = KlibMetadataFactories(
     createBuiltIns = { DefaultBuiltIns.Instance },
     flexibleTypeDeserializer = when (this) {
@@ -76,7 +73,6 @@ private fun KlibResolver.klibMetadataFactories() = KlibMetadataFactories(
     }
 )
 
-@RequiresKotlinCompilerEmbeddable
 private fun KlibResolver.libraryResolver(inputDependencies: Set<File>): KotlinLibraryResolverImpl<KotlinLibrary> {
     val logger = object : Logger {
         override fun log(message: String) {}
@@ -95,7 +91,6 @@ private fun KlibResolver.libraryResolver(inputDependencies: Set<File>): KotlinLi
     ).libraryResolver()
 }
 
-@RequiresKotlinCompilerEmbeddable
 private class KLibLibraryResolver(
     klibs: List<String>,
     knownIrProviders: List<String>,

@@ -29,6 +29,14 @@ internal class BenchmarkDependencies(
                         project.dependencies.create("org.jetbrains.kotlin:kotlin-compiler-embeddable:$version")
                     }
                 )
+                deps.addLater(benchmarksExtension.kotlinCompilerVersion.map {
+                    project.dependencies.create("com.squareup:kotlinpoet:1.3.0")
+                })
+                deps.addLater(
+                    benchmarksExtension.kotlinCompilerVersion.map {
+                        project.dependencies.create("org.jetbrains.kotlinx:kotlinx-benchmark-plugin-codegen-api:${BenchmarksPluginConstants.BENCHMARK_PLUGIN_VERSION}")
+                    }
+                )
             }
         }
 
