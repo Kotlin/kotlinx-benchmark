@@ -39,7 +39,7 @@ apply(plugin = "kotlinx.team.infra")
 extensions.configure<InfraExtension> {
     publishing {
         include(":kotlinx-benchmark-plugin")
-        include(":kotlinx-benchmark-plugin-codegen-api")
+        include(":kotlinx-benchmark-plugin-codegen")
         include(":kotlinx-benchmark-runtime")
 
         libraryRepoUrl = "https://github.com/Kotlin/kotlinx-benchmark"

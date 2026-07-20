@@ -34,7 +34,7 @@ internal class BenchmarkDependencies(
                 })
                 deps.addLater(
                     benchmarksExtension.kotlinCompilerVersion.map {
-                        project.dependencies.create("org.jetbrains.kotlinx:kotlinx-benchmark-plugin-codegen-api:${BenchmarksPluginConstants.BENCHMARK_PLUGIN_VERSION}")
+                        project.dependencies.create("org.jetbrains.kotlinx:kotlinx-benchmark-plugin-codegen:${BenchmarksPluginConstants.BENCHMARK_PLUGIN_VERSION}")
                     }
                 )
             }
