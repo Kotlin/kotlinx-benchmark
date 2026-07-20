@@ -29,6 +29,7 @@ internal fun KlibResolver.createModuleDescriptor(
 ): ModuleDescriptor {
     val factories = klibMetadataFactories()
 
+    @Suppress("DEPRECATION_ERROR")
     val library = resolveSingleFileKlib(KonanFile(lib.canonicalPath))
 
     val module = factories.DefaultDeserializedDescriptorFactory.createDescriptorOptionalBuiltIns(
@@ -102,6 +103,7 @@ private class KLibLibraryResolver(
     logger = logger,
     knownIrProviders = knownIrProviders
 ) {
+    @Suppress("DEPRECATION_ERROR")
     override fun libraryComponentBuilder(file: KonanFile, isDefault: Boolean): List<KotlinLibrary> =
         createKotlinLibraryComponents(file, isDefault)
 }
