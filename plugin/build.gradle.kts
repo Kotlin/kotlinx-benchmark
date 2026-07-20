@@ -128,6 +128,10 @@ dependencies {
     implementation(libs.kotlin.utilKlib)
     implementation(libs.kotlin.utilIo)
 
+    implementation(libs.symbol.processing.aa.embeddable)
+    implementation(libs.symbol.processing.api)
+    implementation(libs.symbol.processing.common.deps)
+
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.kotlin.compilerEmbeddable)
     compileOnly(libs.jmh.generatorBytecode) // used in worker
