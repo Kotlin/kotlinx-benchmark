@@ -18,11 +18,8 @@ minSupportedKotlin = "2.2.0"
 
 kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect" }
 
-kotlin-utilKlibMetadata = { module = "org.jetbrains.kotlin:kotlin-util-klib-metadata" }
+kotlinx-metadataKlib = { module = "org.jetbrains.kotlinx:kotlinx-metadata-klib", version = "0.0.6" }
 kotlin-utilKlib = { module = "org.jetbrains.kotlin:kotlin-util-klib" }
-kotlin-utilIo = { module = "org.jetbrains.kotlin:kotlin-util-io" }
-
-kotlin-compilerEmbeddable = { module = "org.jetbrains.kotlin:kotlin-compiler-embeddable", version.ref = "kotlin" }
 
 kotlin-gradlePlugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 

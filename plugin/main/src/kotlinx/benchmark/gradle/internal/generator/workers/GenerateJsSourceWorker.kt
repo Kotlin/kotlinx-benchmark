@@ -37,7 +37,6 @@ internal abstract class GenerateJsSourceWorker : WorkAction<GenerateJsSourceWork
             generateSources(
                 title = parameters.title.get(),
                 lib = lib,
-                inputDependencies = parameters.inputDependencies.files,
                 outputSourcesDir = parameters.outputSourcesDir.get().asFile,
                 useBenchmarkJs = parameters.useBenchmarkJs.get(),
             )
@@ -47,11 +46,10 @@ internal abstract class GenerateJsSourceWorker : WorkAction<GenerateJsSourceWork
     private fun generateSources(
         title: String,
         lib: File,
-        inputDependencies: Set<File>,
         outputSourcesDir: File,
         useBenchmarkJs: Boolean,
     ) {
-        val modules = KlibModule.loadJsModules(lib, inputDependencies)
+        val modules = KlibModule.loadWebModules(lib)
         modules.forEach { module ->
             val generator = SuiteSourceGenerator(
                 title,

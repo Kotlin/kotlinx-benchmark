@@ -38,7 +38,6 @@ kotlin {
     // and it compiles with exactly the same settings.
     @OptIn(ExperimentalBuildToolsApi::class, ExperimentalKotlinGradlePluginApi::class)
     compilerVersion = libs.versions.kotlin.`for`.gradle.plugin.get()
-    coreLibrariesVersion = "1.8.0"
 
     compilerOptions {
         jvmTarget = JvmTarget.JVM_1_8
@@ -58,11 +57,14 @@ kotlin {
         targetCompatibility = "8"
         sourceCompatibility = "8"
     }
+
+    explicitApi()
 }
 
 dependencies {
-    implementation(libs.kotlin.compilerEmbeddable)
+    implementation(libs.kotlinx.metadataKlib)
     implementation(libs.squareup.kotlinpoet)
+    implementation(libs.kotlin.utilKlib)
 }
 
 tasks.test {

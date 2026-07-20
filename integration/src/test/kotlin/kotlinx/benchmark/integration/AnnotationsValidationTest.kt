@@ -140,7 +140,7 @@ class ParamAnnotationsValidationTest : AnnotationsValidationTest() {
         executeBenchmark(
             benchmarkFunction = "plainFunction",
             paramProperty = "notSupportedTypeProperty" to listOf("a"),
-            error = "@Param property should have a primitive or string type. Property `notSupportedTypeProperty` type is `Regex`.",
+            error = "@Param property should have a primitive or string type. Property `notSupportedTypeProperty` type is `kotlin.text.Regex`.",
             jvmSpecificError = "@Param can only be placed over the annotation-compatible types: primitives, primitive wrappers, Strings, or enums."
         )
     }

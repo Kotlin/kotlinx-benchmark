@@ -107,7 +107,7 @@ abstract class NativeSourceGeneratorWorker : WorkAction<NativeSourceGeneratorWor
                 if (parameters.target.isEmpty())
                     throw Exception("nativeTarget should be specified for API generator for native targets")
 
-                val module = KlibModule.loadNativeModule(lib, parameters.inputDependencies)
+                val module = KlibModule.loadModules(lib)
                 val generator = SuiteSourceGenerator(
                     parameters.title,
                     module,

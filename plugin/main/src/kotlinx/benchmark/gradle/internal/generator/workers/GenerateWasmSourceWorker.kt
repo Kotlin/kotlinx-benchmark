@@ -31,7 +31,6 @@ internal abstract class GenerateWasmSourceWorker : WorkAction<GenerateWasmSource
     override fun execute() {
 
         val title = parameters.title.get()
-        val inputDependencies = parameters.inputDependencies.files
         val outputSourcesDir = parameters.outputSourcesDir.get().asFile
 
         parameters.outputSourcesDir.get().asFile.deleteRecursively()
@@ -41,7 +40,6 @@ internal abstract class GenerateWasmSourceWorker : WorkAction<GenerateWasmSource
             generateSources(
                 title = title,
                 lib = lib,
-                inputDependencies = inputDependencies,
                 outputSourcesDir = outputSourcesDir,
             )
         }
@@ -50,10 +48,9 @@ internal abstract class GenerateWasmSourceWorker : WorkAction<GenerateWasmSource
     private fun generateSources(
         title: String,
         lib: File,
-        inputDependencies: Set<File>,
         outputSourcesDir: File,
     ) {
-        val modules = KlibModule.loadWasmModules(lib, inputDependencies)
+        val modules = KlibModule.loadWebModules(lib)
         modules.forEach { module ->
             val generator = SuiteSourceGenerator(
                 title,

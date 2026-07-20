@@ -92,12 +92,6 @@ kotlin {
 dependencies {
     implementation(libs.kotlin.reflect)
 
-
-
-    //implementation(libs.kotlin.utilKlibMetadata)
-    //implementation(libs.kotlin.utilKlib)
-    //implementation(libs.kotlin.utilIo)
-
     compileOnly(project(":kotlinx-benchmark-plugin-codegen-api"))
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.jmh.generatorBytecode) // used in worker

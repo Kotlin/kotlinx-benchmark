@@ -1,57 +1,35 @@
 package kotlinx.benchmark.klib
 
-import org.jetbrains.kotlin.descriptors.ModuleDescriptor
-import org.jetbrains.kotlin.storage.LockBasedStorageManager
-import org.jetbrains.kotlin.storage.StorageManager
+import kotlinx.metadata.klib.KlibModuleMetadata
+import org.jetbrains.kotlin.library.components.metadata
+import org.jetbrains.kotlin.library.loader.KlibLoader
 import java.io.File
 
-public class KlibModule(internal val moduleDescriptor: ModuleDescriptor) {
+public class KlibModule internal constructor(internal val metadata: KlibModuleMetadata) {
     public companion object {
-        fun loadJsModules(klib: File, dependencies: Set<File>): List<KlibModule> {
-            return loadJsIr(
-                lib = klib,
-                inputDependencies = dependencies,
-                storageManager = LockBasedStorageManager("Inspect"),
-            ).map { KlibModule(it) }
+        public fun loadWebModules(klib: File): List<KlibModule> {
+            //skip processing of empty dirs (fail if not to do it)
+            if (klib.listFiles() == null) return emptyList()
+            return listOf(loadKlibModuleMetadata(klib)).map { KlibModule(it) }
         }
 
-        fun loadWasmModules(klib: File, dependencies: Set<File>): List<KlibModule> {
-            return loadWasmIr(
-                klib,
-                inputDependencies = dependencies,
-                LockBasedStorageManager("Inspect"),
-            ).map { KlibModule(it) }
-        }
-
-        fun loadNativeModule(lib: File, dependencies: Set<File>): KlibModule {
-            val storageManager = LockBasedStorageManager("Inspect")
-            val module =
-                KlibResolver.Native.createModuleDescriptor(lib, dependencies, storageManager)
-            return KlibModule(module)
-        }
+        public fun loadModules(lib: File): KlibModule = KlibModule(loadKlibModuleMetadata(lib))
     }
 }
 
-private fun loadWasmIr(
-    lib: File,
-    inputDependencies: Set<File>,
-    storageManager: StorageManager,
-): List<ModuleDescriptor> {
-    //skip processing of empty dirs (fail if not to do it)
-    if (lib.listFiles() == null) return emptyList()
-    val dependencies = inputDependencies.filterNot { it.extension == "js" }.toSet()
-    val module = KlibResolver.JS.createModuleDescriptor(lib, dependencies, storageManager)
-    return listOf(module)
-}
+private fun loadKlibModuleMetadata(lib: File): KlibModuleMetadata {
+    val resolvedLibrary = KlibLoader {
+        libraryPaths(lib)
+    }.load().librariesStdlibFirst.first()
+    val metadata = KlibModuleMetadata.read(object : KlibModuleMetadata.MetadataLibraryProvider {
+        override val moduleHeaderData: ByteArray
+            get() = resolvedLibrary.metadata.moduleHeaderData
 
-private fun loadJsIr(
-    lib: File,
-    inputDependencies: Set<File>,
-    storageManager: StorageManager,
-): List<ModuleDescriptor> {
-    // skip processing of empty dirs (fails if not to do it)
-    if (lib.listFiles() == null) return emptyList()
-    val dependencies = inputDependencies.filterNot { it.extension == "js" }.toSet()
-    val module = KlibResolver.JS.createModuleDescriptor(lib, dependencies, storageManager)
-    return listOf(module)
+        override fun packageMetadata(fqName: String, partName: String): ByteArray =
+            resolvedLibrary.metadata.getPackageFragment(fqName, partName)
+
+        override fun packageMetadataParts(fqName: String): Set<String> =
+            resolvedLibrary.metadata.getPackageFragmentNames(fqName)
+    })
+    return metadata
 }
