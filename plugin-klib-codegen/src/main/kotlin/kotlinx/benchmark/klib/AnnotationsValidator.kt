@@ -58,6 +58,7 @@ internal fun validateTeardownFunctions(functions: List<KmFunction>) {
     }
 }
 
+@OptIn(KotlinxBenchmarkCodegenInternalApi::class)
 internal fun validateParameterProperties(properties: List<KmProperty>) {
     properties.forEach { property ->
         if (!property.isVar) {

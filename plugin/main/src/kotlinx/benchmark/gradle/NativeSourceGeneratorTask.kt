@@ -3,6 +3,7 @@ package kotlinx.benchmark.gradle
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import kotlinx.benchmark.gradle.internal.generator.RequiresKotlinCompilerEmbeddable
 import kotlinx.benchmark.klib.KlibModule
+import kotlinx.benchmark.klib.KotlinxBenchmarkCodegenInternalApi
 import kotlinx.benchmark.klib.Platform
 import kotlinx.benchmark.klib.SuiteSourceGenerator
 import org.gradle.api.*
@@ -97,6 +98,7 @@ abstract class NativeSourceGeneratorWorker : WorkAction<NativeSourceGeneratorWor
     //    val outputResourcesDir: DirectoryProperty
     //}
 
+    @OptIn(KotlinxBenchmarkCodegenInternalApi::class)
     override fun execute() {
         parameters.outputSourcesDir.deleteRecursively()
         parameters.outputResourcesDir.deleteRecursively()

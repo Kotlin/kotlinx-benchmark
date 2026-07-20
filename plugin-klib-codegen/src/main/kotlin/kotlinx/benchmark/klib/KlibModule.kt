@@ -5,7 +5,9 @@ import org.jetbrains.kotlin.library.components.metadata
 import org.jetbrains.kotlin.library.loader.KlibLoader
 import java.io.File
 
+@KotlinxBenchmarkCodegenInternalApi
 public class KlibModule internal constructor(internal val metadata: KlibModuleMetadata) {
+    @KotlinxBenchmarkCodegenInternalApi
     public companion object {
         public fun loadWebModules(klib: File): List<KlibModule> {
             //skip processing of empty dirs (fail if not to do it)

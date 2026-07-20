@@ -13,6 +13,7 @@ import kotlin.metadata.KmClassifier
 import kotlin.metadata.KmType
 import kotlin.metadata.modality
 
+@KotlinxBenchmarkCodegenInternalApi
 public enum class Platform(
     internal val runBenchmarks: String,
     internal val suiteDescriptorClass: String,
@@ -45,6 +46,7 @@ public enum class Platform(
     )
 }
 
+@KotlinxBenchmarkCodegenInternalApi
 public class SuiteSourceGenerator(
     internal val title: String,
     internal val module: KlibModule,

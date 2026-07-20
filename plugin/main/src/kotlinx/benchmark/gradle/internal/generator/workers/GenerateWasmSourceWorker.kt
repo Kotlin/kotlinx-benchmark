@@ -2,6 +2,7 @@ package kotlinx.benchmark.gradle.internal.generator.workers
 
 import kotlinx.benchmark.gradle.internal.generator.RequiresKotlinCompilerEmbeddable
 import kotlinx.benchmark.klib.KlibModule
+import kotlinx.benchmark.klib.KotlinxBenchmarkCodegenInternalApi
 import kotlinx.benchmark.klib.Platform
 import kotlinx.benchmark.klib.SuiteSourceGenerator
 import org.gradle.api.file.*
@@ -45,6 +46,7 @@ internal abstract class GenerateWasmSourceWorker : WorkAction<GenerateWasmSource
         }
     }
 
+    @OptIn(KotlinxBenchmarkCodegenInternalApi::class)
     private fun generateSources(
         title: String,
         lib: File,

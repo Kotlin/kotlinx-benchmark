@@ -114,6 +114,7 @@ apiValidation {
     nonPublicMarkers += listOf(
         "kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi",
         "kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi",
+        "kotlinx.benchmark.klib.KotlinxBenchmarkCodegenInternalApi"
     )
 
     @OptIn(ExperimentalBCVApi::class)
