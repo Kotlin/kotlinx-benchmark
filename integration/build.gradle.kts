@@ -8,11 +8,11 @@ repositories {
 
 evaluationDependsOn(":kotlinx-benchmark-plugin")
 evaluationDependsOn(":kotlinx-benchmark-runtime")
-evaluationDependsOn(":kotlinx-benchmark-plugin-codegen-api")
+evaluationDependsOn(":kotlinx-benchmark-plugin-codegen")
 
 val runtime get() = project(":kotlinx-benchmark-runtime")
 val plugin get() = project(":kotlinx-benchmark-plugin")
-val pluginCodegenApi get() = project(":kotlinx-benchmark-plugin-codegen-api")
+val pluginCodegenApi get() = project(":kotlinx-benchmark-plugin-codegen")
 
 dependencies {
     implementation(gradleTestKit())

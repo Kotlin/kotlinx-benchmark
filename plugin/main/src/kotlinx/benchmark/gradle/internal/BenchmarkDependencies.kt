@@ -24,8 +24,8 @@ internal class BenchmarkDependencies(
             it.declarable()
 
             it.defaultDependencies { deps ->
-                deps.add(project.dependencies.create("org.jetbrains.kotlinx:kotlinx-benchmark-plugin-codegen-api:${BenchmarksPluginConstants.BENCHMARK_PLUGIN_VERSION}"))
-                // kotlinx-benchmark-plugin-codegen-api's transitive dependencies
+                deps.add(project.dependencies.create("org.jetbrains.kotlinx:kotlinx-benchmark-plugin-codegen:${BenchmarksPluginConstants.BENCHMARK_PLUGIN_VERSION}"))
+                // kotlinx-benchmark-plugin-codegen's transitive dependencies
                 deps.addLater(
                     benchmarksExtension.kotlinCompilerVersion.map { version ->
                         project.dependencies.create("org.jetbrains.kotlin:kotlin-util-klib:$version")
