@@ -1,7 +1,7 @@
 [versions]
 
 # Note: Kotlin version can be overridden by passing `-Pkotlin_version=<version>`
-kotlin = "2.2.0"
+kotlin = "2.3.20"
 kotlin-for-gradle-plugin = "2.2.0"
 kotlinx-binaryCompatibilityValidator = "0.16.2"
 kotlinx-teamInfra = "0.4.0-dev-88"
@@ -12,7 +12,7 @@ gradle-pluginPublish = "2.1.1"
 
 # Note: This version can be overridden by passing `-Pmin_supported_gradle_version=<version>`
 minSupportedGradle = "8.0"
-minSupportedKotlin = "2.2.0"
+minSupportedKotlin = "2.3.20"
 
 [libraries]
 
