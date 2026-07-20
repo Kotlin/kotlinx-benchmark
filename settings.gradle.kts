@@ -43,3 +43,6 @@ include(":examples:java")
 include(":examples:kotlin-jvm-separate-benchmark-source-set")
 include(":examples:kotlin-jvm")
 include(":examples:kotlin-jvm-compare-hypothesis")
+
+include("plugin-klib-codegen-api")
+project(":plugin-klib-codegen-api").name = "kotlinx-benchmark-plugin-codegen-api"

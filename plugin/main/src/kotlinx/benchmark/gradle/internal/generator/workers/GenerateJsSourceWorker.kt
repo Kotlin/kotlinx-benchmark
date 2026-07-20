@@ -1,17 +1,13 @@
 package kotlinx.benchmark.gradle.internal.generator.workers
 
-import kotlinx.benchmark.gradle.KlibResolver
-import kotlinx.benchmark.gradle.Platform
-import kotlinx.benchmark.gradle.SuiteSourceGenerator
-import kotlinx.benchmark.gradle.createModuleDescriptor
 import kotlinx.benchmark.gradle.internal.generator.RequiresKotlinCompilerEmbeddable
+import kotlinx.benchmark.klib.KlibModule
+import kotlinx.benchmark.klib.Platform
+import kotlinx.benchmark.klib.SuiteSourceGenerator
 import org.gradle.api.file.*
 import org.gradle.api.provider.*
 import org.gradle.workers.WorkAction
 import org.gradle.workers.WorkParameters
-import org.jetbrains.kotlin.descriptors.ModuleDescriptor
-import org.jetbrains.kotlin.storage.LockBasedStorageManager
-import org.jetbrains.kotlin.storage.StorageManager
 import java.io.File
 
 /**
@@ -55,11 +51,7 @@ internal abstract class GenerateJsSourceWorker : WorkAction<GenerateJsSourceWork
         outputSourcesDir: File,
         useBenchmarkJs: Boolean,
     ) {
-        val modules = loadIr(
-            lib = lib,
-            inputDependencies = inputDependencies,
-            storageManager = LockBasedStorageManager("Inspect"),
-        )
+        val modules = KlibModule.loadJsModules(lib, inputDependencies)
         modules.forEach { module ->
             val generator = SuiteSourceGenerator(
                 title,
@@ -71,15 +63,5 @@ internal abstract class GenerateJsSourceWorker : WorkAction<GenerateJsSourceWork
         }
     }
 
-    private fun loadIr(
-        lib: File,
-        inputDependencies: Set<File>,
-        storageManager: StorageManager,
-    ): List<ModuleDescriptor> {
-        // skip processing of empty dirs (fails if not to do it)
-        if (lib.listFiles() == null) return emptyList()
-        val dependencies = inputDependencies.filterNot { it.extension == "js" }.toSet()
-        val module = KlibResolver.JS.createModuleDescriptor(lib, dependencies, storageManager)
-        return listOf(module)
-    }
+
 }

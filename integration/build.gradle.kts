@@ -8,9 +8,11 @@ repositories {
 
 evaluationDependsOn(":kotlinx-benchmark-plugin")
 evaluationDependsOn(":kotlinx-benchmark-runtime")
+evaluationDependsOn(":kotlinx-benchmark-plugin-codegen-api")
 
 val runtime get() = project(":kotlinx-benchmark-runtime")
 val plugin get() = project(":kotlinx-benchmark-plugin")
+val pluginCodegenApi get() = project(":kotlinx-benchmark-plugin-codegen-api")
 
 dependencies {
     implementation(gradleTestKit())
@@ -26,6 +28,7 @@ kotlin {
 tasks.test {
     dependsOn(plugin.tasks.getByName("publishToBuildLocal"))
     dependsOn(runtime.tasks.getByName("publishToBuildLocal"))
+    dependsOn(pluginCodegenApi.tasks.getByName("publishToBuildLocal"))
 
     systemProperty("plugin_repo_url", rootProject.buildDir.resolve("maven").absoluteFile.invariantSeparatorsPath)
     systemProperty(

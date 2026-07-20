@@ -39,6 +39,7 @@ apply(plugin = "kotlinx.team.infra")
 extensions.configure<InfraExtension> {
     publishing {
         include(":kotlinx-benchmark-plugin")
+        include(":kotlinx-benchmark-plugin-codegen-api")
         include(":kotlinx-benchmark-runtime")
 
         libraryRepoUrl = "https://github.com/Kotlin/kotlinx-benchmark"
@@ -73,7 +74,7 @@ allprojects {
         addDevRepositoryIfEnabled(this, project)
     }
 
-    if (name == "kotlinx-benchmark-plugin") return@allprojects
+    if (name != "kotlinx-benchmark-runtime") return@allprojects
 
     tasks.withType<KotlinCompilationTask<*>>().configureEach {
         compilerOptions {
