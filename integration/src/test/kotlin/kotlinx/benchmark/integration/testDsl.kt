@@ -35,6 +35,13 @@ fun BuildResult.assertTasksUpToDate(vararg tasks: String) {
     }
 }
 
+internal fun BuildResult.assertTaskNotExecuted(task: String) {
+    assert(task(task) == null) {
+        printBuildOutput()
+        "Task $task was part of the build graph, but it should NOT have been executed: ${task(task)?.outcome}"
+    }
+}
+
 internal fun BuildResult.assertOutputContains(
     expectedSubString: String,
     message: String = "Build output does not contain \"$expectedSubString\""
