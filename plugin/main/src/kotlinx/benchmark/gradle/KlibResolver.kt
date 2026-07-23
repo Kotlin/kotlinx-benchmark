@@ -7,6 +7,7 @@ import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.konan.library.KLIB_INTEROP_IR_PROVIDER_IDENTIFIER
+import org.jetbrains.kotlin.library.KotlinAbiVersion
 import org.jetbrains.kotlin.library.KotlinLibrary
 import org.jetbrains.kotlin.library.KotlinLibraryProperResolverWithAttributes
 import org.jetbrains.kotlin.library.impl.createKotlinLibraryComponents
@@ -32,6 +33,7 @@ internal fun KlibResolver.createModuleDescriptor(
     val factories = klibMetadataFactories()
 
     val library = resolveSingleFileKlib(KonanFile(lib.canonicalPath))
+    checkAbiCompatibility(library)
 
     val module = factories.DefaultDeserializedDescriptorFactory.createDescriptorOptionalBuiltIns(
         library,
@@ -109,4 +111,18 @@ private class KLibLibraryResolver(
 ) {
     override fun libraryComponentBuilder(file: KonanFile, isDefault: Boolean): List<KotlinLibrary> =
         createKotlinLibraryComponents(file, isDefault)
+}
+
+
+private fun checkAbiCompatibility(library: KotlinLibrary) {
+    val libraryAbiVersion = library.versions.abiVersion
+    val maxSupportedAbiVersion = KotlinAbiVersion.CURRENT
+
+    if (libraryAbiVersion == null || !libraryAbiVersion.isAtMost(maxSupportedAbiVersion)) {
+        error(
+            "Incompatible ABI version while reading klib: '${library.libraryFile}'" +
+                    "found ABI version $libraryAbiVersion, but we can read at most $maxSupportedAbiVersion. " +
+                    "This klib was likely compiled with a newer Kotlin/Native distribution"
+        )
+    }
 }
