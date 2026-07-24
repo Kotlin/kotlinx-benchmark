@@ -2,6 +2,14 @@ package kotlinx.benchmark.wasm
 
 import kotlinx.benchmark.*
 
+private fun execArgv(): String =
+    js("process.execArgv.join(' ')")
+
+internal fun nodeJsExecArgv(): List<String> {
+    val joined: String = execArgv()
+    return joined.split(" ")
+}
+
 /**
  * Executes benchmarks by spawning a separate engine process for each run.
  */
@@ -24,9 +32,10 @@ internal class SpawnBenchmarkExecutor(
         val modulePath = nodeJsEngineModulePath()
         val workingDir = nodeJsGetDirName(modulePath)
 
+        val engineArguments = nodeJsExecArgv() + listOf("<MODULE>", "<ARGUMENTS>")
         val arguments = StartArguments(configPath, StartMode.RunSingleWithOutputSplitter, suiteId, benchmarkId)
         val jsParameters = getJsParameters(
-            engineArguments = null,
+            engineArguments = engineArguments,
             modulePath = modulePath,
             startArguments = arguments
         )
