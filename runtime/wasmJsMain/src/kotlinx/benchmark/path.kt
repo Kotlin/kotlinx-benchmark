@@ -9,7 +9,7 @@ internal external interface Path {
     /**
      * See https://nodejs.org/api/path.html#pathdirnamepath
      */
-    fun dirname(path: String): String
+    fun dirname(path: JsString): JsString
 }
 
 internal val path: Path by lazy {
