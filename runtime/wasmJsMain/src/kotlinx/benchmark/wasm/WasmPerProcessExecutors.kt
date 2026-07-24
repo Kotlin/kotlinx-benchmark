@@ -2,12 +2,14 @@ package kotlinx.benchmark.wasm
 
 import kotlinx.benchmark.*
 
-private fun execArgv(): String =
-    js("process.execArgv.join(' ')")
+private fun execArgv(): JsArray<JsString> =
+    js("process.execArgv")
 
-internal fun nodeJsExecArgv(): List<String> {
-    val joined: String = execArgv()
-    return joined.split(" ")
+private fun nodeJsExecArgv(): JsArray<JsString> {
+    val result = execArgv()
+    result[result.length] = moduleMarker
+    result[result.length] = argumentsMarker
+    return result
 }
 
 /**
@@ -32,7 +34,7 @@ internal class SpawnBenchmarkExecutor(
         val modulePath = nodeJsEngineModulePath()
         val workingDir = nodeJsGetDirName(modulePath)
 
-        val engineArguments = nodeJsExecArgv() + listOf("<MODULE>", "<ARGUMENTS>")
+        val engineArguments = nodeJsExecArgv()
         val arguments = StartArguments(configPath, StartMode.RunSingleWithOutputSplitter, suiteId, benchmarkId)
         val jsParameters = getJsParameters(
             engineArguments = engineArguments,
