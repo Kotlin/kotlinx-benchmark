@@ -2,12 +2,12 @@ package kotlinx.benchmark.wasm
 
 import kotlinx.benchmark.*
 
-internal fun execArgv(): String =
-    js("process.execArgv.join('\\n')")
+private fun execArgv(): String =
+    js("process.execArgv.join(' ')")
 
 internal fun nodeJsExecArgv(): List<String> {
     val joined: String = execArgv()
-    return if (joined.isEmpty()) emptyList() else joined.split("\n")
+    return joined.split(" ")
 }
 
 /**
