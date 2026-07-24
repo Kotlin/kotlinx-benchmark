@@ -31,15 +31,15 @@ internal fun runBenchmarksImpl(name: String, @Suppress("unused") args: Array<out
     val config = RunnerConfiguration(arguments.config.readFile())
 
     val engineName= config.advanced["customEngineName"] ?: "Custom Engine"
-    val engineBinaryPath = config.advanced["customEngineBinaryPath"]
-    val engineWorkingPath = config.advanced["customEngineWorkingDir"]
+    val engineBinaryPath = config.advanced["customEngineBinaryPath"]?.toJsString()
+    val engineWorkingPath = config.advanced["customEngineWorkingDir"]?.toJsString()
 
     var engineArgumentIndex = 0
-    var engineArguments: MutableList<String>? = null
+    var engineArguments: JsArray<JsString>? = null
     while (true) {
         val argument = config.advanced["customEngineArgument_${engineArgumentIndex}"] ?: break
-        engineArguments = engineArguments ?: mutableListOf()
-        engineArguments.add(argument)
+        engineArguments = engineArguments ?: JsArray()
+        engineArguments[engineArgumentIndex] = argument.toJsString()
         engineArgumentIndex++
     }
 

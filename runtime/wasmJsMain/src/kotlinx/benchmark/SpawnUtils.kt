@@ -4,8 +4,8 @@ import kotlin.js.Promise
 
 private fun jsSpawnProcessAsync(
     childProcess: ChildProcess,
-    binaryPath: String,
-    workingDir: String,
+    binaryPath: JsString,
+    workingDir: JsString,
     engineArguments: JsArray<JsString>,
     outputHandler: (String) -> Unit,
 ): Promise<JsNumber> = js("""{
@@ -17,7 +17,7 @@ private fun jsSpawnProcessAsync(
     });
 }""")
 
-internal fun spawnProcessAsyncAndProcessTags(binaryPath: String, workingDir: String, engineArguments: JsArray<JsString>, processResultTags: Boolean) {
+internal fun spawnProcessAsyncAndProcessTags(binaryPath: JsString, workingDir: JsString, engineArguments: JsArray<JsString>, processResultTags: Boolean) {
     val stream = SplittedOutputStream(processResultTags)
     jsSpawnProcessAsync(childProcess, binaryPath, workingDir, engineArguments) {
         val trimmed = it.trimEnd()
@@ -31,21 +31,34 @@ internal fun spawnProcessAsyncAndProcessTags(binaryPath: String, workingDir: Str
     }
 }
 
-internal fun getJsParameters(engineArguments: List<String>?, modulePath: String, startArguments: StartArguments): JsArray<JsString> {
-    val actualEngineArguments = engineArguments ?: listOf("<MODULE>", "<ARGUMENTS>")
+internal val moduleMarker = "<MODULE>".toJsString()
+internal val argumentsMarker = "<ARGUMENTS>".toJsString()
+
+internal fun getJsParameters(engineArguments: JsArray<JsString>?, modulePath: JsString, startArguments: StartArguments): JsArray<JsString> {
 
     val jsArguments = JsArray<JsString>()
     var jsArgumentIndex = 0
-    fun addJsArgument(argument: String) {
-        jsArguments[jsArgumentIndex] = argument.toJsString()
+    fun addJsArgument(argument: JsString) {
+        jsArguments[jsArgumentIndex] = argument
         jsArgumentIndex++
     }
 
-    actualEngineArguments.forEach { engineArgument ->
+    fun handleArgument(engineArgument: JsString) {
         when (engineArgument) {
-            "<MODULE>" -> addJsArgument(modulePath)
-            "<ARGUMENTS>" -> startArguments.toArray().forEach(::addJsArgument)
+            moduleMarker -> addJsArgument(modulePath)
+            argumentsMarker -> startArguments.toArray().forEach { x ->
+                addJsArgument(x.toJsString())
+            }
             else -> addJsArgument(engineArgument)
+        }
+    }
+
+    if (engineArguments == null) {
+        handleArgument(moduleMarker)
+        handleArgument(argumentsMarker)
+    } else {
+        for (i in 0 until engineArguments.length) {
+            handleArgument(engineArguments[i]!!)
         }
     }
     return jsArguments
@@ -53,8 +66,8 @@ internal fun getJsParameters(engineArguments: List<String>?, modulePath: String,
 
 internal fun jsSpawnProcessWithExtraPipeSyncAndGetResult(
     childProcess: ChildProcess,
-    binaryPath: String,
-    workingDir: String,
+    binaryPath: JsString,
+    workingDir: JsString,
     engineArguments: JsArray<JsString>,
 ): String? = js("""{
    const process = childProcess.spawnSync(binaryPath, engineArguments, { cwd: workingDir, encoding: 'utf8', stdio: ['inherit', 'inherit', 'inherit', 'pipe'] });
