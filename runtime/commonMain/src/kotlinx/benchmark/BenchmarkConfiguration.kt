@@ -12,6 +12,16 @@ class BenchmarkConfiguration private constructor(
     val mode: Mode,
     val advanced: Map<String, String>,
 ) {
+    internal fun withAdvanced(name: String, value: String) = BenchmarkConfiguration(
+        iterations = iterations,
+        warmups = warmups,
+        iterationTime = iterationTime,
+        iterationTimeUnit = iterationTimeUnit,
+        outputTimeUnit = outputTimeUnit,
+        mode = mode,
+        advanced = advanced + (name to value),
+    )
+
     constructor(runner: RunnerConfiguration, suite: SuiteDescriptor<*>) : this(
         iterations = runner.iterations ?: suite.iterations,
         warmups = runner.warmups ?: suite.warmups,

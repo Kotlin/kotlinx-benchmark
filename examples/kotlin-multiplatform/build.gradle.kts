@@ -2,6 +2,7 @@
 
 import kotlinx.benchmark.gradle.*
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsExec
 
 
 plugins {
@@ -92,6 +93,15 @@ benchmark {
             advanced("nativeGCAfterIteration", true)
         }
 
+        // FIXME: remove or make it wasm-only
+        create("wasmTiers") {
+            include("WasmCompilerTierBenchmark")
+            warmups = 5
+            iterations = 100
+            iterationTime = 50
+            iterationTimeUnit = "ms"
+        }
+
         create("csv") {
             include("Common")
             exclude("long")
@@ -139,4 +149,9 @@ benchmark {
         register("linuxX64")
         register("mingwX64")
     }
+}
+
+tasks.withType<NodeJsExec>().matching { it.name.contains("WasmTiersBenchmark") }.configureEach {
+    // Keep the example short while still showing a Liftoff-to-TurboFan transition.
+    nodeArgs.add("--wasm-tiering-budget=50000")
 }

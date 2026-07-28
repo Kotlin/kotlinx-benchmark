@@ -37,7 +37,8 @@ fun createJsEngineBenchmarkExecTask(
     executableFile: Provider<RegularFile>,
 ): TaskProvider<NodeJsExec> {
     val compilationTarget = binary.target
-    if (compilationTarget.platformType != KotlinPlatformType.js && compilationTarget.platformType != KotlinPlatformType.wasm) {
+    val compilation = binary.compilation
+    if (!compilation.isJSCompilation() && !compilation.isWasmCompilation()) {
         throw GradleException("Unsupported platforms type ${compilationTarget.platformType}")
     }
     if (!compilationTarget.isNodejsConfigured) {
@@ -50,8 +51,9 @@ fun createJsEngineBenchmarkExecTask(
     return execTask
 }
 
-private val KotlinJsIrCompilation.isWasmCompilation: Boolean get() =
-    target.platformType == KotlinPlatformType.wasm
+private fun KotlinJsIrCompilation.isJSCompilation(): Boolean = target.platformType == KotlinPlatformType.js
+
+private fun KotlinJsIrCompilation.isWasmCompilation(): Boolean = target.platformType == KotlinPlatformType.wasm
 
 private fun MutableList<String>.addJsArguments() {
     add("-r")
@@ -70,7 +72,9 @@ private fun createNodeJsExec(
         dependsOn(compilation.runtimeDependencyFiles)
         inputFileProperty.set(executableFile)
         with(nodeArgs) {
-            if (!compilation.isWasmCompilation) {
+            if (compilation.isWasmCompilation()) {
+                add("--allow-natives-syntax")
+            } else {
                 addJsArguments()
             }
         }

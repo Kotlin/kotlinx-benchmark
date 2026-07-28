@@ -1,5 +1,7 @@
 package kotlinx.benchmark
 
+import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
+
 interface CommonBenchmarkExtension {
     val executionName: String
 
@@ -54,7 +56,8 @@ interface CommonBenchmarkExtension {
         return estimator()
     }
 
-    private fun warmup(
+    @KotlinxBenchmarkRuntimeInternalApi
+    fun warmup(
         id: String,
         configuration: BenchmarkConfiguration,
         cycles: Int,
@@ -71,7 +74,8 @@ interface CommonBenchmarkExtension {
         }
     }
 
-    private fun measure(
+    @KotlinxBenchmarkRuntimeInternalApi
+    fun measure(
         id: String,
         configuration: BenchmarkConfiguration,
         cycles: Int,
