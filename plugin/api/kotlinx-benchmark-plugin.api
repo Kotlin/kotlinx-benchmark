@@ -161,6 +161,7 @@ public abstract class kotlinx/benchmark/gradle/NativeBenchmarkExec : org/gradle/
 	public final fun getBenchProgressPath ()Ljava/lang/String;
 	public final fun getBenchsDescriptionDir ()Ljava/io/File;
 	public final fun getConfigFile ()Ljava/io/File;
+	public final fun getEngine ()Lkotlinx/benchmark/gradle/CustomEngine;
 	public final fun getExecutable ()Ljava/io/File;
 	public final fun getNativeFork ()Ljava/lang/String;
 	public final fun getReportFile ()Ljava/io/File;
@@ -169,6 +170,7 @@ public abstract class kotlinx/benchmark/gradle/NativeBenchmarkExec : org/gradle/
 	public final fun setBenchProgressPath (Ljava/lang/String;)V
 	public final fun setBenchsDescriptionDir (Ljava/io/File;)V
 	public final fun setConfigFile (Ljava/io/File;)V
+	public final fun setEngine (Lkotlinx/benchmark/gradle/CustomEngine;)V
 	public final fun setExecutable (Ljava/io/File;)V
 	public final fun setNativeFork (Ljava/lang/String;)V
 	public final fun setReportFile (Ljava/io/File;)V

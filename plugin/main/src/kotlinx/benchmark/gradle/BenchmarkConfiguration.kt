@@ -15,9 +15,20 @@ import kotlin.text.replaceFirstChar
 
 @KotlinxBenchmarkPluginExperimentalApi
 class CustomEngine(
+    @get:Input
     val name: String,
+
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.ABSOLUTE)
     val enginePath: Provider<RegularFile>,
+
+    @get:Optional
+    @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.RELATIVE)
     val workingDir: Provider<Directory>? = null,
+
+    @get:Optional
+    @get:Input
     val engineArguments: Provider<List<String>>? = null,
 )
 

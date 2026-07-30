@@ -133,6 +133,9 @@ fun Project.createNativeBenchmarkExecTask(
         this.workingDir = target.workingDir
         this.benchProgressPath = createTempFile("bench", ".txt").absolutePath
 
+        @OptIn(KotlinxBenchmarkPluginExperimentalApi::class)
+        this.engine = config.customEngine
+
         benchsDescriptionDir = project.layout.buildDirectory
             .dir("${target.extension.benchsDescriptionDir}/${config.name}")
             .get().asFile
@@ -183,19 +186,51 @@ constructor(
     @Internal
     lateinit var benchProgressPath: String
 
+    /**
+     * The [CustomEngine] used to run the benchmark [executable], if any.
+     */
+    @get:Nested
+    @get:Optional
+    @KotlinxBenchmarkPluginExperimentalApi
+    var engine: CustomEngine? = null
+
+    @OptIn(KotlinxBenchmarkPluginExperimentalApi::class)
+    private fun resolveEngineArguments(): List<String> =
+        engine?.engineArguments?.orNull?.takeIf { it.isNotEmpty() } ?: emptyList()
+
+    @OptIn(KotlinxBenchmarkPluginExperimentalApi::class)
     private fun execute(args: Collection<String>) {
+        val engineExecutable = engine?.enginePath?.orNull?.asFile
         execOperations.exec {
-            it.executable = executable.absolutePath
-            it.args(args)
-            workingDir?.let { dir ->
-                it.workingDir = File(dir)
+            if (engineExecutable != null) {
+                it.executable = engineExecutable.absolutePath
+                val engineArgs = resolveEngineArguments()
+                // Should be passed to the engine executable as an argument
+                val executableArgs = (listOf(executable.absolutePath) + args).joinToString(" ")
+                it.args(engineArgs + executableArgs)
+                val workDir = engine?.workingDir?.orNull?.asFile
+                    ?: workingDir?.let(::File)
+                if (workDir != null) {
+                    it.workingDir = workDir
+                }
+            } else {
+                it.executable = executable.absolutePath
+                it.args(args)
+                workingDir?.let { dir ->
+                    it.workingDir = File(dir)
+                }
             }
         }
     }
 
-    @OptIn(ExperimentalPathApi::class)
+    @OptIn(ExperimentalPathApi::class, KotlinxBenchmarkPluginExperimentalApi::class)
     @TaskAction
     fun run() {
+        engine?.let { engine ->
+            logger.lifecycle("Running benchmarks with '${engine.name}': " +
+                    "${engine.enginePath.orNull?.asFile?.absolutePath}")
+        }
+
         // Get full list of running benchmarks
         execute(listOf(configFile.absolutePath, "--list", benchProgressPath, benchsDescriptionDir.absolutePath))
         val detailedConfigFiles = objectFactory.fileTree().from(benchsDescriptionDir).files.sortedBy { it.absolutePath }
@@ -212,7 +247,15 @@ constructor(
             // Execute benchmark
             if (forkPerBenchmark) {
                 val suiteResultsFile = createTempFile("bench", ".txt")
-                execute(listOf(configFile.absolutePath, "--benchmark", benchProgressPath, runConfigPath, suiteResultsFile.absolutePath))
+                execute(
+                    listOf(
+                        configFile.absolutePath,
+                        "--benchmark",
+                        benchProgressPath,
+                        runConfigPath,
+                        suiteResultsFile.absolutePath
+                    )
+                )
                 val suiteResults = suiteResultsFile.readText()
                 if (suiteResults.isNotEmpty())
                     runResults[runConfigPath] = suiteResults
@@ -226,7 +269,16 @@ constructor(
                 var textResult: Path? = null
                 for (i in 0 until warmups) {
                     textResult = createTempFile("bench", ".txt")
-                    execute(listOf(configFile.absolutePath, "--warmup", benchProgressPath, runConfigPath, i.toString(), textResult.absolutePath))
+                    execute(
+                        listOf(
+                            configFile.absolutePath,
+                            "--warmup",
+                            benchProgressPath,
+                            runConfigPath,
+                            i.toString(),
+                            textResult.absolutePath
+                        )
+                    )
                     val result = textResult.readLines().getOrNull(0)
                     if (result == "null") {
                         exceptionDuringExecution = true
@@ -241,8 +293,15 @@ constructor(
                 while (!exceptionDuringExecution && iteration in 0 until iterations) {
                     textResult = createTempFile("bench", ".txt")
                     execute(
-                        listOf(configFile.absolutePath, "--iteration", benchProgressPath, runConfigPath, iteration.toString(),
-                            cycles, textResult.absolutePath)
+                        listOf(
+                            configFile.absolutePath,
+                            "--iteration",
+                            benchProgressPath,
+                            runConfigPath,
+                            iteration.toString(),
+                            cycles,
+                            textResult.absolutePath
+                        )
                     )
                     val result = textResult.readLines()[0]
                     if (result == "null")
@@ -257,7 +316,13 @@ constructor(
                         out.write(iterationResults.joinToString { it.toString() })
                     }
                     execute(
-                        listOf(configFile.absolutePath, "--end-run", benchProgressPath, runConfigPath, iterationsResultsFile.absolutePath)
+                        listOf(
+                            configFile.absolutePath,
+                            "--end-run",
+                            benchProgressPath,
+                            runConfigPath,
+                            iterationsResultsFile.absolutePath
+                        )
                     )
                     runResults[runConfigPath] = iterationResults.joinToString()
                 }
