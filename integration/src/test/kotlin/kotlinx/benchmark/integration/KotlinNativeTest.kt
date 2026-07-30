@@ -1,5 +1,6 @@
 package kotlinx.benchmark.integration
 
+import org.junit.Assume
 import org.junit.Test
 
 class KotlinNativeTest : GradleTest() {
@@ -17,6 +18,10 @@ class KotlinNativeTest : GradleTest() {
 
     @Test
     fun nativeCustomEngine() {
+        Assume.assumeFalse(
+            "Specific CustomEngine that uses bash",
+            System.getProperty("os.name").lowercase().contains("windows")
+        )
         project("kotlin-native", true).let { runner ->
             val target = "native"
             val capitalizedTarget = target.replaceFirstChar { it.uppercaseChar() }
