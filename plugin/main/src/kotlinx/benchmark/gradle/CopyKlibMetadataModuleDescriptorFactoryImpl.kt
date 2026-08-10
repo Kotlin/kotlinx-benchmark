@@ -18,7 +18,6 @@ import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.library.KotlinLibrary
 import org.jetbrains.kotlin.library.isAnyPlatformStdlib
 import org.jetbrains.kotlin.library.metadata.*
-import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.parentOrNull
 import org.jetbrains.kotlin.platform.jvm.isJvm
@@ -31,10 +30,9 @@ import org.jetbrains.kotlin.storage.StorageManager
 import org.jetbrains.kotlin.utils.addToStdlib.runIf
 
 internal class CopyKlibMetadataModuleDescriptorFactoryImpl(
-    override val descriptorFactory: KlibModuleDescriptorFactory,
-    override val packageFragmentsFactory: KlibMetadataDeserializedPackageFragmentsFactory,
-    override val flexibleTypeDeserializer: FlexibleTypeDeserializer
-) : KlibMetadataModuleDescriptorFactory {
+    val packageFragmentsFactory: CopyKlibMetadataDeserializedPackageFragmentsFactoryImpl,
+    val flexibleTypeDeserializer: FlexibleTypeDeserializer
+) {
     companion object {
         internal fun KlibModuleOrigin.isCInteropLibrary(): Boolean = when (this) {
             is DeserializedKlibModuleOrigin -> this.library.isCInteropLibrary()
@@ -42,7 +40,31 @@ internal class CopyKlibMetadataModuleDescriptorFactoryImpl(
         }
     }
 
-    override fun createDescriptorOptionalBuiltIns(
+    fun createDescriptor(
+        library: KotlinLibrary,
+        languageVersionSettings: LanguageVersionSettings,
+        storageManager: StorageManager,
+        builtIns: KotlinBuiltIns,
+        packageAccessHandler: PackageAccessHandler?
+    ) = createDescriptorOptionalBuiltIns(
+        library,
+        languageVersionSettings,
+        storageManager,
+        builtIns,
+        packageAccessHandler,
+        LookupTracker.DO_NOTHING
+    )
+
+    fun createDescriptorAndNewBuiltIns(
+        library: KotlinLibrary,
+        languageVersionSettings: LanguageVersionSettings,
+        storageManager: StorageManager,
+        packageAccessHandler: PackageAccessHandler?
+    ) = createDescriptorOptionalBuiltIns(
+        library, languageVersionSettings, storageManager, null, packageAccessHandler, LookupTracker.DO_NOTHING
+    )
+
+    fun createDescriptorOptionalBuiltIns(
         library: KotlinLibrary,
         languageVersionSettings: LanguageVersionSettings,
         storageManager: StorageManager,
@@ -90,23 +112,7 @@ internal class CopyKlibMetadataModuleDescriptorFactoryImpl(
         return moduleDescriptor
     }
 
-    override fun createCachedPackageFragmentProvider(
-        byteArrays: List<ByteArray>,
-        storageManager: StorageManager,
-        moduleDescriptor: ModuleDescriptor,
-        configuration: DeserializationConfiguration,
-        lookupTracker: LookupTracker
-    ): PackageFragmentProvider {
-        val deserializedPackageFragments = packageFragmentsFactory.createCachedPackageFragments(
-            byteArrays, moduleDescriptor, storageManager
-        )
-
-        val provider = PackageFragmentProviderImpl(deserializedPackageFragments)
-        return initializePackageFragmentProvider(provider, deserializedPackageFragments, storageManager,
-            moduleDescriptor, configuration, null, lookupTracker)
-    }
-
-    override fun createPackageFragmentProvider(
+    fun createPackageFragmentProvider(
         library: KotlinLibrary,
         packageAccessHandler: PackageAccessHandler?,
         packageFragmentNames: List<String>,
