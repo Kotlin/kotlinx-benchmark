@@ -19,7 +19,10 @@ import org.jetbrains.kotlin.incremental.components.LookupLocation
 import org.jetbrains.kotlin.incremental.components.NoLookupLocation
 import org.jetbrains.kotlin.konan.file.File
 import org.jetbrains.kotlin.library.KotlinLibrary
-import org.jetbrains.kotlin.library.metadata.*
+import org.jetbrains.kotlin.library.metadata.KlibModuleOrigin
+import org.jetbrains.kotlin.library.metadata.KotlinResolvedModuleDescriptors
+import org.jetbrains.kotlin.library.metadata.PackageAccessHandler
+import org.jetbrains.kotlin.library.metadata.SyntheticModulesOrigin
 import org.jetbrains.kotlin.library.metadata.resolver.KotlinLibraryResolveResult
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
@@ -37,10 +40,10 @@ import org.jetbrains.kotlin.util.profile
 import org.jetbrains.kotlin.utils.Printer
 
 internal class CopyKlibResolvedModuleDescriptorsFactoryImpl(
-    override val moduleDescriptorFactory: KlibMetadataModuleDescriptorFactory
-) : KlibResolvedModuleDescriptorsFactory {
+    val moduleDescriptorFactory: CopyKlibMetadataModuleDescriptorFactoryImpl
+) {
 
-    override fun createResolved(
+    fun createResolved(
         resolvedLibraries: KotlinLibraryResolveResult,
         storageManager: StorageManager,
         builtIns: KotlinBuiltIns?,
