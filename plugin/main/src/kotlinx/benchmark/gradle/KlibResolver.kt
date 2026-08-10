@@ -10,7 +10,6 @@ import org.jetbrains.kotlin.konan.library.KLIB_INTEROP_IR_PROVIDER_IDENTIFIER
 import org.jetbrains.kotlin.library.KotlinLibrary
 import org.jetbrains.kotlin.library.KotlinLibraryProperResolverWithAttributes
 import org.jetbrains.kotlin.library.impl.createKotlinLibraryComponents
-import org.jetbrains.kotlin.library.metadata.KlibMetadataFactories
 import org.jetbrains.kotlin.library.metadata.NullFlexibleTypeDeserializer
 import org.jetbrains.kotlin.library.metadata.resolver.impl.KotlinLibraryResolverImpl
 import org.jetbrains.kotlin.library.metadata.resolver.impl.libraryResolver
@@ -18,7 +17,7 @@ import org.jetbrains.kotlin.library.resolveSingleFileKlib
 import org.jetbrains.kotlin.library.unresolvedDependencies
 import org.jetbrains.kotlin.storage.StorageManager
 import org.jetbrains.kotlin.util.Logger
-import java.io.*
+import java.io.File
 import org.jetbrains.kotlin.konan.file.File as KonanFile
 
 internal enum class KlibResolver { JS, Native }
@@ -29,11 +28,21 @@ internal fun KlibResolver.createModuleDescriptor(
     inputDependencies: Set<File>,
     storageManager: StorageManager
 ): ModuleDescriptor {
-    val factories = klibMetadataFactories()
+    val deserializedDescriptorFactory = CopyKlibMetadataModuleDescriptorFactoryImpl(
+        packageFragmentsFactory = CopyKlibMetadataDeserializedPackageFragmentsFactoryImpl(),
+        flexibleTypeDeserializer = when (this) {
+            KlibResolver.JS -> DynamicTypeDeserializer
+            KlibResolver.Native -> NullFlexibleTypeDeserializer
+        }
+    )
+
+    val defaultResolvedDescriptorsFactory = CopyKlibResolvedModuleDescriptorsFactoryImpl(
+        deserializedDescriptorFactory
+    )
 
     val library = resolveSingleFileKlib(KonanFile(lib.canonicalPath))
 
-    val module = factories.DefaultDeserializedDescriptorFactory.createDescriptorOptionalBuiltIns(
+    val module = deserializedDescriptorFactory.createDescriptorOptionalBuiltIns(
         library,
         LanguageVersionSettingsImpl.DEFAULT,
         storageManager,
@@ -48,7 +57,7 @@ internal fun KlibResolver.createModuleDescriptor(
         noDefaultLibs = this == KlibResolver.JS,
         noEndorsedLibs = this == KlibResolver.JS
     )
-    val dependenciesResolved = factories.DefaultResolvedDescriptorsFactory.createResolved(
+    val dependenciesResolved = defaultResolvedDescriptorsFactory.createResolved(
         dependencies,
         storageManager,
         DefaultBuiltIns.Instance,
@@ -66,15 +75,6 @@ internal fun KlibResolver.createModuleDescriptor(
     module.setDependencies(listOf(module) + dependenciesDescriptors + forwardDeclarationsModule)
     return module
 }
-
-@RequiresKotlinCompilerEmbeddable
-private fun KlibResolver.klibMetadataFactories() = KlibMetadataFactories(
-    createBuiltIns = { DefaultBuiltIns.Instance },
-    flexibleTypeDeserializer = when (this) {
-        KlibResolver.JS -> DynamicTypeDeserializer
-        KlibResolver.Native -> NullFlexibleTypeDeserializer
-    }
-)
 
 @RequiresKotlinCompilerEmbeddable
 private fun KlibResolver.libraryResolver(inputDependencies: Set<File>): KotlinLibraryResolverImpl<KotlinLibrary> {
