@@ -5,7 +5,6 @@ import org.jetbrains.kotlin.backend.common.serialization.metadata.DynamicTypeDes
 import org.jetbrains.kotlin.builtins.DefaultBuiltIns
 import org.jetbrains.kotlin.config.LanguageVersionSettingsImpl
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
-import org.jetbrains.kotlin.incremental.components.LookupTracker
 import org.jetbrains.kotlin.konan.library.KLIB_INTEROP_IR_PROVIDER_IDENTIFIER
 import org.jetbrains.kotlin.library.KotlinLibrary
 import org.jetbrains.kotlin.library.KotlinLibraryProperResolverWithAttributes
@@ -47,8 +46,7 @@ internal fun KlibResolver.createModuleDescriptor(
         LanguageVersionSettingsImpl.DEFAULT,
         storageManager,
         DefaultBuiltIns.Instance,
-        null,
-        LookupTracker.DO_NOTHING
+        null
     )
 
     val dependencies = libraryResolver(inputDependencies).resolveWithDependencies(
