@@ -5,6 +5,7 @@
 
 package kotlinx.benchmark.gradle
 
+import org.jetbrains.kotlin.builtins.DefaultBuiltIns
 import org.jetbrains.kotlin.builtins.KotlinBuiltIns
 import org.jetbrains.kotlin.builtins.functions.functionInterfacePackageFragmentProvider
 import org.jetbrains.kotlin.config.LanguageVersionSettings
@@ -21,6 +22,8 @@ import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.name.Name
 import org.jetbrains.kotlin.name.parentOrNull
 import org.jetbrains.kotlin.platform.jvm.isJvm
+import org.jetbrains.kotlin.platform.konan.NativePlatforms
+import org.jetbrains.kotlin.resolve.ImplicitIntegerCoercion
 import org.jetbrains.kotlin.resolve.KlibCompilerDeserializationConfiguration
 import org.jetbrains.kotlin.resolve.sam.SamConversionResolverImpl
 import org.jetbrains.kotlin.serialization.deserialization.*
@@ -32,6 +35,12 @@ internal class CopyKlibMetadataModuleDescriptorFactoryImpl(
     override val packageFragmentsFactory: KlibMetadataDeserializedPackageFragmentsFactory,
     override val flexibleTypeDeserializer: FlexibleTypeDeserializer
 ) : KlibMetadataModuleDescriptorFactory {
+    companion object {
+        internal fun KlibModuleOrigin.isCInteropLibrary(): Boolean = when (this) {
+            is DeserializedKlibModuleOrigin -> this.library.isCInteropLibrary()
+            CurrentKlibModuleOrigin, SyntheticModulesOrigin -> false
+        }
+    }
 
     override fun createDescriptorOptionalBuiltIns(
         library: KotlinLibrary,
@@ -47,10 +56,21 @@ internal class CopyKlibMetadataModuleDescriptorFactoryImpl(
         val moduleName = Name.special(libraryProto.moduleName)
         val moduleOrigin = DeserializedKlibModuleOrigin(library)
 
-        val moduleDescriptor = if (builtIns != null)
-            descriptorFactory.createDescriptor(moduleName, storageManager, builtIns, moduleOrigin)
-        else
-            descriptorFactory.createDescriptorAndNewBuiltIns(moduleName, storageManager, moduleOrigin)
+        val builtInsToUse = builtIns ?: DefaultBuiltIns.Instance
+        val moduleDescriptor = ModuleDescriptorImpl(
+            moduleName,
+            storageManager,
+            builtInsToUse,
+            capabilities = mapOf(
+                KlibModuleOrigin.CAPABILITY to moduleOrigin,
+                ImplicitIntegerCoercion.MODULE_CAPABILITY to moduleOrigin.isCInteropLibrary()
+            ),
+            platform = NativePlatforms.unspecifiedNativePlatform
+        )
+
+        if (builtIns == null) {
+            builtInsToUse.builtInsModule = moduleDescriptor
+        }
 
         val provider = createPackageFragmentProvider(
             library,
