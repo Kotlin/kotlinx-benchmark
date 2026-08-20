@@ -1,0 +1,16 @@
+[versions]
+agp = "<<ANDROID_GRADLE_PLUGIN_VERSION>>"
+kotlin = "<<KOTLIN_VERSION>>"
+junit = "4.13.2"
+androidx-test-ext = "<<ANDROIDX_TEST_EXT_VERSION>>"
+androidx-benchmark = "<<ANDROIDX_BENCHMARK_VERSION>>"
+
+[libraries]
+androidx-benchmark = { group = "androidx.benchmark", name = "benchmark-junit4", version.ref = "androidx-benchmark" }
+androidx-test-ext = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+
+[plugins]
+android-library = { id = "com.android.library", version.ref = "agp" }
+androidx-benchmark = { id = "androidx.benchmark", version.ref = "androidx-benchmark" }
+jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

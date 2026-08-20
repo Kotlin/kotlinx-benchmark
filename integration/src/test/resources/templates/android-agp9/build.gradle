@@ -1,0 +1,20 @@
+import kotlinx.benchmark.gradle.*
+
+kotlin {
+    android {
+        namespace = "org.jetbrains.kotlinx.benchmark.example.android"
+        compileSdk = 36
+        minSdk = 29
+    }
+}
+
+benchmark {
+    targets {
+        register("android") {
+            it as AndroidBenchmarkTarget
+            instrumentationRunnerArguments.putAll([
+                    "androidx.benchmark.suppressErrors": "EMULATOR"
+            ])
+        }
+    }
+}

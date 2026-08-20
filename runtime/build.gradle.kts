@@ -1,15 +1,14 @@
-import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
-import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
-import org.jetbrains.kotlin.gradle.plugin.KotlinPlatformType
-import org.jetbrains.kotlin.gradle.tasks.Kotlin2JsCompile
-import org.jetbrains.kotlin.gradle.tasks.KotlinNativeCompile
+import com.android.build.api.dsl.*
+import org.jetbrains.kotlin.buildtools.api.*
+import org.jetbrains.kotlin.gradle.*
+import org.jetbrains.kotlin.gradle.dsl.*
+import org.jetbrains.kotlin.gradle.plugin.*
+import org.jetbrains.kotlin.gradle.tasks.*
 import java.util.*
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.android.multiplatform.library)
 }
 
 repositories {
@@ -64,6 +63,12 @@ kotlin {
     }
 
     js { nodejs() }
+    @Suppress("UnstableApiUsage")
+    androidLibrary {
+        namespace = "kotlinx.benchmark.runtime.android"
+        compileSdk = 35
+        minSdk = 29
+    }
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         nodejs()
@@ -128,6 +133,11 @@ kotlin {
         jvmTest {
             dependencies {
                 implementation(libs.jmh.core)
+            }
+        }
+        androidMain {
+            dependencies {
+                compileOnly(libs.androidx.benchmark)
             }
         }
     }
