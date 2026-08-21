@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 0.4.18
+
+- Various improvements in JS and Wasm benchmark runners
+- The WasmJs runner no longer uses API deprecated in 2.4.20 ([KT-86242](https://youtrack.jetbrains.com/issue/KT-86242)) [#380](https://github.com/Kotlin/kotlinx-benchmark/pull/380)
+- The plugin no longer uses compiler API removed from Kotlin 2.5.0 [#390](https://github.com/Kotlin/kotlinx-benchmark/pull/390)
+
 ## 0.4.17
 
 - Updated minimum support Kotlin version to `2.2.0` and Gradle version to `8.x` [#360](https://github.com/Kotlin/kotlinx-benchmark/pull/360)
