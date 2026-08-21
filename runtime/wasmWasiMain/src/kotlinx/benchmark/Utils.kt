@@ -36,10 +36,11 @@ private fun Double.toPlainString(): String {
     val mantissa = unsigned.substringBefore("e")
     val exponent = unsigned.substringAfter("e").toInt()
 
-    val integerPart = mantissa.substringBefore('.')
-    val fractionPart = mantissa.substringAfter('.', "")
+    val integerPart = mantissa.substringBefore('.').trimStart('0')
+    val fractionPart = mantissa.substringAfter('.', "").trimEnd('0')
 
     val digits = "$integerPart$fractionPart"
+    check(digits.isNotEmpty())
 
     val decimalPlaces = fractionPart.length
     val shift = exponent - decimalPlaces

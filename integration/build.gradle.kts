@@ -27,7 +27,10 @@ tasks.test {
     dependsOn(runtime.tasks.getByName("publishToBuildLocal"))
 
     systemProperty("plugin_repo_url", plugin.projectDir.resolve("build/maven").absoluteFile.invariantSeparatorsPath)
-    systemProperty("runtime_repo_url", rootProject.buildDir.resolve("maven").absoluteFile.invariantSeparatorsPath)
+    systemProperty(
+        "runtime_repo_url",
+        rootProject.layout.buildDirectory.dir("maven").get().asFile.absoluteFile.invariantSeparatorsPath
+    )
     getKotlinDevRepositoryUrl(project)?.let {
         systemProperty("kotlin_repo_url", it)
     }
