@@ -1,3 +1,4 @@
+import com.gradle.publish.PublishTask
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 import kotlinx.team.infra.InfraExtension
 import org.gradle.plugin.compatibility.compatibility
@@ -197,14 +198,24 @@ if (project.findProperty("publication_repository") == "space") {
 
 // Both kotlinx.team.infra and Gradle publish plugins register their own javadocJar artifacts.
 // We remove one of them here to avoid the collision leading to a build failure.
+private fun MutableSet<MavenArtifact>.removeJavadocJar() {
+    val javadocJars = filter { it.classifier == "javadoc" }.toList()
+    javadocJars.drop(1).forEach {
+        remove(it)
+    }
+}
+
 tasks.withType<AbstractPublishToMaven>().configureEach {
     doFirst {
         this as AbstractPublishToMaven
-        val artifactsSet = publication.artifacts
-        val javadocJars = artifactsSet.filter { it.classifier == "javadoc" }.toList()
-        javadocJars.drop(1).forEach {
-            artifactsSet.remove(it)
-        }
+        publication.artifacts.removeJavadocJar()
+    }
+}
+
+tasks.withType<PublishTask>().configureEach {
+    doFirst {
+        this as PublishTask
+        normalizedMavenPublication.get().allArtifacts.removeJavadocJar()
     }
 }
 
