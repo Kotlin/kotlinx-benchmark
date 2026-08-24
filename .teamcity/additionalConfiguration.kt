@@ -35,7 +35,9 @@ fun Project.additionalConfiguration() {
 
     // Check with Kotlin master only on Linux
     buildWithKotlinMaster(Platform.Linux, knownBuilds.buildVersion).also {
-        knownBuilds.buildAll.dependsOnSnapshot(it, onFailure = FailureAction.ADD_PROBLEM)
+        // Temprary disabled: watchosArm32 target was removed in 2.5.0,
+        // but the plugin's runtime is still build and released for it.
+        // knownBuilds.buildAll.dependsOnSnapshot(it, onFailure = FailureAction.ADD_PROBLEM)
     }
 }
 
