@@ -2,13 +2,20 @@ package kotlinx.benchmark.gradle
 
 import org.jetbrains.kotlin.descriptors.ModuleDescriptor
 import org.jetbrains.kotlin.library.KotlinLibrary
-import org.jetbrains.kotlin.library.metadata.*
+import org.jetbrains.kotlin.library.metadata.BuiltInKlibMetadataDeserializedPackageFragment
+import org.jetbrains.kotlin.library.metadata.KlibDeserializedContainerSource
+import org.jetbrains.kotlin.library.metadata.KlibMetadataCachedPackageFragment
+import org.jetbrains.kotlin.library.metadata.KlibMetadataDeserializedPackageFragment
+import org.jetbrains.kotlin.library.metadata.KlibMetadataDeserializedPackageFragmentsFactory
+import org.jetbrains.kotlin.library.metadata.PackageAccessHandler
+import org.jetbrains.kotlin.library.metadata.SimplePackageAccessHandler
+import org.jetbrains.kotlin.library.metadata.getIncompatibility
 import org.jetbrains.kotlin.name.FqName
 import org.jetbrains.kotlin.serialization.deserialization.DeserializationConfiguration
 import org.jetbrains.kotlin.storage.StorageManager
 
-internal class CopyKlibMetadataDeserializedPackageFragmentsFactoryImpl {
-    fun createDeserializedPackageFragments(
+internal class CopyKlibMetadataDeserializedPackageFragmentsFactoryImpl : KlibMetadataDeserializedPackageFragmentsFactory {
+    override fun createDeserializedPackageFragments(
         library: KotlinLibrary,
         packageFragmentNames: List<String>,
         moduleDescriptor: ModuleDescriptor,
@@ -50,7 +57,7 @@ internal class CopyKlibMetadataDeserializedPackageFragmentsFactoryImpl {
         }
     }
 
-    fun createCachedPackageFragments(
+    override fun createCachedPackageFragments(
         packageFragments: List<ByteArray>,
         moduleDescriptor: ModuleDescriptor,
         storageManager: StorageManager
