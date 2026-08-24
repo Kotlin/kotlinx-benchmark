@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.4.19
+
+- Reverted changes related to KLib processing introduced in `0.4.18`
+
 ## 0.4.18
 
 - Various improvements in JS and Wasm benchmark runners
