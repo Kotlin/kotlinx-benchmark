@@ -16,6 +16,7 @@ import javax.inject.Inject
  *
  * Majority of properties mimics [KspGradleConfig](https://github.com/google/ksp/blob/78828d47f3051a5af34a5358e5d2a55b422d1a94/gradle-plugin/src/main/kotlin/com/google/devtools/ksp/gradle/KspAATask.kt#L588).
  */
+@CacheableTask
 internal abstract class SourceGeneratorTask
 @Inject constructor(private val workerExecutor: WorkerExecutor) : DefaultTask() {
 
@@ -26,8 +27,7 @@ internal abstract class SourceGeneratorTask
     @get:PathSensitive(PathSensitivity.RELATIVE)
     abstract val sourceRoots: ConfigurableFileCollection
 
-    @get:InputFiles
-    @get:PathSensitive(PathSensitivity.RELATIVE)
+    @get:Classpath
     abstract val inputDependencies: ConfigurableFileCollection
 
     @get:Classpath

@@ -20,10 +20,13 @@ internal object BenchmarkSourceGenerator {
         apiVersion: String,
         nativeTarget: String,
     ) {
-        outputBaseDir.deleteRecursively()
+        outputSourcesDir.deleteRecursively()
+        outputResourcesDir.deleteRecursively()
+        outputClassesDir.deleteRecursively()
         outputSourcesDir.mkdirs()
         outputResourcesDir.mkdirs()
         outputClassesDir.mkdirs()
+        cachesDir.mkdirs()
 
         val kspConfig = when (platform) {
             Platform.NativeBuiltIn -> KSPNativeConfig.Builder().apply {
