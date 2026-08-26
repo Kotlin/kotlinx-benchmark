@@ -119,28 +119,6 @@ public final class kotlinx/benchmark/gradle/JsBenchmarksExecutor : java/lang/Enu
 	public static fun values ()[Lkotlinx/benchmark/gradle/JsBenchmarksExecutor;
 }
 
-public abstract class kotlinx/benchmark/gradle/JsSourceGeneratorTask : org/gradle/api/DefaultTask {
-	public field inputClassesDirs Lorg/gradle/api/file/FileCollection;
-	public field inputDependencies Lorg/gradle/api/file/FileCollection;
-	public field outputResourcesDir Ljava/io/File;
-	public field outputSourcesDir Ljava/io/File;
-	public field title Ljava/lang/String;
-	public final fun generate ()V
-	public final fun getInputClassesDirs ()Lorg/gradle/api/file/FileCollection;
-	public final fun getInputDependencies ()Lorg/gradle/api/file/FileCollection;
-	public final fun getOutputResourcesDir ()Ljava/io/File;
-	public final fun getOutputSourcesDir ()Ljava/io/File;
-	public abstract fun getRuntimeClasspath ()Lorg/gradle/api/file/ConfigurableFileCollection;
-	public final fun getTitle ()Ljava/lang/String;
-	public final fun getUseBenchmarkJs ()Z
-	public final fun setInputClassesDirs (Lorg/gradle/api/file/FileCollection;)V
-	public final fun setInputDependencies (Lorg/gradle/api/file/FileCollection;)V
-	public final fun setOutputResourcesDir (Ljava/io/File;)V
-	public final fun setOutputSourcesDir (Ljava/io/File;)V
-	public final fun setTitle (Ljava/lang/String;)V
-	public final fun setUseBenchmarkJs (Z)V
-}
-
 public abstract class kotlinx/benchmark/gradle/JvmBenchmarkTarget : kotlinx/benchmark/gradle/BenchmarkTarget {
 	public final fun getJmhVersion ()Ljava/lang/String;
 	public final fun setJmhVersion (Ljava/lang/String;)V
@@ -180,29 +158,6 @@ public final class kotlinx/benchmark/gradle/NativeBenchmarkTarget : kotlinx/benc
 	public final fun setBuildType (Lorg/jetbrains/kotlin/gradle/plugin/mpp/NativeBuildType;)V
 }
 
-public abstract class kotlinx/benchmark/gradle/NativeSourceGeneratorTask : org/gradle/api/DefaultTask {
-	public field inputClassesDirs Lorg/gradle/api/file/FileCollection;
-	public field inputDependencies Lorg/gradle/api/file/FileCollection;
-	public field nativeTarget Ljava/lang/String;
-	public field outputResourcesDir Ljava/io/File;
-	public field outputSourcesDir Ljava/io/File;
-	public field title Ljava/lang/String;
-	public final fun generate ()V
-	public final fun getInputClassesDirs ()Lorg/gradle/api/file/FileCollection;
-	public final fun getInputDependencies ()Lorg/gradle/api/file/FileCollection;
-	public final fun getNativeTarget ()Ljava/lang/String;
-	public final fun getOutputResourcesDir ()Ljava/io/File;
-	public final fun getOutputSourcesDir ()Ljava/io/File;
-	public abstract fun getRuntimeClasspath ()Lorg/gradle/api/file/ConfigurableFileCollection;
-	public final fun getTitle ()Ljava/lang/String;
-	public final fun setInputClassesDirs (Lorg/gradle/api/file/FileCollection;)V
-	public final fun setInputDependencies (Lorg/gradle/api/file/FileCollection;)V
-	public final fun setNativeTarget (Ljava/lang/String;)V
-	public final fun setOutputResourcesDir (Ljava/io/File;)V
-	public final fun setOutputSourcesDir (Ljava/io/File;)V
-	public final fun setTitle (Ljava/lang/String;)V
-}
-
 public final class kotlinx/benchmark/gradle/UtilsKt$sam$i$org_gradle_api_Action$0 : org/gradle/api/Action {
 	public fun <init> (Lkotlin/jvm/functions/Function1;)V
 	public final synthetic fun execute (Ljava/lang/Object;)V
@@ -211,26 +166,6 @@ public final class kotlinx/benchmark/gradle/UtilsKt$sam$i$org_gradle_api_Action$
 public final class kotlinx/benchmark/gradle/WasmBenchmarkTarget : kotlinx/benchmark/gradle/BenchmarkTarget {
 	public final fun getBuildType ()Lorg/jetbrains/kotlin/gradle/targets/js/dsl/KotlinJsBinaryMode;
 	public final fun setBuildType (Lorg/jetbrains/kotlin/gradle/targets/js/dsl/KotlinJsBinaryMode;)V
-}
-
-public abstract class kotlinx/benchmark/gradle/WasmSourceGeneratorTask : org/gradle/api/DefaultTask {
-	public field inputClassesDirs Lorg/gradle/api/file/FileCollection;
-	public field inputDependencies Lorg/gradle/api/file/FileCollection;
-	public field outputResourcesDir Ljava/io/File;
-	public field outputSourcesDir Ljava/io/File;
-	public field title Ljava/lang/String;
-	public final fun generate ()V
-	public final fun getInputClassesDirs ()Lorg/gradle/api/file/FileCollection;
-	public final fun getInputDependencies ()Lorg/gradle/api/file/FileCollection;
-	public final fun getOutputResourcesDir ()Ljava/io/File;
-	public final fun getOutputSourcesDir ()Ljava/io/File;
-	public abstract fun getRuntimeClasspath ()Lorg/gradle/api/file/ConfigurableFileCollection;
-	public final fun getTitle ()Ljava/lang/String;
-	public final fun setInputClassesDirs (Lorg/gradle/api/file/FileCollection;)V
-	public final fun setInputDependencies (Lorg/gradle/api/file/FileCollection;)V
-	public final fun setOutputResourcesDir (Ljava/io/File;)V
-	public final fun setOutputSourcesDir (Ljava/io/File;)V
-	public final fun setTitle (Ljava/lang/String;)V
 }
 
 public abstract interface annotation class kotlinx/benchmark/gradle/internal/KotlinxBenchmarkPluginInternalApi : java/lang/annotation/Annotation {

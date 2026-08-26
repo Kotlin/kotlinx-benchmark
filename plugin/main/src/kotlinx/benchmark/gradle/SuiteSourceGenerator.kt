@@ -1,24 +1,14 @@
 package kotlinx.benchmark.gradle
 
+import com.google.devtools.ksp.isAbstract
+import com.google.devtools.ksp.processing.CodeGenerator
+import com.google.devtools.ksp.processing.Dependencies
+import com.google.devtools.ksp.processing.Resolver
+import com.google.devtools.ksp.symbol.*
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
-import kotlinx.benchmark.gradle.internal.generator.RequiresKotlinCompilerEmbeddable
-import org.jetbrains.kotlin.descriptors.*
-import org.jetbrains.kotlin.name.FqName
-import org.jetbrains.kotlin.name.Name
-import org.jetbrains.kotlin.resolve.DescriptorUtils
-import org.jetbrains.kotlin.resolve.annotations.argumentValue
-import org.jetbrains.kotlin.resolve.constants.EnumValue
-import org.jetbrains.kotlin.resolve.constants.StringValue
-import org.jetbrains.kotlin.resolve.descriptorUtil.fqNameSafe
-import org.jetbrains.kotlin.resolve.descriptorUtil.module
-import org.jetbrains.kotlin.resolve.scopes.MemberScope
-import org.jetbrains.kotlin.types.KotlinType
-import java.io.File
 
-@KotlinxBenchmarkPluginInternalApi
-enum class Platform(
+internal enum class Platform(
     val runBenchmarks: String,
     val suiteDescriptorClass: String,
     val benchmarkDescriptorClass: String,
@@ -50,39 +40,43 @@ enum class Platform(
     )
 }
 
-@KotlinxBenchmarkPluginInternalApi
-@RequiresKotlinCompilerEmbeddable
-class SuiteSourceGenerator(
-    val title: String,
-    val module: ModuleDescriptor,
-    val output: File,
-    val platform: Platform
+internal fun KSAnnotated.annotationOrNull(fqn: String): KSAnnotation? = annotations.singleOrNull {
+    it.annotationType.resolve().declaration.qualifiedName?.asString() == fqn
+}
+
+internal fun KSAnnotated.hasAnnotation(fqn: String): Boolean = annotationOrNull(fqn) != null
+
+@Suppress("UNCHECKED_CAST")
+internal fun <T> KSAnnotation.argumentValueOrNull(name: String): T? = arguments.singleOrNull {
+    it.name?.getShortName() == name
+}?.value as T?
+
+internal class SuiteSourceGenerator(
+    private val title: String,
+    private val codeGenerator: CodeGenerator,
+    private val platform: Platform
 ) {
-
-    @KotlinxBenchmarkPluginInternalApi
     companion object {
-        val setupFunctionName = "setUp"
-        val teardownFunctionName = "tearDown"
-        val parametersFunctionName = "parametrize"
+        const val setupFunctionName = "setUp"
+        const val teardownFunctionName = "tearDown"
+        const val parametersFunctionName = "parametrize"
 
-        val suiteExecutorFQN = "kotlinx.benchmark.SuiteExecutorBase"
-        val externalConfigurationFQN = "kotlinx.benchmark.ExternalConfiguration"
-        val benchmarkAnnotationFQN = "kotlinx.benchmark.Benchmark"
-        val setupAnnotationFQN = "kotlinx.benchmark.Setup"
-        val teardownAnnotationFQN = "kotlinx.benchmark.TearDown"
-        val stateAnnotationFQN = "kotlinx.benchmark.State"
-        val modeAnnotationFQN = "kotlinx.benchmark.BenchmarkMode"
-        val timeUnitFQN = "kotlinx.benchmark.BenchmarkTimeUnit"
-        val iterationTimeFQN = "kotlinx.benchmark.IterationTime"
-        val modeFQN = "kotlinx.benchmark.Mode"
-        val outputTimeAnnotationFQN = "kotlinx.benchmark.OutputTimeUnit"
-        val warmupAnnotationFQN = "kotlinx.benchmark.Warmup"
-        val measureAnnotationFQN = "kotlinx.benchmark.Measurement"
-        val paramAnnotationFQN = "kotlinx.benchmark.Param"
+        const val suiteExecutorFQN = "kotlinx.benchmark.SuiteExecutorBase"
+        const val benchmarkAnnotationFQN = "kotlinx.benchmark.Benchmark"
+        const val setupAnnotationFQN = "kotlinx.benchmark.Setup"
+        const val teardownAnnotationFQN = "kotlinx.benchmark.TearDown"
+        const val stateAnnotationFQN = "kotlinx.benchmark.State"
+        const val modeAnnotationFQN = "kotlinx.benchmark.BenchmarkMode"
+        const val timeUnitFQN = "kotlinx.benchmark.BenchmarkTimeUnit"
+        const val iterationTimeFQN = "kotlinx.benchmark.IterationTime"
+        const val modeFQN = "kotlinx.benchmark.Mode"
+        const val outputTimeAnnotationFQN = "kotlinx.benchmark.OutputTimeUnit"
+        const val warmupAnnotationFQN = "kotlinx.benchmark.Warmup"
+        const val measureAnnotationFQN = "kotlinx.benchmark.Measurement"
+        const val paramAnnotationFQN = "kotlinx.benchmark.Param"
 
-        val blackholeFQN = "kotlinx.benchmark.Blackhole"
-
-        val mainBenchmarkPackage = "kotlinx.benchmark.generated"
+        const val blackholeFQN = "kotlinx.benchmark.Blackhole"
+        const val mainBenchmarkPackage = "kotlinx.benchmark.generated"
 
         val suppressWarnings = AnnotationSpec.builder(Suppress::class).addMember(
             "\"UNUSED_PARAMETER\", \"REDUNDANT_CALL_OF_CONVERSION_METHOD\""
@@ -93,15 +87,22 @@ class SuiteSourceGenerator(
     }
 
     private val suiteDescriptorType = ClassName.bestGuess(platform.suiteDescriptorClass)
+    private val benchmarks = mutableListOf<ClassName>()
 
-    val benchmarks = mutableListOf<ClassName>()
+    private val originatingFiles = mutableSetOf<KSFile>()
 
-    fun generate() {
-        processPackage(module, module.getPackage(FqName.ROOT))
-        generateRunnerMain()
+    fun generate(resolver: Resolver) {
+        resolver
+            .getSymbolsWithAnnotation(stateAnnotationFQN, false /* nested benchmark classes are not expected (?) */)
+            .filterIsInstance<KSClassDeclaration>()
+            .filter { !it.isAbstract() }
+            .forEach { benchmarkClass ->
+                benchmarkClass.containingFile?.let(originatingFiles::add)
+                generateBenchmark(benchmarkClass)
+            }
     }
 
-    private fun generateRunnerMain() {
+    fun generateRunnerMain() {
         val file = FileSpec.builder(mainBenchmarkPackage, "BenchmarkSuite").apply {
             function("main") {
                 addAnnotation(optInRuntimeInternalApi)
@@ -121,84 +122,55 @@ class SuiteSourceGenerator(
                 addStatement("executor.run()")
             }
         }.build()
-        file.writeTo(output)
+        file.writeToNewFile(Dependencies(true, *originatingFiles.toTypedArray()))
     }
 
-    private fun processPackage(module: ModuleDescriptor, packageView: PackageViewDescriptor) {
-        for (packageFragment in packageView.fragments.filter { it.module == module }) {
-            DescriptorUtils.getAllDescriptors(packageFragment.getMemberScope())
-                .filterIsInstance<ClassDescriptor>()
-                .filter { it.annotations.any { it.fqName.toString() == stateAnnotationFQN } }
-                .filter { it.modality != Modality.ABSTRACT }
-                .forEach {
-                    generateBenchmark(it)
-                }
-        }
-
-        for (subpackageName in module.getSubPackagesOf(packageView.fqName, MemberScope.ALL_NAME_FILTER)) {
-            processPackage(module, module.getPackage(subpackageName))
-        }
-    }
-
-    private fun generateBenchmark(original: ClassDescriptor) {
-        val originalFqName = original.fqNameSafe
-        val originalPackage = originalFqName.parent().let {
-            if (it.isRoot) "" else it.asString()
-        }
-        val originalName = originalFqName.shortName().toString()
+    private fun generateBenchmark(original: KSClassDeclaration) {
+        val originalPackage = original.packageName.asString()
+        val originalName = original.simpleName.getShortName()
         val originalClass = ClassName(originalPackage, originalName)
 
         val benchmarkPackageName = mainBenchmarkPackage + if (originalPackage.isNotEmpty()) ".$originalPackage" else ""
         val benchmarkName = "${originalName}_Descriptor"
         val benchmarkClass = ClassName(benchmarkPackageName, benchmarkName)
 
-        val functions = DescriptorUtils.getAllDescriptors(original.unsubstitutedMemberScope)
-            .filterIsInstance<FunctionDescriptor>()
-
-        val parameterProperties = DescriptorUtils.getAllDescriptors(original.unsubstitutedMemberScope)
-            .filterIsInstance<PropertyDescriptor>()
-            .filter { it.annotations.any { it.fqName.toString() == paramAnnotationFQN } }
+        val functions = original.getAllFunctions()
+        val parameterProperties = original.getAllProperties()
+            .filter { it.hasAnnotation(paramAnnotationFQN) }
+            .toList()
 
         validateParameterProperties(parameterProperties)
 
-        val measureAnnotation = original.annotations.singleOrNull { it.fqName.toString() == measureAnnotationFQN }
-        val warmupAnnotation = original.annotations.singleOrNull { it.fqName.toString() == warmupAnnotationFQN }
-        val outputTimeAnnotation = original.annotations.singleOrNull { it.fqName.toString() == outputTimeAnnotationFQN }
-        val modeAnnotation = original.annotations.singleOrNull { it.fqName.toString() == modeAnnotationFQN }
+        val measureAnnotation = original.annotationOrNull(measureAnnotationFQN)
+        val warmupAnnotation = original.annotationOrNull(warmupAnnotationFQN)
+        val outputTimeAnnotation = original.annotationOrNull(outputTimeAnnotationFQN)
+        val modeAnnotation = original.annotationOrNull(modeAnnotationFQN)
 
-        val outputTimeUnitValue = outputTimeAnnotation?.argumentValue("value") as EnumValue?
-        val outputTimeUnit = outputTimeUnitValue?.enumEntryName?.toString()
+        val outputTimeUnit = outputTimeAnnotation?.argumentValueOrNull<Any>("value")?.enumEntryName()
+        val modesValue = modeAnnotation?.argumentValueOrNull<List<Any>>("value")
+        val mode = modesValue?.singleOrNull()?.enumEntryName()
+        val iterations = measureAnnotation?.argumentValueOrNull<Int>("iterations")
+        val iterationTime = measureAnnotation?.argumentValueOrNull<Int>("time")
+        val iterationTimeUnit = measureAnnotation?.argumentValueOrNull<Any>("timeUnit")?.enumEntryName() ?: "SECONDS"
+        val warmups = warmupAnnotation?.argumentValueOrNull<Int>("iterations")
 
-        @Suppress("UNCHECKED_CAST")
-        val modesValue = modeAnnotation?.argumentValue("value")?.value as List<EnumValue>?
-        val mode = modesValue?.single()?.enumEntryName?.toString()
-
-        val measureIterations = measureAnnotation?.argumentValue("iterations")?.value as Int?
-        val measureIterationTime = measureAnnotation?.argumentValue("time")?.value as Int?
-        val measureIterationTimeUnit = measureAnnotation?.argumentValue("timeUnit") as EnumValue?
-
-        val warmupIterations = warmupAnnotation?.argumentValue("iterations")?.value as Int?
-
-        val iterations = measureIterations
-        val iterationTime = measureIterationTime
-        val iterationTimeUnit = measureIterationTimeUnit?.enumEntryName?.toString() ?: "SECONDS"
-        val warmups = warmupIterations
-
-        val benchmarkFunctions =
-            functions.filter { it.annotations.any { it.fqName.toString() == benchmarkAnnotationFQN } }
-
+        val benchmarkFunctions = functions
+            .filter { it.hasAnnotation(benchmarkAnnotationFQN) }
+            .toList()
         validateBenchmarkFunctions(benchmarkFunctions)
 
         val setupFunctions = functions
-            .filter { it.annotations.any { it.fqName.toString() == setupAnnotationFQN } }
-
+            .filter { it.hasAnnotation(setupAnnotationFQN) }
+            .toList()
         validateSetupFunctions(setupFunctions)
 
         val teardownFunctions = functions
-            .filter { it.annotations.any { it.fqName.toString() == teardownAnnotationFQN } }.reversed()
-
+            .filter { it.hasAnnotation(teardownAnnotationFQN) }
+            .toList()
+            .reversed()
         validateTeardownFunctions(teardownFunctions)
 
+        val dependencies = Dependencies(false, *listOfNotNull(original.containingFile).toTypedArray())
         val file = FileSpec.builder(benchmarkPackageName, benchmarkName).apply {
             declareObject(benchmarkClass) {
                 addAnnotation(suppressWarnings)
@@ -208,7 +180,7 @@ class SuiteSourceGenerator(
                     addModifiers(KModifier.PRIVATE)
                     addParameter("instance", originalClass)
                     for (fn in setupFunctions) {
-                        val functionName = fn.name.toString()
+                        val functionName = fn.simpleName.asString()
                         addStatement("instance.%N()", functionName)
                     }
                 }
@@ -217,7 +189,7 @@ class SuiteSourceGenerator(
                     addModifiers(KModifier.PRIVATE)
                     addParameter("instance", originalClass)
                     for (fn in teardownFunctions) {
-                        val functionName = fn.name.toString()
+                        val functionName = fn.simpleName.asString()
                         addStatement("instance.%N()", functionName)
                     }
                 }
@@ -228,23 +200,23 @@ class SuiteSourceGenerator(
                     addParameter("params", MAP.parameterizedBy(STRING, STRING))
 
                     parameterProperties.forEach { property ->
-                        val type = property.type.nameIfStandardType!!
-                        addStatement("instance.${property.name} = params.getValue(\"${property.name}\").to$type()")
+                        val propertyName = property.simpleName.asString()
+                        val type = property.type.resolve().declaration.simpleName.asString()
+                        addStatement("instance.$propertyName = params.getValue(%S).to$type()", propertyName)
                     }
                 }
 
-                val defaultParameters = parameterProperties.associateBy({ it.name }, {
-                    val annotation = it.annotations.findAnnotation(FqName(paramAnnotationFQN))!!
-                    @Suppress("UNCHECKED_CAST")
-                    annotation.argumentValue("value")!!.value as List<StringValue>
+                val defaultParameters = parameterProperties.associateBy({ it.simpleName.asString() }, {
+                    val annotation = it.annotationOrNull(paramAnnotationFQN)!!
+                    annotation.argumentValueOrNull<List<String>>("value")!!
                 })
 
                 val defaultParametersString = defaultParameters.entries
                     .joinToString(prefix = "mapOf(", postfix = ")") { (key, value) ->
                         val joinedValues = value.joinToString {
-                            "\"\"\"${it.value.replace(' ', '·')}\"\"\""
+                            "\"\"\"${it.replace(' ', '·')}\"\"\""
                         }
-                        "\"${key}\" to listOf($joinedValues)"
+                        "\"$key\" to listOf($joinedValues)"
                     }
 
                 val timeUnitClass = ClassName.bestGuess(timeUnitFQN)
@@ -264,9 +236,10 @@ class SuiteSourceGenerator(
                     )
 
                     val params =
-                        parameterProperties.joinToString(prefix = "listOf(", postfix = ")") { "\"${it.name}\"" }
+                        parameterProperties.joinToString(prefix = "listOf(", postfix = ")") {
+                            "\"${it.simpleName.asString()}\""
+                        }
                     addCode(", parameters = $params")
-
                     addCode(", defaultParameters = $defaultParametersString")
 
                     if (iterations != null)
@@ -275,7 +248,7 @@ class SuiteSourceGenerator(
                         addCode(", warmups = $warmups")
                     if (iterationTime != null)
                         addCode(
-                            ", iterationTime = %T($measureIterationTime, %T.%N)",
+                            ", iterationTime = %T($iterationTime, %T.%N)",
                             iterationTimeClass,
                             timeUnitClass,
                             MemberName(timeUnitClass, iterationTimeUnit)
@@ -295,10 +268,9 @@ class SuiteSourceGenerator(
 
                     val bhClass = ClassName.bestGuess(blackholeFQN)
                     for (fn in benchmarkFunctions) {
-                        val functionName = fn.name.toString()
-
-                        val hasABlackholeParameter = fn.valueParameters.singleOrNull()?.type.toString() == "Blackhole"
-
+                        val functionName = fn.simpleName.asString()
+                        val hasABlackholeParameter =
+                            fn.parameters.singleOrNull()?.type?.resolve()?.declaration?.qualifiedName?.asString() == blackholeFQN
                         val fqnDescriptorToCreate =
                             if (hasABlackholeParameter) platform.benchmarkDescriptorWithBlackholeParameterClass
                             else platform.benchmarkDescriptorClass
@@ -314,73 +286,52 @@ class SuiteSourceGenerator(
                     }
                     addStatement("return descriptor")
                 }
-
             }
             benchmarks.add(benchmarkClass)
         }.build()
 
-        file.writeTo(output)
+        file.writeToNewFile(dependencies)
+    }
+
+    private fun FileSpec.writeToNewFile(dependencies: Dependencies) {
+        codeGenerator.createNewFile(dependencies, packageName, name).bufferedWriter().use {
+            writeTo(it)
+        }
     }
 }
 
-@KotlinxBenchmarkPluginInternalApi
-inline fun codeBlock(builderAction: CodeBlock.Builder.() -> Unit): CodeBlock {
-    return CodeBlock.builder().apply(builderAction).build()
+private fun Any.enumEntryName(): String? = when (this) {
+    is KSName -> getShortName()
+    is KSClassDeclaration -> simpleName.asString()
+    else -> toString().substringAfterLast('.').takeIf { it.isNotEmpty() }
 }
 
-@KotlinxBenchmarkPluginInternalApi
-inline fun FileSpec.Builder.declareObject(name: ClassName, builderAction: TypeSpec.Builder.() -> Unit): TypeSpec {
-    return TypeSpec.objectBuilder(name).apply(builderAction).build().also {
-        addType(it)
-    }
+private inline fun FileSpec.Builder.function(
+    name: String,
+    builderAction: FunSpec.Builder.() -> Unit
+): FunSpec = FunSpec.builder(name).apply(builderAction).build().also {
+    addFunction(it)
 }
 
-@KotlinxBenchmarkPluginInternalApi
-inline fun FileSpec.Builder.declareClass(name: String, builderAction: TypeSpec.Builder.() -> Unit): TypeSpec {
-    return TypeSpec.classBuilder(name).apply(builderAction).build().also {
-        addType(it)
-    }
+private inline fun FileSpec.Builder.declareObject(
+    name: ClassName,
+    builderAction: TypeSpec.Builder.() -> Unit
+): TypeSpec = TypeSpec.objectBuilder(name).apply(builderAction).build().also {
+    addType(it)
 }
 
-@KotlinxBenchmarkPluginInternalApi
-inline fun FileSpec.Builder.declareClass(name: ClassName, builderAction: TypeSpec.Builder.() -> Unit): TypeSpec {
-    return TypeSpec.classBuilder(name).apply(builderAction).build().also {
-        addType(it)
-    }
+private inline fun TypeSpec.Builder.function(
+    name: String,
+    builderAction: FunSpec.Builder.() -> Unit
+): FunSpec = FunSpec.builder(name).apply(builderAction).build().also {
+    addFunction(it)
 }
 
-@KotlinxBenchmarkPluginInternalApi
-inline fun TypeSpec.Builder.property(
+@Suppress("unused")
+private inline fun TypeSpec.Builder.property(
     name: String,
     type: ClassName,
     builderAction: PropertySpec.Builder.() -> Unit
-): PropertySpec {
-    return PropertySpec.builder(name, type).apply(builderAction).build().also {
-        addProperty(it)
-    }
+): PropertySpec = PropertySpec.builder(name, type).apply(builderAction).build().also {
+    addProperty(it)
 }
-
-@KotlinxBenchmarkPluginInternalApi
-inline fun TypeSpec.Builder.function(
-    name: String,
-    builderAction: FunSpec.Builder.() -> Unit
-): FunSpec {
-    return FunSpec.builder(name).apply(builderAction).build().also {
-        addFunction(it)
-    }
-}
-
-@KotlinxBenchmarkPluginInternalApi
-inline fun FileSpec.Builder.function(
-    name: String,
-    builderAction: FunSpec.Builder.() -> Unit
-): FunSpec {
-    return FunSpec.builder(name).apply(builderAction).build().also {
-        addFunction(it)
-    }
-}
-
-@KotlinxBenchmarkPluginInternalApi
-@RequiresKotlinCompilerEmbeddable
-val KotlinType.nameIfStandardType: Name?
-    get() = constructor.declarationDescriptor?.name

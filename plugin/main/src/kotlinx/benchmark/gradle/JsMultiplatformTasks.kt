@@ -72,14 +72,18 @@ private fun Project.createJsBenchmarkGenerateSourceTask(
     compilationOutput: KotlinJsIrCompilation
 ) {
     val benchmarkBuildDir = benchmarkBuildDir(target)
-    task<JsSourceGeneratorTask>("${target.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}") {
+    task<SourceGeneratorTask>("${target.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}") {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Generate JS source files for '${target.name}'"
-        title = target.name
-        useBenchmarkJs = target.jsBenchmarksExecutor == JsBenchmarksExecutor.BenchmarkJs
-        inputClassesDirs = compilationOutput.output.classesDirs
-        inputDependencies = compilationOutput.runtimeDependencyFiles
-        outputResourcesDir = file("$benchmarkBuildDir/resources")
-        outputSourcesDir = file("$benchmarkBuildDir/sources")
+        title.set(target.name)
+        // TODO: fix it: Platform is not available in runtime, so we're using it's name as literal
+        val platformName = if (target.jsBenchmarksExecutor == JsBenchmarksExecutor.BenchmarkJs) "JsBenchmarkJs" else "JsBuiltIn"
+        platform.set(platformName)
+        sourceRoots.from(compilationOutput.allKotlinSourceSets.map { it.kotlin })
+        inputDependencies.from(compilationOutput.compileDependencyFiles)
+        setupOutputDirectories(benchmarkBuildDir)
+        projectDir.set(project.projectDir)
+        languageVersion.set(kotlinLanguageVersion(target))
+        apiVersion.set(kotlinApiVersion(target))
     }
 }
