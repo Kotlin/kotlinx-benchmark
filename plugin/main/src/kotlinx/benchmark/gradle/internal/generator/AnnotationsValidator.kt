@@ -1,4 +1,4 @@
-package kotlinx.benchmark.gradle
+package kotlinx.benchmark.gradle.internal.generator
 
 import com.google.devtools.ksp.getVisibility
 import com.google.devtools.ksp.symbol.*

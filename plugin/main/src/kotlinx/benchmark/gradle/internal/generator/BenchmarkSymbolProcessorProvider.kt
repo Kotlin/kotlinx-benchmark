@@ -1,7 +1,6 @@
 package kotlinx.benchmark.gradle.internal.generator
 
 import com.google.devtools.ksp.processing.*
-import kotlinx.benchmark.gradle.Platform
 
 internal class BenchmarkSymbolProcessorProvider(
     private val title: String,

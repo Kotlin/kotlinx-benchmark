@@ -2,7 +2,6 @@ package kotlinx.benchmark.gradle.internal.generator
 
 import com.google.devtools.ksp.impl.KotlinSymbolProcessing
 import com.google.devtools.ksp.processing.*
-import kotlinx.benchmark.gradle.Platform
 import java.io.File
 
 internal object BenchmarkSourceGenerator {

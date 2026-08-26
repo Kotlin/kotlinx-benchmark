@@ -1,6 +1,7 @@
 package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
+import kotlinx.benchmark.gradle.internal.generator.Platform
 import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.targets.js.dsl.*
 import org.jetbrains.kotlin.gradle.targets.js.ir.*
@@ -76,9 +77,7 @@ private fun Project.createJsBenchmarkGenerateSourceTask(
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Generate JS source files for '${target.name}'"
         title.set(target.name)
-        // TODO: fix it: Platform is not available in runtime, so we're using it's name as literal
-        val platformName = if (target.jsBenchmarksExecutor == JsBenchmarksExecutor.BenchmarkJs) "JsBenchmarkJs" else "JsBuiltIn"
-        platform.set(platformName)
+        platform.set(if (target.jsBenchmarksExecutor == JsBenchmarksExecutor.BenchmarkJs) Platform.JsBenchmarkJs else Platform.JsBuiltIn)
         sourceRoots.from(compilationOutput.allKotlinSourceSets.map { it.kotlin })
         inputDependencies.from(compilationOutput.compileDependencyFiles)
         setupOutputDirectories(benchmarkBuildDir)

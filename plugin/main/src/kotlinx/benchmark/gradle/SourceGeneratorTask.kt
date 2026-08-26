@@ -1,5 +1,6 @@
 package kotlinx.benchmark.gradle
 
+import kotlinx.benchmark.gradle.internal.generator.Platform
 import kotlinx.benchmark.gradle.internal.generator.workers.GenerateSourceWorker
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
@@ -57,7 +58,7 @@ internal abstract class SourceGeneratorTask
     abstract val apiVersion: Property<String>
 
     @get:Input
-    abstract val platform: Property<String>
+    abstract val platform: Property<Platform>
 
     fun setupOutputDirectories(benchmarksBuildDirectory: File) {
         outputBaseDir.set(benchmarksBuildDirectory)
