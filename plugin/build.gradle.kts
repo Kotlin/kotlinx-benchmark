@@ -123,15 +123,12 @@ kotlin {
 dependencies {
     implementation(libs.kotlin.reflect)
 
-    implementation(libs.squareup.kotlinpoet)
-
-    implementation(libs.kotlin.utilKlibMetadata)
-    implementation(libs.kotlin.utilKlib)
-    implementation(libs.kotlin.utilIo)
-
     compileOnly(libs.kotlin.gradlePlugin)
-    compileOnly(libs.kotlin.compilerEmbeddable)
     compileOnly(libs.jmh.generatorBytecode) // used in worker
+    compileOnly(libs.squareup.kotlinpoet) // used in worker
+    compileOnly(libs.symbol.processing.aa.embeddable) // used in worker
+    compileOnly(libs.symbol.processing.api) // used in worker
+    compileOnly(libs.symbol.processing.common.deps) // used in worker
 }
 
 val generatePluginConstants by tasks.registering {
@@ -158,6 +155,12 @@ val generatePluginConstants by tasks.registering {
     val defaultJvmVersion = libs.versions.jmh
     inputs.property("defaultJmhVersion", defaultJvmVersion)
 
+    val defaultKspVersion = libs.versions.ksp
+    inputs.property("defaultKspVersion", defaultKspVersion)
+
+    val kotlinPoetVersion = libs.versions.squareup.kotlinpoet
+    inputs.property("kotlinPoetVersion", kotlinPoetVersion)
+
     doLast {
         constantsKtFile.writeText(
                 """|package kotlinx.benchmark.gradle.internal
@@ -168,6 +171,8 @@ val generatePluginConstants by tasks.registering {
                 |  const val MIN_SUPPORTED_KOTLIN_VERSION = "${minSupportedKotlinVersion.get()}"
                 |  const val DEFAULT_KOTLIN_COMPILER_VERSION = "${kotlinCompilerVersion.get()}"
                 |  const val DEFAULT_JMH_VERSION = "${defaultJvmVersion.get()}"
+                |  const val DEFAULT_KSP_VERSION = "${defaultKspVersion.get()}"
+                |  const val KOTLIN_POET_VERSION = "${kotlinPoetVersion.get()}"
                 |}
                 |""".trimMargin()
         )

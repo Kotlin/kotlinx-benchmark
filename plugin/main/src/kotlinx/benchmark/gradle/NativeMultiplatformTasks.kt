@@ -13,8 +13,7 @@ import java.nio.file.Path
 import javax.inject.Inject
 import kotlin.io.path.*
 
-@KotlinxBenchmarkPluginInternalApi
-fun Project.processNativeCompilation(target: NativeBenchmarkTarget) {
+internal fun Project.processNativeCompilation(target: NativeBenchmarkTarget) {
     val compilation = target.compilation
     val expectedHost = compilation.target.konanTarget
     val actualHost = HostManager.host
@@ -42,13 +41,15 @@ private fun Project.createNativeBenchmarkGenerateSourceTask(target: NativeBenchm
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Generate Native source files for '${target.name}'"
         val compilation = target.compilation
-        this.nativeTarget = compilation.target.konanTarget.name
-        title = target.name
-        inputClassesDirs = compilation.output.classesDirs
-        inputDependencies = compilation.compileDependencyFiles
-
-        outputResourcesDir = file("$benchmarkBuildDir/resources")
-        outputSourcesDir = file("$benchmarkBuildDir/sources")
+        nativeTarget.set(compilation.target.konanTarget.name)
+        title.set(target.name)
+        inputDependencies.from(compilation.compileDependencyFiles)
+        sourceRoots.from(compilation.allKotlinSourceSets.map { it.kotlin })
+        platform.set("NativeBuiltIn") // TODO: fix it
+        setupOutputDirectories(benchmarkBuildDir)
+        projectDir.set(project.projectDir)
+        languageVersion.set(kotlinLanguageVersion(target))
+        apiVersion.set(kotlinApiVersion(target))
     }
 }
 
