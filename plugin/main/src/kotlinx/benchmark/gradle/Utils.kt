@@ -15,6 +15,7 @@ import org.gradle.jvm.toolchain.JavaCompiler
 import org.gradle.jvm.toolchain.JavaLauncher
 import org.gradle.jvm.toolchain.JavaToolchainService
 import org.gradle.util.internal.VersionNumber
+import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
@@ -369,3 +370,36 @@ internal fun BenchmarksExtension.checkConflictingJmhVersions() {
             "JMH versions ($clarification). Such configuration is not supported and may lead to runtime errors. " +
             "Consider using the same JMH version across all benchmarking targets.")
 }
+
+internal fun kotlinLanguageVersion(target: NativeBenchmarkTarget): Provider<String> =
+    kotlinLanguageVersion(target.compilation, target.extension)
+
+internal fun kotlinLanguageVersion(target: JsBenchmarkTarget): Provider<String> =
+    kotlinLanguageVersion(target.compilation, target.extension)
+
+internal fun kotlinLanguageVersion(target: WasmBenchmarkTarget): Provider<String> =
+    kotlinLanguageVersion(target.compilation, target.extension)
+
+internal fun kotlinApiVersion(target: NativeBenchmarkTarget): Provider<String> =
+    kotlinApiVersion(target.compilation, target.extension)
+
+internal fun kotlinApiVersion(target: JsBenchmarkTarget): Provider<String> =
+    kotlinApiVersion(target.compilation, target.extension)
+
+internal fun kotlinApiVersion(target: WasmBenchmarkTarget): Provider<String> =
+    kotlinApiVersion(target.compilation, target.extension)
+
+private fun kotlinLanguageVersion(compilation: KotlinCompilation<*>, extension: BenchmarksExtension): Provider<String> =
+    compilation.compileTaskProvider.flatMap { compileTask ->
+        compileTask.compilerOptions.languageVersion.map { it.version }.orElse(defaultKotlinLanguageVersion(extension))
+    }
+
+private fun kotlinApiVersion(compilation: KotlinCompilation<*>, extension: BenchmarksExtension): Provider<String> =
+    compilation.compileTaskProvider.flatMap { compileTask ->
+        compileTask.compilerOptions.apiVersion.map { it.version }.orElse(defaultKotlinLanguageVersion(extension))
+    }
+
+private fun defaultKotlinLanguageVersion(extension: BenchmarksExtension): Provider<String> =
+    extension.kotlinCompilerVersion.map { version ->
+        version.split('.', '-').take(2).joinToString(".")
+    }

@@ -1,11 +1,12 @@
 package kotlinx.benchmark.gradle.internal
 
 import kotlinx.benchmark.gradle.BenchmarksExtension
-import org.gradle.api.*
-import org.gradle.api.artifacts.*
-import org.gradle.api.attributes.*
-import org.gradle.api.attributes.Usage.*
-import org.gradle.api.model.*
+import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.attributes.Usage
+import org.gradle.api.attributes.Usage.JAVA_RUNTIME
+import org.gradle.api.attributes.Usage.USAGE_ATTRIBUTE
+import org.gradle.api.model.ObjectFactory
 import org.gradle.util.GradleVersion
 
 /**
@@ -25,17 +26,23 @@ internal class BenchmarkDependencies(
 
             it.defaultDependencies { deps ->
                 deps.addLater(
-                    benchmarksExtension.kotlinCompilerVersion.map { version ->
-                        project.dependencies.create("org.jetbrains.kotlin:kotlin-compiler-embeddable:$version")
-                    }
-                )
-                deps.addLater(benchmarksExtension.kotlinCompilerVersion.map {
-                    project.dependencies.create("com.squareup:kotlinpoet:1.3.0")
-                })
-                deps.addLater(
                     benchmarksExtension.kotlinCompilerVersion.map {
                         project.dependencies.create("org.jetbrains.kotlinx:kotlinx-benchmark-plugin-codegen:${BenchmarksPluginConstants.BENCHMARK_PLUGIN_VERSION}")
                     }
+                )
+
+                // Transitive KSP dependencies come from kotlinx-benchmark-plugin-codegen,
+                // but if a newver version is required, it could be explicitly specified via property.
+                deps.addAllLater(
+                    benchmarksExtension.project.providers.gradleProperty("benchmarks_ksp_version").orElse("default")
+                        .map {
+                            if (it == "default") emptyList() else
+                                listOf(
+                                    project.dependencies.create("com.google.devtools.ksp:symbol-processing-aa-embeddable:$it"),
+                                    project.dependencies.create("com.google.devtools.ksp:symbol-processing-api:$it"),
+                                    project.dependencies.create("com.google.devtools.ksp:symbol-processing-common-deps:$it"),
+                                )
+                        }
                 )
             }
         }

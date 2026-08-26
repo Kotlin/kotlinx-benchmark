@@ -127,13 +127,7 @@ constructor(
         project: Project,
         benchmarkDependencies: BenchmarkDependencies,
     ) {
-        project.tasks.withType(NativeSourceGeneratorTask::class.java).configureEach {
-            it.runtimeClasspath.from(benchmarkDependencies.benchmarkGeneratorResolver)
-        }
-        project.tasks.withType(WasmSourceGeneratorTask::class.java).configureEach {
-            it.runtimeClasspath.from(benchmarkDependencies.benchmarkGeneratorResolver)
-        }
-        project.tasks.withType(JsSourceGeneratorTask::class.java).configureEach {
+        project.tasks.withType(SourceGeneratorTask::class.java).configureEach {
             it.runtimeClasspath.from(benchmarkDependencies.benchmarkGeneratorResolver)
         }
     }
