@@ -1,12 +1,6 @@
-public final class kotlinx/benchmark/klib/KlibModule {
-	public static final field Companion Lkotlinx/benchmark/klib/KlibModule$Companion;
-	public fun <init> (Lorg/jetbrains/kotlin/descriptors/ModuleDescriptor;)V
-}
-
-public final class kotlinx/benchmark/klib/KlibModule$Companion {
-	public final fun loadJsModules (Ljava/io/File;Ljava/util/Set;)Ljava/util/List;
-	public final fun loadNativeModule (Ljava/io/File;Ljava/util/Set;)Lkotlinx/benchmark/klib/KlibModule;
-	public final fun loadWasmModules (Ljava/io/File;Ljava/util/Set;)Ljava/util/List;
+public final class kotlinx/benchmark/klib/BenchmarkSourceGenerator {
+	public static final field INSTANCE Lkotlinx/benchmark/klib/BenchmarkSourceGenerator;
+	public final fun generate (Ljava/lang/String;Lkotlinx/benchmark/klib/Platform;Ljava/util/List;Ljava/util/List;Ljava/io/File;Ljava/io/File;Ljava/io/File;Ljava/io/File;Ljava/io/File;Ljava/io/File;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
 }
 
 public final class kotlinx/benchmark/klib/Platform : java/lang/Enum {
@@ -14,57 +8,7 @@ public final class kotlinx/benchmark/klib/Platform : java/lang/Enum {
 	public static final field JsBuiltIn Lkotlinx/benchmark/klib/Platform;
 	public static final field NativeBuiltIn Lkotlinx/benchmark/klib/Platform;
 	public static final field WasmBuiltIn Lkotlinx/benchmark/klib/Platform;
-	public final fun getBenchmarkDescriptorClass ()Ljava/lang/String;
-	public final fun getBenchmarkDescriptorWithBlackholeParameterClass ()Ljava/lang/String;
-	public final fun getRunBenchmarks ()Ljava/lang/String;
-	public final fun getSuiteDescriptorClass ()Ljava/lang/String;
 	public static fun valueOf (Ljava/lang/String;)Lkotlinx/benchmark/klib/Platform;
 	public static fun values ()[Lkotlinx/benchmark/klib/Platform;
-}
-
-public final class kotlinx/benchmark/klib/SuiteSourceGenerator {
-	public static final field Companion Lkotlinx/benchmark/klib/SuiteSourceGenerator$Companion;
-	public fun <init> (Ljava/lang/String;Lkotlinx/benchmark/klib/KlibModule;Ljava/io/File;Lkotlinx/benchmark/klib/Platform;)V
-	public final fun generate ()V
-	public final fun getBenchmarks ()Ljava/util/List;
-	public final fun getModule ()Lkotlinx/benchmark/klib/KlibModule;
-	public final fun getOutput ()Ljava/io/File;
-	public final fun getPlatform ()Lkotlinx/benchmark/klib/Platform;
-	public final fun getTitle ()Ljava/lang/String;
-}
-
-public final class kotlinx/benchmark/klib/SuiteSourceGenerator$Companion {
-	public final fun getBenchmarkAnnotationFQN ()Ljava/lang/String;
-	public final fun getBlackholeFQN ()Ljava/lang/String;
-	public final fun getExternalConfigurationFQN ()Ljava/lang/String;
-	public final fun getIterationTimeFQN ()Ljava/lang/String;
-	public final fun getMainBenchmarkPackage ()Ljava/lang/String;
-	public final fun getMeasureAnnotationFQN ()Ljava/lang/String;
-	public final fun getModeAnnotationFQN ()Ljava/lang/String;
-	public final fun getModeFQN ()Ljava/lang/String;
-	public final fun getOptInRuntimeInternalApi ()Lcom/squareup/kotlinpoet/AnnotationSpec;
-	public final fun getOutputTimeAnnotationFQN ()Ljava/lang/String;
-	public final fun getParamAnnotationFQN ()Ljava/lang/String;
-	public final fun getParametersFunctionName ()Ljava/lang/String;
-	public final fun getSetupAnnotationFQN ()Ljava/lang/String;
-	public final fun getSetupFunctionName ()Ljava/lang/String;
-	public final fun getStateAnnotationFQN ()Ljava/lang/String;
-	public final fun getSuiteExecutorFQN ()Ljava/lang/String;
-	public final fun getSuppressWarnings ()Lcom/squareup/kotlinpoet/AnnotationSpec;
-	public final fun getTeardownAnnotationFQN ()Ljava/lang/String;
-	public final fun getTeardownFunctionName ()Ljava/lang/String;
-	public final fun getTimeUnitFQN ()Ljava/lang/String;
-	public final fun getWarmupAnnotationFQN ()Ljava/lang/String;
-}
-
-public final class kotlinx/benchmark/klib/SuiteSourceGeneratorKt {
-	public static final fun codeBlock (Lkotlin/jvm/functions/Function1;)Lcom/squareup/kotlinpoet/CodeBlock;
-	public static final fun declareClass (Lcom/squareup/kotlinpoet/FileSpec$Builder;Lcom/squareup/kotlinpoet/ClassName;Lkotlin/jvm/functions/Function1;)Lcom/squareup/kotlinpoet/TypeSpec;
-	public static final fun declareClass (Lcom/squareup/kotlinpoet/FileSpec$Builder;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/squareup/kotlinpoet/TypeSpec;
-	public static final fun declareObject (Lcom/squareup/kotlinpoet/FileSpec$Builder;Lcom/squareup/kotlinpoet/ClassName;Lkotlin/jvm/functions/Function1;)Lcom/squareup/kotlinpoet/TypeSpec;
-	public static final fun function (Lcom/squareup/kotlinpoet/FileSpec$Builder;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/squareup/kotlinpoet/FunSpec;
-	public static final fun function (Lcom/squareup/kotlinpoet/TypeSpec$Builder;Ljava/lang/String;Lkotlin/jvm/functions/Function1;)Lcom/squareup/kotlinpoet/FunSpec;
-	public static final fun getNameIfStandardType (Lorg/jetbrains/kotlin/types/KotlinType;)Lorg/jetbrains/kotlin/name/Name;
-	public static final fun property (Lcom/squareup/kotlinpoet/TypeSpec$Builder;Ljava/lang/String;Lcom/squareup/kotlinpoet/ClassName;Lkotlin/jvm/functions/Function1;)Lcom/squareup/kotlinpoet/PropertySpec;
 }
 

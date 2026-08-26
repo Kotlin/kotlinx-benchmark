@@ -32,6 +32,7 @@ repositories {
 }
 
 kotlin {
+    explicitApi()
     jvmToolchain(17)
 
     // Module is intended as the API dependency for the plugin
@@ -61,8 +62,10 @@ kotlin {
 }
 
 dependencies {
-    implementation(libs.kotlin.compilerEmbeddable)
     implementation(libs.squareup.kotlinpoet)
+    implementation(libs.symbol.processing.aa.embeddable)
+    implementation(libs.symbol.processing.api)
+    implementation(libs.symbol.processing.common.deps)
 }
 
 tasks.test {
