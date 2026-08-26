@@ -1,6 +1,7 @@
 package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
+import kotlinx.benchmark.gradle.internal.generator.Platform
 import org.gradle.api.*
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.tasks.*
@@ -45,7 +46,7 @@ private fun Project.createNativeBenchmarkGenerateSourceTask(target: NativeBenchm
         title.set(target.name)
         inputDependencies.from(compilation.compileDependencyFiles)
         sourceRoots.from(compilation.allKotlinSourceSets.map { it.kotlin })
-        platform.set("NativeBuiltIn") // TODO: fix it
+        platform.set(Platform.NativeBuiltIn)
         setupOutputDirectories(benchmarkBuildDir)
         projectDir.set(project.projectDir)
         languageVersion.set(kotlinLanguageVersion(target))

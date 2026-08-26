@@ -2,8 +2,6 @@ package kotlinx.benchmark.gradle.internal.generator
 
 import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.KSAnnotated
-import kotlinx.benchmark.gradle.Platform
-import kotlinx.benchmark.gradle.SuiteSourceGenerator
 
 internal class BenchmarkSymbolProcessor(
     title: String,

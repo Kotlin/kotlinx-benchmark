@@ -1,7 +1,7 @@
 package kotlinx.benchmark.gradle.internal.generator.workers
 
-import kotlinx.benchmark.gradle.Platform
 import kotlinx.benchmark.gradle.internal.generator.BenchmarkSourceGenerator
+import kotlinx.benchmark.gradle.internal.generator.Platform
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.provider.Property
@@ -11,7 +11,7 @@ import org.gradle.workers.WorkParameters
 internal abstract class GenerateSourceWorker : WorkAction<GenerateSourceWorker.Params> {
     internal interface Params : WorkParameters {
         val title: Property<String>
-        val platform: Property<String>
+        val platform: Property<Platform>
         val sourceRoots: ConfigurableFileCollection
         val inputDependencies: ConfigurableFileCollection
         val outputSourcesDir: DirectoryProperty
@@ -28,7 +28,7 @@ internal abstract class GenerateSourceWorker : WorkAction<GenerateSourceWorker.P
     override fun execute() {
         BenchmarkSourceGenerator.generate(
             title = parameters.title.get(),
-            platform = parameters.platform.map(Platform::valueOf).get(),
+            platform = parameters.platform.get(),
             sourceRoots = parameters.sourceRoots.files.toList(),
             inputDependencies = parameters.inputDependencies.files.toList(),
             outputSourcesDir = parameters.outputSourcesDir.get().asFile,

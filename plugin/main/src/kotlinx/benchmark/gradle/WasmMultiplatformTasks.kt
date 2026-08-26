@@ -1,6 +1,7 @@
 package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
+import kotlinx.benchmark.gradle.internal.generator.Platform
 import org.gradle.api.Project
 import org.gradle.api.file.RegularFile
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
@@ -98,7 +99,7 @@ private fun Project.createWasmBenchmarkGenerateSourceTask(
         title.set(target.name)
         sourceRoots.from(compilationOutput.allKotlinSourceSets.map { it.kotlin })
         inputDependencies.from(compilationOutput.compileDependencyFiles)
-        platform.set("WasmBuiltIn") // TODO: fix it
+        platform.set(Platform.WasmBuiltIn)
         setupOutputDirectories(benchmarkBuildDir)
         projectDir.set(project.projectDir)
         languageVersion.set(kotlinLanguageVersion(target))
