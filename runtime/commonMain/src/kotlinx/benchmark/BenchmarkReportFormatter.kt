@@ -141,7 +141,7 @@ private class CsvBenchmarkReportFormatter(val delimiter: String) : BenchmarkRepo
     private fun StringBuilder.appendResult(params: Set<String>, result: ReportBenchmarkResult) {
         append(result.benchmark.name.escape().quote()).append(delimiter)
         append(result.config.mode.toText().quote()).append(delimiter)
-        append(1).append(delimiter)
+        append(result.config.threads).append(delimiter)
         append(result.values.size).append(delimiter)
         append(result.score.format(6, useGrouping = false)).append(delimiter)
         append(result.error.format(6, useGrouping = false)).append(delimiter)
@@ -171,6 +171,7 @@ private object JsonBenchmarkReportFormatter : BenchmarkReportFormatter() {
     "benchmark" : "${result.benchmark.name.escape()}",
     "mode" : "${result.config.mode.toText()}",${compilationMode?.let { "\n    \"compilationMode\": \"$it\"," } ?: ""}
     "configurationName" : "${configurationName.escape()}",
+    "threads" : ${result.config.threads},
     "warmupIterations" : ${result.config.warmups},
     "warmupTime" : "${result.config.iterationTime} ${result.config.iterationTimeUnit.toText()}",
     "measurementIterations" : ${result.config.iterations},

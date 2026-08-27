@@ -5,6 +5,7 @@ import kotlinx.benchmark.gradle.internal.generator.RequiresKotlinCompilerEmbedda
 import kotlinx.benchmark.gradle.internal.generator.workers.GenerateWasmSourceWorker
 import org.gradle.api.*
 import org.gradle.api.file.*
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.*
 import org.gradle.workers.WorkerExecutor
 import java.io.File
@@ -36,6 +37,9 @@ constructor(
     @get:Classpath
     abstract val runtimeClasspath: ConfigurableFileCollection
 
+    @get:Internal
+    internal val suppressThreadsWarning: Provider<Boolean> = ThreadsValueValidator.suppressThreadsWarningsProvider(project)
+
     @TaskAction
     fun generate() {
         val workQueue = workerExecutor.classLoaderIsolation {
@@ -49,6 +53,7 @@ constructor(
             it.inputDependencies.from(inputDependencies)
             it.outputSourcesDir.set(outputSourcesDir)
             it.outputResourcesDir.set(outputResourcesDir)
+            it.suppressThreadsWarning.set(suppressThreadsWarning)
         }
 
         workQueue.await() // I'm not sure if waiting is necessary,

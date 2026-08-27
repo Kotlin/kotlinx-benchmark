@@ -10,6 +10,11 @@ kotlin {
 }
 
 benchmark {
+    configurations {
+        create("perIteration") {
+            advanced("nativeFork", "perIteration")
+        }
+    }
     targets {
         register("native") {
             buildType = NativeBuildType.DEBUG

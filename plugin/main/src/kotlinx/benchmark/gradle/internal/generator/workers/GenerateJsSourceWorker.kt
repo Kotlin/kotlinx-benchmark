@@ -31,6 +31,7 @@ internal abstract class GenerateJsSourceWorker : WorkAction<GenerateJsSourceWork
         val outputSourcesDir: DirectoryProperty
         val outputResourcesDir: DirectoryProperty
         val useBenchmarkJs: Property<Boolean>
+        val suppressThreadsWarning: Property<Boolean>
     }
 
     override fun execute() {
@@ -44,6 +45,7 @@ internal abstract class GenerateJsSourceWorker : WorkAction<GenerateJsSourceWork
                 inputDependencies = parameters.inputDependencies.files,
                 outputSourcesDir = parameters.outputSourcesDir.get().asFile,
                 useBenchmarkJs = parameters.useBenchmarkJs.get(),
+                suppressThreadsWarning = parameters.suppressThreadsWarning.get()
             )
         }
     }
@@ -54,6 +56,7 @@ internal abstract class GenerateJsSourceWorker : WorkAction<GenerateJsSourceWork
         inputDependencies: Set<File>,
         outputSourcesDir: File,
         useBenchmarkJs: Boolean,
+        suppressThreadsWarning: Boolean
     ) {
         val modules = loadIr(
             lib = lib,
@@ -65,7 +68,8 @@ internal abstract class GenerateJsSourceWorker : WorkAction<GenerateJsSourceWork
                 title,
                 module,
                 outputSourcesDir,
-                if (useBenchmarkJs) Platform.JsBenchmarkJs else Platform.JsBuiltIn
+                if (useBenchmarkJs) Platform.JsBenchmarkJs else Platform.JsBuiltIn,
+                suppressThreadsWarning
             )
             generator.generate()
         }

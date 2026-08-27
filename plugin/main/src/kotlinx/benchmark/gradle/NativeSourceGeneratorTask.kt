@@ -113,7 +113,8 @@ abstract class NativeSourceGeneratorWorker : WorkAction<NativeSourceGeneratorWor
                     parameters.title,
                     module,
                     parameters.outputSourcesDir,
-                    Platform.NativeBuiltIn
+                    Platform.NativeBuiltIn,
+                    true
                 )
                 generator.generate()
             }

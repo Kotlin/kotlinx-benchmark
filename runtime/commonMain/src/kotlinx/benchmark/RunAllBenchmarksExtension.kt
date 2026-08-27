@@ -18,6 +18,16 @@ internal interface RunAllBenchmarksExtension {
     val executionName: String
     fun result(result: ReportBenchmarkResult)
 
+    fun normalizeConfiguration(
+        benchmark: BenchmarkDescriptor<Any?>,
+        configuration: BenchmarkConfiguration,
+        parameters: Map<String, String>,
+        id: String,
+    ): BenchmarkConfiguration {
+        if (configuration.threads == 1) return configuration
+        return configuration.withUpdatedThreadsCount(1)
+    }
+
     fun runBenchmark(
         benchmark: BenchmarkDescriptor<Any?>,
         configuration: BenchmarkConfiguration,
@@ -51,9 +61,10 @@ internal interface RunAllBenchmarksExtension {
         start()
         for (benchmark in benchmarks) {
             val suite = benchmark.suite
-            val benchmarkConfiguration = BenchmarkConfiguration(runnerConfiguration, suite)
+            val baseConfiguration = BenchmarkConfiguration(runnerConfiguration, suite)
             runWithParameters(suite.parameters, runnerConfiguration.params, suite.defaultParameters) { parameters ->
                 val id = id(benchmark.name, parameters)
+                val benchmarkConfiguration = normalizeConfiguration(benchmark, baseConfiguration, parameters, id)
                 reporter.startBenchmark(executionName, id)
                 val samples = runBenchmark(benchmark, benchmarkConfiguration, parameters, id, reporter)
                 if (samples != null) {

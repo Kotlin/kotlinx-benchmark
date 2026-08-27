@@ -14,4 +14,11 @@ class KotlinNativeTest : GradleTest() {
             runner.runAndSucceed(":${capitalizedTarget}Benchmark")
         }
     }
+
+    @Test
+    fun perIterationFork() {
+        project("kotlin-native", true).let { runner ->
+            runner.runAndSucceed(":nativePerIterationBenchmark")
+        }
+    }
 }

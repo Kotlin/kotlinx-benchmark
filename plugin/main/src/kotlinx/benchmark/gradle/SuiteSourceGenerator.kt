@@ -22,31 +22,36 @@ enum class Platform(
     val runBenchmarks: String,
     val suiteDescriptorClass: String,
     val benchmarkDescriptorClass: String,
-    val benchmarkDescriptorWithBlackholeParameterClass: String
+    val benchmarkDescriptorWithBlackholeParameterClass: String,
+    val printableName: String
 ) {
     JsBuiltIn(
         runBenchmarks = "kotlinx.benchmark.js.runBenchmarksBuiltIn",
         suiteDescriptorClass = "kotlinx.benchmark.SuiteDescriptor",
         benchmarkDescriptorClass = "kotlinx.benchmark.js.JsBenchmarkDescriptorWithNoBlackholeParameter",
         benchmarkDescriptorWithBlackholeParameterClass = "kotlinx.benchmark.js.JsBenchmarkDescriptorWithBlackholeParameter",
+        printableName = "JS"
     ),
     JsBenchmarkJs(
         runBenchmarks = "kotlinx.benchmark.js.runBenchmarks",
         suiteDescriptorClass = "kotlinx.benchmark.SuiteDescriptor",
         benchmarkDescriptorClass = "kotlinx.benchmark.js.JsBenchmarkDescriptorWithNoBlackholeParameter",
         benchmarkDescriptorWithBlackholeParameterClass = "kotlinx.benchmark.js.JsBenchmarkDescriptorWithBlackholeParameter",
+        printableName = "JS"
     ),
     NativeBuiltIn(
         runBenchmarks = "kotlinx.benchmark.native.runBenchmarks",
         suiteDescriptorClass = "kotlinx.benchmark.SuiteDescriptor",
         benchmarkDescriptorClass = "kotlinx.benchmark.BenchmarkDescriptorWithNoBlackholeParameter",
         benchmarkDescriptorWithBlackholeParameterClass = "kotlinx.benchmark.BenchmarkDescriptorWithBlackholeParameter",
+        printableName = "Native"
     ),
     WasmBuiltIn(
         runBenchmarks = "kotlinx.benchmark.wasm.runBenchmarks",
         suiteDescriptorClass = "kotlinx.benchmark.SuiteDescriptor",
         benchmarkDescriptorClass = "kotlinx.benchmark.BenchmarkDescriptorWithNoBlackholeParameter",
         benchmarkDescriptorWithBlackholeParameterClass = "kotlinx.benchmark.BenchmarkDescriptorWithBlackholeParameter",
+        printableName = "Wasm"
     )
 }
 
@@ -56,7 +61,8 @@ class SuiteSourceGenerator(
     val title: String,
     val module: ModuleDescriptor,
     val output: File,
-    val platform: Platform
+    val platform: Platform,
+    val suppressThreadsWarning: Boolean
 ) {
 
     @KotlinxBenchmarkPluginInternalApi
@@ -79,6 +85,7 @@ class SuiteSourceGenerator(
         val warmupAnnotationFQN = "kotlinx.benchmark.Warmup"
         val measureAnnotationFQN = "kotlinx.benchmark.Measurement"
         val paramAnnotationFQN = "kotlinx.benchmark.Param"
+        val threadsAnnotationFQN = "kotlinx.benchmark.Threads"
 
         val blackholeFQN = "kotlinx.benchmark.Blackhole"
 
@@ -165,6 +172,9 @@ class SuiteSourceGenerator(
         val warmupAnnotation = original.annotations.singleOrNull { it.fqName.toString() == warmupAnnotationFQN }
         val outputTimeAnnotation = original.annotations.singleOrNull { it.fqName.toString() == outputTimeAnnotationFQN }
         val modeAnnotation = original.annotations.singleOrNull { it.fqName.toString() == modeAnnotationFQN }
+        val threadsAnnotation = original.annotations.singleOrNull { it.fqName.toString() == threadsAnnotationFQN }
+
+        validateThreadsAnnotation(platform, suppressThreadsWarning, threadsAnnotation)
 
         val outputTimeUnitValue = outputTimeAnnotation?.argumentValue("value") as EnumValue?
         val outputTimeUnit = outputTimeUnitValue?.enumEntryName?.toString()
@@ -178,6 +188,8 @@ class SuiteSourceGenerator(
         val measureIterationTimeUnit = measureAnnotation?.argumentValue("timeUnit") as EnumValue?
 
         val warmupIterations = warmupAnnotation?.argumentValue("iterations")?.value as Int?
+
+        val classThreadsCount = threadsAnnotation?.argumentValue("value")?.value as Int?
 
         val iterations = measureIterations
         val iterationTime = measureIterationTime
@@ -290,6 +302,8 @@ class SuiteSourceGenerator(
                             ", mode = %T.%N", modeClass,
                             MemberName(modeClass, mode)
                         )
+                    if (classThreadsCount != null)
+                        addCode(", threads = $classThreadsCount")
                     addCode(")\n»")
                     addStatement("")
 

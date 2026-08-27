@@ -30,11 +30,12 @@ private class JsBenchmarkExecutor(name: String, @Suppress("UNUSED_PARAMETER") du
 
         benchmarks.forEach { benchmark ->
             val suite = benchmark.suite
-            val config = BenchmarkConfiguration(runnerConfiguration, suite)
+            val baseConfig = BenchmarkConfiguration(runnerConfiguration, suite)
             val isAsync = benchmark.isAsync
 
             runWithParameters(suite.parameters, runnerConfiguration.params, suite.defaultParameters) { params ->
                 val id = id(benchmark.name, params)
+                val config = if (baseConfig.threads != 1) baseConfig.withUpdatedThreadsCount(1) else baseConfig
 
                 val instance = suite.factory() // TODO: should we create instance per bench or per suite?
                 suite.parametrize(instance, params)
