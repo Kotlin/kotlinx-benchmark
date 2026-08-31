@@ -90,6 +90,17 @@ benchmark {
             iterationTime = 300 // time in ms per iteration
             iterationTimeUnit = "ms" // time in ms per iteration
             advanced("nativeGCAfterIteration", true)
+
+            @OptIn(KotlinxBenchmarkPluginExperimentalApi::class)
+            customEngine = CustomEngine(
+                name = "bash",
+                enginePath = project.layout.file(
+                    project.provider { File("/bin/bash") }
+                ),
+                engineArguments = providers.provider {
+                    listOf("-c")
+                }
+            )
         }
 
         create("csv") {

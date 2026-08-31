@@ -1,6 +1,7 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType
 import org.jetbrains.kotlin.konan.target.KonanTarget
 import org.jetbrains.kotlin.konan.target.HostManager
+import kotlinx.benchmark.gradle.CustomEngine
 
 kotlin {
     if (HostManager.hostIsLinux) linuxX64('native')
@@ -10,6 +11,19 @@ kotlin {
 }
 
 benchmark {
+    configurations {
+        if (!HostManager.hostIsMingw) {
+            create("custom") {
+                customEngine = new CustomEngine(
+                        "bash",
+                        layout.file(provider { new File("/bin/bash") }),
+                        null,
+                        provider { ["-c"] }
+                )
+            }
+        }
+    }
+
     targets {
         register("native") {
             buildType = NativeBuildType.DEBUG
