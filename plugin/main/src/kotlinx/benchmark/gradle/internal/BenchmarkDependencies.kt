@@ -1,11 +1,12 @@
 package kotlinx.benchmark.gradle.internal
 
 import kotlinx.benchmark.gradle.BenchmarksExtension
-import org.gradle.api.*
-import org.gradle.api.artifacts.*
-import org.gradle.api.attributes.*
-import org.gradle.api.attributes.Usage.*
-import org.gradle.api.model.*
+import org.gradle.api.Project
+import org.gradle.api.artifacts.Configuration
+import org.gradle.api.attributes.Usage
+import org.gradle.api.attributes.Usage.JAVA_RUNTIME
+import org.gradle.api.attributes.Usage.USAGE_ATTRIBUTE
+import org.gradle.api.model.ObjectFactory
 import org.gradle.util.GradleVersion
 
 /**
@@ -24,10 +25,19 @@ internal class BenchmarkDependencies(
             it.declarable()
 
             it.defaultDependencies { deps ->
-                deps.addLater(
-                    benchmarksExtension.kotlinCompilerVersion.map { version ->
-                        project.dependencies.create("org.jetbrains.kotlin:kotlin-compiler-embeddable:$version")
-                    }
+                deps.add(project.dependencies.create("com.squareup:kotlinpoet:${BenchmarksPluginConstants.KOTLIN_POET_VERSION}"))
+
+                deps.addAllLater(
+                    benchmarksExtension.project.providers.gradleProperty("benchmarks_ksp_version").orElse(
+                        BenchmarksPluginConstants.DEFAULT_KSP_VERSION
+                    )
+                        .map {
+                            listOf(
+                                project.dependencies.create("com.google.devtools.ksp:symbol-processing-aa-embeddable:$it"),
+                                project.dependencies.create("com.google.devtools.ksp:symbol-processing-api:$it"),
+                                project.dependencies.create("com.google.devtools.ksp:symbol-processing-common-deps:$it"),
+                            )
+                        }
                 )
             }
         }

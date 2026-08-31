@@ -1,6 +1,7 @@
 package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
+import kotlinx.benchmark.gradle.internal.generator.Platform
 import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.targets.js.dsl.*
 import org.jetbrains.kotlin.gradle.targets.js.ir.*
@@ -72,14 +73,16 @@ private fun Project.createJsBenchmarkGenerateSourceTask(
     compilationOutput: KotlinJsIrCompilation
 ) {
     val benchmarkBuildDir = benchmarkBuildDir(target)
-    task<JsSourceGeneratorTask>("${target.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}") {
+    task<SourceGeneratorTask>("${target.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}") {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Generate JS source files for '${target.name}'"
-        title = target.name
-        useBenchmarkJs = target.jsBenchmarksExecutor == JsBenchmarksExecutor.BenchmarkJs
-        inputClassesDirs = compilationOutput.output.classesDirs
-        inputDependencies = compilationOutput.runtimeDependencyFiles
-        outputResourcesDir = file("$benchmarkBuildDir/resources")
-        outputSourcesDir = file("$benchmarkBuildDir/sources")
+        title.set(target.name)
+        platform.set(if (target.jsBenchmarksExecutor == JsBenchmarksExecutor.BenchmarkJs) Platform.JsBenchmarkJs else Platform.JsBuiltIn)
+        sourceRoots.from(compilationOutput.allKotlinSourceSets.map { it.kotlin })
+        inputDependencies.from(compilationOutput.compileDependencyFiles)
+        setupOutputDirectories(benchmarkBuildDir)
+        projectDir.set(project.projectDir)
+        languageVersion.set(kotlinLanguageVersion(target))
+        apiVersion.set(kotlinApiVersion(target))
     }
 }

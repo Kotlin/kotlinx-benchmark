@@ -1,6 +1,7 @@
 package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
+import kotlinx.benchmark.gradle.internal.generator.Platform
 import org.gradle.api.Project
 import org.gradle.api.file.RegularFile
 import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
@@ -92,13 +93,16 @@ private fun Project.createWasmBenchmarkGenerateSourceTask(
     compilationOutput: KotlinJsIrCompilation
 ) {
     val benchmarkBuildDir = benchmarkBuildDir(target)
-    task<WasmSourceGeneratorTask>("${target.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}") {
+    task<SourceGeneratorTask>("${target.name}${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}") {
         group = BenchmarksPlugin.BENCHMARKS_TASK_GROUP
         description = "Generate Wasm source files for '${target.name}'"
-        title = target.name
-        inputClassesDirs = compilationOutput.output.classesDirs
-        inputDependencies = compilationOutput.runtimeDependencyFiles
-        outputResourcesDir = file("$benchmarkBuildDir/resources")
-        outputSourcesDir = file("$benchmarkBuildDir/sources")
+        title.set(target.name)
+        sourceRoots.from(compilationOutput.allKotlinSourceSets.map { it.kotlin })
+        inputDependencies.from(compilationOutput.compileDependencyFiles)
+        platform.set(Platform.WasmBuiltIn)
+        setupOutputDirectories(benchmarkBuildDir)
+        projectDir.set(project.projectDir)
+        languageVersion.set(kotlinLanguageVersion(target))
+        apiVersion.set(kotlinApiVersion(target))
     }
 }
