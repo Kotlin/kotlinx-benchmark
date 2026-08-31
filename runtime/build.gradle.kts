@@ -15,6 +15,12 @@ repositories {
     mavenCentral()
 }
 
+// Temporary workaround for the removed watchosArm32 target
+@Suppress("EXTENSION_SHADOWED_BY_MEMBER")
+fun KotlinMultiplatformExtension.watchosArm32() {
+    // Do nothing
+}
+
 kotlin {
     jvmToolchain(17)
 
