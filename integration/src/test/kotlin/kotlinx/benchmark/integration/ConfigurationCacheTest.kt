@@ -5,8 +5,7 @@ import kotlin.test.*
 
 class ConfigurationCacheTest : GradleTest() {
     private fun runConfigurationCacheTest(projectName: String, invokedTasks: List<String>, executedTasks: List<String>) {
-        val project = project(projectName, gradleVersion = GradleTestVersion.v8_0) {
-            // this test doesn't pass for K/N on Gradle 8.1 yet: https://youtrack.jetbrains.com/issue/KT-58063
+        val project = project(projectName) {
             configuration("main") {
                 warmups = 1
                 iterations = 1
