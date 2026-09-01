@@ -96,7 +96,7 @@ private fun generateBuildScript(kotlinVersion: String, jvmToolchain: Int) =
     """
     plugins {
         id 'org.jetbrains.kotlin.multiplatform' version '$kotlinVersion'
-        id 'org.jetbrains.kotlinx.benchmark' version '0.5.0-SNAPSHOT'
+        id 'org.jetbrains.kotlinx.benchmark' version '0.6.0-SNAPSHOT'
     }
     
     kotlin {
@@ -105,7 +105,7 @@ private fun generateBuildScript(kotlinVersion: String, jvmToolchain: Int) =
         sourceSets {
             commonMain {
                 dependencies {
-                    implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.5.0-SNAPSHOT")
+                    implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.6.0-SNAPSHOT")
                 }
             }
         }

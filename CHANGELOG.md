@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## 0.5.0
+
+- The plugin was rewritten to use KSP for a multiplatform benchmark sources analysis. [#395](https://github.com/Kotlin/kotlinx-benchmark/pull/395)
+  
+  This change allows removing dependency on unsupported or internal Kotlin compiler APIs.
+  The KSP is used in a standalone mode, which allows avoiding any build script updates for users.
+
 ## 0.4.19
 
 - Reverted changes related to KLib processing introduced in `0.4.18`
