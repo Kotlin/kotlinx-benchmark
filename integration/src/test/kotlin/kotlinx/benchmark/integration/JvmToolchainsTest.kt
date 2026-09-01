@@ -9,7 +9,7 @@ class JvmToolchainsTest : GradleTest() {
     fun testHigherVersionThanInGradle() {
         val runner = project(
             "kmp-with-toolchain/higher-version-than-in-gradle",
-            print = true,
+            print = false,
             GradleTestVersion.v8_0,
             jvmToolchain = 21
         )
@@ -24,7 +24,7 @@ class JvmToolchainsTest : GradleTest() {
         for (jvmToolchain in listOf(8, 11, 17, 21)) {
             val runner = project(
                 "kmp-with-toolchain/min-supported-version",
-                print = true,
+                print = false,
                 jvmToolchain = jvmToolchain
             )
             runner.runAndSucceed("benchmark") {

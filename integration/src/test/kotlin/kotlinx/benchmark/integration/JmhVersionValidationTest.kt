@@ -5,7 +5,7 @@ import kotlin.test.Test
 class JmhVersionValidationTest : GradleTest() {
     @Test
     fun verifyWarningsAboutJmhVersions() {
-        val runner = project("conflicting-jmh-versions", true) {}
+        val runner = project("conflicting-jmh-versions") {}
 
         runner.runAndSucceed("assembleBenchmarks") {
             assertOutputContains("configures several JVM benchmarking targets that use different " +

@@ -5,7 +5,7 @@ import org.junit.Test
 // Regression tests for #185
 class ProjectWithResourceFilesTest : GradleTest() {
     private fun verifyFor(target: String) {
-        project("project-with-resources", true).let { runner ->
+        project("project-with-resources").let { runner ->
             runner.runAndSucceed("${target}Benchmark")
         }
     }

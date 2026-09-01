@@ -10,7 +10,7 @@ class SourceSetAsBenchmarkTargetTest : GradleTest() {
         val targets = listOf("jvmCustom", "jsCustom")
 
         val runner =
-            project("kotlin-multiplatform-separate-source-set", true) {
+            project("kotlin-multiplatform-separate-source-set") {
                 configuration("csv") {
                     iterations = 1
                     iterationTime = 100

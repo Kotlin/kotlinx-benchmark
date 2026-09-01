@@ -5,7 +5,7 @@ import org.junit.Test
 // Regression tests for #185
 class TransitiveDependenciesResolutionTest : GradleTest() {
     private fun verifyFor(target: String) {
-        project("transitive-dependencies-resolution", true).let { runner ->
+        project("transitive-dependencies-resolution").let { runner ->
             runner.runAndSucceed("${target}Benchmark")
         }
     }
