@@ -168,7 +168,7 @@ class SuiteSourceGeneratorTest : GradleTest() {
     }
 
     private fun generateAndCompile(target: String) {
-        project("kotlin-multiplatform", true).let { runner ->
+        project("kotlin-multiplatform").let { runner ->
             runner.runAndSucceed(":${target}BenchmarkGenerate")
 
             runner.generatedDir(target, "RootBenchmark_Descriptor.kt") { descriptorFile ->

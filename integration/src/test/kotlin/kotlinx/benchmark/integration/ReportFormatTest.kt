@@ -14,7 +14,7 @@ class ReportFormatTest : GradleTest() {
         val formats = listOf(null, "json", "csv", "scsv", "text")
         val targets = listOf("js", "wasmJs", "wasmWasi", "jvm", "native")
 
-        val runner = project("kotlin-multiplatform", true) {
+        val runner = project("kotlin-multiplatform") {
             formats.forEach { format ->
                 configuration(format ?: "jsonDefault") {
                     warmups = 1
@@ -73,7 +73,7 @@ class ReportFormatTest : GradleTest() {
     @OptIn(ExperimentalSerializationApi::class)
     fun checkJsonReport(targets: List<String>, block: (String, JsonElement) -> Unit) {
         val configName = "testConfig"
-        val runner = project("kotlin-multiplatform", true) {
+        val runner = project("kotlin-multiplatform") {
             configuration(configName) {
                 warmups = 1
                 iterations = 1

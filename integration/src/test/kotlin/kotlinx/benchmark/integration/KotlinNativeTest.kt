@@ -5,7 +5,7 @@ import org.junit.Test
 class KotlinNativeTest : GradleTest() {
     @Test
     fun debugBenchmarkTest() {
-        project("kotlin-native", true).let { runner ->
+        project("kotlin-native").let { runner ->
             val target = "native"
             val capitalizedTarget = target.replaceFirstChar { it.uppercaseChar() }
 
