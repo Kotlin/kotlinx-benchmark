@@ -29,9 +29,11 @@ class Runner(
             .withProjectDir(projectDir)
             .withArguments(*(defaultArguments() + kotlinNativeVersionParameter + tasks))
             .withGradleDistribution(gradleDistributionUri)
-            .forwardStdError(System.err.bufferedWriter())
             .run {
-                if (print) forwardStdOutput(System.out.bufferedWriter()) else this
+                if (print) {
+                    forwardStdOutput(System.out.bufferedWriter())
+                        .forwardStdError(System.err.bufferedWriter())
+                } else this
             }
 
     fun run(vararg tasks: String, fn: BuildResult.() -> Unit) {
