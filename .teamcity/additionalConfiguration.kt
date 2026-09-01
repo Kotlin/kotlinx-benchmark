@@ -131,7 +131,7 @@ fun Project.buildWithKotlinMaster(platform: Platform, versionBuild: BuildType) =
             // --continue is needed to run tests for all targets even if one target fails
             gradleParams = listOf(
                 "-x kotlinStoreYarnLock",
-                "-x klibApiCheck"
+                "-x klibApiCheck",
                 "--info", "--stacktrace", "--continue",
                 "-P$versionSuffixParameter=%$versionSuffixParameter%", "-P$teamcitySuffixParameter=%$teamcitySuffixParameter%",
                 "-Pkotlin_repo_url=file://%teamcity.build.checkoutDir%/artifacts/kotlin",
