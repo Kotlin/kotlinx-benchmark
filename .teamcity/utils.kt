@@ -20,7 +20,7 @@ enum class Platform {
 fun Platform.nativeTaskPrefix(): String = when(this) {
     Platform.Windows -> "mingwX64"
     Platform.Linux -> "linuxX64"
-    Platform.MacOS -> "macosX64"
+    Platform.MacOS -> "macosArm64"
 }
 fun Platform.buildTypeName(): String = when (this) {
     Platform.Windows, Platform.Linux -> name

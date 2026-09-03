@@ -15,7 +15,6 @@ kotlin {
 
     if (HostManager.hostIsLinux) linuxX64('native')
     if (HostManager.hostIsMingw) mingwX64('native')
-    if (HostManager.host == KonanTarget.MACOS_X64.INSTANCE) macosX64('native')
     if (HostManager.host == KonanTarget.MACOS_ARM64.INSTANCE) macosArm64('native')
 
     sourceSets {

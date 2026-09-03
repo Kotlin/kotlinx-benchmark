@@ -28,8 +28,6 @@ kotlin {
     wasmWasi { nodejs() }
 
     // Native targets
-    @Suppress("DEPRECATION", "DEPRECATION_ERROR")
-    macosX64()
     macosArm64()
     linuxX64()
     mingwX64()
@@ -134,7 +132,6 @@ benchmark {
         register("wasmWasi")
 
         // Native targets
-        register("macosX64")
         register("macosArm64")
         register("linuxX64")
         register("mingwX64")

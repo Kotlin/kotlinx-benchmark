@@ -54,13 +54,6 @@ kotlin {
     @Suppress("DEPRECATION", "DEPRECATION_ERROR")
     androidNativeX64()
 
-    @Suppress("DEPRECATION", "DEPRECATION_ERROR")
-    macosX64()
-    @Suppress("DEPRECATION", "DEPRECATION_ERROR")
-    tvosX64()
-    @Suppress("DEPRECATION", "DEPRECATION_ERROR")
-    watchosX64()
-
     jvm {
         compilerOptions {
             jvmTarget = JvmTarget.JVM_1_8
