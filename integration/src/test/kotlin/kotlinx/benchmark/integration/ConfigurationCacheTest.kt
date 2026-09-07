@@ -30,8 +30,11 @@ class ConfigurationCacheTest : GradleTest() {
         }
         project.runAndSucceed(*invokedTasks.toTypedArray(), "--configuration-cache") {
             assertTasksUpToDate(executedTasks)
+            assertTasksExecuted(invokedTasks)
             assertConfigurationCacheReused()
         }
+
+        assertEquals(2, reportDirectories("main").size, "Every run must report into its own directory")
     }
 
     @Test

@@ -169,14 +169,18 @@ constructor(
     @Optional
     var workingDir: String? = null
 
-    @InputFile
+    // Written by this task before it runs the benchmark, so Gradle cannot snapshot it as an input.
+    @Internal
     lateinit var configFile: File
 
     @Input
     @Optional
     var nativeFork: String? = null
 
-    @OutputFile
+    // Not an output: the path carries the build timestamp, so a declared output would name a
+    // directory of an earlier build whenever the configuration cache entry is reused. The
+    // benchmark receives the report path through configFile.
+    @Internal
     lateinit var reportFile: File
 
     @Internal
