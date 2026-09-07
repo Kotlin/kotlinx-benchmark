@@ -8,6 +8,7 @@ import org.gradle.api.tasks.*
 import org.gradle.api.tasks.compile.*
 import org.gradle.jvm.tasks.*
 import java.io.*
+import javax.inject.Inject
 
 @KotlinxBenchmarkPluginInternalApi
 fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, compileClasspath: FileCollection) {
@@ -25,6 +26,8 @@ fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, compileCla
         javaCompiler.set(javaCompilerProvider())
     }
 
+    val archiveOperations = objects.newInstance(ArchiveOperationsHolder::class.java).archiveOperations
+
     task<Jar>(
         "${target.name}${BenchmarksPlugin.BENCHMARK_JAR_SUFFIX}",
         depends = BenchmarksPlugin.ASSEMBLE_BENCHMARKS_TASKNAME
@@ -38,20 +41,23 @@ fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, compileCla
 
         duplicatesStrategy = DuplicatesStrategy.WARN
 
-        from(project.provider {
-            compileClasspath.map {
+        // Resolve the classpath at execution time. With the configuration cache, a `Project.provider {}`
+        // is evaluated while the cache entry is stored, before compilation outputs exist.
+        from(compileClasspath.elements.map { elements ->
+            elements.mapNotNull { element ->
+                val file = element.asFile
                 when {
-                    it.isDirectory -> it
-                    it.exists() -> zipTree(it).let { tree ->
-                        if (it.name.startsWith("kotlin-stdlib-jdk")) {
-                            tree.filter { file ->
-                                !(file.toString().contains("META-INF") && file.name in listOf("module-info.class", "MANIFEST.MF"))
+                    file.isDirectory -> file
+                    file.exists() -> archiveOperations.zipTree(file).let { tree ->
+                        if (file.name.startsWith("kotlin-stdlib-jdk")) {
+                            tree.filter { entry ->
+                                !(entry.toString().contains("META-INF") && entry.name in listOf("module-info.class", "MANIFEST.MF"))
                             }
                         } else {
                             tree
                         }
                     }
-                    else -> files()
+                    else -> null
                 }
             }
         })
@@ -137,3 +143,7 @@ fun Project.createJvmBenchmarkExecTask(
         javaLauncher.set(javaLauncherProvider())
     }
 }
+
+internal open class ArchiveOperationsHolder @Inject constructor(
+    val archiveOperations: ArchiveOperations
+)

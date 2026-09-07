@@ -1,6 +1,7 @@
 package kotlinx.benchmark.integration
 
 import org.gradle.testkit.runner.BuildResult
+import java.util.jar.JarFile
 import kotlin.test.*
 
 class ConfigurationCacheTest : GradleTest() {
@@ -66,6 +67,28 @@ class ConfigurationCacheTest : GradleTest() {
         listOf(":wasmWasiBenchmark"),
         listOf(":compileKotlinWasmWasi", ":wasmWasiBenchmarkGenerate", ":compileWasmWasiBenchmarkProductionExecutableKotlinWasmWasi")
     )
+
+    @Test
+    fun testJvmBenchmarkJarConfigurationCache() {
+        val project = project("kotlin-multiplatform")
+
+        project.runAndSucceed(":jvmBenchmarkJar", "--configuration-cache") {
+            assertConfigurationCacheStored()
+        }
+        assertBenchmarkJarContains("test/CommonBenchmark.class")
+
+        project.runAndSucceed(":jvmBenchmarkJar", "--configuration-cache") {
+            assertConfigurationCacheReused()
+            assertTasksUpToDate(":jvmBenchmarkJar")
+        }
+        assertBenchmarkJarContains("test/CommonBenchmark.class")
+    }
+
+    private fun assertBenchmarkJarContains(entry: String) {
+        val jar = file("build/benchmarks/jvm/jars").listFiles().orEmpty().single { it.extension == "jar" }
+        val entries = JarFile(jar).use { jarFile -> jarFile.entries().toList().map { it.name } }
+        assertTrue(entry in entries, "Jar $jar does not contain $entry")
+    }
 }
 
 private fun BuildResult.assertConfigurationCacheStored() {
