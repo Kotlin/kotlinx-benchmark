@@ -17,7 +17,6 @@ import org.gradle.jvm.toolchain.JavaToolchainService
 import org.gradle.util.internal.VersionNumber
 import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import java.io.File
-import java.nio.file.Files
 import java.nio.file.Path
 
 @KotlinxBenchmarkPluginInternalApi
@@ -150,8 +149,7 @@ fun Task.writeParameters(
     val engineWorkingDir = config.customEngine?.workingDir
     val engineArguments = config.customEngine?.engineArguments
 
-    val configFile = Files.createTempFile("benchmarks", "txt").toFile()
-    val configFileProvider = project.layout.file(project.provider { configFile })
+    val configFile = temporaryDir.resolve("benchmarks.txt")
 
     doFirst {
         val fullConfiguration = buildString {
@@ -167,7 +165,8 @@ fun Task.writeParameters(
                 appendLine("advanced:customEngineArgument_$index=$argument")
             }
         }
-        configFileProvider.get().asFile.writeText(fullConfiguration)
+        configFile.parentFile.mkdirs()
+        configFile.writeText(fullConfiguration)
     }
     return configFile
 }

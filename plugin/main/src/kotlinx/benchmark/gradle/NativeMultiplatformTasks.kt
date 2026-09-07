@@ -107,7 +107,6 @@ private fun Project.createNativeBenchmarkCompileTask(target: NativeBenchmarkTarg
     return benchmarkCompilation
 }
 
-@OptIn(ExperimentalPathApi::class)
 @KotlinxBenchmarkPluginInternalApi
 fun Project.createNativeBenchmarkExecTask(
     config: BenchmarkConfiguration,
@@ -133,7 +132,7 @@ fun Project.createNativeBenchmarkExecTask(
         this.executable = executableFile
         this.nativeFork = config.advanced["nativeFork"] as? String
         this.workingDir = target.workingDir
-        this.benchProgressPath = createTempFile("bench", ".txt").absolutePath
+        this.benchProgressPath = temporaryDir.resolve("bench-progress.txt").absolutePath
 
         benchsDescriptionDir = project.layout.buildDirectory
             .dir("${target.extension.benchsDescriptionDir}/${config.name}")

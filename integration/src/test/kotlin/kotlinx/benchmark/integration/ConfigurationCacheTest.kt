@@ -96,6 +96,31 @@ class ConfigurationCacheTest : GradleTest() {
         assertEquals(3, reportDirectories("main").size, "Every run must report into its own directory")
     }
 
+    @Test
+    fun testConfigurationCacheRecreatesBenchmarkConfigFile() {
+        val project = project("kotlin-multiplatform") {
+            configuration("main") {
+                warmups = 1
+                iterations = 1
+                iterationTime = 100
+                iterationTimeUnit = "ms"
+                advanced("jmhIgnoreLock", true)
+            }
+        }
+
+        project.runAndSucceed(":jvmBenchmark", "--configuration-cache") {
+            assertConfigurationCacheStored()
+        }
+        val configFile = file("build/tmp/jvmBenchmark/benchmarks.txt")
+        assertTrue(configFile.exists(), "Benchmark parameters must be written into the task temporary directory")
+
+        assertTrue(file("build/tmp").deleteRecursively(), "Failed to delete build/tmp")
+        project.runAndSucceed(":jvmBenchmark", "--configuration-cache") {
+            assertConfigurationCacheReused()
+        }
+        assertTrue(configFile.exists(), "Benchmark parameters must be rewritten on a reused entry")
+    }
+
     private fun reportDirectories(configuration: String): List<File> =
         file("build/reports/benchmarks/$configuration").listFiles().orEmpty().filter { it.isDirectory }
 
