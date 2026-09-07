@@ -139,7 +139,6 @@ fun Project.createNativeBenchmarkExecTask(
             .get().asFile
 
         val report = setupReporting(target, config)
-        reportFile = report.file
         val compilationMode = target.buildType.name.lowercase().capitalized()
         configFile = writeParameters(target.name, report, traceFormat(), config, compilationMode)
 
@@ -175,12 +174,6 @@ constructor(
     @Input
     @Optional
     var nativeFork: String? = null
-
-    // Not an output: the path carries the build timestamp, so a declared output would name a
-    // directory of an earlier build whenever the configuration cache entry is reused. The
-    // benchmark receives the report path through configFile.
-    @Internal
-    lateinit var reportFile: File
 
     @Internal
     lateinit var benchsDescriptionDir: File
