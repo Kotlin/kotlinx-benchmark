@@ -3,11 +3,11 @@
 package kotlinx.benchmark.gradle
 
 import groovy.lang.Closure
+import kotlinx.benchmark.gradle.internal.BenchmarkReportLocation
+import kotlinx.benchmark.gradle.internal.BenchmarkReportTimeService
 import kotlinx.benchmark.gradle.internal.BenchmarksPluginConstants
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
-import org.gradle.api.file.Directory
-import org.gradle.api.file.RegularFile
 import org.gradle.api.plugins.*
 import org.gradle.api.provider.*
 import org.gradle.api.tasks.*
@@ -19,8 +19,6 @@ import org.jetbrains.kotlin.gradle.plugin.KotlinCompilation
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 @KotlinxBenchmarkPluginInternalApi
 @Deprecated("Unused - replace with Kotlin stdlib function", ReplaceWith("file.deleteRecursively()"))
@@ -47,21 +45,13 @@ fun Project.benchmarkBuildDir(target: BenchmarkTarget): File =
         .get()
         .asFile
 
-@KotlinxBenchmarkPluginInternalApi
-fun Project.benchmarkReportsDir(config: BenchmarkConfiguration, target: BenchmarkTarget): Provider<Directory> {
-    val ext = project.extensions.extraProperties
-    val time = if (ext.has("reportTime")) {
-        ext.get("reportTime") as LocalDateTime
-    } else {
-        LocalDateTime.now().also {
-            ext.set("reportTime", it)
-        }
-    }
-    val timestamp = time.format(DateTimeFormatter.ISO_DATE_TIME)
-    val compatibleTime = timestamp.replace(":", ".") // Windows doesn't allow ':' in path
+private const val REPORT_TIME_SERVICE_NAME = "kotlinx-benchmark-report-time"
 
-    return layout.buildDirectory.dir("${target.extension.reportsDir}/${config.name}/${compatibleTime}")
-}
+internal fun Project.benchmarkReportTimeService(): Provider<BenchmarkReportTimeService> =
+    gradle.sharedServices.registerIfAbsent(
+        REPORT_TIME_SERVICE_NAME,
+        BenchmarkReportTimeService::class.java
+    ) {}
 
 @KotlinxBenchmarkPluginInternalApi
 class KotlinClosure1<in T : Any?, V : Any>(
@@ -90,17 +80,23 @@ fun <T> Any.tryGetClass(className: String): Class<T>? {
 }
 
 @KotlinxBenchmarkPluginInternalApi
-fun Task.setupReporting(target: BenchmarkTarget, config: BenchmarkConfiguration): Provider<RegularFile> {
+fun Task.setupReporting(target: BenchmarkTarget, config: BenchmarkConfiguration): BenchmarkReportLocation {
     extensions.extraProperties.set("idea.internal.test", project.getSystemProperty("idea.active"))
-    val reportsDir = project.benchmarkReportsDir(config, target)
-    val reportFile = reportsDir.map { it.asFile.resolve("${target.name}.${config.reportFileExt()}") }
+    val reportTime = project.benchmarkReportTimeService()
+    usesService(reportTime)
+    val report = BenchmarkReportLocation(
+        reportTime,
+        project.layout.buildDirectory.get().asFile,
+        "${target.extension.reportsDir}/${config.name}",
+        "${target.name}.${config.reportFileExt()}"
+    )
     val configName = config.name
     val targetName = target.name
     doFirst {
-        reportsDir.get().asFile.mkdirs()
+        report.directory.mkdirs()
         logger.lifecycle("Running '${configName}' benchmarks for '${targetName}'")
     }
-    return project.layout.file(reportFile)
+    return report
 }
 
 @KotlinxBenchmarkPluginInternalApi
@@ -115,7 +111,7 @@ val Path.absolutePath: String get() = toAbsolutePath().toFile().invariantSeparat
 @KotlinxBenchmarkPluginInternalApi
 fun Task.writeParameters(
     name: String,
-    reportFile: Provider<RegularFile>,
+    report: BenchmarkReportLocation,
     format: String,
     config: BenchmarkConfiguration,
     compilationMode: String? = null,
@@ -160,7 +156,7 @@ fun Task.writeParameters(
     doFirst {
         val fullConfiguration = buildString {
             append(baseConfiguration)
-            appendLine("reportFile:${reportFile.get().asFile.absolutePath}")
+            appendLine("reportFile:${report.file.absolutePath}")
             if (enginePath != null) {
                 appendLine("advanced:customEngineBinaryPath=${enginePath.get().asFile.absolutePath}")
             }

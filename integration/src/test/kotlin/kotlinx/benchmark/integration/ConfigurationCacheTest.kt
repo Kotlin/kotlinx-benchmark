@@ -1,6 +1,7 @@
 package kotlinx.benchmark.integration
 
 import org.gradle.testkit.runner.BuildResult
+import java.io.File
 import java.util.jar.JarFile
 import kotlin.test.*
 
@@ -67,6 +68,33 @@ class ConfigurationCacheTest : GradleTest() {
         listOf(":wasmWasiBenchmark"),
         listOf(":compileKotlinWasmWasi", ":wasmWasiBenchmarkGenerate", ":compileWasmWasiBenchmarkProductionExecutableKotlinWasmWasi")
     )
+
+    @Test
+    fun testConfigurationCacheReportDirectoryIsNotReused() {
+        val project = project("kotlin-multiplatform") {
+            configuration("main") {
+                warmups = 1
+                iterations = 1
+                iterationTime = 100
+                iterationTimeUnit = "ms"
+                advanced("jmhIgnoreLock", true)
+            }
+        }
+
+        project.runAndSucceed(":jvmBenchmark", "--configuration-cache") {
+            assertConfigurationCacheStored()
+        }
+        repeat(2) {
+            project.runAndSucceed(":jvmBenchmark", "--configuration-cache") {
+                assertConfigurationCacheReused()
+            }
+        }
+
+        assertEquals(3, reportDirectories("main").size, "Every run must report into its own directory")
+    }
+
+    private fun reportDirectories(configuration: String): List<File> =
+        file("build/reports/benchmarks/$configuration").listFiles().orEmpty().filter { it.isDirectory }
 
     @Test
     fun testJvmBenchmarkJarConfigurationCache() {
