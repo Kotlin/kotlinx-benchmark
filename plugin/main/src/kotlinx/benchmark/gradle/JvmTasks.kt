@@ -50,8 +50,11 @@ fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, compileCla
                     file.isDirectory -> file
                     file.exists() -> archiveOperations.zipTree(file).let { tree ->
                         if (file.name.startsWith("kotlin-stdlib-jdk")) {
-                            tree.filter { entry ->
-                                !(entry.toString().contains("META-INF") && entry.name in listOf("module-info.class", "MANIFEST.MF"))
+                            // matching, not filter: FileTree.filter returns a FileCollection, and copying
+                            // one into an archive drops the package directories of every entry.
+                            tree.matching {
+                                it.exclude("META-INF/MANIFEST.MF")
+                                it.exclude("META-INF/**/module-info.class")
                             }
                         } else {
                             tree
