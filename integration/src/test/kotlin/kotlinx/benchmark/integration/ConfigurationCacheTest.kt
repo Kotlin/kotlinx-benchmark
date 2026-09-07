@@ -131,19 +131,26 @@ class ConfigurationCacheTest : GradleTest() {
         project.runAndSucceed(":jvmBenchmarkJar", "--configuration-cache") {
             assertConfigurationCacheStored()
         }
-        assertBenchmarkJarContains("test/CommonBenchmark.class")
+        assertBenchmarkJarIsComplete()
 
+        project.runAndSucceed("clean", "--configuration-cache")
         project.runAndSucceed(":jvmBenchmarkJar", "--configuration-cache") {
             assertConfigurationCacheReused()
-            assertTasksUpToDate(":jvmBenchmarkJar")
+            assertTasksExecuted(":jvmBenchmarkJar")
         }
-        assertBenchmarkJarContains("test/CommonBenchmark.class")
+        assertBenchmarkJarIsComplete()
     }
 
-    private fun assertBenchmarkJarContains(entry: String) {
-        val jar = file("build/benchmarks/jvm/jars").listFiles().orEmpty().single { it.extension == "jar" }
+    private fun assertBenchmarkJarIsComplete() {
+        val jarDir = file("build/benchmarks/jvm/jars")
+        val jar = jarDir.listFiles().orEmpty().singleOrNull { it.extension == "jar" }
+        assertNotNull(jar, "No benchmark jar in $jarDir")
+
         val entries = JarFile(jar).use { jarFile -> jarFile.entries().toList().map { it.name } }
-        assertTrue(entry in entries, "Jar $jar does not contain $entry")
+        // The module's own classes, and the dependencies the jar unpacks.
+        for (entry in listOf("test/CommonBenchmark.class", "org/openjdk/jmh/Main.class", "kotlin/Unit.class")) {
+            assertTrue(entry in entries, "Jar $jar does not contain $entry")
+        }
     }
 }
 
