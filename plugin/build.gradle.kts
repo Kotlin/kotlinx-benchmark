@@ -121,7 +121,7 @@ kotlin {
 }
 
 dependencies {
-    implementation(libs.kotlin.reflect)
+    compileOnly(libs.kotlin.reflect)
 
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.jmh.generatorBytecode) // used in worker
