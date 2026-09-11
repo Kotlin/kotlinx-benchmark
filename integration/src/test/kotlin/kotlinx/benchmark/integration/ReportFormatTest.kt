@@ -10,7 +10,7 @@ import kotlin.test.assertTrue
 class ReportFormatTest : GradleTest() {
 
     @Test
-    fun testNativeCsvReportHasNoEmptyLines() {
+    fun testNativeCsvReport() {
         val configName = "csv"
         val runner = project("kotlin-multiplatform") {
             configuration(configName) {
