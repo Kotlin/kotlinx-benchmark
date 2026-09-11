@@ -22,7 +22,8 @@ internal actual fun Double.format(precision: Int, useGrouping: Boolean): String 
 }
 
 internal actual fun String.writeFile(text: String) {
-    val file = fopen(this, "w")
+    // Preserve line endings: Windows text mode would turn CSV's CRLF into CRCRLF.
+    val file = fopen(this, "wb")
     try {
         if (fputs(text, file) == EOF) throw Error("File write error")
     } finally {
