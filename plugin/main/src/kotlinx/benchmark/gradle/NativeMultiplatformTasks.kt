@@ -107,7 +107,6 @@ private fun Project.createNativeBenchmarkCompileTask(target: NativeBenchmarkTarg
     return benchmarkCompilation
 }
 
-@OptIn(ExperimentalPathApi::class)
 @KotlinxBenchmarkPluginInternalApi
 fun Project.createNativeBenchmarkExecTask(
     config: BenchmarkConfiguration,
@@ -133,16 +132,16 @@ fun Project.createNativeBenchmarkExecTask(
         this.executable = executableFile
         this.nativeFork = config.advanced["nativeFork"] as? String
         this.workingDir = target.workingDir
-        this.benchProgressPath = createTempFile("bench", ".txt").absolutePath
+        this.benchProgressPath = temporaryDir.resolve("bench-progress.txt").absolutePath
 
         benchsDescriptionDir = project.layout.buildDirectory
             .dir("${target.extension.benchsDescriptionDir}/${config.name}")
             .get().asFile
 
-        val newReportFile = setupReporting(target, config)
-        reportFile = newReportFile.get().asFile
+        val report = setupReporting(target, config)
+        reportFile = report.file
         val compilationMode = target.buildType.name.lowercase().capitalized()
-        configFile = writeParameters(target.name, newReportFile, traceFormat(), config, compilationMode)
+        configFile = writeParameters(target.name, report, traceFormat(), config, compilationMode)
 
         doFirst {
             benchsDescriptionDir.deleteRecursively()
@@ -169,14 +168,18 @@ constructor(
     @Optional
     var workingDir: String? = null
 
-    @InputFile
+    // Written by this task before it runs the benchmark, so Gradle cannot snapshot it as an input.
+    @Internal
     lateinit var configFile: File
 
     @Input
     @Optional
     var nativeFork: String? = null
 
-    @OutputFile
+    // Not an output: the path carries the build timestamp, so a declared output would name a
+    // directory of an earlier build whenever the configuration cache entry is reused. The
+    // benchmark receives the report path through configFile.
+    @Internal
     lateinit var reportFile: File
 
     @Internal
