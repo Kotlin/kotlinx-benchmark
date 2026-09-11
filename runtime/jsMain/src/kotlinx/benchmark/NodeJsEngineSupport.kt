@@ -10,6 +10,9 @@ private external object NodeFileSystem {
     fun readFileSync(path: String, options: String): String
 }
 
+private fun nodeJsArguments(): Array<String> =
+    js("process.argv.slice(2)")
+
 private object NodeJsEngineSupport : BenchmarkEngineSupport() {
     override fun writeFile(path: String, content: String) =
         NodeFileSystem.writeFileSync(path, content)
@@ -17,10 +20,8 @@ private object NodeJsEngineSupport : BenchmarkEngineSupport() {
     override fun readFile(path: String): String =
         NodeFileSystem.readFileSync(path, "utf8")
 
-    override fun arguments(): Array<out String> {
-        val arguments = js("process.argv.slice(2).join(' ')") as String
-        return arguments.split(' ').toTypedArray()
-    }
+    override fun arguments(): Array<out String> =
+        nodeJsArguments()
 
     override fun getMeasurer(): Measurer = NodeJsMeasurer()
 

@@ -5,11 +5,11 @@ private fun format(d: Double, precision: Int, useGrouping: Boolean): String =
 
 internal actual fun Double.format(precision: Int, useGrouping: Boolean): String = format(this, precision, useGrouping)
 
-internal fun nodeJsEngineBinaryPath(): String = js("process.argv[0]")
+internal fun nodeJsEngineBinaryPath(): JsString = js("process.argv[0]")
 
-internal fun nodeJsEngineModulePath(): String = js("process.argv[1]")
+internal fun nodeJsEngineModulePath(): JsString = js("process.argv[1]")
 
-internal fun nodeJsGetDirName(filePath: String): String = path.dirname(filePath)
+internal fun nodeJsGetDirName(filePath: JsString): JsString = path.dirname(filePath)
 
 internal fun throwModuleCannotBeImported(name: String) {
     throw UnsupportedOperationException("Module $name cannot be imported in this environment")
