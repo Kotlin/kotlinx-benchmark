@@ -70,6 +70,37 @@ class ReportFormatTest : GradleTest() {
         }
     }
 
+    @Test
+    fun testNativeCsvReport() {
+        val configName = "csv"
+        val runner = project("kotlin-multiplatform") {
+            configuration(configName) {
+                warmups = 1
+                iterations = 1
+                iterationTime = 100
+                iterationTimeUnit = "ms"
+                reportFormat = "csv"
+            }
+        }
+        runner.runAndSucceed("nativeCsvBenchmark")
+
+        val report = reports(configName).single { it.name == "native.csv" }
+        // Read the file without filtering blank lines: on Windows, writing CRLF in
+        // text mode can produce CRCRLF and insert empty lines (GH-405).
+        val lines = report.readLines()
+        assertEquals(3, lines.size, "Expected a header and two benchmark rows in ${report.name}")
+        assertEquals(
+            """
+                "Benchmark","Mode","Threads","Samples","Score","Score Error (99.9%)","Unit"
+            """.trimIndent(),
+            lines.first()
+        )
+        assertEquals(
+            listOf("\"RootBenchmark.mathBenchmark\"", "\"test.CommonBenchmark.mathBenchmark\""),
+            lines.drop(1).map { it.substringBefore(',') }.sorted()
+        )
+    }
+
     @OptIn(ExperimentalSerializationApi::class)
     fun checkJsonReport(targets: List<String>, block: (String, JsonElement) -> Unit) {
         val configName = "testConfig"
