@@ -65,6 +65,9 @@ internal object BenchmarkSourceGenerator {
                 backend = if (platform == Platform.WasmBuiltIn) "WASM" else "JS"
             }.build()
         }
+        // KSP uses AA and IJ Platform API, the latter has a file size limit.
+        // Large files are silently ignored and are not analyzed. This property "unset" the limit.
+        System.setProperty("idea.max.intellisense.filesize", "-1")
 
         val exitCode = KotlinSymbolProcessing(
             kspConfig,
