@@ -66,7 +66,7 @@ internal object BenchmarkSourceGenerator {
             }.build()
         }
         // KSP uses AA and IJ Platform API, the latter has a file size limit.
-        // Large files are silently ignored and are not analyzed. This property "unset" the limit.
+        // Large files are silently ignored and are not analyzed. This property "unsets" the limit.
         System.setProperty("idea.max.intellisense.filesize", "-1")
 
         val exitCode = KotlinSymbolProcessing(
