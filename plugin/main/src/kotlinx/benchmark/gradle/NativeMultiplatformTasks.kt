@@ -107,7 +107,6 @@ private fun Project.createNativeBenchmarkCompileTask(target: NativeBenchmarkTarg
     return benchmarkCompilation
 }
 
-@OptIn(ExperimentalPathApi::class)
 @KotlinxBenchmarkPluginInternalApi
 fun Project.createNativeBenchmarkExecTask(
     config: BenchmarkConfiguration,
@@ -133,16 +132,15 @@ fun Project.createNativeBenchmarkExecTask(
         this.executable = executableFile
         this.nativeFork = config.advanced["nativeFork"] as? String
         this.workingDir = target.workingDir
-        this.benchProgressPath = createTempFile("bench", ".txt").absolutePath
+        this.benchProgressPath = temporaryDir.resolve("bench-progress.txt").absolutePath
 
         benchsDescriptionDir = project.layout.buildDirectory
             .dir("${target.extension.benchsDescriptionDir}/${config.name}")
             .get().asFile
 
-        val newReportFile = setupReporting(target, config)
-        reportFile = newReportFile.get().asFile
+        val report = setupReporting(target, config)
         val compilationMode = target.buildType.name.lowercase().capitalized()
-        configFile = writeParameters(target.name, newReportFile, traceFormat(), config, compilationMode)
+        configFile = writeParameters(target.name, report, traceFormat(), config, compilationMode)
 
         doFirst {
             benchsDescriptionDir.deleteRecursively()
@@ -169,15 +167,13 @@ constructor(
     @Optional
     var workingDir: String? = null
 
-    @InputFile
+    // Written by this task before it runs the benchmark, so Gradle cannot snapshot it as an input.
+    @Internal
     lateinit var configFile: File
 
     @Input
     @Optional
     var nativeFork: String? = null
-
-    @OutputFile
-    lateinit var reportFile: File
 
     @Internal
     lateinit var benchsDescriptionDir: File
