@@ -306,12 +306,9 @@ internal class NativeExecutor(
 
     private inline fun singleIterationLoop(
         synchronizer: MeasurementSynchronizer,
-        nativeGCAfterIteration: Boolean,
         body: () -> Unit,
     ): IterationResult {
-        if (nativeGCAfterIteration)
-            GC.collect()
-
+        synchronizer.waitForStart()
         var cycles = 0L
         val duration = measureTime {
             do {
@@ -319,9 +316,6 @@ internal class NativeExecutor(
                 cycles++
             } while (!synchronizer.shouldStop)
         }
-        if (nativeGCAfterIteration)
-            GC.collect()
-
         return IterationResult(duration, cycles)
     }
 
@@ -332,53 +326,43 @@ internal class NativeExecutor(
         iterationDuration: Duration,
         nativeGCAfterIteration: Boolean,
         workers: WorkersPool,
-    ): AggregateIterationResult {
-        val waiters = workers.numWorkers + 1 // + 1 is for the current thread
-        val synchronizer = MeasurementSynchronizer()
-        Barrier(waiters).use { barrier ->
-            val runner = when (benchmark) {
-                is BenchmarkDescriptorWithBlackholeParameter -> {
-                    {
-                        val blackhole = benchmark.blackhole
-                        val delegate = benchmark.function
-                        barrier.wait()
-                        singleIterationLoop(synchronizer, nativeGCAfterIteration) {
-                            blackhole.consume(instance.delegate(blackhole))
-                        }
+    ): AggregateIterationResult = MeasurementSynchronizer(
+        threads = workers.numWorkers + 1, // + 1 is for the current thread
+    ).use { synchronizer ->
+        val runner = when (benchmark) {
+            is BenchmarkDescriptorWithBlackholeParameter   -> {
+                {
+                    val blackhole = benchmark.blackhole
+                    val delegate = benchmark.function
+                    singleIterationLoop(synchronizer) {
+                        blackhole.consume(instance.delegate(blackhole))
                     }
                 }
+            }
 
-                is BenchmarkDescriptorWithNoBlackholeParameter -> {
-                    {
-                        val blackhole = benchmark.blackhole
-                        val delegate = benchmark.function
-                        barrier.wait()
-                        singleIterationLoop(synchronizer, nativeGCAfterIteration) {
-                            blackhole.consume(instance.delegate())
-                        }
+            is BenchmarkDescriptorWithNoBlackholeParameter -> {
+                {
+                    val blackhole = benchmark.blackhole
+                    val delegate = benchmark.function
+                    singleIterationLoop(synchronizer) {
+                        blackhole.consume(instance.delegate())
                     }
                 }
-
-                else -> error("Unexpected ${benchmark::class.simpleName}")
             }
 
-            // Submit single benchmark iteration to all workers
-            val futures = workers.submit(runner)
-
-            synchronizer.shouldStop = false
-
-            Nanosleep(iterationDuration).use { sleepWrapper ->
-                // Synchronized workers
-                barrier.wait()
-
-                sleepWrapper.sleep()
-
-                // We're done
-                synchronizer.shouldStop = true
-            }
-
-            return AggregateIterationResult(futures.map { it.result }.toTypedArray())
+            else                                           -> error("Unexpected ${benchmark::class.simpleName}")
         }
+
+        if (nativeGCAfterIteration) GC.collect()
+
+        // Submit single benchmark iteration to all workers
+        val futures = workers.submit(runner)
+
+        synchronizer.start(stopAfter = iterationDuration)
+
+        if (nativeGCAfterIteration) GC.collect()
+
+        return AggregateIterationResult(futures.map { it.result }.toTypedArray())
     }
 
     @OptIn(ObsoleteWorkersApi::class)
@@ -407,8 +391,28 @@ internal class NativeExecutor(
         }
     }
 
-    private class MeasurementSynchronizer {
+    private class MeasurementSynchronizer(threads: Int) : AutoCloseable {
+        private val barrier = Barrier(threads)
+
         @Volatile
         var shouldStop = false
+            private set
+
+        fun waitForStart() {
+            barrier.wait()
+        }
+
+        fun start(stopAfter: Duration) {
+            shouldStop = false
+            Nanosleep(stopAfter).use {
+                barrier.wait()
+                it.sleep()
+            }
+            shouldStop = true
+        }
+
+        override fun close() {
+            barrier.close()
+        }
     }
 }
