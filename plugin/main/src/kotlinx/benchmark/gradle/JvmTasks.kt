@@ -7,6 +7,7 @@ import org.gradle.api.tasks.*
 import org.gradle.api.tasks.compile.*
 import org.gradle.jvm.tasks.*
 import java.io.*
+import javax.inject.Inject
 
 internal fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, compileClasspath: FileCollection) {
     val benchmarkBuildDir = benchmarkBuildDir(target)
@@ -23,7 +24,7 @@ internal fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, c
         javaCompiler.set(javaCompilerProvider())
     }
 
-    task<Jar>(
+    task<JvmBenchmarkJar>(
         "${target.name}${BenchmarksPlugin.BENCHMARK_JAR_SUFFIX}",
         depends = BenchmarksPlugin.ASSEMBLE_BENCHMARKS_TASKNAME
     ) {
@@ -36,20 +37,22 @@ internal fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, c
 
         duplicatesStrategy = DuplicatesStrategy.WARN
 
-        from(project.provider {
-            compileClasspath.map {
+        val archiveOperations = archiveOperations
+        from(compileClasspath.elements.map { elements ->
+            elements.mapNotNull { element ->
+                val file = element.asFile
                 when {
-                    it.isDirectory -> it
-                    it.exists() -> zipTree(it).let { tree ->
-                        if (it.name.startsWith("kotlin-stdlib-jdk")) {
-                            tree.filter { file ->
-                                !(file.toString().contains("META-INF") && file.name in listOf("module-info.class", "MANIFEST.MF"))
+                    file.isDirectory -> file
+                    file.exists() -> archiveOperations.zipTree(file).let { tree ->
+                        if (file.name.startsWith("kotlin-stdlib-jdk")) {
+                            tree.filter { entry ->
+                                !(entry.toString().contains("META-INF") && entry.name in listOf("module-info.class", "MANIFEST.MF"))
                             }
                         } else {
                             tree
                         }
                     }
-                    else -> files()
+                    else -> null
                 }
             }
         })
@@ -132,3 +135,8 @@ internal fun Project.createJvmBenchmarkExecTask(
         javaLauncher.set(javaLauncherProvider())
     }
 }
+
+internal abstract class JvmBenchmarkJar @Inject constructor(
+    @get:Internal
+    val archiveOperations: ArchiveOperations
+) : Jar()
