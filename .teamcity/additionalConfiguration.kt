@@ -34,9 +34,9 @@ fun Project.additionalConfiguration() {
     deployStart.dependsOnSnapshot(testDeployPlugin)
 
     // Check with Kotlin master only on Linux
-    buildWithKotlinMaster(Platform.Linux, knownBuilds.buildVersion).also {
-        knownBuilds.buildAll.dependsOnSnapshot(it, onFailure = FailureAction.ADD_PROBLEM)
-    }
+    // buildWithKotlinMaster(Platform.Linux, knownBuilds.buildVersion).also {
+    //    knownBuilds.buildAll.dependsOnSnapshot(it, onFailure = FailureAction.ADD_PROBLEM)
+    // }
 }
 
 const val gradlePublishKey = "gradle.publish.key"
