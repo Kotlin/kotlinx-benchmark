@@ -74,6 +74,7 @@ internal class SuiteSourceGenerator(
         const val warmupAnnotationFQN = "kotlinx.benchmark.Warmup"
         const val measureAnnotationFQN = "kotlinx.benchmark.Measurement"
         const val paramAnnotationFQN = "kotlinx.benchmark.Param"
+        const val threadsAnnotationFQN = "kotlinx.benchmark.Threads"
 
         const val blackholeFQN = "kotlinx.benchmark.Blackhole"
         const val mainBenchmarkPackage = "kotlinx.benchmark.generated"
@@ -145,6 +146,7 @@ internal class SuiteSourceGenerator(
         val warmupAnnotation = original.annotationOrNull(warmupAnnotationFQN)
         val outputTimeAnnotation = original.annotationOrNull(outputTimeAnnotationFQN)
         val modeAnnotation = original.annotationOrNull(modeAnnotationFQN)
+        val threadsAnnotation = original.annotationOrNull(threadsAnnotationFQN)
 
         val outputTimeUnit = outputTimeAnnotation?.argumentValueOrNull<Any>("value")?.enumEntryName()
         val modesValue = modeAnnotation?.argumentValueOrNull<List<Any>>("value")
@@ -153,6 +155,9 @@ internal class SuiteSourceGenerator(
         val iterationTime = measureAnnotation?.argumentValueOrNull<Int>("time")
         val iterationTimeUnit = measureAnnotation?.argumentValueOrNull<Any>("timeUnit")?.enumEntryName() ?: "SECONDS"
         val warmups = warmupAnnotation?.argumentValueOrNull<Int>("iterations")
+        val classThreads = threadsAnnotation?.argumentValueOrNull<Int>("value")
+
+        validateThreads(classThreads)
 
         val benchmarkFunctions = functions
             .filter { it.hasAnnotation(benchmarkAnnotationFQN) }
@@ -262,6 +267,10 @@ internal class SuiteSourceGenerator(
                         addCode(
                             ", mode = %T.%N", modeClass,
                             MemberName(modeClass, mode)
+                        )
+                    if (classThreads != null)
+                        addCode(
+                            ", threads = %L", classThreads
                         )
                     addCode(")\n»")
                     addStatement("")
