@@ -131,6 +131,7 @@ fun Task.writeParameters(
         config.iterationTimeUnit?.let { appendLine("iterationTimeUnit:$it") }
         config.outputTimeUnit?.let { appendLine("outputTimeUnit:$it") }
         config.mode?.let { appendLine("mode:$it") }
+        config.threads?.let { appendLine("threads:$it") }
         compilationMode?.let { appendLine("compilationMode:$compilationMode") }
         appendLine("configurationName:${config.name}")
 
@@ -216,6 +217,12 @@ private fun validateConfig(config: BenchmarkConfiguration) {
     config.mode?.let {
         require(it in ValidOptions.modes) {
             "Invalid benchmark mode: '$it'. Accepted modes: ${ValidOptions.modes.joinToString(", ")} (e.g., mode = \"thrpt\")."
+        }
+    }
+
+    config.threads?.let {
+        require(it > 0 || it == -1 /*THREADS_CPU_COUNT*/) {
+            "Invalid threads: '$it'. Expected a positive integer or a special THREADS_CPU_COUNT value (e.g., threads = 4)."
         }
     }
 

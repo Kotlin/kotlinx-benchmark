@@ -31,6 +31,8 @@ class RunnerConfiguration(config: String) {
         "outputTimeUnit"
     ) { parseTimeUnit(it) }
 
+    val threads = singleValueOrNull("threads") { it.toInt() }
+
     private fun <T> singleValueOrNull(name: String, map: (String) -> T): T? =
         singleValueOrNull(name)?.let(map)
 
@@ -82,6 +84,7 @@ iterationTime: $iterationTime
 iterationTimeUnit: $iterationTimeUnit            
 outputTimeUnit: $outputTimeUnit            
 mode: $mode${compilationMode?.let { "\ncompilationMode: $it" } ?: ""}
+threads: $threads
 configurationName: $configurationName
 advanced: $advanced
 """
