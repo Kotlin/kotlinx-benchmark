@@ -8,6 +8,7 @@ import kotlin.math.*
 @Warmup(iterations = 1, time = 500, timeUnit = BenchmarkTimeUnit.MILLISECONDS)
 @OutputTimeUnit(BenchmarkTimeUnit.MILLISECONDS)
 @BenchmarkMode(Mode.Throughput)
+// <Threads_Placeholder>
 open class CommonBenchmark {
 
     var varProperty: String = "var"
