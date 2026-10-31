@@ -6,9 +6,9 @@ import kotlin.test.assertEquals
 import kotlin.time.Duration.Companion.seconds
 
 class AggregatedResultsFormattingTest {
-    private val singleThreadedResults = AggregateIterationResult(arrayOf(IterationResult(1.seconds, 100)))
+    private val singleThreadedResults = AggregateIterationResult(listOf(IterationResult(1.seconds, 100)))
     private val multiThreadedResults = AggregateIterationResult(
-        arrayOf(
+        listOf(
             IterationResult(1.seconds, 100),
             IterationResult(1.seconds, 200),
             IterationResult(1.seconds, 100),
@@ -16,7 +16,7 @@ class AggregatedResultsFormattingTest {
         )
     )
     private val unevenTimeDistribution = AggregateIterationResult(
-        arrayOf(
+        listOf(
             IterationResult(1.seconds, 100),
             IterationResult(2.seconds, 200),
         )
