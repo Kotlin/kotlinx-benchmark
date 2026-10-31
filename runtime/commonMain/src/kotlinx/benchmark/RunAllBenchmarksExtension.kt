@@ -51,7 +51,9 @@ internal interface RunAllBenchmarksExtension {
         start()
         for (benchmark in benchmarks) {
             val suite = benchmark.suite
-            val benchmarkConfiguration = BenchmarkConfiguration(runnerConfiguration, suite)
+            val benchmarkConfiguration = BenchmarkConfiguration(runnerConfiguration, suite).let {
+                if (it.threads == 1) it else it.withUpdatedThreadsCount(newThreadsValue = 1)
+            }
             runWithParameters(suite.parameters, runnerConfiguration.params, suite.defaultParameters) { parameters ->
                 val id = id(benchmark.name, parameters)
                 reporter.startBenchmark(executionName, id)
