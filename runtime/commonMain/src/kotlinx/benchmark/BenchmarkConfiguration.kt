@@ -1,6 +1,8 @@
 package kotlinx.benchmark
 
 import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.nanoseconds
 
 @KotlinxBenchmarkRuntimeInternalApi
 class BenchmarkConfiguration private constructor(
@@ -29,6 +31,8 @@ class BenchmarkConfiguration private constructor(
                 "iterationTimeUnit=${iterationTimeUnit.toText()}, outputTimeUnit=${outputTimeUnit.toText()}, " +
                 "mode=${mode.toText()}, threads=$threads, " +
                 advanced.entries.joinToString(prefix = ", ", separator = ", ") { "advanced:${it.key}=${it.value}" }
+
+    val iterationDuration: Duration = (iterationTime * iterationTimeUnit.toMultiplier()).nanoseconds
 
     fun withUpdatedThreadsCount(newThreadsValue: Int): BenchmarkConfiguration = BenchmarkConfiguration(
         iterations = iterations,
