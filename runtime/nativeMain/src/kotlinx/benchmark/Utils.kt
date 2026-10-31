@@ -70,7 +70,7 @@ internal class IterationResult(val duration: Duration, val operations: Long)
 
 // Iteration results for all threads
 internal class AggregateIterationResult(
-    val results: Array<IterationResult>
+    val results: List<IterationResult>
 )
 
 internal fun AggregateIterationResult.nanosToText(mode: Mode, unit: BenchmarkTimeUnit): String {
