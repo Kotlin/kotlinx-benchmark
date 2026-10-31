@@ -8,7 +8,9 @@ internal class SingleBenchmarkExecutor(
 ) : SuiteExecutorBase(), CommonBenchmarkExtension {
     override fun run() {
         val suiteToRun = suites.firstOrNull { it.name.replaceSpaceWithPercent() == suiteId } ?: return
-        val benchmarkConfiguration = BenchmarkConfiguration(runnerConfiguration, suiteToRun)
+        val benchmarkConfiguration = BenchmarkConfiguration(runnerConfiguration, suiteToRun).let {
+            if (it.threads == 1) it else it.withUpdatedThreadsCount(newThreadsValue = 1)
+        }
 
         runWithParameters(suiteToRun.parameters, runnerConfiguration.params, suiteToRun.defaultParameters) { parameters ->
             val benchmarkToRun = suiteToRun.benchmarks.firstOrNull { benchmark ->
