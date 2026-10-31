@@ -36,7 +36,9 @@ internal class NativeExecutor(
         start()
         benchmarks.forEach {
             val suite = it.suite
-            val config = BenchmarkConfiguration(runnerConfiguration, suite)
+            val config = BenchmarkConfiguration(runnerConfiguration, suite).let {
+                if (it.threads == 1) it else it.withUpdatedThreadsCount(newThreadsValue = 1)
+            }
             var parametersId = 0
             runWithParameters(suite.parameters, runnerConfiguration.params, suite.defaultParameters) { params ->
                 val benchmarkRunConfig = buildString {
