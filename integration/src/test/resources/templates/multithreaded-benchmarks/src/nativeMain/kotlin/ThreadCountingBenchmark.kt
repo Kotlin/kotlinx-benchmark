@@ -35,9 +35,8 @@ open class ThreadCountingBenchmark {
 
     @TearDown
     fun checkThreads() {
-        // Threads are not yet supported, so there should be only one worker
-        require(1 == map.load().size) {
-            "One worker was expected, but found ${map.load()}"
+        require(2 == map.load().size) {
+            "Two workers were expected, but found ${map.load()}"
         }
     }
 }

@@ -35,7 +35,7 @@ class MultithreadedBenchmarkTest : GradleTest() {
 
     @Test
     fun native() {
-        verifyFor("native", expectedThreads = 1 /* threads are not supported */)
+        verifyFor("native", expectedThreads = 2)
     }
 
     @Test
