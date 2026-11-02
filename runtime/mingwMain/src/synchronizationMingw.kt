@@ -27,8 +27,10 @@ internal actual class Barrier actual constructor(threads: Int) : AutoCloseable {
 
         arena = Arena()
         barrier = arena.alloc()
-        checkError(pthread_barrier_init(barrier.ptr, null, threads.convert()),
-            "pthread_barrier_init") {
+        checkError(
+            pthread_barrier_init(barrier.ptr, null, threads.convert()),
+            "pthread_barrier_init"
+        ) {
             arena.clear()
         }
     }

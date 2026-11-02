@@ -7,6 +7,7 @@ import platform.posix.usleep
 import kotlin.concurrent.atomics.AtomicInt
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
 import kotlin.concurrent.atomics.incrementAndFetch
+import kotlin.experimental.ExperimentalNativeApi
 import kotlin.native.concurrent.ObsoleteWorkersApi
 import kotlin.native.concurrent.TransferMode
 import kotlin.native.concurrent.Worker
@@ -22,10 +23,10 @@ class BarrierTest {
         val postBarrierCounter: AtomicInt
     )
 
-    @OptIn(ObsoleteWorkersApi::class, ExperimentalForeignApi::class)
+    @OptIn(ObsoleteWorkersApi::class, ExperimentalForeignApi::class, ExperimentalNativeApi::class)
     @Test
     fun testBarrier() {
-        val threads = 2
+        val threads = Platform.getAvailableProcessors()
         val testState = TestState(Barrier(threads + 1), AtomicInt(0), AtomicInt(0))
 
         val workers = Array(threads) { Worker.start() }
@@ -61,7 +62,7 @@ class BarrierTest {
     }
 
     @Test
-    fun testWaitAfterAllPariesMet() {
+    fun testWaitAfterAllPartiesMet() {
         Barrier(1).use {
             it.wait()
             assertFails { it.wait() }
