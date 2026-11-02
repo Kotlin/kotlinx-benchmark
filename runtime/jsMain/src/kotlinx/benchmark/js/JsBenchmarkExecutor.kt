@@ -9,7 +9,7 @@ import kotlin.js.Promise
 private external val benchmarkJs: dynamic
 
 @KotlinxBenchmarkRuntimeInternalApi
-fun runBenchmarks(name: String, args: Array<out String>, declareAndExecuteSuites: (SuiteExecutorBase) -> Unit) {
+public fun runBenchmarks(name: String, args: Array<out String>, declareAndExecuteSuites: (SuiteExecutorBase) -> Unit) {
     declareAndExecuteSuites(JsBenchmarkExecutor(name, args))
 }
 

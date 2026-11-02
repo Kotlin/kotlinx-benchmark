@@ -1,40 +1,37 @@
 package kotlinx.benchmark
 
-import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
+@Target(AnnotationTarget.FUNCTION)
+public expect annotation class Setup()
 
 @Target(AnnotationTarget.FUNCTION)
-expect annotation class Setup()
+public expect annotation class TearDown()
 
 @Target(AnnotationTarget.FUNCTION)
-expect annotation class TearDown()
-
-@Target(AnnotationTarget.FUNCTION)
-expect annotation class Benchmark()
+public expect annotation class Benchmark()
 
 @Target(AnnotationTarget.CLASS)
-expect annotation class State(val value: Scope)
+public expect annotation class State(val value: Scope)
 
-expect enum class Scope {
+public expect enum class Scope {
     Benchmark
 }
 
 @Target(AnnotationTarget.CLASS)
-expect annotation class BenchmarkMode(vararg val value: Mode)
+public expect annotation class BenchmarkMode(vararg val value: Mode)
 
-expect enum class Mode {
+public expect enum class Mode {
     Throughput, AverageTime
 }
 
 @Target(AnnotationTarget.CLASS)
-expect annotation class OutputTimeUnit(val value: BenchmarkTimeUnit)
+public expect annotation class OutputTimeUnit(val value: BenchmarkTimeUnit)
 
-expect enum class BenchmarkTimeUnit {
+public expect enum class BenchmarkTimeUnit {
     NANOSECONDS, MICROSECONDS, MILLISECONDS, SECONDS, MINUTES
 }
 
-@KotlinxBenchmarkRuntimeInternalApi
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
-fun BenchmarkTimeUnit.toText() = when (this) {
+internal fun BenchmarkTimeUnit.toText() = when (this) {
     BenchmarkTimeUnit.NANOSECONDS -> "ns"
     BenchmarkTimeUnit.MICROSECONDS -> "us"
     BenchmarkTimeUnit.MILLISECONDS -> "ms"
@@ -43,26 +40,22 @@ fun BenchmarkTimeUnit.toText() = when (this) {
     else -> throw UnsupportedOperationException("$this is not supported")
 }
 
-@KotlinxBenchmarkRuntimeInternalApi
-fun String.toMode() =
+internal fun String.toMode() =
     when (this) {
         "thrpt", "Throughput" -> Mode.Throughput
         "avgt", "AverageTime" -> Mode.AverageTime
         else -> throw UnsupportedOperationException("$this is not supported")
     }
 
-
-@KotlinxBenchmarkRuntimeInternalApi
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
-fun Mode.toText() = when (this) {
+internal fun Mode.toText() = when (this) {
     Mode.Throughput -> "thrpt"
     Mode.AverageTime -> "avgt"
     else -> throw UnsupportedOperationException("$this is not supported")
 }
 
-@KotlinxBenchmarkRuntimeInternalApi
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
-fun BenchmarkTimeUnit.toMultiplier() = when (this) {
+internal fun BenchmarkTimeUnit.toMultiplier() = when (this) {
     BenchmarkTimeUnit.NANOSECONDS -> 1
     BenchmarkTimeUnit.MICROSECONDS -> 1_000
     BenchmarkTimeUnit.MILLISECONDS -> 1_000_000
@@ -71,9 +64,8 @@ fun BenchmarkTimeUnit.toMultiplier() = when (this) {
     else -> throw UnsupportedOperationException("$this is not supported")
 }
 
-@KotlinxBenchmarkRuntimeInternalApi
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
-fun BenchmarkTimeUnit.toSecondsMultiplier() = when (this) {
+internal fun BenchmarkTimeUnit.toSecondsMultiplier() = when (this) {
     BenchmarkTimeUnit.NANOSECONDS -> 1.0 / 1_000_000_000
     BenchmarkTimeUnit.MICROSECONDS -> 1.0 / 1_000_000
     BenchmarkTimeUnit.MILLISECONDS -> 1.0 / 1_000
@@ -83,7 +75,7 @@ fun BenchmarkTimeUnit.toSecondsMultiplier() = when (this) {
 }
 
 @Target(AnnotationTarget.CLASS)
-expect annotation class Warmup(
+public expect annotation class Warmup(
     val iterations: Int = -1,
     val time: Int = -1,
     val timeUnit: BenchmarkTimeUnit = BenchmarkTimeUnit.SECONDS,
@@ -91,14 +83,14 @@ expect annotation class Warmup(
 )
 
 @Target(AnnotationTarget.CLASS)
-expect annotation class Measurement(
+public expect annotation class Measurement(
     val iterations: Int = -1,
     val time: Int = -1,
     val timeUnit: BenchmarkTimeUnit = BenchmarkTimeUnit.SECONDS,
     val batchSize: Int = -1
 )
 
-expect annotation class Param(vararg val value: String)
+public expect annotation class Param(vararg val value: String)
 
 /**
  * Specifies the number of threads that a benchmark function will be executed in.
@@ -106,10 +98,10 @@ expect annotation class Param(vararg val value: String)
  * [value] has to be either strictly positive (> 0), or it could be a special constant [THREADS_CPU_COUNT].
  */
 @Target(AnnotationTarget.CLASS)
-expect annotation class Threads(val value: Int)
+public expect annotation class Threads(val value: Int)
 
 /**
  * A special value for [Threads.value] forcing to run a benchmark using `N`-threads,
  * where `N` is the total number of CPUs available in runtime.
  */
-const val THREADS_CPU_COUNT: Int = -1
+public const val THREADS_CPU_COUNT: Int = -1

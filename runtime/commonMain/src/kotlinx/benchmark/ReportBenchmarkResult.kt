@@ -1,9 +1,6 @@
 package kotlinx.benchmark
 
-import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
-
-@KotlinxBenchmarkRuntimeInternalApi
-class ReportBenchmarkResult(
+internal class ReportBenchmarkResult(
     val config: BenchmarkConfiguration,
     val benchmark: BenchmarkDescriptor<*>,
     val params: Map<String, String>,

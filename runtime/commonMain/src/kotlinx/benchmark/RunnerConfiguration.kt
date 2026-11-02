@@ -1,9 +1,6 @@
 package kotlinx.benchmark
 
-import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
-
-@KotlinxBenchmarkRuntimeInternalApi
-class RunnerConfiguration(config: String) {
+internal class RunnerConfiguration(config: String) {
 
     private val values = config.lines().groupBy({
         it.substringBefore(":")

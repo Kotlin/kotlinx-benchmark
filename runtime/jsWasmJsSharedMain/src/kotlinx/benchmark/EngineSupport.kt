@@ -1,6 +1,5 @@
 package kotlinx.benchmark
 
-@KotlinxBenchmarkRuntimeExperimentalApi
 /**
  * Defines a platform-specific measurement lifecycle for benchmark execution.
  *
@@ -10,19 +9,19 @@ package kotlinx.benchmark
  *
  * The returned value is interpreted as nanoseconds.
  */
-abstract class Measurer {
+@KotlinxBenchmarkRuntimeExperimentalApi
+public abstract class Measurer {
     /** Marks the start of a measured benchmark section. */
-    abstract fun measureStart()
+    public abstract fun measureStart()
 
     /**
      * Marks the end of measurement and returns elapsed time.
      *
      * @return elapsed time in nanoseconds.
      */
-    abstract fun measureFinish(): Long
+    public abstract fun measureFinish(): Long
 }
 
-@KotlinxBenchmarkRuntimeExperimentalApi
 /**
  * Provides platform-specific runtime services required by benchmark execution.
  *
@@ -32,24 +31,24 @@ abstract class Measurer {
  * - providing a [Measurer] implementation;
  * - reporting whether the current engine is supported.
  */
-abstract class BenchmarkEngineSupport {
+@KotlinxBenchmarkRuntimeExperimentalApi
+public abstract class BenchmarkEngineSupport {
     /** Reads text content from [path]. */
-    abstract fun readFile(path: String): String
+    public abstract fun readFile(path: String): String
 
     /** Writes [content] as text to [path]. */
-    abstract fun writeFile(path: String, content: String)
+    public abstract fun writeFile(path: String, content: String)
 
     /** Returns runtime arguments passed to the benchmark process. */
-    abstract fun arguments(): Array<out String>
+    public abstract fun arguments(): Array<out String>
 
     /** Creates a measurer used for benchmark timing. */
-    abstract fun getMeasurer(): Measurer
+    public abstract fun getMeasurer(): Measurer
 
     /** Returns `true` if this engine support can run in the current environment. */
-    abstract fun isSupported(): Boolean
+    public abstract fun isSupported(): Boolean
 }
 
-@KotlinxBenchmarkRuntimeExperimentalApi
 /**
  * Replaces the current benchmark engine support with [overriddenSupport].
  *
@@ -57,7 +56,8 @@ abstract class BenchmarkEngineSupport {
  *
  * @throws IllegalStateException if [overriddenSupport] is not supported.
  */
-fun overrideEngineSupport(overriddenSupport: BenchmarkEngineSupport) {
+@KotlinxBenchmarkRuntimeExperimentalApi
+public fun overrideEngineSupport(overriddenSupport: BenchmarkEngineSupport) {
     check(overriddenSupport.isSupported()) { "Engine is not supported" }
     engineSupport = overriddenSupport
 }
