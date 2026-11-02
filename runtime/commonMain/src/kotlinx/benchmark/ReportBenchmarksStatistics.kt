@@ -2,6 +2,8 @@ package kotlinx.benchmark
 
 import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 import kotlin.math.*
+import kotlin.time.Duration
+import kotlin.time.DurationUnit
 
 @KotlinxBenchmarkRuntimeInternalApi
 class ReportBenchmarksStatistics(values: DoubleArray) {
@@ -152,3 +154,35 @@ fun Double.nanosToSample(mode: Mode, unit: BenchmarkTimeUnit): Double {
         else -> throw UnsupportedOperationException("$mode is not supported")
     }
 }
+
+// Iteration results for a single thread
+internal class IterationResult(val duration: Duration, val operations: Long)
+
+// Iteration results for all threads
+internal class AggregateIterationResult(
+    val results: Array<IterationResult>
+)
+
+internal fun AggregateIterationResult.nanosToText(mode: Mode, unit: BenchmarkTimeUnit): String {
+    return nanosToSample(mode, unit).sampleToText(mode, unit)
+}
+
+internal fun AggregateIterationResult.nanosToSample(mode: Mode, unit: BenchmarkTimeUnit): Double {
+    return when (mode) {
+        // The throughput is calculated as the number of operations the whole system (all threads) perform in a time unit.
+        Mode.Throughput -> results.sumOf { it.operations / it.duration.toDouble(unit.toDurationUnit()) }
+        // The average time is not inverse of throughput for multithreaded benchmark: it is still time per single operations.
+        Mode.AverageTime -> results.map { it.duration.toDouble(unit.toDurationUnit()) / it.operations }.average()
+        else -> throw UnsupportedOperationException("$mode is not supported")
+    }
+}
+
+internal fun BenchmarkTimeUnit.toDurationUnit(): DurationUnit = when (this) {
+    BenchmarkTimeUnit.MINUTES -> DurationUnit.MINUTES
+    BenchmarkTimeUnit.SECONDS -> DurationUnit.SECONDS
+    BenchmarkTimeUnit.MILLISECONDS -> DurationUnit.MILLISECONDS
+    BenchmarkTimeUnit.MICROSECONDS -> DurationUnit.MICROSECONDS
+    BenchmarkTimeUnit.NANOSECONDS -> DurationUnit.NANOSECONDS
+    else -> throw UnsupportedOperationException("$this is not supported")
+}
+
