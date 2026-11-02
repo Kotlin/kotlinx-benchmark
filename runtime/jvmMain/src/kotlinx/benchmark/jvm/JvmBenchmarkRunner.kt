@@ -4,6 +4,7 @@ import kotlinx.benchmark.*
 import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 import org.openjdk.jmh.infra.*
 import org.openjdk.jmh.results.*
+import org.openjdk.jmh.results.IterationResult as JmhIterationResult
 import org.openjdk.jmh.results.format.*
 import org.openjdk.jmh.runner.*
 import org.openjdk.jmh.runner.format.*
@@ -129,7 +130,7 @@ class JmhOutputFormat(private val reporter: BenchmarkProgress, private val suite
         benchParams: BenchmarkParams,
         params: IterationParams,
         iteration: Int,
-        data: IterationResult
+        data: JmhIterationResult
     ) {
         when (params.type) {
             IterationType.WARMUP -> println("Warm-up $iteration: ${data.primaryResult}")
