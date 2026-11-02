@@ -14,24 +14,18 @@ import kotlin.native.concurrent.ObsoleteWorkersApi
 @BenchmarkMode(Mode.Throughput)
 @Threads(2)
 open class ThreadCountingBenchmark {
-    val map = AtomicReference<Map<Long, AtomicLong>>(emptyMap())
+    val map = AtomicReference<Map<Long, Long>>(emptyMap())
 
     @Benchmark
     open fun doTheMath(): Unit {
-        do {
-            val prev = map.load()
-            val wid = Worker.current.id.toLong()
-            if (wid in prev) {
-                prev.getValue(wid).incrementAndFetch()
-                return
-            } else {
-                val newMap = buildMap {
-                    putAll(prev)
-                    put(wid, AtomicLong(1L))
-                }
-                if (map.compareAndSet(prev, newMap)) return
+        val wid = Worker.current.id.toLong()
+        map.fetchAndUpdate { prev ->
+            val oldCounter = prev.getOrElse(wid) { 0L }
+            buildMap {
+                putAll(prev)
+                put(wid, oldCounter + 1L)
             }
-        } while (true)
+        }
     }
 
     @Setup

@@ -3,6 +3,7 @@ package test
 import kotlinx.benchmark.*
 import kotlin.concurrent.atomics.*
 import kotlin.math.*
+
 @OptIn(ExperimentalAtomicApi::class)
 @State(Scope.Benchmark)
 @Warmup(iterations = 1, time = 1, timeUnit = BenchmarkTimeUnit.SECONDS)
@@ -11,24 +12,18 @@ import kotlin.math.*
 @BenchmarkMode(Mode.Throughput)
 @Threads(2)
 open class ThreadCountingBenchmark {
-    val map = AtomicReference<Map<Long, AtomicLong>>(emptyMap())
+    val map = AtomicReference<Map<Long, Long>>(emptyMap())
 
     @Benchmark
     open fun doTheMath() {
-        do {
-            val prev = map.load()
-            val tid = Thread.currentThread().id
-            if (tid in prev) {
-                prev.getValue(tid).incrementAndFetch()
-                return
-            } else {
-                val newMap = buildMap {
-                    putAll(prev)
-                    put(tid, AtomicLong(1L))
-                }
-                if (map.compareAndSet(prev, newMap)) return
+        val tid = Thread.currentThread().id
+        map.fetchAndUpdate { prev ->
+            val oldCounter = prev.getOrElse(tid) { 0L }
+            buildMap {
+                putAll(prev)
+                put(tid, oldCounter + 1L)
             }
-        } while (true)
+        }
     }
 
     @Setup
