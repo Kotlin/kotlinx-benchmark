@@ -26,3 +26,16 @@ internal inline fun checkError(errorCode: Int, operation: String, onError: () ->
     onError()
     throw IllegalStateException("$operation failed with error $errorCode")
 }
+
+internal inline fun checkErrorUnlockingMutexOnFailure(errorCode: Int, operation: String, unlock: () -> Int) {
+    if (errorCode == 0) return
+    unlockMutexAndThrow(IllegalStateException("$operation failed with error $errorCode"), unlock)
+}
+
+internal inline fun unlockMutexAndThrow(ex: Exception, unlock: () -> Int): Nothing {
+    val unlockError = unlock()
+    if (unlockError == 0) throw ex
+    throw IllegalStateException("Mutex unlocking failed with error $unlockError").also {
+        it.addSuppressed(ex)
+    }
+}

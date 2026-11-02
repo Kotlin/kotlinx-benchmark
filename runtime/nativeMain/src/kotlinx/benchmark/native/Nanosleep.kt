@@ -23,9 +23,10 @@ internal class Nanosleep(duration: Duration) : AutoCloseable {
     private val timespecInitial: timespec
     private val timespecRemaining: timespec
     private var alreadySlept: Boolean = false
+    private var closed: Boolean = false
 
     init {
-        require(duration.isPositive()) { "Duration must be positive, was: $duration" }
+        require(duration.isPositive() && duration.isFinite()) { "Duration must be positive and finite, was: $duration" }
         val remainingNs = duration.inWholeNanoseconds - duration.inWholeSeconds.seconds.inWholeNanoseconds
         require(remainingNs in 0..<1_000_000_000) {
             "Incorrect remainingNs value: $remainingNs"
@@ -43,12 +44,13 @@ internal class Nanosleep(duration: Duration) : AutoCloseable {
      */
     fun sleep() {
         check(!alreadySlept) { "Sleep was already called." }
+        check(!closed) { "Nanosleep instance is closed." }
         alreadySlept = true
         while (true) {
             val ret = nanosleep(timespecInitial.ptr, timespecRemaining.ptr)
             if (ret == 0) break
             val err = errno
-            if (ret == -1 && err == EINTR /* EINVAL can't happen, EFAULT can't handle */) {
+            if (ret == -1 && err == EINTR /* EINVAL can't happen, EFAULT we can't handle */) {
                 if (timespecRemaining.tv_sec.convert<Long>() == 0L &&
                     timespecRemaining.tv_nsec.convert<Long>() == 0L
                 ) break
@@ -61,6 +63,7 @@ internal class Nanosleep(duration: Duration) : AutoCloseable {
     }
 
     override fun close() {
+        closed = true
         arena.clear()
     }
 }

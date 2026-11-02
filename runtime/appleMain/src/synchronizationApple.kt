@@ -3,16 +3,7 @@ package kotlinx.benchmark.native
 import kotlinx.cinterop.Arena
 import kotlinx.cinterop.alloc
 import kotlinx.cinterop.ptr
-import platform.posix.pthread_cond_broadcast
-import platform.posix.pthread_cond_destroy
-import platform.posix.pthread_cond_init
-import platform.posix.pthread_cond_t
-import platform.posix.pthread_cond_wait
-import platform.posix.pthread_mutex_destroy
-import platform.posix.pthread_mutex_init
-import platform.posix.pthread_mutex_lock
-import platform.posix.pthread_mutex_t
-import platform.posix.pthread_mutex_unlock
+import platform.posix.*
 
 internal actual class Barrier actual constructor(private val threads: Int) : AutoCloseable {
     private val arena: Arena
@@ -22,7 +13,8 @@ internal actual class Barrier actual constructor(private val threads: Int) : Aut
     private val cond: pthread_cond_t
 
     private var closed = false
-    private var allArrived = false
+    private val allArrived: Boolean
+        get() = arrived >= threads
 
     init {
         require(threads > 0) { "threads must be greater than zero, was: $threads" }
@@ -41,18 +33,28 @@ internal actual class Barrier actual constructor(private val threads: Int) : Aut
 
     actual fun wait() {
         check(!closed) { "Barrier was closed already" }
-        check(!allArrived) { "Barrier was already reached by the required number of parties." }
 
         checkError(pthread_mutex_lock(mutex.ptr), "pthread_mutex_lock")
+        if (allArrived) {
+            unlockMutexAndThrow(
+                IllegalStateException("Barrier was already reached by the required number of parties.")
+            ) {
+                pthread_mutex_unlock(mutex.ptr)
+            }
+        }
         arrived++
         if (arrived == threads) {
             checkError(pthread_cond_broadcast(cond.ptr), "pthread_cond_broadcast")
         } else {
             while (arrived < threads) {
-                checkError(pthread_cond_wait(cond.ptr, mutex.ptr), "pthread_cond_wait")
+                checkErrorUnlockingMutexOnFailure(
+                    pthread_cond_wait(cond.ptr, mutex.ptr),
+                    "pthread_cond_wait"
+                ) {
+                    pthread_mutex_unlock(mutex.ptr)
+                }
             }
         }
-        allArrived = true
         checkError(pthread_mutex_unlock(mutex.ptr), "pthread_mutex_unlock")
     }
 

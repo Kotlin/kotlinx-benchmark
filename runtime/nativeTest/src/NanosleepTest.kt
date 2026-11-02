@@ -4,6 +4,7 @@ import kotlinx.benchmark.native.Nanosleep
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
+import kotlin.time.Duration
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
@@ -29,5 +30,18 @@ class NanosleepTest {
 
             assertFailsWith<IllegalStateException> { ns.sleep() }
         }
+    }
+
+    @Test
+    fun illegalArgumentsHandling() {
+        assertFailsWith<IllegalArgumentException> { Nanosleep(-1.seconds) }
+        assertFailsWith<IllegalArgumentException> { Nanosleep(Duration.ZERO) }
+        assertFailsWith<IllegalArgumentException> { Nanosleep(Duration.INFINITE) }
+    }
+
+    @Test
+    fun sleepAfterClose() {
+        val ns = Nanosleep(10.seconds).also { it.close() }
+        assertFailsWith<IllegalStateException> { ns.sleep() }
     }
 }
