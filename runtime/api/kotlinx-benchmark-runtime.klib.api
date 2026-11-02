@@ -1,5 +1,6 @@
 // Klib ABI Dump
 // Targets: [androidNativeArm32, androidNativeArm64, androidNativeX64, androidNativeX86, iosArm64, iosSimulatorArm64, iosX64, js, linuxArm64, linuxX64, macosArm64, macosX64, mingwX64, tvosArm64, tvosSimulatorArm64, tvosX64, wasmJs, wasmWasi, watchosArm32, watchosArm64, watchosDeviceArm64, watchosSimulatorArm64, watchosX64]
+// Alias: native => [androidNativeArm32, androidNativeArm64, androidNativeX64, androidNativeX86, iosArm64, iosSimulatorArm64, iosX64, linuxArm64, linuxX64, macosArm64, macosX64, mingwX64, tvosArm64, tvosSimulatorArm64, tvosX64, watchosArm32, watchosArm64, watchosDeviceArm64, watchosSimulatorArm64, watchosX64]
 // Rendering settings:
 // - Signature version: 2
 // - Show manifest properties: true
@@ -135,6 +136,51 @@ final class kotlinx.benchmark/Blackhole { // kotlinx.benchmark/Blackhole|null[0]
     final inline fun consume(kotlin/Long) // kotlinx.benchmark/Blackhole.consume|consume(kotlin.Long){}[0]
     final inline fun consume(kotlin/Short) // kotlinx.benchmark/Blackhole.consume|consume(kotlin.Short){}[0]
 
+    // Targets: [native]
+    final var bh // kotlinx.benchmark/Blackhole.bh|{}bh[0]
+        final fun <get-bh>(): kotlinx.benchmark/Blackhole? // kotlinx.benchmark/Blackhole.bh.<get-bh>|<get-bh>(){}[0]
+        final fun <set-bh>(kotlinx.benchmark/Blackhole?) // kotlinx.benchmark/Blackhole.bh.<set-bh>|<set-bh>(kotlinx.benchmark.Blackhole?){}[0]
+
+    // Targets: [native]
+    final var d0 // kotlinx.benchmark/Blackhole.d0|{}d0[0]
+        final fun <get-d0>(): kotlin/Double // kotlinx.benchmark/Blackhole.d0.<get-d0>|<get-d0>(){}[0]
+        final fun <set-d0>(kotlin/Double) // kotlinx.benchmark/Blackhole.d0.<set-d0>|<set-d0>(kotlin.Double){}[0]
+
+    // Targets: [native]
+    final var d1 // kotlinx.benchmark/Blackhole.d1|{}d1[0]
+        final fun <get-d1>(): kotlin/Double // kotlinx.benchmark/Blackhole.d1.<get-d1>|<get-d1>(){}[0]
+        final fun <set-d1>(kotlin/Double) // kotlinx.benchmark/Blackhole.d1.<set-d1>|<set-d1>(kotlin.Double){}[0]
+
+    // Targets: [native]
+    final var f0 // kotlinx.benchmark/Blackhole.f0|{}f0[0]
+        final fun <get-f0>(): kotlin/Float // kotlinx.benchmark/Blackhole.f0.<get-f0>|<get-f0>(){}[0]
+        final fun <set-f0>(kotlin/Float) // kotlinx.benchmark/Blackhole.f0.<set-f0>|<set-f0>(kotlin.Float){}[0]
+
+    // Targets: [native]
+    final var f1 // kotlinx.benchmark/Blackhole.f1|{}f1[0]
+        final fun <get-f1>(): kotlin/Float // kotlinx.benchmark/Blackhole.f1.<get-f1>|<get-f1>(){}[0]
+        final fun <set-f1>(kotlin/Float) // kotlinx.benchmark/Blackhole.f1.<set-f1>|<set-f1>(kotlin.Float){}[0]
+
+    // Targets: [native]
+    final var i0 // kotlinx.benchmark/Blackhole.i0|{}i0[0]
+        final fun <get-i0>(): kotlin/Int // kotlinx.benchmark/Blackhole.i0.<get-i0>|<get-i0>(){}[0]
+        final fun <set-i0>(kotlin/Int) // kotlinx.benchmark/Blackhole.i0.<set-i0>|<set-i0>(kotlin.Int){}[0]
+
+    // Targets: [native]
+    final var i1 // kotlinx.benchmark/Blackhole.i1|{}i1[0]
+        final fun <get-i1>(): kotlin/Int // kotlinx.benchmark/Blackhole.i1.<get-i1>|<get-i1>(){}[0]
+        final fun <set-i1>(kotlin/Int) // kotlinx.benchmark/Blackhole.i1.<set-i1>|<set-i1>(kotlin.Int){}[0]
+
+    // Targets: [native]
+    final var l0 // kotlinx.benchmark/Blackhole.l0|{}l0[0]
+        final fun <get-l0>(): kotlin/Long // kotlinx.benchmark/Blackhole.l0.<get-l0>|<get-l0>(){}[0]
+        final fun <set-l0>(kotlin/Long) // kotlinx.benchmark/Blackhole.l0.<set-l0>|<set-l0>(kotlin.Long){}[0]
+
+    // Targets: [native]
+    final var l1 // kotlinx.benchmark/Blackhole.l1|{}l1[0]
+        final fun <get-l1>(): kotlin/Long // kotlinx.benchmark/Blackhole.l1.<get-l1>|<get-l1>(){}[0]
+        final fun <set-l1>(kotlin/Long) // kotlinx.benchmark/Blackhole.l1.<set-l1>|<set-l1>(kotlin.Long){}[0]
+
     // Targets: [js, wasmJs, wasmWasi]
     final fun consumeAny(kotlin/Any?) // kotlinx.benchmark/Blackhole.consumeAny|consumeAny(kotlin.Any?){}[0]
 
@@ -144,15 +190,6 @@ final class kotlinx.benchmark/Blackhole { // kotlinx.benchmark/Blackhole|null[0]
 
 final const val kotlinx.benchmark/THREADS_CPU_COUNT // kotlinx.benchmark/THREADS_CPU_COUNT|{}THREADS_CPU_COUNT[0]
     final fun <get-THREADS_CPU_COUNT>(): kotlin/Int // kotlinx.benchmark/THREADS_CPU_COUNT.<get-THREADS_CPU_COUNT>|<get-THREADS_CPU_COUNT>(){}[0]
-
-// Targets: [js, wasmJs, wasmWasi]
-abstract interface kotlinx.benchmark/CommonBenchmarkExtension { // kotlinx.benchmark/CommonBenchmarkExtension|null[0]
-    abstract val executionName // kotlinx.benchmark/CommonBenchmarkExtension.executionName|{}executionName[0]
-        abstract fun <get-executionName>(): kotlin/String // kotlinx.benchmark/CommonBenchmarkExtension.executionName.<get-executionName>|<get-executionName>(){}[0]
-
-    open fun <#A1: kotlin/Any?> createIterationMeasurer(#A1, kotlinx.benchmark/BenchmarkDescriptor<#A1>, kotlinx.benchmark/BenchmarkConfiguration, kotlin/Int): kotlin/Function0<kotlin/Long> // kotlinx.benchmark/CommonBenchmarkExtension.createIterationMeasurer|createIterationMeasurer(0:0;kotlinx.benchmark.BenchmarkDescriptor<0:0>;kotlinx.benchmark.BenchmarkConfiguration;kotlin.Int){0§<kotlin.Any?>}[0]
-    open fun runBenchmark(kotlinx.benchmark/BenchmarkDescriptor<kotlin/Any?>, kotlinx.benchmark/BenchmarkConfiguration, kotlin.collections/Map<kotlin/String, kotlin/String>, kotlin/String, kotlinx.benchmark/BenchmarkProgress): kotlin/DoubleArray? // kotlinx.benchmark/CommonBenchmarkExtension.runBenchmark|runBenchmark(kotlinx.benchmark.BenchmarkDescriptor<kotlin.Any?>;kotlinx.benchmark.BenchmarkConfiguration;kotlin.collections.Map<kotlin.String,kotlin.String>;kotlin.String;kotlinx.benchmark.BenchmarkProgress){}[0]
-}
 
 // Targets: [js, wasmJs, wasmWasi]
 abstract class kotlinx.benchmark/BenchmarkEngineSupport { // kotlinx.benchmark/BenchmarkEngineSupport|null[0]

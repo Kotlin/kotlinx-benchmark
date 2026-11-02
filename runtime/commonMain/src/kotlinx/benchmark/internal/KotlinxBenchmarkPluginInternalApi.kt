@@ -16,4 +16,4 @@ package kotlinx.benchmark.internal
     level = RequiresOptIn.Level.WARNING
 )
 @MustBeDocumented
-annotation class KotlinxBenchmarkRuntimeInternalApi
+public annotation class KotlinxBenchmarkRuntimeInternalApi

@@ -1,7 +1,6 @@
 package kotlinx.benchmark.jvm
 
 import kotlinx.benchmark.*
-import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 import org.openjdk.jmh.infra.*
 import org.openjdk.jmh.results.*
 import org.openjdk.jmh.results.format.*
@@ -12,8 +11,7 @@ import java.io.*
 import java.lang.management.*
 import java.util.concurrent.*
 
-@KotlinxBenchmarkRuntimeInternalApi
-fun main(args: Array<String>) {
+internal fun main(args: Array<String>) {
     val config = RunnerConfiguration(args[0].readFile())
 
     val jmhOptions = OptionsBuilder()
@@ -81,8 +79,7 @@ fun main(args: Array<String>) {
     }
 }
 
-@KotlinxBenchmarkRuntimeInternalApi
-class JmhOutputFormat(private val reporter: BenchmarkProgress, private val suiteName: String) :
+internal class JmhOutputFormat(private val reporter: BenchmarkProgress, private val suiteName: String) :
     PrintOutputFormat(System.out) {
 
     internal var lastBenchmarkStart = ""
@@ -168,8 +165,7 @@ private fun Collection<RunResult>.toReportBenchmarkResult(): Collection<ReportBe
 }
 */
 
-@KotlinxBenchmarkRuntimeInternalApi
-abstract class PrintOutputFormat(private val out: PrintStream, private val verbose: VerboseMode = VerboseMode.NORMAL) :
+internal abstract class PrintOutputFormat(private val out: PrintStream, private val verbose: VerboseMode = VerboseMode.NORMAL) :
     OutputFormat {
 
     override fun print(s: String) {

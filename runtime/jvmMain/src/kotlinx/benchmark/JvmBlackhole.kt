@@ -1,8 +1,6 @@
 package kotlinx.benchmark
 
-import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
+public actual typealias Blackhole = org.openjdk.jmh.infra.Blackhole
 
-actual typealias Blackhole = org.openjdk.jmh.infra.Blackhole
 
-@KotlinxBenchmarkRuntimeInternalApi
-actual fun Blackhole.flush() = Unit
+internal actual fun Blackhole.flush() = Unit

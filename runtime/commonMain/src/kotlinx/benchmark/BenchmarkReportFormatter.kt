@@ -1,14 +1,11 @@
 package kotlinx.benchmark
 
-import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 import kotlin.math.*
 
-@KotlinxBenchmarkRuntimeInternalApi
-sealed class BenchmarkReportFormatter {
+internal sealed class BenchmarkReportFormatter {
     abstract fun format(results: Collection<ReportBenchmarkResult>, compilationMode: String?, configurationName: String): String
 
-    @KotlinxBenchmarkRuntimeInternalApi
-    companion object {
+    internal companion object {
         fun create(format: String): BenchmarkReportFormatter = when (format.lowercase()) {
             "json" -> JsonBenchmarkReportFormatter
             "csv" -> CsvBenchmarkReportFormatter(",")

@@ -1,11 +1,9 @@
 package kotlinx.benchmark
 
-import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.nanoseconds
 
-@KotlinxBenchmarkRuntimeInternalApi
-class BenchmarkConfiguration private constructor(
+internal class BenchmarkConfiguration private constructor(
     val iterations: Int,
     val warmups: Int,
     val iterationTime: Long,
@@ -45,8 +43,7 @@ class BenchmarkConfiguration private constructor(
         advanced = advanced
     )
 
-    @KotlinxBenchmarkRuntimeInternalApi
-    companion object {
+    internal companion object {
         fun parse(description: String): BenchmarkConfiguration {
             val parameters = description.parseMap()
             fun getParameterValue(key: String) =

@@ -1,10 +1,8 @@
 package kotlinx.benchmark
 
-import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 import kotlin.math.*
 
-@KotlinxBenchmarkRuntimeInternalApi
-class ReportBenchmarksStatistics(values: DoubleArray) {
+internal class ReportBenchmarksStatistics(values: DoubleArray) {
     val values = values.sortedArray()
     val size: Int get() = values.size
 
@@ -52,8 +50,7 @@ class ReportBenchmarksStatistics(values: DoubleArray) {
         return sqrt(variance)
     }
 
-    @KotlinxBenchmarkRuntimeInternalApi
-    companion object {
+    internal companion object {
         fun createResult(
             benchmark: BenchmarkDescriptor<*>,
             params: Map<String, String>,
@@ -98,23 +95,19 @@ class ReportBenchmarksStatistics(values: DoubleArray) {
  */
 internal expect fun Double.format(precision: Int, useGrouping: Boolean = true): String
 
-@KotlinxBenchmarkRuntimeInternalApi
-fun Double.formatSignificant(precision: Int): String {
+internal fun Double.formatSignificant(precision: Int): String {
     val d = (precision - ceil(log10(this)).toInt()).coerceAtLeast(0) // display 4 significant digits
     return format(d)
 }
 
 private val zeroThreshold = 1.0 / 10.0.pow(3) / 2 // from jmh
 
-@KotlinxBenchmarkRuntimeInternalApi
-fun Double.isNaNOrZero(): Boolean = isNaN() || isApproximateZero()
+internal fun Double.isNaNOrZero(): Boolean = isNaN() || isApproximateZero()
 
-@KotlinxBenchmarkRuntimeInternalApi
-fun Double.isApproximateZero(): Boolean = this < zeroThreshold
+internal fun Double.isApproximateZero(): Boolean = this < zeroThreshold
 
-@KotlinxBenchmarkRuntimeInternalApi
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
-fun Double.nanosToText(mode: Mode, unit: BenchmarkTimeUnit): String {
+internal fun Double.nanosToText(mode: Mode, unit: BenchmarkTimeUnit): String {
     val value = nanosToSample(mode, unit)
     return when (mode) {
         Mode.Throughput -> "${value.formatSignificant(6)} ops/${unit.toText()}"
@@ -123,17 +116,15 @@ fun Double.nanosToText(mode: Mode, unit: BenchmarkTimeUnit): String {
     }
 }
 
-@KotlinxBenchmarkRuntimeInternalApi
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
-fun unitText(mode: Mode, unit: BenchmarkTimeUnit) = when (mode) {
+internal fun unitText(mode: Mode, unit: BenchmarkTimeUnit) = when (mode) {
     Mode.Throughput -> "ops/${unit.toText()}"
     Mode.AverageTime -> "${unit.toText()}/op"
     else -> throw UnsupportedOperationException("$mode is not supported")
 }
 
-@KotlinxBenchmarkRuntimeInternalApi
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
-fun Double.sampleToText(mode: Mode, unit: BenchmarkTimeUnit): String {
+internal fun Double.sampleToText(mode: Mode, unit: BenchmarkTimeUnit): String {
     val value = this
     return when (mode) {
         Mode.Throughput -> "${value.formatSignificant(6)} ops/${unit.toText()}"
@@ -142,9 +133,8 @@ fun Double.sampleToText(mode: Mode, unit: BenchmarkTimeUnit): String {
     }
 }
 
-@KotlinxBenchmarkRuntimeInternalApi
 @Suppress("REDUNDANT_ELSE_IN_WHEN")
-fun Double.nanosToSample(mode: Mode, unit: BenchmarkTimeUnit): Double {
+internal fun Double.nanosToSample(mode: Mode, unit: BenchmarkTimeUnit): Double {
     val multiplier = unit.toMultiplier() // unit in nanos
     return when (mode) {
         Mode.Throughput -> multiplier / this

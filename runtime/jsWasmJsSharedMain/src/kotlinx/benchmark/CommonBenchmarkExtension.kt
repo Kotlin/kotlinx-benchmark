@@ -1,9 +1,9 @@
 package kotlinx.benchmark
 
-interface CommonBenchmarkExtension {
-    val executionName: String
+internal interface CommonBenchmarkExtension {
+     val executionName: String
 
-    fun runBenchmark(
+     fun runBenchmark(
         benchmark: BenchmarkDescriptor<Any?>,
         configuration: BenchmarkConfiguration,
         parameters: Map<String, String>,

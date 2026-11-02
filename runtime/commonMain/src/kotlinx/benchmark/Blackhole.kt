@@ -1,18 +1,16 @@
 package kotlinx.benchmark
 
-import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 
-expect class Blackhole {
-    fun consume(obj: Any?)
-    fun consume(bool: Boolean)
-    fun consume(c: Char)
-    fun consume(b: Byte)
-    fun consume(s: Short)
-    fun consume(i: Int)
-    fun consume(l: Long)
-    fun consume(f: Float)
-    fun consume(d: Double)
+public expect class Blackhole {
+    public fun consume(obj: Any?)
+    public fun consume(bool: Boolean)
+    public fun consume(c: Char)
+    public fun consume(b: Byte)
+    public fun consume(s: Short)
+    public fun consume(i: Int)
+    public fun consume(l: Long)
+    public fun consume(f: Float)
+    public fun consume(d: Double)
 }
 
-@KotlinxBenchmarkRuntimeInternalApi
-expect fun Blackhole.flush()
+internal expect fun Blackhole.flush()

@@ -12,7 +12,7 @@ import kotlin.time.Duration
 import kotlin.time.measureTime
 
 @KotlinxBenchmarkRuntimeInternalApi
-fun runBenchmarks(name: String, args: Array<out String>, declareAndExecuteSuites: (SuiteExecutorBase) -> Unit) {
+public fun runBenchmarks(name: String, args: Array<out String>, declareAndExecuteSuites: (SuiteExecutorBase) -> Unit) {
     declareAndExecuteSuites(NativeExecutor(name, args))
 }
 

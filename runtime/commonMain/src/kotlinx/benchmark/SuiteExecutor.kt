@@ -11,18 +11,17 @@ internal fun id(name: String, params: Map<String, String>): String {
 }
 
 @KotlinxBenchmarkRuntimeInternalApi
-abstract class SuiteExecutorBase {
-    protected val suites = mutableListOf<SuiteDescriptor<*>>()
+public abstract class SuiteExecutorBase {
+    protected val suites: MutableList<SuiteDescriptor<*>> = mutableListOf()
 
-    fun <T> suite(descriptor: SuiteDescriptor<T>) {
+    public fun <T> suite(descriptor: SuiteDescriptor<T>) {
         suites.add(descriptor)
     }
 
-    abstract fun run()
+    public abstract fun run()
 }
 
-@KotlinxBenchmarkRuntimeInternalApi
-abstract class SuiteExecutor(
+internal abstract class SuiteExecutor(
     val executionName: String,
     configPath: String,
     xmlReporter: (() -> BenchmarkProgress)? = null
@@ -71,8 +70,7 @@ abstract class SuiteExecutor(
     )
 }
 
-@KotlinxBenchmarkRuntimeInternalApi
-fun runWithParameters(
+internal fun runWithParameters(
     names: List<String>,
     parameters: Map<String, List<String>>,
     defaults: Map<String, List<String>>,
