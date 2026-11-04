@@ -35,6 +35,7 @@ constructor(
     var mode: String? = null
     var outputTimeUnit: String? = null
     var reportFormat: String? = null
+    var threads: Int? = null
 
     var includes: MutableList<String> = mutableListOf()
     var excludes: MutableList<String> = mutableListOf()

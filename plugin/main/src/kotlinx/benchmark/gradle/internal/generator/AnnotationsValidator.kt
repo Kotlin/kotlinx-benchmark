@@ -102,3 +102,11 @@ internal fun validateParameterProperties(properties: List<KSPropertyDeclaration>
         }
     }
 }
+
+internal fun validateThreads(threads: Int?) {
+    if (threads == null) return
+
+    if (threads != -1 /* THREADS_CPU_COUNT */ && threads <= 0) {
+        error("@Threads annotation accepts only positive integers and special value THREADS_CPU_COUNT, but $threads was specified.")
+    }
+}

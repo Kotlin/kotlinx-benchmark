@@ -6,6 +6,7 @@ class BenchmarkConfiguration {
     var iterationTime: Long? = null
     var iterationTimeUnit: String? = null
     var mode: String? = null
+    var threads: Int? = null
     var outputTimeUnit: String? = null
     var reportFormat: String? = null
     private var includes: MutableList<String> = mutableListOf()
@@ -37,6 +38,7 @@ class BenchmarkConfiguration {
             iterationTime = $iterationTime
             iterationTimeUnit = ${iterationTimeUnit?.escape()}
             mode = ${mode?.escape()}
+            ${if (threads != null) """threads = $threads""" else ""}
             outputTimeUnit = ${outputTimeUnit?.escape()}
             reportFormat = ${reportFormat?.escape()}
             includes = ${includes.map { it.escape() }}
