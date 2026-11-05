@@ -3,8 +3,6 @@ package kotlinx.benchmark
 import kotlinx.benchmark.native.NativeExecutor
 import kotlinx.cinterop.*
 import platform.posix.*
-import kotlin.time.Duration
-import kotlin.time.DurationUnit
 
 internal actual fun Double.format(precision: Int, useGrouping: Boolean): String {
     val longPart = toLong()
