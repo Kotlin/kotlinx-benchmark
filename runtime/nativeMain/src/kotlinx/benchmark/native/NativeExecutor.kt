@@ -138,12 +138,20 @@ internal class NativeExecutor(
         benchmarkRun: BenchmarkRun,
         currentIteration: Int? = null,
     ): DoubleArray? {
+        // TODO: extract BenchmarkConfiguration validation and reuse across all targets
         require(
             benchmarkRun.config.nativeFork == NativeFork.PerIteration && currentIteration != null
                     || benchmarkRun.config.nativeFork == NativeFork.PerBenchmark && currentIteration == null
         ) {
             "Fork must be per benchmark or current iteration number must be provided, but not both at the same time"
         }
+        val iterationDuration = benchmarkRun.config.iterationDuration
+        require(iterationDuration.isFinite() && iterationDuration.isPositive()) {
+            "iterationDuration must be finite and positive: $iterationDuration"
+        }
+        val iterations =
+            if (benchmarkRun.config.nativeFork == NativeFork.PerIteration) 1 else benchmarkRun.config.iterations
+        require(iterations >= 0) { "iterations must be greater than or equal to 0: $iterations" }
 
         val id = id(benchmark.name, benchmarkRun.parameters)
         val suite = benchmark.suite
@@ -153,8 +161,6 @@ internal class NativeExecutor(
         benchmark.suite.setup(instance)
 
         var exception: Throwable? = null
-        val iterations =
-            if (benchmarkRun.config.nativeFork == NativeFork.PerIteration) 1 else benchmarkRun.config.iterations
         val samples = WorkersPool(benchmarkRun.config.threads).use { workersPool ->
             try {
                 // Execute warmup
@@ -162,7 +168,6 @@ internal class NativeExecutor(
                     warmup(suite.name, benchmarkRun.config, instance, benchmark, workersPool)
                 }
                 val nativeGCAfterIteration = benchmarkRun.config.nativeGCAfterIteration
-                val iterationDuration = benchmarkRun.config.iterationDuration
                 DoubleArray(iterations) { iteration ->
                     val iterationResult =
                         singleIteration(instance, benchmark, iterationDuration, nativeGCAfterIteration, workersPool)
@@ -360,7 +365,23 @@ internal class NativeExecutor(
         synchronizer.start(stopAfter = iterationDuration)
         if (nativeGCAfterIteration) GC.collect()
 
-        return AggregateIterationResult(futures.map { it.result })
+        return AggregateIterationResult(futures.joinAll())
+    }
+
+    @OptIn(ObsoleteWorkersApi::class)
+    private fun <T> Iterable<Future<T>>.joinAll(): List<T> {
+        var ex: Throwable? = null
+        val results = this.mapNotNull { future ->
+            try {
+                future.result
+            } catch (e: Throwable) {
+                ex?.let { e.addSuppressed(it) }
+                ex = e
+                null
+            }
+        }
+        ex?.let { throw it }
+        return results
     }
 
     @OptIn(ObsoleteWorkersApi::class)
