@@ -47,7 +47,6 @@ open class IntelliJBenchmarkProgress : BenchmarkProgress() {
             println(ijSuiteFinish(suite, currentClass, currentStatus))
         }
         println(ijLogOutput(rootId, suite, "$suite summary:\n$summary\n"))
-        println(ijLogOutput(rootId, suite, "Analysing benchmark results is not always trivial, please refer to https://github.com/Kotlin/kotlinx-benchmark/tree/master?tab=readme-ov-file#analyzing-results for details.\n"))
         println(ijSuiteFinish(rootId, suite, suiteStatus))
         println(ijSuiteFinish("", rootId, suiteStatus))
     }
@@ -98,7 +97,6 @@ class ConsoleBenchmarkProgress : BenchmarkProgress() {
         println()
         println("$suite summary:")
         println(summary)
-        println("Analysing benchmark results is not always trivial,\nplease refer to https://github.com/Kotlin/kotlinx-benchmark/tree/master?tab=readme-ov-file#analyzing-results for details.\n")
     }
 
     override fun startBenchmark(suite: String, benchmark: String) {
