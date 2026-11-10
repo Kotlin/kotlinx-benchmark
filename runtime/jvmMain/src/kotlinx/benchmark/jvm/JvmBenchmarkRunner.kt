@@ -180,12 +180,12 @@ abstract class PrintOutputFormat(private val out: PrintStream, private val verbo
 
     override fun write(b: Int) {
         if (verbose != VerboseMode.SILENT)
-            out.print(b)
+            out.write(b)
     }
 
     override fun write(b: ByteArray) {
         if (verbose != VerboseMode.SILENT)
-            out.print(b)
+            out.write(b)
     }
 
     override fun println(s: String) {
