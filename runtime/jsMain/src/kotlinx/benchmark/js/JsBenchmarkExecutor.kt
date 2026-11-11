@@ -94,6 +94,7 @@ private class JsBenchmarkExecutor(name: String, @Suppress("UNUSED_PARAMETER") du
 
                 jsBenchmark.on("start") { _ ->
                     reporter.startBenchmark(executionName, id)
+                    reporter.output(executionName, id, "Threads: 1 (platform does not support threads)")
                     suite.setup(instance)
                 }
                 var iteration = 0

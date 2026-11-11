@@ -104,6 +104,9 @@ class JmhOutputFormat(private val reporter: BenchmarkProgress, private val suite
     override fun startBenchmark(benchParams: BenchmarkParams) {
         val benchmarkId = getBenchmarkId(benchParams)
         reporter.startBenchmark(suiteName, benchmarkId)
+        reporter.output(suiteName, benchmarkId,
+            "Threads: ${benchParams.threads} (available CPU cores: ${Runtime.getRuntime().availableProcessors()})"
+        )
         lastBenchmarkStart = benchmarkId
     }
 
