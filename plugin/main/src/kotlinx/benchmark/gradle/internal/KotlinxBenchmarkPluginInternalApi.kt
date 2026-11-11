@@ -18,4 +18,4 @@ import kotlin.RequiresOptIn.Level.WARNING
     level = WARNING,
 )
 @MustBeDocumented
-annotation class KotlinxBenchmarkPluginInternalApi
+public annotation class KotlinxBenchmarkPluginInternalApi

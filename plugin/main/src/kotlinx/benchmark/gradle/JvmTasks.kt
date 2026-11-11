@@ -1,6 +1,5 @@
 package kotlinx.benchmark.gradle
 
-import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
 import org.gradle.api.artifacts.*
 import org.gradle.api.file.*
@@ -9,8 +8,7 @@ import org.gradle.api.tasks.compile.*
 import org.gradle.jvm.tasks.*
 import java.io.*
 
-@KotlinxBenchmarkPluginInternalApi
-fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, compileClasspath: FileCollection) {
+internal fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, compileClasspath: FileCollection) {
     val benchmarkBuildDir = benchmarkBuildDir(target)
     val compileTask = task<JavaCompile>(
         "${target.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}",
@@ -63,8 +61,7 @@ fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, compileCla
     }
 }
 
-@KotlinxBenchmarkPluginInternalApi
-fun Project.createJmhGenerationRuntimeConfiguration(name: String, jmhVersion: String): Configuration {
+internal fun Project.createJmhGenerationRuntimeConfiguration(name: String, jmhVersion: String): Configuration {
     // This configuration defines classpath for JMH generator, it should have everything available via reflection
     return configurations.create("$name${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}CP").apply {
         isVisible = false
@@ -77,8 +74,7 @@ fun Project.createJmhGenerationRuntimeConfiguration(name: String, jmhVersion: St
     }
 }
 
-@KotlinxBenchmarkPluginInternalApi
-fun Project.createJvmBenchmarkGenerateSourceTask(
+internal fun Project.createJvmBenchmarkGenerateSourceTask(
     target: BenchmarkTarget,
     workerClasspath: FileCollection,
     compileClasspath: FileCollection,
@@ -99,8 +95,7 @@ fun Project.createJvmBenchmarkGenerateSourceTask(
     }
 }
 
-@KotlinxBenchmarkPluginInternalApi
-fun Project.createJvmBenchmarkExecTask(
+internal fun Project.createJvmBenchmarkExecTask(
     config: BenchmarkConfiguration,
     target: JvmBenchmarkTarget,
     runtimeClasspath: FileCollection

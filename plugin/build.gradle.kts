@@ -4,6 +4,7 @@ import kotlinx.team.infra.InfraExtension
 import org.gradle.plugin.compatibility.compatibility
 import org.jetbrains.kotlin.buildtools.api.ExperimentalBuildToolsApi
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
+import org.jetbrains.kotlin.gradle.dsl.ExplicitApiMode
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 buildscript {
@@ -100,6 +101,8 @@ kotlin {
 
     @OptIn(ExperimentalBuildToolsApi::class, ExperimentalKotlinGradlePluginApi::class)
     compilerVersion = libs.versions.kotlin.`for`.gradle.plugin.get()
+
+    explicitApi = ExplicitApiMode.Strict
 
     compilerOptions {
         jvmTarget = JvmTarget.JVM_1_8

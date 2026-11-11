@@ -1,13 +1,11 @@
 package kotlinx.benchmark.gradle
 
-import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import kotlinx.benchmark.gradle.internal.generator.Platform
 import org.gradle.api.*
 import org.jetbrains.kotlin.gradle.targets.js.dsl.*
 import org.jetbrains.kotlin.gradle.targets.js.ir.*
 
-@KotlinxBenchmarkPluginInternalApi
-fun Project.processJsCompilation(target: JsBenchmarkTarget) {
+internal fun Project.processJsCompilation(target: JsBenchmarkTarget) {
     project.logger.info("Configuring benchmarks for '${target.name}' using Kotlin/JS")
     val compilation = target.compilation
 
