@@ -88,7 +88,7 @@ internal class NativeExecutor(
         benchmark.suite.setup(instance)
 
         if (iteration.toInt() == 0) {
-            reporter.startBenchmark(executionName, id)
+            reportBenchmarkStart(id, benchmarkRun)
         }
 
         WorkersPool(benchmarkRun.config.threads).use { workersPool ->
@@ -117,7 +117,7 @@ internal class NativeExecutor(
         val benchmarkRun = parseBenchmarkRun(configFileName)
         val benchmark = benchmarks.getBenchmark(benchmarkRun.benchmarkName)
         val id = id(benchmark.name, benchmarkRun.parameters)
-        reporter.startBenchmark(executionName, id)
+        reportBenchmarkStart(id, benchmarkRun)
         val samples = run(benchmark, benchmarkRun)
         if (samples != null) {
             resultsFile.writeFile(samples.joinToString())
@@ -166,6 +166,10 @@ internal class NativeExecutor(
                 // Execute warmup
                 if (benchmarkRun.config.nativeFork == NativeFork.PerBenchmark) {
                     warmup(suite.name, benchmarkRun.config, instance, benchmark, workersPool)
+                } else if (benchmarkRun.config.warmups == 0 && currentIteration == 0) {
+                    // In per-iteration fork node, benchmark start is reported on the first warmup iteration.
+                    // If there were no warmup iterations, we have to report the start here.
+                    reportBenchmarkStart(id, benchmarkRun)
                 }
                 val nativeGCAfterIteration = benchmarkRun.config.nativeGCAfterIteration
                 DoubleArray(iterations) { iteration ->
@@ -366,6 +370,16 @@ internal class NativeExecutor(
         if (nativeGCAfterIteration) GC.collect()
 
         return AggregateIterationResult(futures.joinAll())
+    }
+
+    private fun reportBenchmarkStart(benchmark: String, runConfig: BenchmarkRun) {
+        reporter.startBenchmark(executionName, benchmark)
+        reporter.output(executionName, benchmark,
+            "Threads: ${runConfig.config.threads} (available CPU cores: ${Platform.getAvailableProcessors()})"
+        )
+        reporter.output(executionName, benchmark,
+            "GC mode: ${if (runConfig.config.nativeGCAfterIteration) "after each iteration" else "default"}"
+        )
     }
 
     @OptIn(ObsoleteWorkersApi::class)

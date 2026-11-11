@@ -57,6 +57,7 @@ internal interface RunAllBenchmarksExtension {
             runWithParameters(suite.parameters, runnerConfiguration.params, suite.defaultParameters) { parameters ->
                 val id = id(benchmark.name, parameters)
                 reporter.startBenchmark(executionName, id)
+                reporter.output(executionName, id, "Threads: 1 (platform does not support threads)")
                 val samples = runBenchmark(benchmark, benchmarkConfiguration, parameters, id, reporter)
                 if (samples != null) {
                     saveBenchmarkResults(benchmark, benchmarkConfiguration, parameters, id, samples)
