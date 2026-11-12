@@ -14,4 +14,32 @@ class KotlinNativeTest : GradleTest() {
             runner.runAndSucceed(":${capitalizedTarget}Benchmark")
         }
     }
+
+    @Test
+    fun perIterationForkMode() {
+        project("per-iteration-fork-mode").let { runner ->
+            runner.runAndSucceed(":nativePerIterationBenchmark") {
+                assertOutputContains("test.CommonBenchmark.mathBenchmark")
+                repeat(2) {
+                    assertOutputContains("Warm-up #${it}")
+                }
+                repeat(3) {
+                    assertOutputContains("Iteration #${it}")
+                }
+            }
+        }
+    }
+
+    @Test
+    fun perIterationForkModeWithoutWarmup() {
+        project("per-iteration-fork-mode").let { runner ->
+            runner.runAndSucceed(":nativeNoWarmupBenchmark") {
+                assertOutputContains("test.CommonBenchmark.mathBenchmark")
+                assertOutputDoesNotContain("Warm-up #")
+                repeat(3) {
+                    assertOutputContains("Iteration #${it}")
+                }
+            }
+        }
+    }
 }
