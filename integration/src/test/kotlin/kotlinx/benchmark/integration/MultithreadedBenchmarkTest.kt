@@ -27,7 +27,9 @@ class MultithreadedBenchmarkTest : GradleTest() {
             add("${target}Benchmark")
         }
 
-        runner.runAndSucceed(*args.toTypedArray())
+        runner.runAndSucceed(*args.toTypedArray()) {
+            assertOutputContains("Threads: $expectedThreads")
+        }
 
         val report = reports("main").single { it.name == "$target.json" }.toPath().readText()
         assertContains(report, """"threads" : $expectedThreads""")
