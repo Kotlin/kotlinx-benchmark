@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## 0.6.0-rc
+
+- Added symmetric multithreaded benchmarks support for Native and JVM targets
+
+  Currently, only class-level `@Thread` annotation and corresponding DSL configuration options are supported.   
+  On JS and Wasm targets, both annotation and DSL configuration options are ignored and only a single thread is used.
+  Benchmark state is always shared between all threads.
+  
+- Fixed CVS reports formatting on Windows [#405](https://github.com/Kotlin/kotlinx-benchmark/issues/405)
+- Fixed benchmarks output formatting on JVM [#413](https://github.com/Kotlin/kotlinx-benchmark/issues/413), [#354](https://github.com/Kotlin/kotlinx-benchmark/issues/354)
+
 ## 0.5.0
 
 - The plugin was rewritten to use KSP for a multiplatform benchmark sources analysis. [#395](https://github.com/Kotlin/kotlinx-benchmark/pull/395)
