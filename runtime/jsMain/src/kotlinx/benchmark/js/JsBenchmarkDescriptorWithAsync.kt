@@ -5,14 +5,14 @@ import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 import kotlin.js.*
 
 @KotlinxBenchmarkRuntimeInternalApi
-class JsBenchmarkDescriptorWithNoBlackholeParameter<T>(
+public class JsBenchmarkDescriptorWithNoBlackholeParameter<T>(
     name: String,
     suite: SuiteDescriptor<T>,
     blackhole: Blackhole,
     function: T.() -> Any?,
-    val async: Boolean = false
+    public val async: Boolean = false
 ) : BenchmarkDescriptorWithNoBlackholeParameter<T>(name, suite, blackhole, function) {
-    constructor(
+    public constructor(
         name: String,
         suite: SuiteDescriptor<T>,
         blackhole: Blackhole,
@@ -21,14 +21,14 @@ class JsBenchmarkDescriptorWithNoBlackholeParameter<T>(
 }
 
 @KotlinxBenchmarkRuntimeInternalApi
-class JsBenchmarkDescriptorWithBlackholeParameter<T>(
+public class JsBenchmarkDescriptorWithBlackholeParameter<T>(
     name: String,
     suite: SuiteDescriptor<T>,
     blackhole: Blackhole,
     function: T.(Blackhole) -> Any?,
-    val async: Boolean = false
+    public val async: Boolean = false
 ) : BenchmarkDescriptorWithBlackholeParameter<T>(name, suite, blackhole, function) {
-    constructor(
+    public constructor(
         name: String,
         suite: SuiteDescriptor<T>,
         blackhole: Blackhole,

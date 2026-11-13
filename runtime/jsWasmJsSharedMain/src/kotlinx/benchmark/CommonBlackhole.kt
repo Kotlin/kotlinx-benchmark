@@ -1,7 +1,5 @@
 package kotlinx.benchmark
 
-import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
-
 private const val MAGIC_SIZE: Int = 13
 
 @Suppress("NOTHING_TO_INLINE")
@@ -29,25 +27,24 @@ public actual class Blackhole {
         println("Consumed blackhole value: $sums")
     }
 
-    actual inline fun consume(obj: Any?) = consumeAny(obj)
+    public actual inline fun consume(obj: Any?): Unit = consumeAny(obj)
 
-    actual inline fun consume(bool: Boolean) = consumeInt(bool.hashCode())
+    public actual inline fun consume(bool: Boolean): Unit = consumeInt(bool.hashCode())
 
-    actual inline fun consume(c: Char) = consumeInt(c.hashCode())
+    public actual inline fun consume(c: Char): Unit = consumeInt(c.hashCode())
 
-    actual inline fun consume(b: Byte) = consumeInt(b.hashCode())
+    public actual inline fun consume(b: Byte): Unit = consumeInt(b.hashCode())
 
-    actual inline fun consume(s: Short) = consumeInt(s.hashCode())
+    public actual inline fun consume(s: Short): Unit = consumeInt(s.hashCode())
 
-    actual inline fun consume(i: Int) = consumeInt(i.hashCode())
+    public actual inline fun consume(i: Int): Unit = consumeInt(i.hashCode())
 
-    actual inline fun consume(l: Long) = consumeInt(l.hashCode())
+    public actual inline fun consume(l: Long): Unit = consumeInt(l.hashCode())
 
-    actual inline fun consume(f: Float) = consumeInt(f.hashCode())
+    public actual inline fun consume(f: Float): Unit = consumeInt(f.hashCode())
 
-    actual inline fun consume(d: Double) = consumeInt(d.hashCode())
+    public actual inline fun consume(d: Double): Unit = consumeInt(d.hashCode())
 }
 
 
-@KotlinxBenchmarkRuntimeInternalApi
-actual fun Blackhole.flush() = flushMe()
+internal actual fun Blackhole.flush() = flushMe()

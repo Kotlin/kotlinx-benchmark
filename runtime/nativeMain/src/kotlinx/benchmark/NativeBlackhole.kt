@@ -1,65 +1,65 @@
 package kotlinx.benchmark
 
-import kotlinx.benchmark.internal.KotlinxBenchmarkRuntimeInternalApi
 import kotlinx.cinterop.toByte
 import kotlin.concurrent.Volatile
 import kotlin.native.identityHashCode
 import kotlin.random.Random
 
-@OptIn(ExperimentalStdlibApi::class)
 @Suppress("NOTHING_TO_INLINE")
-actual class Blackhole {
-    @KotlinxBenchmarkRuntimeInternalApi
+public actual class Blackhole {
     @Volatile
-    var i0: Int = Random.nextInt()
-    @KotlinxBenchmarkRuntimeInternalApi
-    var i1 = i0 + 1
-
-    @KotlinxBenchmarkRuntimeInternalApi
-    @Volatile
-    var l0 = Random.nextLong()
-    @KotlinxBenchmarkRuntimeInternalApi
-    var l1 = l0 + 1L
-
-    @KotlinxBenchmarkRuntimeInternalApi
-    @Volatile
-    var f0 = Random.nextFloat()
-    @KotlinxBenchmarkRuntimeInternalApi
-    var f1 = f0 + 1.0f
+    @PublishedApi
+    internal var i0: Int = Random.nextInt()
+    @PublishedApi
+    internal var i1: Int = i0 + 1
 
     @Volatile
-    @KotlinxBenchmarkRuntimeInternalApi
-    var d0 = Random.nextDouble()
-    @KotlinxBenchmarkRuntimeInternalApi
-    var d1 = d0 + 1.0
+    @PublishedApi
+    internal var l0: Long = Random.nextLong()
+    @PublishedApi
+    internal var l1: Long = l0 + 1L
 
-    @KotlinxBenchmarkRuntimeInternalApi
     @Volatile
-    var bh: Blackhole? = null
+    @PublishedApi
+    internal var f0: Float = Random.nextFloat()
 
-    actual inline fun consume(obj: Any?) {
+    @PublishedApi
+    internal var f1: Float = f0 + 1.0f
+
+    @Volatile
+    @PublishedApi
+    internal var d0: Double = Random.nextDouble()
+
+    @PublishedApi
+    internal var d1: Double = d0 + 1.0
+
+    @Volatile
+    @PublishedApi
+    internal var bh: Blackhole? = null
+
+    public actual inline fun consume(obj: Any?) {
         // identityHashCode is an intrinsic function
         // resolved into getting an object address, so there will be no call.
         consume(obj.identityHashCode())
     }
 
-    actual inline fun consume(bool: Boolean) {
+    public actual inline fun consume(bool: Boolean) {
         consume(bool.toByte())
     }
 
-    actual inline fun consume(c: Char) {
+    public actual inline fun consume(c: Char) {
         consume(c.code)
     }
 
-    actual inline fun consume(b: Byte) {
+    public actual inline fun consume(b: Byte) {
         consume(b.toInt())
     }
 
-    actual inline fun consume(s: Short) {
-       consume(s.toInt())
+    public actual inline fun consume(s: Short) {
+        consume(s.toInt())
     }
 
-    actual inline fun consume(i: Int) {
+    public actual inline fun consume(i: Int) {
         // To ensure that i's value will not be removed by optimizations like dead code elimination,
         // its value is compares with two value i0 and i1, such that i1 = i0 + 1.
         // As long as i0 and i1 are different, the following condition should not ever be met
@@ -79,24 +79,23 @@ actual class Blackhole {
         }
     }
 
-    actual inline fun consume(l: Long) {
+    public actual inline fun consume(l: Long) {
         if ((l0 == l) && (l1 == l)) {
             bh!!.l0 = l
         }
     }
 
-    actual inline fun consume(f: Float) {
+    public actual inline fun consume(f: Float) {
         if ((f0 == f) && (f1 == f)) {
             bh!!.f0 = f
         }
     }
 
-    actual inline fun consume(d: Double) {
+    public actual inline fun consume(d: Double) {
         if ((d0 == d) && (d1 == d)) {
             bh!!.d0 = d
         }
     }
 }
 
-@KotlinxBenchmarkRuntimeInternalApi
-actual fun Blackhole.flush() = Unit
+internal actual fun Blackhole.flush() = Unit

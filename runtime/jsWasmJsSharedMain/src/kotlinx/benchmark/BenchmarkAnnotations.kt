@@ -1,38 +1,38 @@
 package kotlinx.benchmark
 
-actual enum class Scope {
+public actual enum class Scope {
     Benchmark
 }
 
 @Target(AnnotationTarget.CLASS)
-actual annotation class State(actual val value: Scope)
+public actual annotation class State(actual val value: Scope)
 
 @Target(AnnotationTarget.FUNCTION)
-actual annotation class Setup
+public actual annotation class Setup
 
 @Target(AnnotationTarget.FUNCTION)
-actual annotation class TearDown
+public actual annotation class TearDown
 
 @Target(AnnotationTarget.FUNCTION)
-actual annotation class Benchmark
+public actual annotation class Benchmark
 
 
 @Target(AnnotationTarget.CLASS)
-actual annotation class BenchmarkMode(actual vararg val value: Mode)
+public actual annotation class BenchmarkMode(actual vararg val value: Mode)
 
-actual enum class Mode {
+public actual enum class Mode {
     Throughput, AverageTime
 }
 
 @Target(AnnotationTarget.CLASS)
-actual annotation class OutputTimeUnit(actual val value: BenchmarkTimeUnit)
+public actual annotation class OutputTimeUnit(actual val value: BenchmarkTimeUnit)
 
-actual enum class BenchmarkTimeUnit {
+public actual enum class BenchmarkTimeUnit {
     NANOSECONDS, MICROSECONDS, MILLISECONDS, SECONDS, MINUTES
 }
 
 @Target(AnnotationTarget.CLASS)
-actual annotation class Warmup(
+public actual annotation class Warmup(
     actual val iterations: Int,
     actual val time: Int,
     actual val timeUnit: BenchmarkTimeUnit,
@@ -40,14 +40,14 @@ actual annotation class Warmup(
 )
 
 @Target(AnnotationTarget.CLASS)
-actual annotation class Measurement(
+public actual annotation class Measurement(
     actual val iterations: Int,
     actual val time: Int,
     actual val timeUnit: BenchmarkTimeUnit,
     actual val batchSize: Int
 )
 
-actual annotation class Param(actual vararg val value: String)
+public actual annotation class Param(actual vararg val value: String)
 
 @Target(AnnotationTarget.CLASS)
-actual annotation class Threads(actual val value: Int)
+public actual annotation class Threads(actual val value: Int)
