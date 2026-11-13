@@ -1,6 +1,5 @@
 package kotlinx.benchmark.gradle
 
-import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import kotlinx.benchmark.gradle.internal.generator.Platform
 import org.gradle.api.Project
 import org.gradle.api.file.RegularFile
@@ -23,8 +22,7 @@ private fun patchWasiMjsFile(wasiMjsFile: RegularFile) {
     wasiMjsFile.asFile.writeText(patchedContent)
 }
 
-@KotlinxBenchmarkPluginInternalApi
-fun Project.processWasmCompilation(target: WasmBenchmarkTarget) {
+internal fun Project.processWasmCompilation(target: WasmBenchmarkTarget) {
     project.logger.info("Configuring benchmarks for '${target.name}' using Kotlin/Wasm")
     val compilation = target.compilation
 

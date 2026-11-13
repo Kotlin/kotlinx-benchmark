@@ -1,10 +1,8 @@
 package kotlinx.benchmark.gradle
 
-import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
 
-@KotlinxBenchmarkPluginInternalApi
-fun Project.processJvmCompilation(target: KotlinJvmBenchmarkTarget) {
+internal fun Project.processJvmCompilation(target: KotlinJvmBenchmarkTarget) {
     project.logger.info("Configuring benchmarks for '${target.name}' using Kotlin/JVM")
     val compilation = target.compilation
 

@@ -2,7 +2,6 @@
 
 package kotlinx.benchmark.gradle
 
-import groovy.lang.Closure
 import kotlinx.benchmark.gradle.internal.BenchmarksPluginConstants
 import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
@@ -22,14 +21,12 @@ import java.nio.file.Path
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-@KotlinxBenchmarkPluginInternalApi
 @Deprecated("Unused - replace with Kotlin stdlib function", ReplaceWith("file.deleteRecursively()"))
-fun cleanup(file: File) {
+internal fun cleanup(file: File) {
     file.deleteRecursively()
 }
 
-@KotlinxBenchmarkPluginInternalApi
-inline fun <reified T : Task> Project.task(
+internal inline fun <reified T : Task> Project.task(
     name: String,
     depends: String? = null,
     noinline configuration: T.() -> Unit
@@ -41,14 +38,12 @@ inline fun <reified T : Task> Project.task(
     return task
 }
 
-@KotlinxBenchmarkPluginInternalApi
-fun Project.benchmarkBuildDir(target: BenchmarkTarget): File =
+internal fun Project.benchmarkBuildDir(target: BenchmarkTarget): File =
     layout.buildDirectory.dir("${target.extension.buildDir}/${target.name}")
         .get()
         .asFile
 
-@KotlinxBenchmarkPluginInternalApi
-fun Project.benchmarkReportsDir(config: BenchmarkConfiguration, target: BenchmarkTarget): Provider<Directory> {
+internal fun Project.benchmarkReportsDir(config: BenchmarkConfiguration, target: BenchmarkTarget): Provider<Directory> {
     val ext = project.extensions.extraProperties
     val time = if (ext.has("reportTime")) {
         ext.get("reportTime") as LocalDateTime
@@ -63,23 +58,7 @@ fun Project.benchmarkReportsDir(config: BenchmarkConfiguration, target: Benchmar
     return layout.buildDirectory.dir("${target.extension.reportsDir}/${config.name}/${compatibleTime}")
 }
 
-@KotlinxBenchmarkPluginInternalApi
-class KotlinClosure1<in T : Any?, V : Any>(
-    val function: T.() -> V?,
-    owner: Any? = null,
-    thisObject: Any? = null
-) : Closure<V?>(owner, thisObject) {
-
-    @Suppress("unused") // to be called dynamically by Groovy
-    fun doCall(it: T): V? = it.function()
-}
-
-@KotlinxBenchmarkPluginInternalApi
-fun <T> Any.closureOf(action: T.() -> Unit): Closure<Any?> =
-    KotlinClosure1(action, this, this)
-
-@KotlinxBenchmarkPluginInternalApi
-fun <T> Any.tryGetClass(className: String): Class<T>? {
+internal fun <T> Any.tryGetClass(className: String): Class<T>? {
     val classLoader = javaClass.classLoader
     return try {
         @Suppress("UNCHECKED_CAST")
@@ -89,8 +68,7 @@ fun <T> Any.tryGetClass(className: String): Class<T>? {
     }
 }
 
-@KotlinxBenchmarkPluginInternalApi
-fun Task.setupReporting(target: BenchmarkTarget, config: BenchmarkConfiguration): Provider<RegularFile> {
+internal fun Task.setupReporting(target: BenchmarkTarget, config: BenchmarkConfiguration): Provider<RegularFile> {
     extensions.extraProperties.set("idea.internal.test", project.getSystemProperty("idea.active"))
     val reportsDir = project.benchmarkReportsDir(config, target)
     val reportFile = reportsDir.map { it.asFile.resolve("${target.name}.${config.reportFileExt()}") }
@@ -103,17 +81,15 @@ fun Task.setupReporting(target: BenchmarkTarget, config: BenchmarkConfiguration)
     return project.layout.file(reportFile)
 }
 
-@KotlinxBenchmarkPluginInternalApi
-fun Task.traceFormat(): String {
+
+internal fun Task.traceFormat(): String {
     val ideaActive = project.getSystemProperty("idea.active").toBoolean()
     return if (ideaActive) "xml" else "text"
 }
 
-@KotlinxBenchmarkPluginInternalApi
-val Path.absolutePath: String get() = toAbsolutePath().toFile().invariantSeparatorsPath
+internal val Path.absolutePath: String get() = toAbsolutePath().toFile().invariantSeparatorsPath
 
-@KotlinxBenchmarkPluginInternalApi
-fun Task.writeParameters(
+internal fun Task.writeParameters(
     name: String,
     reportFile: Provider<RegularFile>,
     format: String,
@@ -326,15 +302,13 @@ internal fun Project.getSystemProperty(key: String): String? {
     return providers.systemProperty(key).orNull
 }
 
-@KotlinxBenchmarkPluginInternalApi
-fun Project.javaCompilerProvider(): Provider<JavaCompiler> = provider {
+internal fun Project.javaCompilerProvider(): Provider<JavaCompiler> = provider {
     val toolchainService = extensions.findByType(JavaToolchainService::class.java) ?: return@provider null
     val javaExtension = extensions.findByType(JavaPluginExtension::class.java) ?: return@provider null
     toolchainService.compilerFor(javaExtension.toolchain).orNull
 }
 
-@KotlinxBenchmarkPluginInternalApi
-fun Project.javaLauncherProvider(): Provider<JavaLauncher> = provider {
+internal fun Project.javaLauncherProvider(): Provider<JavaLauncher> = provider {
     val toolchainService = extensions.findByType(JavaToolchainService::class.java) ?: return@provider null
     val javaExtension = extensions.findByType(JavaPluginExtension::class.java) ?: return@provider null
     toolchainService.launcherFor(javaExtension.toolchain).orNull

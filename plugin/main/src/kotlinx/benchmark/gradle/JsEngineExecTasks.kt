@@ -2,7 +2,6 @@ package kotlinx.benchmark.gradle
 
 import kotlinx.benchmark.gradle.BenchmarksPlugin.Companion.BENCHMARKS_TASK_GROUP
 import kotlinx.benchmark.gradle.BenchmarksPlugin.Companion.RUN_BENCHMARKS_TASKNAME
-import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.Project
@@ -29,8 +28,7 @@ internal fun Project.makeBenchmarkConfigExecTask(
     tasks.getByName(config.prefixName(RUN_BENCHMARKS_TASKNAME)).dependsOn(configExecTask)
 }
 
-@KotlinxBenchmarkPluginInternalApi
-fun createJsEngineBenchmarkExecTask(
+internal fun createJsEngineBenchmarkExecTask(
     config: BenchmarkConfiguration,
     target: BenchmarkTarget,
     binary: JsIrBinary,

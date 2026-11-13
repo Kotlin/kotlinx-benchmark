@@ -12,49 +12,41 @@ import org.gradle.util.GradleVersion
 import javax.inject.Inject
 
 @Suppress("unused")
-abstract class BenchmarksPlugin
-@KotlinxBenchmarkPluginInternalApi
+public abstract class BenchmarksPlugin
 @Inject
-constructor(
+internal constructor(
     private val providers: ProviderFactory,
 ) : Plugin<Project> {
 
-    companion object {
-        const val PLUGIN_ID = "org.jetbrains.kotlinx.benchmark"
+    public companion object {
+        public const val PLUGIN_ID: String = "org.jetbrains.kotlinx.benchmark"
 
-        const val PLUGIN_VERSION = BenchmarksPluginConstants.BENCHMARK_PLUGIN_VERSION
+        public const val PLUGIN_VERSION: String = BenchmarksPluginConstants.BENCHMARK_PLUGIN_VERSION
 
-        const val BENCHMARKS_TASK_GROUP = "benchmark"
-        const val BENCHMARK_EXTENSION_NAME = "benchmark"
+        public const val BENCHMARKS_TASK_GROUP: String = "benchmark"
+        public const val BENCHMARK_EXTENSION_NAME: String = "benchmark"
 
-        const val RUN_BENCHMARKS_TASKNAME = "benchmark"
-        const val ASSEMBLE_BENCHMARKS_TASKNAME = "assembleBenchmarks"
+        public const val RUN_BENCHMARKS_TASKNAME: String = "benchmark"
+        public const val ASSEMBLE_BENCHMARKS_TASKNAME: String = "assembleBenchmarks"
 
         //region Internal constants
-        @KotlinxBenchmarkPluginInternalApi
-        const val BENCHMARK_GENERATE_SUFFIX = "BenchmarkGenerate"
+        internal const val BENCHMARK_GENERATE_SUFFIX = "BenchmarkGenerate"
 
-        @KotlinxBenchmarkPluginInternalApi
-        const val BENCHMARK_COMPILE_SUFFIX = "BenchmarkCompile"
+        internal const val BENCHMARK_COMPILE_SUFFIX = "BenchmarkCompile"
 
-        @KotlinxBenchmarkPluginInternalApi
-        const val BENCHMARK_JAR_SUFFIX = "BenchmarkJar"
+        internal const val BENCHMARK_JAR_SUFFIX = "BenchmarkJar"
 
-        @KotlinxBenchmarkPluginInternalApi
-        const val BENCHMARK_EXEC_SUFFIX = "Benchmark"
+        internal const val BENCHMARK_EXEC_SUFFIX = "Benchmark"
 
-        @KotlinxBenchmarkPluginInternalApi
-        const val BENCHMARK_COMPILATION_SUFFIX = "Benchmark"
+        internal const val BENCHMARK_COMPILATION_SUFFIX = "Benchmark"
 
-        @KotlinxBenchmarkPluginInternalApi
-        const val JMH_CORE_DEPENDENCY = "org.openjdk.jmh:jmh-core"
+        internal const val JMH_CORE_DEPENDENCY = "org.openjdk.jmh:jmh-core"
 
-        @KotlinxBenchmarkPluginInternalApi
-        const val JMH_GENERATOR_DEPENDENCY = "org.openjdk.jmh:jmh-generator-bytecode:"
+        internal const val JMH_GENERATOR_DEPENDENCY = "org.openjdk.jmh:jmh-generator-bytecode:"
         //endregion
     }
 
-    override fun apply(project: Project) = project.run {
+    override fun apply(project: Project): Unit = project.run {
         // DO NOT use properties of an extension immediately, it will not contain any user-specified data
         val extension = createBenchmarksExtension(project)
 

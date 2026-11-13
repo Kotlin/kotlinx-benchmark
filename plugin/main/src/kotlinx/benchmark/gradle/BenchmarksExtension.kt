@@ -13,29 +13,28 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinJvmCompilation
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeCompilation
 import org.jetbrains.kotlin.gradle.targets.js.ir.KotlinJsIrCompilation
 
-fun Project.benchmark(configure: Action<BenchmarksExtension>) {
+public fun Project.benchmark(configure: Action<BenchmarksExtension>) {
     extensions.configure(BenchmarksExtension::class.java, configure)
 }
 
-abstract class BenchmarksExtension
-@KotlinxBenchmarkPluginInternalApi
-constructor(
-    val project: Project
+public abstract class BenchmarksExtension
+internal constructor(
+    public val project: Project
 ) {
 
-    var buildDir: String = "benchmarks"
-    var reportsDir: String = "reports/benchmarks"
-    var benchsDescriptionDir: String = "benchsDescription"
+    public var buildDir: String = "benchmarks"
+    public var reportsDir: String = "reports/benchmarks"
+    public var benchsDescriptionDir: String = "benchsDescription"
 
-    val version = BenchmarksPlugin.PLUGIN_VERSION
+    public val version: String = BenchmarksPlugin.PLUGIN_VERSION
 
-    abstract val kotlinCompilerVersion: Property<String>
+    public abstract val kotlinCompilerVersion: Property<String>
 
-    fun configurations(configureClosure: Closure<NamedDomainObjectContainer<BenchmarkConfiguration>>): NamedDomainObjectContainer<BenchmarkConfiguration> {
+    public fun configurations(configureClosure: Closure<NamedDomainObjectContainer<BenchmarkConfiguration>>): NamedDomainObjectContainer<BenchmarkConfiguration> {
         return configurations.configure(configureClosure)
     }
 
-    val configurations: NamedDomainObjectContainer<BenchmarkConfiguration> = run {
+    public val configurations: NamedDomainObjectContainer<BenchmarkConfiguration> = run {
         val container = project.container(BenchmarkConfiguration::class.java) { name ->
             BenchmarkConfiguration(this, name)
         }
@@ -43,11 +42,11 @@ constructor(
         container
     }
 
-    fun targets(configureClosure: Closure<NamedDomainObjectContainer<BenchmarkTarget>>): NamedDomainObjectContainer<BenchmarkTarget> {
+    public fun targets(configureClosure: Closure<NamedDomainObjectContainer<BenchmarkTarget>>): NamedDomainObjectContainer<BenchmarkTarget> {
         return targets.configure(configureClosure)
     }
 
-    val targets: NamedDomainObjectContainer<BenchmarkTarget> = run {
+    public val targets: NamedDomainObjectContainer<BenchmarkTarget> = run {
         project.container(BenchmarkTarget::class.java) { name ->
             val multiplatformClass =
                 tryGetClass<KotlinMultiplatformExtension>("org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension")

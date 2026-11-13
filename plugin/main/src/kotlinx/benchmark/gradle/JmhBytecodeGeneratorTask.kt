@@ -1,6 +1,5 @@
 package kotlinx.benchmark.gradle
 
-import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
 import org.gradle.api.file.*
 import org.gradle.api.provider.Property
@@ -12,40 +11,39 @@ import java.io.*
 import javax.inject.*
 
 @CacheableTask
-open class JmhBytecodeGeneratorTask
-@KotlinxBenchmarkPluginInternalApi
+public open class JmhBytecodeGeneratorTask
 @Inject
-constructor(
+internal constructor(
     private val workerExecutor: WorkerExecutor
 ) : DefaultTask() {
 
 
     @Classpath
-    lateinit var inputClassesDirs: FileCollection
+    public lateinit var inputClassesDirs: FileCollection
 
     @Classpath
-    lateinit var inputCompileClasspath: FileCollection
+    public lateinit var inputCompileClasspath: FileCollection
 
     @OutputDirectory
-    lateinit var outputResourcesDir: File
+    public lateinit var outputResourcesDir: File
 
     @OutputDirectory
-    lateinit var outputSourcesDir: File
+    public lateinit var outputSourcesDir: File
 
     @Classpath
-    lateinit var runtimeClasspath: FileCollection
+    public lateinit var runtimeClasspath: FileCollection
 
     @Optional
     @Nested
-    val javaLauncher: Property<JavaLauncher> = project.objects.property(JavaLauncher::class.java)
+    public val javaLauncher: Property<JavaLauncher> = project.objects.property(JavaLauncher::class.java)
 
     @Deprecated(message = "Use jvmLauncher property instead.", level = DeprecationLevel.ERROR)
     @Optional
     @Input
-    var executableProvider: Provider<String> = project.provider { null }
+    public var executableProvider: Provider<String> = project.provider { null }
 
     @TaskAction
-    fun generate() {
+    public fun generate() {
         val workQueue = workerExecutor.processIsolation { workerSpec ->
             workerSpec.classpath.setFrom(runtimeClasspath.files)
             @Suppress("DEPRECATION_ERROR")

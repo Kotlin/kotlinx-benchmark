@@ -32,11 +32,9 @@ import java.net.URL
 import java.net.URLClassLoader
 import kotlin.reflect.jvm.kotlinFunction
 
-@KotlinxBenchmarkPluginInternalApi
 // TODO https://github.com/Kotlin/kotlinx-benchmark/issues/211
-//      Change visibility of JmhBytecodeGeneratorWorker `internal`
 //      Move to package kotlinx.benchmark.gradle.internal.generator.workers, alongside the other workers.
-abstract class JmhBytecodeGeneratorWorker : WorkAction<JmhBytecodeGeneratorWorkParameters> {
+internal abstract class JmhBytecodeGeneratorWorker : WorkAction<JmhBytecodeGeneratorWorkParameters> {
 
     // TODO in version 1.0 replace JmhBytecodeGeneratorWorkParameters with this interface:
     //internal interface Parameters : WorkParameters {
@@ -220,10 +218,9 @@ private val reservedJavaIdentifierNames = setOf(
     "const", "float", "native", "super", "while", "_"
 )
 
-@KotlinxBenchmarkPluginInternalApi
 // TODO https://github.com/Kotlin/kotlinx-benchmark/issues/211
 //      Move to a nested interface inside of JmhBytecodeGeneratorWorker (like the other workers)
-interface JmhBytecodeGeneratorWorkParameters : WorkParameters {
+internal interface JmhBytecodeGeneratorWorkParameters : WorkParameters {
     val inputClasses: ConfigurableFileCollection
     val inputClasspath: ConfigurableFileCollection
     val outputSourceDirectory: DirectoryProperty

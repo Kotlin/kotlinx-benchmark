@@ -1,10 +1,8 @@
 package kotlinx.benchmark.gradle
 
-import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import org.gradle.api.*
 
-@KotlinxBenchmarkPluginInternalApi
-fun Project.processJavaSourceSet(target: JavaBenchmarkTarget) {
+internal fun Project.processJavaSourceSet(target: JavaBenchmarkTarget) {
     logger.info("Configuring benchmarks for '${target.name}' using Java")
 
     val sourceSet = target.sourceSet

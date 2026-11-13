@@ -1,6 +1,5 @@
 package kotlinx.benchmark.gradle
 
-import kotlinx.benchmark.gradle.internal.KotlinxBenchmarkPluginInternalApi
 import kotlinx.benchmark.gradle.internal.generator.Platform
 import org.gradle.api.*
 import org.gradle.api.model.ObjectFactory
@@ -107,9 +106,7 @@ private fun Project.createNativeBenchmarkCompileTask(target: NativeBenchmarkTarg
     return benchmarkCompilation
 }
 
-@OptIn(ExperimentalPathApi::class)
-@KotlinxBenchmarkPluginInternalApi
-fun Project.createNativeBenchmarkExecTask(
+internal fun Project.createNativeBenchmarkExecTask(
     config: BenchmarkConfiguration,
     target: NativeBenchmarkTarget,
     benchmarkCompilation: KotlinNativeCompilation
@@ -151,10 +148,9 @@ fun Project.createNativeBenchmarkExecTask(
     }
 }
 
-abstract class NativeBenchmarkExec
-@KotlinxBenchmarkPluginInternalApi
+public abstract class NativeBenchmarkExec
 @Inject
-constructor(
+internal constructor(
     private val execOperations: ExecOperations,
     private val objectFactory: ObjectFactory,
 ) : DefaultTask() {
@@ -163,27 +159,27 @@ constructor(
     var filter: String? = null
 */
     @InputFile
-    lateinit var executable: File
+    public lateinit var executable: File
 
     @Input
     @Optional
-    var workingDir: String? = null
+    public var workingDir: String? = null
 
     @InputFile
-    lateinit var configFile: File
+    public lateinit var configFile: File
 
     @Input
     @Optional
-    var nativeFork: String? = null
+    public var nativeFork: String? = null
 
     @OutputFile
-    lateinit var reportFile: File
+    public lateinit var reportFile: File
 
     @Internal
-    lateinit var benchsDescriptionDir: File
+    public lateinit var benchsDescriptionDir: File
 
     @Internal
-    lateinit var benchProgressPath: String
+    public lateinit var benchProgressPath: String
 
     private fun execute(args: Collection<String>) {
         execOperations.exec {
@@ -195,9 +191,8 @@ constructor(
         }
     }
 
-    @OptIn(ExperimentalPathApi::class)
     @TaskAction
-    fun run() {
+    public fun run() {
         // Get full list of running benchmarks
         execute(listOf(configFile.absolutePath, "--list", benchProgressPath, benchsDescriptionDir.absolutePath))
         val detailedConfigFiles = objectFactory.fileTree().from(benchsDescriptionDir).files.sortedBy { it.absolutePath }
