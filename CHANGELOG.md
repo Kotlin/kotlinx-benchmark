@@ -4,11 +4,12 @@
 
 - Added symmetric multithreaded benchmarks support for Native and JVM targets
 
-  Currently, only class-level `@Thread` annotation and corresponding DSL configuration options are supported.   
+  Currently, only class-level `@Threads` annotation and corresponding DSL configuration options are supported.   
   On JS and Wasm targets, both annotation and DSL configuration options are ignored and only a single thread is used.
   Benchmark state is always shared between all threads.
   
-- Fixed CVS reports formatting on Windows [#405](https://github.com/Kotlin/kotlinx-benchmark/issues/405)
+- Enabled explicit API mode for both the runtime library and the plugin, many previously public APIs are no longer public.
+- Fixed CSV reports formatting on Windows [#405](https://github.com/Kotlin/kotlinx-benchmark/issues/405)
 - Fixed benchmarks output formatting on JVM [#413](https://github.com/Kotlin/kotlinx-benchmark/issues/413), [#354](https://github.com/Kotlin/kotlinx-benchmark/issues/354)
 
 ## 0.5.0
