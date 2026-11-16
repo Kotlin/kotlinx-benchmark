@@ -1,18 +1,32 @@
 import kotlinx.benchmark.gradle.CustomEngine
+import org.jetbrains.kotlin.gradle.targets.js.nodejs.NodeJsExec
 import org.jetbrains.kotlin.gradle.targets.wasm.nodejs.WasmNodeJsEnvSpec
 
 kotlin {
-    wasmJs { nodejs() }
+    wasmJs {
+        nodejs()
+        compilerOptions {
+            freeCompilerArgs.add("-Xwasm-use-stack-switching-proposal")
+        }
+    }
 }
 
 def nodeJsSpec = extensions.getByName('kotlinWasmNodeJsSpec') as WasmNodeJsEnvSpec
 nodeJsSpec.version.set('26.5.0') // Needed to support V8 JSPI
 
+def stackSwitchingArgs = ['--experimental-wasm-wasmfx']
+
+// The benchmark runner gets the flags from `nodeArgs` below.
+// A per-benchmark fork of the runner (`wasmFork`) must inherit flags of the benchmark runner.
+tasks.withType(NodeJsExec).configureEach {
+    nodeArgs.addAll(stackSwitchingArgs)
+}
+
 def nodeJsEngine = new CustomEngine(
     'CustomNodeJs',
     layout.file(nodeJsSpec.executable.map { new File(it) }),
     null,
-    provider { ['<MODULE>', '<ARGUMENTS>'] }
+    provider { stackSwitchingArgs + ['<MODULE>', '<ARGUMENTS>'] }
 )
 
 benchmark {
@@ -23,6 +37,7 @@ benchmark {
     configurations {
         main {
             setCustomEngine(nodeJsEngine)
+            advanced("wasmFork", "perBenchmark")
         }
     }
 }
