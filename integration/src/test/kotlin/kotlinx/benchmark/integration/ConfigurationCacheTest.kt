@@ -89,10 +89,16 @@ class ConfigurationCacheTest : GradleTest() {
         val jar = jarDir.listFiles().orEmpty().singleOrNull { it.extension == "jar" }
         assertNotNull(jar, "No benchmark jar in $jarDir")
 
-        val entries = JarFile(jar).use { jarFile -> jarFile.entries().toList().map { it.name } }
-        // The module's own classes, and the dependencies the jar unpacks.
-        for (entry in listOf("test/CommonBenchmark.class", "org/openjdk/jmh/Main.class", "kotlin/Unit.class")) {
-            assertTrue(entry in entries, "Jar $jar does not contain $entry")
+        JarFile(jar).use { jarFile ->
+            val entries = jarFile.entries().toList().map { it.name }
+            // The module's own classes, and the dependencies the jar unpacks.
+            for (entry in listOf("test/CommonBenchmark.class", "org/openjdk/jmh/Main.class", "kotlin/Unit.class")) {
+                assertContains(entries, entry, "Jar $jar does not contain $entry")
+            }
+            assertEquals(
+                "org.openjdk.jmh.Main",
+                jarFile.manifest.mainAttributes.getValue("Main-Class"),
+            )
         }
     }
 }
