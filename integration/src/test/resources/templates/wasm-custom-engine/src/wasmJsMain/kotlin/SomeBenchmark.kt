@@ -12,4 +12,12 @@ class SomeBenchmark {
     fun mathBenchmark(): Double {
         return log(sqrt(3.0) * cos(3.0), 2.0)
     }
+
+    // Use coroutines API, so that stack switching intructions aren't optimized away.
+    @Benchmark
+    fun sequenceBenchmark(): Int {
+        return sequence {
+            for (i in 0 until 10) yield(i)
+        }.sum()
+    }
 }

@@ -3,8 +3,8 @@ package kotlinx.benchmark
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
-private fun nodeJsArguments(): String =
-    js("process.argv.slice(2).join(' ')")
+private fun nodeJsArguments(): JsArray<JsString> =
+    js("process.argv.slice(2)")
 
 private object NodeJsEngineSupport : BenchmarkEngineSupport() {
     override fun writeFile(path: String, content: String) =
@@ -13,8 +13,10 @@ private object NodeJsEngineSupport : BenchmarkEngineSupport() {
     override fun readFile(path: String): String =
         fs.readFileSync(path, "utf8")
 
-    override fun arguments(): Array<out String> =
-        nodeJsArguments().split(' ').toTypedArray()
+    override fun arguments(): Array<out String> {
+        val argv = nodeJsArguments()
+        return Array(argv.length) { argv[it]!!.toString() }
+    }
 
     override fun getMeasurer(): Measurer = NodeJsMeasurer()
 
