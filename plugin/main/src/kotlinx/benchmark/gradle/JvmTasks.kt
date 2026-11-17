@@ -6,6 +6,7 @@ import org.gradle.api.file.*
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.compile.*
 import org.gradle.jvm.tasks.*
+import org.gradle.util.GradleVersion
 import java.io.*
 import javax.inject.Inject
 
@@ -67,7 +68,9 @@ internal fun Project.createJvmBenchmarkCompileTask(target: JvmBenchmarkTarget, c
 internal fun Project.createJmhGenerationRuntimeConfiguration(name: String, jmhVersion: String): Configuration {
     // This configuration defines classpath for JMH generator, it should have everything available via reflection
     return configurations.create("$name${BenchmarksPlugin.BENCHMARK_GENERATE_SUFFIX}CP").apply {
-        isVisible = false
+        if (GradleVersion.current() < GradleVersion.version("9.0")) {
+            isVisible = false
+        }
         description = "JMH Generator Runtime Configuration for '$name'"
 
         val dependencies = this@createJmhGenerationRuntimeConfiguration.dependencies
