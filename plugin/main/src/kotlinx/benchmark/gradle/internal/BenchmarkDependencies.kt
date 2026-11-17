@@ -7,7 +7,6 @@ import org.gradle.api.attributes.Usage
 import org.gradle.api.attributes.Usage.JAVA_RUNTIME
 import org.gradle.api.attributes.Usage.USAGE_ATTRIBUTE
 import org.gradle.api.model.ObjectFactory
-import org.gradle.util.GradleVersion
 
 /**
  * Utility for containing all Gradle [Configuration]s used by Benchmarks.
@@ -72,26 +71,5 @@ internal class BenchmarkDependencies(
             isCanBeConsumed = false
             isVisibleCompat = false
         }
-
-        @Suppress("UnstableApiUsage")
-        /** `true` if [Configuration.isCanBeDeclared] is supported by the current Gradle version. */
-        private val isCanBeDeclaredSupported = GradleVersion.current() >= GradleVersion.version("8.2")
-
-        // Remove when minimum supported Gradle version is >= 8.2
-        @Suppress("UnstableApiUsage")
-        private var Configuration.isCanBeDeclaredCompat: Boolean
-            get() = if (isCanBeDeclaredSupported) isCanBeDeclared else false
-            set(value) {
-                if (isCanBeDeclaredSupported) isCanBeDeclared = value
-            }
-
-        /** `true` is [Configuration.isVisible] is still available in the current Gradle version */
-        private val isVisibleSupported = GradleVersion.current() < GradleVersion.version("9.0")
-
-        private var Configuration.isVisibleCompat: Boolean
-            get() = if (isVisibleSupported) isVisible else false
-            set(value) {
-                if (isVisibleSupported) isVisible = value
-            }
     }
 }
