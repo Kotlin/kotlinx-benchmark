@@ -136,14 +136,18 @@ internal fun Project.createNativeBenchmarkExecTask(
             .dir("${target.extension.benchsDescriptionDir}/${config.name}")
             .get().asFile
 
-        val newReportFile = setupReporting(target, config)
-        reportFile = newReportFile.get().asFile
+        val report = setupReporting(target, config)
+        reportFile = project.benchmarkBuildDir(target).resolve("reports/${config.name}/${report.fileName}")
+        outputs.upToDateWhen { false }
         val compilationMode = target.buildType.name.lowercase().capitalized()
-        configFile = writeParameters(target.name, newReportFile, traceFormat(), config, compilationMode)
+        configFile = writeParameters(target.name, { reportFile }, traceFormat(), config, compilationMode)
 
         doFirst {
             benchsDescriptionDir.deleteRecursively()
             benchsDescriptionDir.mkdirs()
+        }
+        doLast {
+            reportFile.copyTo(report.file)
         }
     }
 }

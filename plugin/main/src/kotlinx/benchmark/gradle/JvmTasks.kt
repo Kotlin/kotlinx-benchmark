@@ -126,8 +126,8 @@ internal fun Project.createJvmBenchmarkExecTask(
 
         dependsOn("${target.name}${BenchmarksPlugin.BENCHMARK_COMPILE_SUFFIX}")
 
-        val reportFile = setupReporting(target, config)
-        args(writeParameters(target.name, reportFile, traceFormat(), config))
+        val report = setupReporting(target, config)
+        args(writeParameters(target.name, report::file, traceFormat(), config))
         when (config.advanced["jmhIgnoreLock"]) {
             true -> jvmArgs("-Djmh.ignoreLock=true")
             false -> jvmArgs("-Djmh.ignoreLock=false")
