@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 0.6.0-rc2
+
+- Fixed benchmark jar building with Gradle Configuration Cache enabled
+
 ## 0.6.0-rc
 
 - Added symmetric multithreaded benchmarks support for Native and JVM targets

@@ -60,7 +60,7 @@ dedicated to setting up benchmarking in those specific project types.
     ```kotlin
     // build.gradle.kts
     plugins {
-        id("org.jetbrains.kotlinx.benchmark") version "0.6.0-rc"
+        id("org.jetbrains.kotlinx.benchmark") version "0.6.0-rc2"
     }
     ```
 
@@ -83,7 +83,7 @@ dedicated to setting up benchmarking in those specific project types.
         sourceSets {
             commonMain {
                 dependencies {
-                    implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.6.0-rc")
+                    implementation("org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.6.0-rc2")
                 }
             }
         }
@@ -108,7 +108,7 @@ dedicated to setting up benchmarking in those specific project types.
     ```groovy
     // build.gradle
     plugins {
-        id 'org.jetbrains.kotlinx.benchmark' version '0.6.0-rc'
+        id 'org.jetbrains.kotlinx.benchmark' version '0.6.0-rc2'
     }
     ```
 
@@ -131,7 +131,7 @@ dedicated to setting up benchmarking in those specific project types.
         sourceSets {
             commonMain {
                 dependencies {
-                    implementation 'org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.6.0-rc'
+                    implementation 'org.jetbrains.kotlinx:kotlinx-benchmark-runtime:0.6.0-rc2'
                 }
             }
         }
